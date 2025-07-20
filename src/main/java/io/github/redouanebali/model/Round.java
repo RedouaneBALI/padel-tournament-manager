@@ -11,8 +11,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Round {
 
-  RoundName   name;
-  List<Game>  games = new ArrayList<>();
-  MatchFormat matchFormat;
+  private RoundInfo        info;
+  private List<PlayerPair> playerPairs = new ArrayList<>();
+  private List<Game>       games       = new ArrayList<>();
+  private MatchFormat      matchFormat;
+
+  public Round(RoundInfo roundInfo) {
+    this.info = roundInfo;
+  }
 
 }

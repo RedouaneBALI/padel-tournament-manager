@@ -18,6 +18,7 @@ public class Tournament {
   private Gender           Gender;
   private TournamentLevel  Level;
   private List<Round>      rounds;
+  private int              nbSeeds;
   private List<PlayerPair> playerPairs;
 
 }

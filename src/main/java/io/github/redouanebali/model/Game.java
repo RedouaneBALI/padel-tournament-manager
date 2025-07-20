@@ -14,4 +14,9 @@ public class Game {
   private MatchFormat format;
   private Score       score;
 
+  public Game(PlayerPair teamA, PlayerPair teamB) {
+    this.teamA = teamA;
+    this.teamB = teamB;
+  }
+
 }
