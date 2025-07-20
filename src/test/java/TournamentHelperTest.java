@@ -1,13 +1,17 @@
+import static io.github.redouanebali.model.TournamentHelper.generateGames;
 import static io.github.redouanebali.model.TournamentHelper.getSeedsPositions;
-import static io.github.redouanebali.model.TournamentHelper.initGamesWithSeedTeams;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -53,14 +57,16 @@ public class TournamentHelperTest {
 
   @ParameterizedTest
   @MethodSource("provideBracketSeedPositionCases")
-  public void testInitGamesWithSeedTeams(
+  public void testGenerateGames(
       int nbTeams,
       int nbSeeds,
       int[] expectedSeedIndices
   ) {
     List<PlayerPair> pairs = createPairs(nbTeams);
     pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
-    List<Game> games = initGamesWithSeedTeams(pairs, nbSeeds);
+    List<Game> games = generateGames(pairs, nbSeeds);
+
+    // Vérification du placement des têtes de série
     for (int i = 0; i < expectedSeedIndices.length; i++) {
       int        expectedPosition = expectedSeedIndices[i];
       int        gameIndex        = expectedPosition / 2;
@@ -71,6 +77,44 @@ public class TournamentHelperTest {
                    String.format("seed %d should be in position %d (game %d)",
                                  seedTeam.getSeed(), expectedPosition, gameIndex));
     }
+
+    // Vérification que toutes les équipes jouent dans un match
+    Set<PlayerPair> allTeamsInGames = new HashSet<>();
+    for (Game game : games) {
+      if (game.getTeamA() != null) {
+        allTeamsInGames.add(game.getTeamA());
+      }
+      if (game.getTeamB() != null) {
+        allTeamsInGames.add(game.getTeamB());
+      }
+    }
+
+    // Vérifier que toutes les équipes sont présentes
+    assertEquals(nbTeams, allTeamsInGames.size(),
+                 "Toutes les équipes doivent jouer dans un match");
+
+    for (PlayerPair pair : pairs) {
+      assertTrue(allTeamsInGames.contains(pair),
+                 String.format("L'équipe avec seed %d doit jouer dans un match", pair.getSeed()));
+    }
+
+    // Vérification supplémentaire : aucune équipe ne joue deux fois
+    Set<PlayerPair> duplicateCheck = new HashSet<>();
+    for (Game game : games) {
+      if (game.getTeamA() != null) {
+        assertFalse(duplicateCheck.contains(game.getTeamA()),
+                    String.format("L'équipe avec seed %d joue dans plusieurs matchs", game.getTeamA().getSeed()));
+        duplicateCheck.add(game.getTeamA());
+      }
+      if (game.getTeamB() != null) {
+        assertFalse(duplicateCheck.contains(game.getTeamB()),
+                    String.format("L'équipe avec seed %d joue dans plusieurs matchs", game.getTeamB().getSeed()));
+        duplicateCheck.add(game.getTeamB());
+      }
+    }
+
+    assertEquals(nbTeams / 2, games.size(),
+                 "Le nombre de matchs doit être égal à nbTeams / 2");
   }
 
   private List<PlayerPair> createPairs(int count) {

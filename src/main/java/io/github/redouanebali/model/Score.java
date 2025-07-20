@@ -1,9 +1,11 @@
 package io.github.redouanebali.model;
 
+import jakarta.persistence.Embeddable;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Data;
 
+@Embeddable
 @Data
 public class Score {
 

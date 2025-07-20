@@ -1,17 +1,30 @@
 package io.github.redouanebali.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Game {
 
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long        id;
+  @Transient
   private PlayerPair  teamA;
+  @Transient
   private PlayerPair  teamB;
+  @Transient
   private MatchFormat format;
+  @Transient
   private Score       score;
 
   public Game(PlayerPair teamA, PlayerPair teamB) {

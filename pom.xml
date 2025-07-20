@@ -40,7 +40,6 @@
     <dependency>
       <artifactId>h2</artifactId>
       <groupId>com.h2database</groupId>
-      <scope>test</scope>
       <version>2.3.232</version>
     </dependency>
 
@@ -50,6 +49,8 @@
       <scope>test</scope>
       <version>5.10.2</version>
     </dependency>
+
+
   </dependencies>
   <groupId>io.github.redouanebali</groupId>
 

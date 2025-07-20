@@ -2,24 +2,73 @@ package io.github.redouanebali.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 public class TournamentHelper {
 
-  public static List<Game> initGamesWithSeedTeams(List<PlayerPair> pairs, int nbSeeds) {
-    pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
-    List<Integer> seedsPositions = getSeedsPositions(pairs.size(), nbSeeds);
-    List<Game>    games          = new ArrayList<>();
-    for (int i = 0; i < pairs.size() / 2; i++) {
-      Game game = new Game();
-      games.add(game);
-    }
-    for (int i = 0; i < seedsPositions.size(); i++) {
-      games.get(seedsPositions.get(i) / 2).setTeamA(pairs.get(i));
-    }
+  public static List<Game> generateGames(List<PlayerPair> pairs, int nbSeeds) {
+    // 1. Créer les matchs vides
+    List<Game> games = createEmptyGames(pairs.size());
+
+    // 2. Placer les têtes de série
+    placeSeedTeams(games, pairs, nbSeeds);
+
+    // 3. Placer les équipes restantes aléatoirement
+    placeRemainingTeamsRandomly(games, pairs, nbSeeds);
 
     return games;
+  }
+
+  /**
+   * Crée la structure de base des matchs (vides)
+   */
+  private static List<Game> createEmptyGames(int nbTeams) {
+    List<Game> games = new ArrayList<>();
+    for (int i = 0; i < nbTeams / 2; i++) {
+      games.add(new Game());
+    }
+    return games;
+  }
+
+  /**
+   * Place les têtes de série aux positions stratégiques
+   */
+  private static void placeSeedTeams(List<Game> games, List<PlayerPair> pairs, int nbSeeds) {
+    pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
+    List<Integer> seedsPositions = getSeedsPositions(pairs.size(), nbSeeds);
+
+    for (int i = 0; i < seedsPositions.size(); i++) {
+      int gameIndex = seedsPositions.get(i) / 2;
+      games.get(gameIndex).setTeamA(pairs.get(i));
+    }
+  }
+
+  /**
+   * Place aléatoirement les équipes non-seeds dans les positions libres
+   */
+  private static void placeRemainingTeamsRandomly(List<Game> games, List<PlayerPair> pairs, int nbSeeds) {
+    List<PlayerPair> remainingTeams = new ArrayList<>(pairs.subList(nbSeeds, pairs.size()));
+    Collections.shuffle(remainingTeams);
+
+    int teamIndex = 0;
+    for (Game game : games) {
+      if (teamIndex >= remainingTeams.size()) {
+        break;
+      }
+
+      if (game.getTeamA() != null && game.getTeamB() == null) {
+        // Compléter un match qui a déjà une seed
+        game.setTeamB(remainingTeams.get(teamIndex++));
+      } else if (game.getTeamA() == null) {
+        // Remplir un match complètement vide
+        game.setTeamA(remainingTeams.get(teamIndex++));
+        if (teamIndex < remainingTeams.size()) {
+          game.setTeamB(remainingTeams.get(teamIndex++));
+        }
+      }
+    }
   }
 
   /**
