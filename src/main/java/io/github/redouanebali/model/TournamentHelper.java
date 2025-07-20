@@ -2,12 +2,24 @@ package io.github.redouanebali.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 public class TournamentHelper {
 
-  public static List<Game> generateGames(List<PlayerPair> pairs, int nbSeeds) {
-    return null;
+  public static List<Game> initGamesWithSeedTeams(List<PlayerPair> pairs, int nbSeeds) {
+    pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
+    List<Integer> seedsPositions = getSeedsPositions(pairs.size(), nbSeeds);
+    List<Game>    games          = new ArrayList<>();
+    for (int i = 0; i < pairs.size() / 2; i++) {
+      Game game = new Game();
+      games.add(game);
+    }
+    for (int i = 0; i < seedsPositions.size(); i++) {
+      games.get(seedsPositions.get(i) / 2).setTeamA(pairs.get(i));
+    }
+
+    return games;
   }
 
   /**

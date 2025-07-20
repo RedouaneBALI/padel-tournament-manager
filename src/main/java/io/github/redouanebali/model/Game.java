@@ -21,8 +21,16 @@ public class Game {
 
   @Override
   public String toString() {
-    return teamA.getPlayer1().getName() + "/" + teamA.getPlayer2().getName() + " VS "
-           + teamB.getPlayer1().getName() + "/" + teamB.getPlayer2().getName();
+    if (teamA != null && teamB != null) {
+      return teamA.getPlayer1().getName() + "/" + teamA.getPlayer2().getName() + " VS "
+             + teamB.getPlayer1().getName() + "/" + teamB.getPlayer2().getName();
+    } else if (teamA != null) {
+      return teamA.getPlayer1().getName() + "/" + teamA.getPlayer2().getName() + " VS "
+             + "?/?";
+    } else if (teamB != null) {
+      return "?/? VS " + teamB.getPlayer1().getName() + "/" + teamB.getPlayer2().getName();
+    }
+    return "";
   }
 
 }

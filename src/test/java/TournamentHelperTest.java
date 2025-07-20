@@ -1,9 +1,12 @@
 import static io.github.redouanebali.model.TournamentHelper.getSeedsPositions;
+import static io.github.redouanebali.model.TournamentHelper.initGamesWithSeedTeams;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -37,7 +40,7 @@ public class TournamentHelperTest {
   ) {
     List<PlayerPair> pairs = createPairs(nbTeams);
     // On trie les équipes par seed croissant pour que seed 1 soit à l'indice 0, seed 2 à 1, etc.
-    pairs.sort((a, b) -> Integer.compare(a.getSeed(), b.getSeed()));
+    pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
     List<Integer> seedPositions = getSeedsPositions(nbTeams, nbSeeds);
     // Vérification pour tous les seeds concernés
     for (int i = 0; i < expectedSeedIndices.length; i++) {
@@ -45,6 +48,28 @@ public class TournamentHelperTest {
       int actualIdx   = seedPositions.get(i);
       assertEquals(expectedIdx, actualIdx,
                    "Seed " + (i + 1) + " doit être à l'indice " + expectedIdx + " mais est à l'indice " + actualIdx);
+    }
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideBracketSeedPositionCases")
+  public void testInitGamesWithSeedTeams(
+      int nbTeams,
+      int nbSeeds,
+      int[] expectedSeedIndices
+  ) {
+    List<PlayerPair> pairs = createPairs(nbTeams);
+    pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
+    List<Game> games = initGamesWithSeedTeams(pairs, nbSeeds);
+    for (int i = 0; i < expectedSeedIndices.length; i++) {
+      int        expectedPosition = expectedSeedIndices[i];
+      int        gameIndex        = expectedPosition / 2;
+      Game       game             = games.get(gameIndex);
+      PlayerPair seedTeam         = pairs.get(i);
+
+      assertEquals(seedTeam, game.getTeamA(),
+                   String.format("seed %d should be in position %d (game %d)",
+                                 seedTeam.getSeed(), expectedPosition, gameIndex));
     }
   }
 
