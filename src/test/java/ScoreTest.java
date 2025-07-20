@@ -1,3 +1,4 @@
+import static io.github.redouanebali.model.GameHelper.isMatchOver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.github.redouanebali.model.Game;
@@ -23,16 +24,6 @@ public class ScoreTest {
   }
 
   @Test
-  public void testSuperTieBreak() {
-    Score score = new Score();
-    score.setSuperTieBreakTeamA(10);
-    score.setSuperTieBreakTeamB(8);
-
-    assertEquals(10, score.getSuperTieBreakTeamA());
-    assertEquals(8, score.getSuperTieBreakTeamB());
-  }
-
-  @Test
   public void testCompleteScoreRecording() {
     Score score = new Score();
     score.addSetScore(6, 4);
@@ -46,15 +37,28 @@ public class ScoreTest {
 
   @ParameterizedTest
   @CsvSource({
-      "'6-4,6-4', true",
-      "'7-5,7-5', true",
-      "'6-0,6-0', true",
-      "'4-6,6-4,7-5', true",
-      "'6-4,5-7', false",
-      "'6-4,5-4', false",
-      "4-6,5-6', false"
+      "'6-4,6-4', 2, 6, false, true",
+      "'7-5,7-5', 2, 6, false, true",
+      "'6-0,6-0', 2, 6, false, true",
+      "'4-6,6-4,7-5', 2, 6, false, true",
+      "'6-4,5-7', 2, 6, false, false",
+      "'6-4,5-4', 2, 6, false, false",
+      "'4-6,5-6', 2, 6, false, false",
+      "'6-0,6-5', 2, 6, false, false",
+      "'9-7', 1, 9, false, true",
+      "'5-3,5-4', 2, 4, false, true",
+      "'5-3,3-5,5-3', 2, 4, false, true",
+      "'5-3,4-3', 2, 4, false, false",
+      "'6-4,4-6,10-7', 2, 6, true, true",
+      "'6-4,4-6,9-11', 2, 6, true, true",
+      "'6-4,4-6,7-10', 2, 6, true, true",
+      "'6-4,4-6,7-8', 2, 6, true, false"
   })
-  public void testGameCompletionParameterized(String scores, boolean expectedComplete) {
+  public void testGameCompletionParameterized(String scores,
+                                              int numberOfSetsToWin,
+                                              int pointsPerSet,
+                                              boolean superTieBreakInFinalSet,
+                                              boolean expectedComplete) {
     PlayerPair teamA = new PlayerPair(new Player(), new Player(), 1);
     PlayerPair teamB = new PlayerPair(new Player(), new Player(), 2);
     Game       game  = new Game();
@@ -70,7 +74,8 @@ public class ScoreTest {
       score.addSetScore(teamAScore, teamBScore);
     }
     game.setScore(score);
-    assertEquals(expectedComplete, game.isMatchOver(new MatchFormat(2, 6, false)));
+    MatchFormat format = new MatchFormat(numberOfSetsToWin, pointsPerSet, superTieBreakInFinalSet);
+    assertEquals(expectedComplete, isMatchOver(score, format));
   }
 
 }

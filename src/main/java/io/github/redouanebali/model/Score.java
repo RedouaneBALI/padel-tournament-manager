@@ -8,14 +8,14 @@ import lombok.Data;
 public class Score {
 
   private List<SetScore> sets = new ArrayList<>();
-  private Integer        superTieBreakTeamA;
-  private Integer        superTieBreakTeamB;
+
 
   public void addSetScore(int teamAScore, int teamBScore) {
-    sets.add(new SetScore(teamAScore, teamBScore, null, null));
+    sets.add(new SetScore(teamAScore, teamBScore));
   }
 
-  public void addSetScore(int teamAScore, int teamBScore, Integer tieBreakTeamA, Integer tieBreakTeamB) {
-    sets.add(new SetScore(teamAScore, teamBScore, tieBreakTeamA, tieBreakTeamB));
+  public void addSetScore(int teamAScore, int teamBScore, int tieBreakAScore, int tieBreakBScore) {
+    sets.add(new SetScore(teamAScore, teamBScore, tieBreakAScore, tieBreakBScore));
   }
+
 }
