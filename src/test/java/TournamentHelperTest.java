@@ -1,82 +1,92 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
-import io.github.redouanebali.model.Round;
-import io.github.redouanebali.model.RoundInfo;
 import io.github.redouanebali.model.TournamentHelper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 public class TournamentHelperTest {
 
-  static Stream<Arguments> provideTournamentCases() {
+  static Stream<org.junit.jupiter.params.provider.Arguments> provideFirstRoundCases() {
     return Stream.of(
-        Arguments.of(0, 0, 0, 0, 0, 8, 8),
-        Arguments.of(0, 0, 0, 0, 8, 4, 12),
-        Arguments.of(0, 0, 0, 0, 16, 0, 16),
-        Arguments.of(0, 0, 0, 16, 8, 0, 24),
-        Arguments.of(0, 0, 0, 32, 0, 0, 32),
-        Arguments.of(0, 0, 8, 28, 0, 0, 36),
-        Arguments.of(0, 0, 16, 24, 0, 0, 40),
-        Arguments.of(0, 0, 20, 22, 0, 0, 42),
-        Arguments.of(0, 0, 32, 16, 0, 0, 48),
-        Arguments.of(0, 0, 40, 12, 0, 0, 52),
-        Arguments.of(0, 0, 64, 0, 0, 0, 64),
-        Arguments.of(0, 12, 58, 0, 0, 0, 70),
-        Arguments.of(0, 128, 0, 0, 0, 0, 128),
-        Arguments.of(256, 0, 0, 0, 0, 0, 256)
+        org.junit.jupiter.params.provider.Arguments.of(13, 16, 3),
+        org.junit.jupiter.params.provider.Arguments.of(8, 8, 0),
+        org.junit.jupiter.params.provider.Arguments.of(17, 32, 15),
+        org.junit.jupiter.params.provider.Arguments.of(32, 32, 0)
     );
   }
 
-  @ParameterizedTest(name = "Teams: {6} → Q1(R256): {0}, Q2(R128): {1}, R64: {2}, R32: {3}, R16: {4}, QUARTERS: {5}")
-  @MethodSource("provideTournamentCases")
-  public void printTournamentResult(
-      int expectedQ1, int expectedQ2, int expectedR64, int expectedR32, int expectedR16, int expectedQuarters, int nbPairs) {
-
-    List<PlayerPair> allPairs = new ArrayList<>();
-    IntStream.rangeClosed(1, nbPairs).forEach(seed -> {
-      Player player1 = new Player((long) seed, "Player" + seed + "A", seed, 0, 1990);
-      Player player2 = new Player((long) seed + 100, "Player" + seed + "B", seed, 0, 1990);
-      allPairs.add(new PlayerPair(player1, player2, seed));
-    });
-
-    List<Round> result = TournamentHelper.createNewTournament(allPairs);
-
-    int q1Teams       = getTeamsForRound(result, RoundInfo.Q1);         // R256
-    int q2Teams       = getTeamsForRound(result, RoundInfo.Q2);         // R128
-    int r64Teams      = getTeamsForRound(result, RoundInfo.R64);
-    int r32Teams      = getTeamsForRound(result, RoundInfo.R32);
-    int r16Teams      = getTeamsForRound(result, RoundInfo.R16);
-    int quartersTeams = getTeamsForRound(result, RoundInfo.QUARTERS);
-
-    assertEquals(expectedQ1, q1Teams, "Q1(R256) should contain " + expectedQ1 + " teams");
-    assertEquals(expectedQ2, q2Teams, "Q2(R128) should contain " + expectedQ2 + " teams");
-    assertEquals(expectedR64, r64Teams, "R64 should contain " + expectedR64 + " teams");
-    assertEquals(expectedR32, r32Teams, "R32 should contain " + expectedR32 + " teams");
-    assertEquals(expectedR16, r16Teams, "R16 should contain " + expectedR16 + " teams");
-    assertEquals(expectedQuarters, quartersTeams, "QUARTERS should contain " + expectedQuarters + " teams");
-
-    // All other rounds should have 0 teams assigned
-    result.stream()
-          .filter(r -> !List.of(RoundInfo.Q1, RoundInfo.Q2, RoundInfo.R64, RoundInfo.R32, RoundInfo.R16, RoundInfo.QUARTERS).contains(r.getInfo()))
-          .forEach(r -> assertEquals(0, r.getPlayerPairs().size(), r.getInfo().name() + " should contain 0 teams"));
-
-    // Optional: print result for visual confirmation
-    for (Round round : result) {
-      System.out.println(round.getInfo().getLabel() + " -> " + round.getPlayerPairs().size() + " teams");
-    }
+  static Stream<org.junit.jupiter.params.provider.Arguments> provideSnakeGamesCases() {
+    return Stream.of(
+        // teamCount, expectedMatchCount, expectedByeVsByeCount
+        org.junit.jupiter.params.provider.Arguments.of(8, 4, 0),
+        org.junit.jupiter.params.provider.Arguments.of(6, 3, 0), // 6 teams + 2 BYES = 8, 4 matchs possibles, mais 1 BYE vs BYE non créé
+        org.junit.jupiter.params.provider.Arguments.of(7, 4, 0), // 7 teams + 1 BYE = 8
+        org.junit.jupiter.params.provider.Arguments.of(13, 7, 0) // 13 teams + 3 BYES = 16, 8 matchs, aucun BYE vs BYE
+    );
   }
 
-  private int getTeamsForRound(List<Round> rounds, RoundInfo info) {
-    return rounds.stream()
-                 .filter(r -> r.getInfo() == info)
-                 .mapToInt(r -> r.getPlayerPairs().size())
-                 .sum();
+  // -------- Tests paramétrés pour generateFirstRoundWithByes --------
+  @ParameterizedTest
+  @MethodSource("provideFirstRoundCases")
+  public void testGenerateFirstRoundWithByes_Param(int teamCount, int expectedDrawSize, int expectedByeCount) {
+    List<PlayerPair> pairs = createPairs(teamCount);
+    List<PlayerPair> round = TournamentHelper.generateFirstRoundWithByes(pairs);
+    assertEquals(expectedDrawSize, round.size(), "Le premier tour doit contenir " + expectedDrawSize + " équipes");
+    long byeCount = round.stream().filter(this::isBye).count();
+    assertEquals(expectedByeCount, byeCount, "Il doit y avoir " + expectedByeCount + " BYES");
+  }
+
+  // -------- Test paramétré pour generateFirstRoundGamesSnake --------
+  @ParameterizedTest
+  @MethodSource("provideSnakeGamesCases")
+  public void testGenerateFirstRoundGamesSnake_Param(int teamCount, int expectedMatchCount, int expectedByeVsByeCount) {
+    List<PlayerPair> pairs         = createPairs(teamCount);
+    List<PlayerPair> pairsWithByes = TournamentHelper.generateFirstRoundWithByes(pairs);
+    List<Game>       games         = TournamentHelper.generateFirstRoundGamesSnake(pairsWithByes);
+
+    long byeVsByeGames = games.stream()
+                              .filter(g -> isBye(g.getTeamA()) && isBye(g.getTeamB()))
+                              .count();
+    assertEquals(expectedByeVsByeCount, byeVsByeGames, "Il doit y avoir " + expectedByeVsByeCount + " match(s) BYE vs BYE");
+    assertEquals(expectedMatchCount, games.size(), "Il doit y avoir " + expectedMatchCount + " match(s) réel(s)");
+  }
+
+  private boolean isBye(PlayerPair pair) {
+    return pair.getPlayer1().getId() == -1L && pair.getPlayer2().getId() == -1L;
+  }
+
+  private List<PlayerPair> createPairs(int count) {
+    List<PlayerPair> pairs = new ArrayList<>();
+    IntStream.rangeClosed(1, count).forEach(seed -> {
+      Player player1 = new Player((long) seed, "Player" + seed + "A", seed, 0, 1990);
+      Player player2 = new Player((long) seed + 100, "Player" + seed + "B", seed, 0, 1990);
+      pairs.add(new PlayerPair(player1, player2, seed));
+    });
+    return pairs;
+  }
+
+  // Reste le test "snake" pour placement précis, qui peut rester en @Test classique :
+  @Test
+  public void testGenerateFirstRoundGamesSnake_8Teams_SnakeOrder() {
+    List<PlayerPair> pairs = createPairs(8);
+    List<Game>       games = TournamentHelper.generateFirstRoundGamesSnake(pairs);
+
+    List<PlayerPair> snakeOrdered = TournamentHelper.snakeOrder(pairs);
+    assertEquals(snakeOrdered.get(0), games.get(0).getTeamA());
+    assertEquals(snakeOrdered.get(7), games.get(0).getTeamB());
+    assertEquals(snakeOrdered.get(1), games.get(1).getTeamA());
+    assertEquals(snakeOrdered.get(6), games.get(1).getTeamB());
+    assertEquals(snakeOrdered.get(2), games.get(2).getTeamA());
+    assertEquals(snakeOrdered.get(5), games.get(2).getTeamB());
+    assertEquals(snakeOrdered.get(3), games.get(3).getTeamA());
+    assertEquals(snakeOrdered.get(4), games.get(3).getTeamB());
   }
 }

@@ -19,4 +19,10 @@ public class Game {
     this.teamB = teamB;
   }
 
+  @Override
+  public String toString() {
+    return teamA.getPlayer1().getName() + "/" + teamA.getPlayer2().getName() + " VS "
+           + teamB.getPlayer1().getName() + "/" + teamB.getPlayer2().getName();
+  }
+
 }
