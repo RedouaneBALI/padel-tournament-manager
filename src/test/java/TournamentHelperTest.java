@@ -1,66 +1,51 @@
+import static io.github.redouanebali.model.TournamentHelper.getSeedsPositions;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
-import io.github.redouanebali.model.TournamentHelper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 public class TournamentHelperTest {
 
-  static Stream<org.junit.jupiter.params.provider.Arguments> provideFirstRoundCases() {
+  static Stream<Arguments> provideBracketSeedPositionCases() {
     return Stream.of(
-        org.junit.jupiter.params.provider.Arguments.of(13, 16, 3),
-        org.junit.jupiter.params.provider.Arguments.of(8, 8, 0),
-        org.junit.jupiter.params.provider.Arguments.of(17, 32, 15),
-        org.junit.jupiter.params.provider.Arguments.of(32, 32, 0)
+        // Pour 8 équipes et 4 têtes de série
+        Arguments.of(8, 4, new int[]{0, 7, 4, 3}),
+        // Pour 16 équipes et 8 têtes de série
+        Arguments.of(16, 8, new int[]{0, 15, 8, 7, 4, 11, 12, 3}),
+        // Pour 16 équipes et 4 têtes de série
+        Arguments.of(16, 4, new int[]{0, 15, 8, 7}),
+        // Pour 32 équipes et 16 têtes de série
+        Arguments.of(32, 16, new int[]{0, 31, 16, 15, 8, 23, 24, 7, 4, 27, 20, 11, 12, 19, 28, 3}),
+        // Pour 32 équipes et 8 têtes de série
+        Arguments.of(32, 8, new int[]{0, 31, 16, 15, 8, 23, 24, 7})
     );
   }
 
-  static Stream<org.junit.jupiter.params.provider.Arguments> provideSnakeGamesCases() {
-    return Stream.of(
-        // teamCount, expectedMatchCount, expectedByeVsByeCount
-        org.junit.jupiter.params.provider.Arguments.of(8, 4, 0),
-        org.junit.jupiter.params.provider.Arguments.of(6, 3, 0), // 6 teams + 2 BYES = 8, 4 matchs possibles, mais 1 BYE vs BYE non créé
-        org.junit.jupiter.params.provider.Arguments.of(7, 4, 0), // 7 teams + 1 BYE = 8
-        org.junit.jupiter.params.provider.Arguments.of(13, 7, 0) // 13 teams + 3 BYES = 16, 8 matchs, aucun BYE vs BYE
-    );
-  }
-
-  // -------- Tests paramétrés pour generateFirstRoundWithByes --------
   @ParameterizedTest
-  @MethodSource("provideFirstRoundCases")
-  public void testGenerateFirstRoundWithByes_Param(int teamCount, int expectedDrawSize, int expectedByeCount) {
-    List<PlayerPair> pairs = createPairs(teamCount);
-    List<PlayerPair> round = TournamentHelper.generateFirstRoundWithByes(pairs);
-    assertEquals(expectedDrawSize, round.size(), "Le premier tour doit contenir " + expectedDrawSize + " équipes");
-    long byeCount = round.stream().filter(this::isBye).count();
-    assertEquals(expectedByeCount, byeCount, "Il doit y avoir " + expectedByeCount + " BYES");
-  }
-
-  // -------- Test paramétré pour generateFirstRoundGamesSnake --------
-  @ParameterizedTest
-  @MethodSource("provideSnakeGamesCases")
-  public void testGenerateFirstRoundGamesSnake_Param(int teamCount, int expectedMatchCount, int expectedByeVsByeCount) {
-    List<PlayerPair> pairs         = createPairs(teamCount);
-    List<PlayerPair> pairsWithByes = TournamentHelper.generateFirstRoundWithByes(pairs);
-    List<Game>       games         = TournamentHelper.generateFirstRoundGamesSnake(pairsWithByes);
-
-    long byeVsByeGames = games.stream()
-                              .filter(g -> isBye(g.getTeamA()) && isBye(g.getTeamB()))
-                              .count();
-    assertEquals(expectedByeVsByeCount, byeVsByeGames, "Il doit y avoir " + expectedByeVsByeCount + " match(s) BYE vs BYE");
-    assertEquals(expectedMatchCount, games.size(), "Il doit y avoir " + expectedMatchCount + " match(s) réel(s)");
-  }
-
-  private boolean isBye(PlayerPair pair) {
-    return pair.getPlayer1().getId() == -1L && pair.getPlayer2().getId() == -1L;
+  @MethodSource("provideBracketSeedPositionCases")
+  public void testBracketSeedPositions(
+      int nbTeams,
+      int nbSeeds,
+      int[] expectedSeedIndices
+  ) {
+    List<PlayerPair> pairs = createPairs(nbTeams);
+    // On trie les équipes par seed croissant pour que seed 1 soit à l'indice 0, seed 2 à 1, etc.
+    pairs.sort((a, b) -> Integer.compare(a.getSeed(), b.getSeed()));
+    List<Integer> seedPositions = getSeedsPositions(nbTeams, nbSeeds);
+    // Vérification pour tous les seeds concernés
+    for (int i = 0; i < expectedSeedIndices.length; i++) {
+      int expectedIdx = expectedSeedIndices[i];
+      int actualIdx   = seedPositions.get(i);
+      assertEquals(expectedIdx, actualIdx,
+                   "Seed " + (i + 1) + " doit être à l'indice " + expectedIdx + " mais est à l'indice " + actualIdx);
+    }
   }
 
   private List<PlayerPair> createPairs(int count) {
@@ -71,22 +56,5 @@ public class TournamentHelperTest {
       pairs.add(new PlayerPair(player1, player2, seed));
     });
     return pairs;
-  }
-
-  // Reste le test "snake" pour placement précis, qui peut rester en @Test classique :
-  @Test
-  public void testGenerateFirstRoundGamesSnake_8Teams_SnakeOrder() {
-    List<PlayerPair> pairs = createPairs(8);
-    List<Game>       games = TournamentHelper.generateFirstRoundGamesSnake(pairs);
-
-    List<PlayerPair> snakeOrdered = TournamentHelper.snakeOrder(pairs);
-    assertEquals(snakeOrdered.get(0), games.get(0).getTeamA());
-    assertEquals(snakeOrdered.get(7), games.get(0).getTeamB());
-    assertEquals(snakeOrdered.get(1), games.get(1).getTeamA());
-    assertEquals(snakeOrdered.get(6), games.get(1).getTeamB());
-    assertEquals(snakeOrdered.get(2), games.get(2).getTeamA());
-    assertEquals(snakeOrdered.get(5), games.get(2).getTeamB());
-    assertEquals(snakeOrdered.get(3), games.get(3).getTeamA());
-    assertEquals(snakeOrdered.get(4), games.get(3).getTeamB());
   }
 }
