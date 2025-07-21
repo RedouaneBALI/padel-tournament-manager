@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public enum RoundInfo {
+public enum Stage {
 
   Q1("Qualifications 1", 256),
   Q2("Qualifications 2", 128),
@@ -23,9 +23,9 @@ public enum RoundInfo {
   /**
    * Returns the RoundInfo corresponding to the given number of teams. If no exact match is found, returns the RoundInfo for the next lower round.
    */
-  public static RoundInfo fromNbTeams(int teams) {
-    RoundInfo result = WINNER; // Default to WINNER if none matches
-    for (RoundInfo round : RoundInfo.values()) {
+  public static Stage fromNbTeams(int teams) {
+    Stage result = WINNER; // Default to WINNER if none matches
+    for (Stage round : Stage.values()) {
       if (teams >= round.nbTeams) {
         result = round;
         break;
@@ -34,9 +34,9 @@ public enum RoundInfo {
     return result;
   }
 
-  public RoundInfo next() {
-    int         ordinal = this.ordinal();
-    RoundInfo[] values  = RoundInfo.values();
+  public Stage next() {
+    int     ordinal = this.ordinal();
+    Stage[] values  = Stage.values();
     if (ordinal < values.length - 1) {
       return values[ordinal + 1];
     }

@@ -1,14 +1,13 @@
-import static io.github.redouanebali.model.TournamentHelper.generateGames;
-import static io.github.redouanebali.model.TournamentHelper.getSeedsPositions;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.github.redouanebali.generation.KnockoutRoundGenerator;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
-import io.github.redouanebali.model.RoundInfo;
+import io.github.redouanebali.model.Stage;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -20,20 +19,22 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class TournamentHelperTest {
+public class KnockoutRoundGeneratorTest {
+
+  private final KnockoutRoundGenerator generator = new KnockoutRoundGenerator();
 
   static Stream<Arguments> provideBracketSeedPositionCases() {
     return Stream.of(
         // Pour 8 équipes et 4 têtes de série
-        Arguments.of(8, 4, new int[]{0, 7, 4, 3}, RoundInfo.QUARTERS),
+        Arguments.of(8, 4, new int[]{0, 7, 4, 3}, Stage.QUARTERS),
         // Pour 16 équipes et 8 têtes de série
-        Arguments.of(16, 8, new int[]{0, 15, 8, 7, 4, 11, 12, 3}, RoundInfo.R16),
+        Arguments.of(16, 8, new int[]{0, 15, 8, 7, 4, 11, 12, 3}, Stage.R16),
         // Pour 16 équipes et 4 têtes de série
-        Arguments.of(16, 4, new int[]{0, 15, 8, 7}, RoundInfo.R16),
+        Arguments.of(16, 4, new int[]{0, 15, 8, 7}, Stage.R16),
         // Pour 32 équipes et 16 têtes de série
-        Arguments.of(32, 16, new int[]{0, 31, 16, 15, 8, 23, 24, 7, 4, 27, 20, 11, 12, 19, 28, 3}, RoundInfo.R32),
+        Arguments.of(32, 16, new int[]{0, 31, 16, 15, 8, 23, 24, 7, 4, 27, 20, 11, 12, 19, 28, 3}, Stage.R32),
         // Pour 32 équipes et 8 têtes de série
-        Arguments.of(32, 8, new int[]{0, 31, 16, 15, 8, 23, 24, 7}, RoundInfo.R32)
+        Arguments.of(32, 8, new int[]{0, 31, 16, 15, 8, 23, 24, 7}, Stage.R32)
     );
   }
 
@@ -47,7 +48,7 @@ public class TournamentHelperTest {
     List<PlayerPair> pairs = createPairs(nbTeams);
     // On trie les équipes par seed croissant pour que seed 1 soit à l'indice 0, seed 2 à 1, etc.
     pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
-    List<Integer> seedPositions = getSeedsPositions(nbTeams, nbSeeds);
+    List<Integer> seedPositions = generator.getSeedsPositions(nbTeams, nbSeeds);
     // Vérification pour tous les seeds concernés
     for (int i = 0; i < expectedSeedIndices.length; i++) {
       int expectedIdx = expectedSeedIndices[i];
@@ -63,12 +64,12 @@ public class TournamentHelperTest {
       int nbTeams,
       int nbSeeds,
       int[] expectedSeedIndices,
-      RoundInfo expectedRoundInfo
+      Stage expectedStage
   ) {
     List<PlayerPair> pairs = createPairs(nbTeams);
     pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
-    Round round = generateGames(pairs, nbSeeds);
-    assertEquals(expectedRoundInfo, round.getInfo());
+    Round round = generator.generate(pairs, nbSeeds);
+    assertEquals(expectedStage, round.getInfo());
     List<Game> games = round.getGames();
 
     // Vérification du placement des têtes de série
@@ -127,7 +128,7 @@ public class TournamentHelperTest {
     IntStream.rangeClosed(1, count).forEach(seed -> {
       Player player1 = new Player((long) seed, "Player" + seed + "A", seed, 0, 1990);
       Player player2 = new Player((long) seed + 100, "Player" + seed + "B", seed, 0, 1990);
-      pairs.add(new PlayerPair(player1, player2, seed));
+      pairs.add(new PlayerPair(-1L, player1, player2, seed));
     });
     return pairs;
   }

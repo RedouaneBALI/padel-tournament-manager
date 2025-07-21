@@ -1,34 +1,29 @@
-package io.github.redouanebali.model;
+package io.github.redouanebali.generation;
 
+import io.github.redouanebali.model.Game;
+import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.Stage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class TournamentHelper {
+public class KnockoutRoundGenerator implements RoundGenerator {
 
-  public static Round generateGames(List<PlayerPair> pairs, int nbSeeds) {
-    // 1. Créer les matchs vides
+  @Override
+  public Round generate(List<PlayerPair> pairs, int nbSeeds) {
     List<Game> games = createEmptyGames(pairs.size());
-
-    // 2. Placer les têtes de série
     placeSeedTeams(games, pairs, nbSeeds);
-
-    // 3. Placer les équipes restantes aléatoirement
     placeRemainingTeamsRandomly(games, pairs, nbSeeds);
-
     Round round = new Round();
-    // round.setPlayerPairs(pairs);
     round.setGames(games);
-    round.setInfo(RoundInfo.fromNbTeams(pairs.size()));
+    round.setInfo(Stage.fromNbTeams(pairs.size()));
     return round;
   }
-
-  /**
-   * Crée la structure de base des matchs (vides)
-   */
-  private static List<Game> createEmptyGames(int nbTeams) {
+  
+  private List<Game> createEmptyGames(int nbTeams) {
     List<Game> games = new ArrayList<>();
     for (int i = 0; i < nbTeams / 2; i++) {
       games.add(new Game());
@@ -39,7 +34,7 @@ public class TournamentHelper {
   /**
    * Place les têtes de série aux positions stratégiques
    */
-  private static void placeSeedTeams(List<Game> games, List<PlayerPair> pairs, int nbSeeds) {
+  private void placeSeedTeams(List<Game> games, List<PlayerPair> pairs, int nbSeeds) {
     pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
     List<Integer> seedsPositions = getSeedsPositions(pairs.size(), nbSeeds);
 
@@ -52,7 +47,7 @@ public class TournamentHelper {
   /**
    * Place aléatoirement les équipes non-seeds dans les positions libres
    */
-  private static void placeRemainingTeamsRandomly(List<Game> games, List<PlayerPair> pairs, int nbSeeds) {
+  private void placeRemainingTeamsRandomly(List<Game> games, List<PlayerPair> pairs, int nbSeeds) {
     List<PlayerPair> remainingTeams = new ArrayList<>(pairs.subList(nbSeeds, pairs.size()));
     Collections.shuffle(remainingTeams);
 
@@ -82,7 +77,7 @@ public class TournamentHelper {
    * @param nbSeeds number of seeds teams
    * @return list of the positions of the seeds
    */
-  public static List<Integer> getSeedsPositions(int nbTeams, int nbSeeds) {
+  public List<Integer> getSeedsPositions(int nbTeams, int nbSeeds) {
     List<Integer> allPositions = generateAllSeedPositions(nbTeams);
     return allPositions.subList(0, Math.min(nbSeeds, allPositions.size()));
   }
@@ -90,7 +85,7 @@ public class TournamentHelper {
   /**
    * Generate all the possible position recursively from the bracket structure
    */
-  private static List<Integer> generateAllSeedPositions(int nbTeams) {
+  private List<Integer> generateAllSeedPositions(int nbTeams) {
     if (nbTeams == 2) {
       return Arrays.asList(0, 1);
     }
@@ -113,6 +108,5 @@ public class TournamentHelper {
 
     return result;
   }
-
 
 }

@@ -1,8 +1,8 @@
 package io.github.redouanebali.service;
 
+import io.github.redouanebali.generation.KnockoutRoundGenerator;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.model.TournamentHelper;
 import io.github.redouanebali.repository.RoundRepository;
 import io.github.redouanebali.repository.TournamentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +29,8 @@ public class TournamentService {
     System.out.println("TournamentService.generateDraw");
     Tournament tournament = tournamentRepository.findById(tournamentId)
                                                 .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
-
-    Round round = TournamentHelper.generateGames(tournament.getPlayerPairs(), tournament.getNbSeeds());
+    KnockoutRoundGenerator generator = new KnockoutRoundGenerator();
+    Round                  round     = generator.generate(tournament.getPlayerPairs(), tournament.getNbSeeds());
 
     // Optionnel : persister les rounds
     roundRepository.save(round);

@@ -21,13 +21,13 @@ public class Round {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long        id;
-  private RoundInfo   info;
+  private Stage       info;
   @OneToMany(cascade = CascadeType.PERSIST)
   private List<Game>  games = new ArrayList<>();
   private MatchFormat matchFormat;
 
-  public Round(RoundInfo roundInfo) {
-    this.info = roundInfo;
+  public Round(Stage stage) {
+    this.info = stage;
   }
 
 }

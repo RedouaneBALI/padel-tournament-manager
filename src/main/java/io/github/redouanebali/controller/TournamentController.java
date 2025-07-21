@@ -19,13 +19,11 @@ public class TournamentController {
 
   @PostMapping
   public Tournament createTournament(@RequestBody Tournament tournament) {
-    System.out.println("createTournament");
     return tournamentService.createTournament(tournament);
   }
 
   @PostMapping("/{id}/draw")
   public RoundDTO generateDraw(@PathVariable("id") Long tournamentId) {
-    System.out.println("generateDraw");
     return new RoundDTO(tournamentService.generateDraw(tournamentId));
   }
 }

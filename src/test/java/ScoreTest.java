@@ -59,8 +59,8 @@ public class ScoreTest {
                                               int pointsPerSet,
                                               boolean superTieBreakInFinalSet,
                                               boolean expectedComplete) {
-    PlayerPair teamA = new PlayerPair(new Player(), new Player(), 1);
-    PlayerPair teamB = new PlayerPair(new Player(), new Player(), 2);
+    PlayerPair teamA = new PlayerPair(-1L, new Player(), new Player(), 1);
+    PlayerPair teamB = new PlayerPair(-1L, new Player(), new Player(), 2);
     Game       game  = new Game();
     game.setTeamA(teamA);
     game.setTeamB(teamB);
