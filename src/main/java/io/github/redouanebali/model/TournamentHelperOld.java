@@ -42,13 +42,13 @@ public class TournamentHelperOld {
     if (preliminaryRoundTeams > 0) {
       RoundInfo qualifyingRoundInfo = RoundInfo.fromNbTeams(mainDrawSize * 2);
       Round     qualifyingRound     = new Round(qualifyingRoundInfo);
-      qualifyingRound.setPlayerPairs(preliminaryTeams);
+      //  qualifyingRound.setPlayerPairs(preliminaryTeams);
       roundList.add(qualifyingRound);
 
       // Add main draw round (e.g. R32)
       RoundInfo mainRoundInfo = RoundInfo.fromNbTeams(mainDrawSize);
       Round     mainRound     = new Round(mainRoundInfo);
-      mainRound.setPlayerPairs(directlyQualifiedTeams);
+      //   mainRound.setPlayerPairs(directlyQualifiedTeams);
       roundList.add(mainRound);
 
       // Add subsequent rounds (empty teams)
@@ -62,7 +62,7 @@ public class TournamentHelperOld {
       for (RoundInfo roundInfo : roundInfos) {
         Round round = new Round(roundInfo);
         if (roundInfo == RoundInfo.fromNbTeams(mainDrawSize)) {
-          round.setPlayerPairs(directlyQualifiedTeams);
+          //      round.setPlayerPairs(directlyQualifiedTeams);
         }
         roundList.add(round);
       }

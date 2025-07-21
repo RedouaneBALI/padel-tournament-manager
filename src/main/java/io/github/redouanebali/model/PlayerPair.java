@@ -1,20 +1,27 @@
 package io.github.redouanebali.model;
 
-import jakarta.persistence.Embeddable;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Embeddable
+@Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 public class PlayerPair {
 
-  @ManyToOne
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long   id;
+  @ManyToOne(cascade = CascadeType.PERSIST)
   private Player player1;
-  @ManyToOne
+  @ManyToOne(cascade = CascadeType.PERSIST)
   private Player player2;
   private int    seed;
 

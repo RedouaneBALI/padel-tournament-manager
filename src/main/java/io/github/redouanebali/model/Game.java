@@ -1,9 +1,11 @@
 package io.github.redouanebali.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,9 +20,9 @@ public class Game {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long        id;
-  @Transient
+  @ManyToOne(cascade = CascadeType.PERSIST)
   private PlayerPair  teamA;
-  @Transient
+  @ManyToOne(cascade = CascadeType.PERSIST)
   private PlayerPair  teamB;
   @Transient
   private MatchFormat format;

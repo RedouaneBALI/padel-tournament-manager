@@ -1,10 +1,11 @@
 package io.github.redouanebali.model;
 
-import jakarta.persistence.ElementCollection;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,10 +26,10 @@ public class Tournament {
   private String           Club;
   private Gender           Gender;
   private TournamentLevel  Level;
-  @ElementCollection
+  @OneToMany(cascade = CascadeType.PERSIST)
   private List<Round>      rounds;
   private int              nbSeeds;
-  @ElementCollection
+  @OneToMany(cascade = CascadeType.PERSIST)
   private List<PlayerPair> playerPairs;
 
 }

@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.RoundInfo;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -23,15 +25,15 @@ public class TournamentHelperTest {
   static Stream<Arguments> provideBracketSeedPositionCases() {
     return Stream.of(
         // Pour 8 équipes et 4 têtes de série
-        Arguments.of(8, 4, new int[]{0, 7, 4, 3}),
+        Arguments.of(8, 4, new int[]{0, 7, 4, 3}, RoundInfo.QUARTERS),
         // Pour 16 équipes et 8 têtes de série
-        Arguments.of(16, 8, new int[]{0, 15, 8, 7, 4, 11, 12, 3}),
+        Arguments.of(16, 8, new int[]{0, 15, 8, 7, 4, 11, 12, 3}, RoundInfo.R16),
         // Pour 16 équipes et 4 têtes de série
-        Arguments.of(16, 4, new int[]{0, 15, 8, 7}),
+        Arguments.of(16, 4, new int[]{0, 15, 8, 7}, RoundInfo.R16),
         // Pour 32 équipes et 16 têtes de série
-        Arguments.of(32, 16, new int[]{0, 31, 16, 15, 8, 23, 24, 7, 4, 27, 20, 11, 12, 19, 28, 3}),
+        Arguments.of(32, 16, new int[]{0, 31, 16, 15, 8, 23, 24, 7, 4, 27, 20, 11, 12, 19, 28, 3}, RoundInfo.R32),
         // Pour 32 équipes et 8 têtes de série
-        Arguments.of(32, 8, new int[]{0, 31, 16, 15, 8, 23, 24, 7})
+        Arguments.of(32, 8, new int[]{0, 31, 16, 15, 8, 23, 24, 7}, RoundInfo.R32)
     );
   }
 
@@ -60,11 +62,14 @@ public class TournamentHelperTest {
   public void testGenerateGames(
       int nbTeams,
       int nbSeeds,
-      int[] expectedSeedIndices
+      int[] expectedSeedIndices,
+      RoundInfo expectedRoundInfo
   ) {
     List<PlayerPair> pairs = createPairs(nbTeams);
     pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
-    List<Game> games = generateGames(pairs, nbSeeds);
+    Round round = generateGames(pairs, nbSeeds);
+    assertEquals(expectedRoundInfo, round.getInfo());
+    List<Game> games = round.getGames();
 
     // Vérification du placement des têtes de série
     for (int i = 0; i < expectedSeedIndices.length; i++) {

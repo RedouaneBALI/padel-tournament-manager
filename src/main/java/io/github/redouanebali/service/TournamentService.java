@@ -1,11 +1,10 @@
 package io.github.redouanebali.service;
 
-import io.github.redouanebali.model.Game;
+import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.TournamentHelper;
-import io.github.redouanebali.repository.GameRepository;
+import io.github.redouanebali.repository.RoundRepository;
 import io.github.redouanebali.repository.TournamentRepository;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,24 +15,26 @@ public class TournamentService {
   private TournamentRepository tournamentRepository;
 
   @Autowired
-  private GameRepository gameRepository;
+  private RoundRepository roundRepository;
 
   public Tournament createTournament(final Tournament tournament) {
+    System.out.println("TournamentService.createTournament");
     if (tournament == null) {
       throw new IllegalArgumentException("Tournament cannot be null");
     }
     return tournamentRepository.save(tournament);
   }
 
-  public List<Game> generateDraw(final Long tournamentId) {
+  public Round generateDraw(final Long tournamentId) {
+    System.out.println("TournamentService.generateDraw");
     Tournament tournament = tournamentRepository.findById(tournamentId)
                                                 .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
 
-    List<Game> games = TournamentHelper.generateGames(tournament.getPlayerPairs(), tournament.getNbSeeds());
+    Round round = TournamentHelper.generateGames(tournament.getPlayerPairs(), tournament.getNbSeeds());
 
-    // Optionnel : persister les games
-    gameRepository.saveAll(games);
+    // Optionnel : persister les rounds
+    roundRepository.save(round);
 
-    return games;
+    return round;
   }
 }

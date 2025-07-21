@@ -8,7 +8,7 @@ import java.util.List;
 
 public class TournamentHelper {
 
-  public static List<Game> generateGames(List<PlayerPair> pairs, int nbSeeds) {
+  public static Round generateGames(List<PlayerPair> pairs, int nbSeeds) {
     // 1. Créer les matchs vides
     List<Game> games = createEmptyGames(pairs.size());
 
@@ -18,7 +18,11 @@ public class TournamentHelper {
     // 3. Placer les équipes restantes aléatoirement
     placeRemainingTeamsRandomly(games, pairs, nbSeeds);
 
-    return games;
+    Round round = new Round();
+    // round.setPlayerPairs(pairs);
+    round.setGames(games);
+    round.setInfo(RoundInfo.fromNbTeams(pairs.size()));
+    return round;
   }
 
   /**
