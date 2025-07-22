@@ -1,16 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import TournamentHeader from '@/components/tournament/TournamentHeader';
 import TournamentInfoSection from '@/components/tournament/TournamentInfoSection';
-import TournamentLocationSection from '@/components/tournament/TournamentLocationSection';
-import TournamentConfigSection from '@/components/tournament/TournamentConfigSection';
 import TournamentDatesSection from '@/components/tournament/TournamentDatesSection';
+import TournamentConfigSection from '@/components/tournament/TournamentConfigSection';
 
 export default function CreateTournamentForm() {
+  const router = useRouter();
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -30,7 +32,7 @@ export default function CreateTournamentForm() {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value === '' ? '' : value,
+      [name]: value,
     }));
   };
 
@@ -61,20 +63,10 @@ export default function CreateTournamentForm() {
       });
 
       if (response.ok) {
+        const data = await response.json();
         toast.success('Tournoi créé avec succès !');
-        // Reset form
-        setFormData({
-          name: '',
-          description: '',
-          city: '',
-          club: '',
-          gender: '',
-          level: '',
-          tournamentFormat: '',
-          nbSeeds: 0,
-          startDate: '',
-          endDate: '',
-        });
+        // Redirection vers la page du tournoi créé
+        router.push(`/tournament/${data.id}`);
       } else {
         toast.error('Erreur lors de la création du tournoi');
       }
@@ -100,17 +92,18 @@ export default function CreateTournamentForm() {
               </div>
               Informations du Tournoi
             </h2>
-            <p className="text-gray-500 mt-1">
-              Configurez les détails de votre tournoi
-            </p>
+            <p className="text-gray-500 mt-1">Configurez les détails de votre tournoi</p>
           </div>
 
           <div className="p-6">
             <form onSubmit={handleSubmit} className="space-y-8">
               <TournamentInfoSection formData={formData} handleInputChange={handleInputChange} />
-              <TournamentLocationSection formData={formData} handleInputChange={handleInputChange} />
-              <TournamentConfigSection formData={formData} handleInputChange={handleInputChange} handleSelectChange={handleSelectChange} />
               <TournamentDatesSection formData={formData} handleInputChange={handleInputChange} />
+              <TournamentConfigSection
+                formData={formData}
+                handleInputChange={handleInputChange}
+                handleSelectChange={handleSelectChange}
+              />
 
               <div className="flex justify-end pt-6 border-t border-gray-200">
                 <button

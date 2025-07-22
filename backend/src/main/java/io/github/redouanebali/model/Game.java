@@ -28,6 +28,7 @@ public class Game {
   private MatchFormat format;
   @Transient
   private Score       score;
+  private String      court;
 
   public Game(PlayerPair teamA, PlayerPair teamB) {
     this.teamA = teamA;
