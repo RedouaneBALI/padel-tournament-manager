@@ -9,6 +9,6 @@ public class GroupStageRoundGenerator implements RoundGenerator {
   @Override
   public Round generate(List<PlayerPair> pairs, int nbSeeds) {
     // logique pour générer des poules
-    return null;
+    throw new IllegalArgumentException();
   }
 }

@@ -10,6 +10,7 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 @Data
@@ -26,10 +27,13 @@ public class Tournament {
   private String           Club;
   private Gender           Gender;
   private TournamentLevel  Level;
+  private TournamentFormat tournamentFormat;
   @OneToMany(cascade = CascadeType.PERSIST)
   private List<Round>      rounds;
   private int              nbSeeds;
   @OneToMany(cascade = CascadeType.PERSIST)
   private List<PlayerPair> playerPairs;
+  private String startDate; // @todo find a better format than String ?
+  private String endDate; // @todo find a better format than String ?
 
 }
