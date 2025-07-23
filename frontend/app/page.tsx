@@ -1,7 +1,6 @@
-import CreateTournamentForm from '@/components/forms/CreateTournamentForm';
+import { redirect } from 'next/navigation';
 
-const Index = () => {
-  return <CreateTournamentForm />;
-};
+export default function Home() {
+  redirect('/admin/tournament/new');
+}
 
-export default Index;

@@ -47,6 +47,24 @@ public class TournamentService {
     return tournamentRepository.save(tournament);
   }
 
+  public Tournament updateTournament(Long tournamentId, Tournament updatedTournament) {
+    Tournament existing = tournamentRepository.findById(tournamentId)
+                                              .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
+
+    existing.setName(updatedTournament.getName());
+    existing.setStartDate(updatedTournament.getStartDate());
+    existing.setEndDate(updatedTournament.getEndDate());
+    existing.setDescription(updatedTournament.getDescription());
+    existing.setCity(updatedTournament.getCity());
+    existing.setClub(updatedTournament.getClub());
+    existing.setGender(updatedTournament.getGender());
+    existing.setLevel(updatedTournament.getLevel());
+    existing.setTournamentFormat(updatedTournament.getTournamentFormat());
+    existing.setNbSeeds(updatedTournament.getNbSeeds());
+
+    return tournamentRepository.save(existing);
+  }
+
   public int addPairs(Long tournamentId, List<SimplePlayerPairDTO> playerPairsDto) {
     Tournament tournament = tournamentRepository.findById(tournamentId)
                                                 .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
