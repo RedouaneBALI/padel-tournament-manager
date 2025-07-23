@@ -5,6 +5,7 @@ import React from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import PlayerPairsTextarea from '@/components/tournament/PlayerPairsTextarea';
 import Link from 'next/link';
+import { FileText } from 'lucide-react';
 
 interface PlayerPairInput {
   player1: string;
@@ -22,8 +23,6 @@ interface Tournament {
   startDate?: string;
   endDate?: string;
 }
-
-
 
 export default function TournamentPage({ params }: { params: { id: string } }) {
   const { id } = React.use(params);
@@ -45,7 +44,6 @@ export default function TournamentPage({ params }: { params: { id: string } }) {
         toast.error('Erreur réseau lors de la récupération du tournoi.');
       }
     }
-
     fetchTournament();
   }, [id]);
 
@@ -63,7 +61,6 @@ export default function TournamentPage({ params }: { params: { id: string } }) {
         toast.error('Erreur réseau lors de la récupération des joueurs.');
       }
     }
-
     fetchPairs();
   }, [id]);
 
@@ -75,44 +72,64 @@ export default function TournamentPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">
-        {tournament?.name ? tournament.name : `Tournoi #${id}`}
-      </h1>
-
-      <section className="mb-8">
-        <p>Partagez ce lien avec les joueurs :</p>
-        <div className="flex items-center gap-2 mt-2">
-          <input
-            readOnly
-            value={`${baseUrl}/tournament/${id}`}
-            className="flex-1 border px-3 py-2 rounded"
-          />
-          <button
-            onClick={copyLink}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+    <div className="container mx-auto max-w-3xl px-6 py-8">
+      <div className="bg-card rounded-lg border border-border shadow-sm p-6 space-y-6">
+        {/* Header with icon and title */}
+        <div className="flex items-center gap-2 border-b border-border pb-3">
+          <FileText className="h-5 w-5 text-muted-foreground" />
+          <h1 className="text-xl font-semibold text-foreground">
+            {tournament?.name || `Tournoi #${id}`}
+          </h1>
+          <Link
+            href={`/admin/tournament/${id}/edit`}
+            className="ml-auto inline-flex items-center gap-1 rounded bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition"
           >
-            Copier
-          </button>
+            Modifier
+          </Link>
         </div>
-      </section>
 
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">
-          Lister les joueurs ci-dessous (par ordre de classement)
-        </h2>
+        {/* Tournament Description and info */}
+        <section className="space-y-2">
+          {tournament?.description && (
+            <p className="text-muted-foreground whitespace-pre-line">{tournament.description}</p>
+          )}
+          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+            {tournament?.city && <span>📍 {tournament.city}</span>}
+            {tournament?.club && <span>🏟️ {tournament.club}</span>}
+            {tournament?.startDate && tournament?.endDate && (
+              <span>📅 {tournament.startDate} – {tournament.endDate}</span>
+            )}
+          </div>
+        </section>
 
-        <PlayerPairsTextarea tournamentId={Number(id)} defaultPairs={pairs} />
-        <ToastContainer />
-      </section>
-      <div className="flex justify-between items-center mb-4">
-        <Link
-          href={`/admin/tournament/${id}/edit`}
-          className="bg-yellow-500 hover:bg-yellow-600 text-white font-medium px-4 py-2 rounded shadow"
-        >
-          Modifier le tournoi
-        </Link>
+        {/* Share link */}
+        <section className="space-y-1">
+          <p className="text-sm text-muted-foreground">Partagez ce lien avec les joueurs :</p>
+          <div className="flex gap-2">
+            <input
+              readOnly
+              value={`${baseUrl}/tournament/${id}`}
+              className="flex-grow rounded border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+            />
+            <button
+              onClick={copyLink}
+              className="rounded bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition"
+            >
+              Copier
+            </button>
+          </div>
+        </section>
+
+        {/* Player pairs textarea */}
+        <section>
+          <h2 className="mb-3 text-base font-semibold text-foreground">
+            Lister les joueurs ci-dessous (par ordre de classement)
+          </h2>
+          <PlayerPairsTextarea tournamentId={Number(id)} defaultPairs={pairs} />
+        </section>
       </div>
+
+      <ToastContainer />
     </div>
   );
 }
