@@ -52,25 +52,11 @@ export default function EditTournamentPage({ params }: { params: Promise<{ id: s
   }
 
   return (
-    <div className="container mx-auto max-w-4xl p-6">
-      <div className="bg-card rounded-lg shadow-lg border border-border">
-        <div className="p-6 border-b border-border flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/10">
-            <Pencil className="h-6 w-6 text-primary" />
-          </div>
-          <h1 className="text-2xl font-semibold text-card-foreground">
-            Modifier le tournoi
-          </h1>
-        </div>
-
-        <div className="p-6">
-          <TournamentForm
-            initialData={initialData}
-            onSubmit={handleUpdate}
-            isEditing={true}
-          />
-        </div>
-      </div>
-    </div>
+      <TournamentForm
+        initialData={initialData}
+        onSubmit={handleUpdate}
+        isEditing={true}
+        title="Modifier le tournoi"
+      />
   );
 }

@@ -62,12 +62,12 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
   };
 
   return (
-    <div className="container mx-auto max-w-4xl p-6">
-      <div className="bg-card rounded-lg shadow-lg border border-border">
-        <div className="p-6 border-b border-border">
+    <div className="container mx-auto max-w-4xl">
+      <div className="bg-card shadow-lg border border-border">
+        <div className="p-6">
           {title && (
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
+              <div className="p-2 bg-primary/10">
                 <Trophy className="h-6 w-6 text-primary" />
               </div>
               <h1 className="text-2xl font-semibold text-card-foreground">{title}</h1>
@@ -75,7 +75,7 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
           )}
         </div>
 
-        <div className="p-6">
+        <div>
           <form onSubmit={handleSubmit} className="space-y-8">
             <TournamentInfoSection
               formData={formData}

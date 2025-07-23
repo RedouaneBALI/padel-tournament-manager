@@ -7,7 +7,7 @@ interface TournamentInfoSectionProps {
 
 export default function TournamentInfoSection({ formData, handleInputChange }: TournamentInfoSectionProps) {
   return (
-    <div className="bg-card rounded-lg border border-border">
+    <div className="bg-card">
       <div className="p-4 border-b border-border">
         <h3 className="text-lg font-semibold text-card-foreground flex items-center gap-2">
           <FileText className="h-5 w-5" />

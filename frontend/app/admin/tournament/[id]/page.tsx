@@ -88,20 +88,6 @@ export default function TournamentPage({ params }: { params: { id: string } }) {
           </Link>
         </div>
 
-        {/* Tournament Description and info */}
-        <section className="space-y-2">
-          {tournament?.description && (
-            <p className="text-muted-foreground whitespace-pre-line">{tournament.description}</p>
-          )}
-          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-            {tournament?.city && <span>📍 {tournament.city}</span>}
-            {tournament?.club && <span>🏟️ {tournament.club}</span>}
-            {tournament?.startDate && tournament?.endDate && (
-              <span>📅 {tournament.startDate} – {tournament.endDate}</span>
-            )}
-          </div>
-        </section>
-
         {/* Share link */}
         <section className="space-y-1">
           <p className="text-sm text-muted-foreground">Partagez ce lien avec les joueurs :</p>
