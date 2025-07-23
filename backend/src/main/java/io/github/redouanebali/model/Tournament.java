@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -32,6 +33,7 @@ public class Tournament {
   private List<Round>      rounds;
   private int              nbSeeds;
   @OneToMany(cascade = CascadeType.PERSIST)
+  @JoinColumn(name = "tournament_id")
   private List<PlayerPair> playerPairs;
   private String startDate; // @todo find a better format than String ?
   private String endDate; // @todo find a better format than String ?

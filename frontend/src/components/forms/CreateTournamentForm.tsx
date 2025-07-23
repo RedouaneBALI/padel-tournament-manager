@@ -66,7 +66,7 @@ export default function CreateTournamentForm() {
         const data = await response.json();
         toast.success('Tournoi créé avec succès !');
         // Redirection vers la page du tournoi créé
-        router.push(`/tournament/${data.id}`);
+        router.push(`/admin/tournament/${data.id}`);
       } else {
         toast.error('Erreur lors de la création du tournoi');
       }

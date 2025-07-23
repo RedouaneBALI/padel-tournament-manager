@@ -38,11 +38,16 @@ public class TournamentController {
   }
 
   @GetMapping("/{id}/pairs")
-  public List<SimplePlayerPairDTO> getPairsByTournament(@PathVariable Long id) {
-    Tournament tournament = tournamentService.getTournamentById(id);
+  public List<SimplePlayerPairDTO> getPairsByTournament(@PathVariable("id") Long tournamentId) {
+    Tournament tournament = tournamentService.getTournamentById(tournamentId);
     return tournament.getPlayerPairs().stream()
                      .map(SimplePlayerPairDTO::fromPlayerPair)
                      .toList();
+  }
+
+  @GetMapping("/{id}")
+  public Tournament getTournamentById(@PathVariable("id") Long tournamentId) {
+    return tournamentService.getTournamentById(tournamentId);
   }
 
 }
