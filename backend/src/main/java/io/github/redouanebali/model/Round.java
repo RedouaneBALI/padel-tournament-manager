@@ -1,6 +1,5 @@
 package io.github.redouanebali.model;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,7 +21,7 @@ public class Round {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long        id;
   private Stage       info;
-  @OneToMany(cascade = CascadeType.PERSIST)
+  @OneToMany
   private List<Game>  games = new ArrayList<>();
   private MatchFormat matchFormat;
 

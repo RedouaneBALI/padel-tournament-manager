@@ -4,17 +4,14 @@ import { useEffect, useState } from 'react';
 import { Tournament } from '@/app/types/Tournament';
 import { SimplePlayerPair } from '@/app/types/PlayerPair';
 
-interface Props {
-  tournament: Tournament;
-}
-
-export default function TournamentPlayersTabWrapper({ tournament }: Props) {
+export default function TournamentPlayersTab({ params }: { params: { id: string } }) {
+  const { id } = params;
   const [playerPairs, setPlayerPairs] = useState<SimplePlayerPair[]>([]);
 
   useEffect(() => {
     async function fetchPairs() {
       try {
-        const response = await fetch(`http://localhost:8080/tournaments/${tournament.id}/pairs`);
+        const response = await fetch(`http://localhost:8080/tournaments/${id}/pairs`);
         if (!response.ok) throw new Error();
         const data = await response.json();
         setPlayerPairs(data);
@@ -24,7 +21,7 @@ export default function TournamentPlayersTabWrapper({ tournament }: Props) {
     }
 
     fetchPairs();
-  }, [tournament.id]);
+  }, [id]);
 
   return (
     <div>
@@ -36,7 +33,10 @@ export default function TournamentPlayersTabWrapper({ tournament }: Props) {
         <ul className="space-y-2">
           {playerPairs.map((pair, index) => (
             <li key={index} className="border rounded px-4 py-2 bg-gray-50 shadow-sm">
-              {pair.player1} &nbsp;–&nbsp; {pair.player2}
+              <span className="font-semibold text-primary">
+                {pair.seed && pair.seed > 0 ? `#${pair.seed} ` : ''}
+              </span>
+              {pair.player1} – {pair.player2}
             </li>
           ))}
         </ul>

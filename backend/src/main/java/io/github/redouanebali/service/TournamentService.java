@@ -4,17 +4,17 @@ import io.github.redouanebali.dto.SimplePlayerPairDTO;
 import io.github.redouanebali.generation.GroupStageRoundGenerator;
 import io.github.redouanebali.generation.KnockoutRoundGenerator;
 import io.github.redouanebali.generation.RoundGenerator;
+import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.TournamentFormat;
 import io.github.redouanebali.repository.PlayerPairRepository;
+import io.github.redouanebali.repository.PlayerRepository;
 import io.github.redouanebali.repository.RoundRepository;
 import io.github.redouanebali.repository.TournamentRepository;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,11 +26,13 @@ public class TournamentService {
       TournamentFormat.GROUP_STAGE, new GroupStageRoundGenerator()
   );
   @Autowired
+  private       PlayerPairRepository                  playerPairRepository;
+  @Autowired
+  private       PlayerRepository                      playerRepository;
+  @Autowired
   private       TournamentRepository                  tournamentRepository;
   @Autowired
-  private RoundRepository      roundRepository;
-  @Autowired
-  private PlayerPairRepository playerPairRepository;
+  private       RoundRepository                       roundRepository;
 
   public Tournament getTournamentById(Long id) {
     return tournamentRepository.findById(id)
@@ -45,30 +47,36 @@ public class TournamentService {
     return tournamentRepository.save(tournament);
   }
 
-  public int addPairs(final Long tournamentId, final List<SimplePlayerPairDTO> playerPairsDto) {
+  public int addPairs(Long tournamentId, List<SimplePlayerPairDTO> playerPairsDto) {
     Tournament tournament = tournamentRepository.findById(tournamentId)
                                                 .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
 
-    // Création d’un Set des identifiants uniques des paires déjà existantes
-    Set<String> existingPairs = tournament.getPlayerPairs().stream()
-                                          .map(pair -> normalize(pair.getPlayer1().getName()) + "-" + normalize(pair.getPlayer2().getName()))
-                                          .collect(Collectors.toSet());
+    // Supprimer les anciennes paires
+    tournament.getPlayerPairs().clear();
+    tournamentRepository.save(tournament); // Nécessaire si orphanRemoval = true
 
-    // Filtrer les nouvelles paires pour ne pas inclure celles déjà existantes
-    List<PlayerPair> newPairs = playerPairsDto.stream()
-                                              .map(SimplePlayerPairDTO::toPlayerPair)
-                                              .filter(pair -> {
-                                                String key = normalize(pair.getPlayer1().getName()) + "-" + normalize(pair.getPlayer2().getName());
-                                                return !existingPairs.contains(key);
-                                              })
-                                              .toList();
+    List<PlayerPair> newPairs = playerPairsDto.stream().map(dto -> {
+      Player p1 = new Player();
+      p1.setName(dto.getPlayer1());
 
-    // Sauvegarde uniquement des nouvelles paires
-    playerPairRepository.saveAll(newPairs);
+      Player p2 = new Player();
+      p2.setName(dto.getPlayer2());
+
+      playerRepository.save(p1);
+      playerRepository.save(p2);
+
+      PlayerPair pair = new PlayerPair(null, p1, p2, dto.getSeed());
+
+      // Sauvegarde immédiate
+      return playerPairRepository.save(pair);
+    }).toList();
+
+    // Ajout des paires désormais persistées
     tournament.getPlayerPairs().addAll(newPairs);
+
     tournamentRepository.save(tournament);
 
-    return tournament.getPlayerPairs().size();
+    return newPairs.size();
   }
 
   private String normalize(String name) {

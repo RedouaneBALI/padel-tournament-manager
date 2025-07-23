@@ -1,6 +1,5 @@
 package io.github.redouanebali.model;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,9 +18,9 @@ public class PlayerPair {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long   id;
-  @ManyToOne(cascade = CascadeType.PERSIST)
+  @ManyToOne
   private Player player1;
-  @ManyToOne(cascade = CascadeType.PERSIST)
+  @ManyToOne
   private Player player2;
   private int    seed;
 

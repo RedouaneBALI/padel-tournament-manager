@@ -39,11 +39,10 @@ export default function PlayerPairsTextarea({ tournamentId, defaultPairs }: Prop
       .map(line => line.trim())
       .filter(line => line !== '');
 
-    const pairs: SimplePlayerPair[] = lines.map(line => {
-      const [p1, p2] = line.split(',').map(s => s.trim());
-      return { player1: p1, player2: p2 };
-    });
-
+  const pairs: SimplePlayerPair[] = lines.map((line, index) => {
+    const [p1, p2] = line.split(',').map(s => s.trim());
+    return { player1: p1, player2: p2, seed: index + 1 };
+  });
 
 
     try {
@@ -73,7 +72,9 @@ export default function PlayerPairsTextarea({ tournamentId, defaultPairs }: Prop
         className="w-full h-60 p-2 border border-gray-300 rounded resize-none font-mono"
         value={text}
         onChange={e => setText(e.target.value)}
-        placeholder="Michel - Bob\nRedouane - Ali"
+        placeholder={`Ghali Berrada,Selim Mekouar\nRedouane Bali,Ali Khobzaoui`}
+
+
       />
 
       <div className="flex justify-end gap-4 mt-4">
