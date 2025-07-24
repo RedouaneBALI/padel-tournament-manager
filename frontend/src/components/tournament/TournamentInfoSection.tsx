@@ -1,7 +1,8 @@
 import { MapPin, Building, FileText } from 'lucide-react';
+import { TournamentFormData } from '@/src/types/tournamentData';
 
 interface TournamentInfoSectionProps {
-  formData: any;
+  formData: TournamentFormData;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 

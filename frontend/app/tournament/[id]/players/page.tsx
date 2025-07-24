@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Tournament } from '@/types/tournament';
-import { PlayerPair } from '@/types/playerPair';
+import { Tournament } from '@/src/types/tournament';
+import { PlayerPair } from '@/src/types/playerPair';
 import React from 'react';
 
 export default function TournamentPlayersTab({ params }: {   params: Promise<{ id: string }>;}) {
@@ -17,7 +17,7 @@ export default function TournamentPlayersTab({ params }: {   params: Promise<{ i
         const data = await response.json();
         setPlayerPairs(data);
       } catch (error) {
-        console.error("Erreur lors du chargement des joueurs.");
+        console.error("Erreur lors du chargement des joueurs : " + error);
       }
     }
 

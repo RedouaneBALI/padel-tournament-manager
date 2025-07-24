@@ -1,7 +1,7 @@
 import { useRouter } from 'next/navigation';
-import TournamentForm from './TournamentForm';
+import TournamentForm from '@/src/components/forms/TournamentForm';
 import { toast } from 'react-toastify';
-import { Tournament } from '@/types/tournament';
+import { Tournament } from '@/src/types/tournament';
 
 export default function CreateTournamentForm() {
   const router = useRouter();

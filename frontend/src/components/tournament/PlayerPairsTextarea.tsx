@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { PlayerPair } from '@/types/playerPair';
+import { PlayerPair } from '@/src/types/playerPair';
 import { toast } from 'react-toastify';
 
 interface Props {

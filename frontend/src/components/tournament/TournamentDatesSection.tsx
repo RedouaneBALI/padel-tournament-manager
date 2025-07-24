@@ -1,7 +1,8 @@
 import { Calendar } from 'lucide-react';
+import { TournamentFormData } from '@/src/types/tournamentData';
 
 interface TournamentDatesSectionProps {
-  formData: any;
+  formData: TournamentFormData;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 

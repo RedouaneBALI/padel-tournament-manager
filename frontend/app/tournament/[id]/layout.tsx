@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Tournament } from '@/types/tournament';
+import { Tournament } from '@/src/types/tournament';
 import React from 'react';
 import { ReactNode } from 'react';
 

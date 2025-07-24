@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 import React from 'react';
 import { toast, ToastContainer } from 'react-toastify';
-import PlayerPairsTextarea from '@/components/tournament/PlayerPairsTextarea';
+import PlayerPairsTextarea from '@/src/components/tournament/PlayerPairsTextarea';
 import Link from 'next/link';
 import { FileText, Settings } from 'lucide-react';
-import { PlayerPair } from '@/types/playerPair';
+import { PlayerPair } from '@/src/types/playerPair';
 
 
 interface Tournament {

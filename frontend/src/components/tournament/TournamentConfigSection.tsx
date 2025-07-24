@@ -1,7 +1,8 @@
 import { Settings, Users, Trophy, Zap } from 'lucide-react';
+import { TournamentFormData } from '@/src/types/tournamentData';
 
 interface TournamentConfigSectionProps {
-  formData: any;
+  formData: TournamentFormData;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
 }
 

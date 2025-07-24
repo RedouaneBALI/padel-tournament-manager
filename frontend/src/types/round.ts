@@ -1,4 +1,4 @@
-import { Game } from '@/types/game';
+import { Game } from '@/src/types/game';
 
 export interface Round {
   id?: number;

@@ -3,7 +3,8 @@
 import { use } from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import TournamentForm from '@/components/forms/TournamentForm';
+import TournamentForm from '@/src/components/forms/TournamentForm';
+import type { Tournament } from '@/src/types/tournament';
 import { toast } from 'react-toastify';
 import { Loader2, Pencil } from 'lucide-react';
 import { ChevronLeft } from 'lucide-react';
@@ -27,7 +28,7 @@ export default function EditTournamentPage({ params }: { params: Promise<{ id: s
       });
   }, [id]);
 
-  const handleUpdate = async (data: any) => {
+  const handleUpdate = async (data: Tournament) => {
     const res = await fetch(`http://localhost:8080/tournaments/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

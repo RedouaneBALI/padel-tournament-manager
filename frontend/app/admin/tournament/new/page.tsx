@@ -1,9 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import TournamentForm from '@/components/forms/TournamentForm';
+import TournamentForm from '@/src/components/forms/TournamentForm';
 import { toast } from 'react-toastify';
-import type { Tournament } from '@/types/tournament';
+import type { Tournament } from '@/src/types/tournament';
 
 export default function NewTournamentPage() {
   const router = useRouter();

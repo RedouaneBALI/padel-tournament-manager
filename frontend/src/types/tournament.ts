@@ -1,5 +1,5 @@
-import { PlayerPair } from '@/types/playerPair';
-import { Round } from '@/types/round';
+import { PlayerPair } from '@/src/types/playerPair';
+import { Round } from '@/src/types/round';
 
 // types/tournament.ts
 export interface Tournament {
