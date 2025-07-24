@@ -21,7 +21,7 @@ interface Tournament {
   endDate?: string;
 }
 
-export default function TournamentPage({ params }: { params: Promise<{ id: string }> }) {
+export default function TournamentPage({ params }: { params: { id: string } }) {
   const { id } = React.use(params);
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
   const [pairs, setPairs] = useState<PlayerPair[]>([]);
@@ -52,6 +52,7 @@ export default function TournamentPage({ params }: { params: Promise<{ id: strin
         if (response.ok) {
           const data: PlayerPair[] = await response.json();
           setPairs(data);
+          console.log('Pairs chargés :', data);
         } else {
           toast.error('Impossible de récupérer les joueurs existants.');
         }
@@ -131,11 +132,19 @@ export default function TournamentPage({ params }: { params: Promise<{ id: strin
           <h2 className="mb-3 text-base font-semibold text-foreground">
             Lister les joueurs ci-dessous (par ordre de classement)
           </h2>
-          <PlayerPairsTextarea tournamentId={Number(id)} defaultPairs={pairs} />
+          <PlayerPairsTextarea
+          onPairsChange={setPairs}
+          tournamentId={Number(id)}
+          defaultPairs={pairs} />
         </section>
         <button
           onClick={handleDraw}
-          className="w-full sm:w-auto mt-4 px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors font-medium text-sm"
+          disabled={pairs.length === 0}
+          className={`w-full sm:w-auto mt-4 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            pairs.length === 0
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-emerald-600 text-white hover:bg-emerald-700'
+          }`}
         >
           Générer le tirage
         </button>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import React from 'react';
 import { toast } from 'react-toastify';
 import { Round } from '@/src/types/round';
+import MatchResultCardLight from '@/src/components/MatchResultCardLight';
 
 
 export default function TournamentResultsTab({ params }: { params: Promise<{ id: string }> }) {
@@ -39,28 +40,8 @@ return (
           {round.games?.length > 0 ? (
             <div className="space-y-3">
               {round.games.map((game: any) => (
-                <div key={game.id} className="p-3 border rounded-md bg-background shadow-sm">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="font-medium text-foreground">
-                        {game.teamA?.player1?.name} & {game.teamA?.player2?.name}
-                        {game.teamA?.seed != null && (
-                          <span className="ml-2 text-sm text-muted-foreground">(TS {game.teamA.seed})</span>
-                        )}
-                      </p>
-                      <p className="text-muted-foreground text-sm">vs</p>
-                      <p className="font-medium text-foreground">
-                        {game.teamB?.player1?.name} & {game.teamB?.player2?.name}
-                        {game.teamB?.seed != null && (
-                          <span className="ml-2 text-sm text-muted-foreground">(TS {game.teamB.seed})</span>
-                        )}
-                      </p>
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {/* Tu peux ajouter ici le score ou le terrain plus tard */}
-                      {game.court ? `Terrain : ${game.court}` : ''}
-                    </div>
-                  </div>
+                <div key={game.id}>
+                  <MatchResultCardLight teamA={game.teamA} teamB={game.teamB} />
                 </div>
               ))}
             </div>

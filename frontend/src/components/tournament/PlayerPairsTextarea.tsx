@@ -7,9 +7,10 @@ import { toast } from 'react-toastify';
 interface Props {
   tournamentId: number;
   defaultPairs: PlayerPair[];
+  onPairsChange?: (pairs: PlayerPair[]) => void; // OK dans interface
 }
 
-export default function PlayerPairsTextarea({ tournamentId, defaultPairs }: Props) {
+export default function PlayerPairsTextarea({ tournamentId, defaultPairs, onPairsChange }: Props) { // <-- ajoute onPairsChange ici
   const [text, setText] = useState('');
 
   const fetchUpdatedPairs = async () => {
@@ -18,6 +19,7 @@ export default function PlayerPairsTextarea({ tournamentId, defaultPairs }: Prop
       if (response.ok) {
         const data: PlayerPair[] = await response.json();
         setText(data.map(pair => `${pair.player1},${pair.player2}`).join('\n'));
+        if (onPairsChange) onPairsChange(data); // <-- maintenant ça fonctionne bien
       } else {
         toast.error("Impossible de récupérer les joueurs.");
       }
@@ -27,11 +29,10 @@ export default function PlayerPairsTextarea({ tournamentId, defaultPairs }: Prop
   };
 
   useEffect(() => {
-    fetchUpdatedPairs(); // ← appel initial au montage
+    fetchUpdatedPairs();
   }, [tournamentId]);
 
   const handleClear = () => setText('');
-
 
   const handleSave = async () => {
     const lines = text
@@ -39,11 +40,10 @@ export default function PlayerPairsTextarea({ tournamentId, defaultPairs }: Prop
       .map(line => line.trim())
       .filter(line => line !== '');
 
-  const pairs: PlayerPair[] = lines.map((line, index) => {
-    const [p1, p2] = line.split(',').map(s => s.trim());
-    return { player1: p1, player2: p2, seed: index + 1 };
-  });
-
+    const pairs: PlayerPair[] = lines.map((line, index) => {
+      const [p1, p2] = line.split(',').map(s => s.trim());
+      return { player1: p1, player2: p2, seed: index + 1 };
+    });
 
     try {
       const response = await fetch(`http://localhost:8080/tournaments/${tournamentId}/pairs`, {
@@ -63,8 +63,6 @@ export default function PlayerPairsTextarea({ tournamentId, defaultPairs }: Prop
       toast.error('Erreur réseau. Veuillez réessayer.');
     }
   };
-
-
 
   return (
     <div className="bg-white">
