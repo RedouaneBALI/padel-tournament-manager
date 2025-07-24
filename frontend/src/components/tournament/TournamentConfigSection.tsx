@@ -26,7 +26,7 @@ export default function TournamentConfigSection({
             </label>
             <select
               name="gender"
-              value={formData.gender}
+              value={formData.gender ?? ''}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             >
@@ -44,7 +44,7 @@ export default function TournamentConfigSection({
             </label>
             <select
               name="level"
-              value={formData.level}
+              value={formData.level ?? ''}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             >
@@ -67,7 +67,7 @@ export default function TournamentConfigSection({
             </label>
             <select
               name="tournamentFormat"
-              value={formData.tournamentFormat}
+              value={formData.tournamentFormat ?? ''}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             >
@@ -79,20 +79,37 @@ export default function TournamentConfigSection({
           </div>
         </div>
 
-        <div className="space-y-2 max-w-xs">
-          <label htmlFor="nbSeeds" className="block text-sm font-medium text-foreground">
-            Nombre de têtes de série
-          </label>
-          <input
-            id="nbSeeds"
-            name="nbSeeds"
-            type="number"
-            min="0"
-            placeholder="0"
-            value={formData.nbSeeds}
-            onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
-          />
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="space-y-2 max-w-xs">
+            <label htmlFor="nbSeeds" className="block text-sm font-medium text-foreground">
+              Nombre de têtes de série
+            </label>
+            <input
+              id="nbSeeds"
+              name="nbSeeds"
+              type="number"
+              min="0"
+              placeholder="0"
+              value={formData.nbSeeds ?? ''}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+            />
+          </div>
+          <div className="space-y-2 max-w-xs">
+            <label htmlFor="nbMaxPairs" className="block text-sm font-medium text-foreground">
+              Nombre d'équipes maximum
+            </label>
+            <input
+              id="nbMaxPairs"
+              name="nbMaxPairs"
+              type="number"
+              min="0"
+              placeholder="Ex : 32"
+              value={formData.nbMaxPairs ?? ''}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+            />
+          </div>
         </div>
       </div>
     </div>

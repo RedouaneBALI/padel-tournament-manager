@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import TournamentForm from '@/components/forms/TournamentForm';
 import { toast } from 'react-toastify';
 import { Loader2, Pencil } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 
 export default function EditTournamentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -52,11 +53,22 @@ export default function EditTournamentPage({ params }: { params: Promise<{ id: s
   }
 
   return (
-      <TournamentForm
-        initialData={initialData}
-        onSubmit={handleUpdate}
-        isEditing={true}
-        title="Modifier le tournoi"
-      />
+    <>
+      <div className="mb-4">
+        <button
+          onClick={() => router.back()}
+          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4 mr-1" />
+          Retour
+        </button>
+      </div>
+        <TournamentForm
+          initialData={initialData}
+          onSubmit={handleUpdate}
+          isEditing={true}
+          title="Modifier le tournoi"
+        />
+      </>
   );
 }

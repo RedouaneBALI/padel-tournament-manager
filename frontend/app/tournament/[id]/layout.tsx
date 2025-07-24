@@ -61,9 +61,6 @@ export default function TournamentLayout({
         </Link>
       </div>
 
-      {/* Description visible sur toutes les tabs */}
-      <p className="text-gray-600 mb-6">{tournament.description}</p>
-
       {/* Affichage du contenu spécifique de chaque onglet */}
       <div>{children}</div>
 

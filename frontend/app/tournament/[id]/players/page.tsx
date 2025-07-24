@@ -25,7 +25,7 @@ export default function TournamentPlayersTab({ params }: { params: { id: string 
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4">Joueurs inscrits</h2>
+      <h2 className="text-xl font-semibold mb-4">Equipes inscrites</h2>
 
       {playerPairs.length === 0 ? (
         <p className="text-gray-500 italic">Aucune paire inscrite pour le moment.</p>

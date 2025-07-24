@@ -67,7 +67,7 @@ export default function PlayerPairsTextarea({ tournamentId, defaultPairs }: Prop
 
 
   return (
-    <div className="bg-white p-4 rounded-md shadow">
+    <div className="bg-white">
       <textarea
         className="w-full h-60 p-2 border border-gray-300 rounded resize-none font-mono"
         value={text}

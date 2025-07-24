@@ -22,10 +22,10 @@ public class Tournament {
   private Long             id;
   private String           name;
   private String           description;
-  private String           City;
-  private String           Club;
-  private Gender           Gender;
-  private TournamentLevel  Level;
+  private String           city;
+  private String           club;
+  private Gender           gender;
+  private TournamentLevel  level;
   private TournamentFormat tournamentFormat;
   @OneToMany
   private List<Round>      rounds;
@@ -35,5 +35,6 @@ public class Tournament {
   private List<PlayerPair> playerPairs;
   private String           startDate; // @todo find a better format than String ?
   private String           endDate; // @todo find a better format than String ?
+  private int              nbMaxPairs;
 
 }

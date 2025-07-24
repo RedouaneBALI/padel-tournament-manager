@@ -25,7 +25,7 @@ export default function TournamentInfoSection({ formData, handleInputChange }: T
               name="name"
               type="text"
               placeholder="Ex: Open de Padel 2025"
-              value={formData.name}
+              value={formData.name ?? ''}
               onChange={handleInputChange}
               required
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
@@ -42,7 +42,7 @@ export default function TournamentInfoSection({ formData, handleInputChange }: T
               name="club"
               type="text"
               placeholder="Nom du club"
-              value={formData.club}
+              value={formData.club ?? ''}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             />
@@ -58,7 +58,7 @@ export default function TournamentInfoSection({ formData, handleInputChange }: T
               name="city"
               type="text"
               placeholder="Ville du tournoi"
-              value={formData.city}
+              value={formData.city ?? ''}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             />
@@ -73,7 +73,7 @@ export default function TournamentInfoSection({ formData, handleInputChange }: T
             id="description"
             name="description"
             placeholder="Décrivez votre tournoi..."
-            value={formData.description}
+            value={formData.description ?? ''}
             onChange={handleInputChange}
             rows={3}
             className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors min-h-[100px] resize-none"

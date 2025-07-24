@@ -5,7 +5,7 @@ import React from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import PlayerPairsTextarea from '@/components/tournament/PlayerPairsTextarea';
 import Link from 'next/link';
-import { FileText } from 'lucide-react';
+import { FileText, Settings } from 'lucide-react';
 
 interface PlayerPairInput {
   player1: string;
@@ -72,8 +72,8 @@ export default function TournamentPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="container mx-auto max-w-3xl px-6 py-8">
-      <div className="bg-card rounded-lg border border-border shadow-sm p-6 space-y-6">
+    <div className="container mx-auto max-w-3xl">
+      <div className="bg-card shadow-sm p-6 space-y-6">
         {/* Header with icon and title */}
         <div className="flex items-center gap-2 border-b border-border pb-3">
           <FileText className="h-5 w-5 text-muted-foreground" />
@@ -84,7 +84,7 @@ export default function TournamentPage({ params }: { params: { id: string } }) {
             href={`/admin/tournament/${id}/edit`}
             className="ml-auto inline-flex items-center gap-1 rounded bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition"
           >
-            Modifier
+            <Settings className="h-6 w-6" />
           </Link>
         </div>
 
@@ -113,6 +113,12 @@ export default function TournamentPage({ params }: { params: { id: string } }) {
           </h2>
           <PlayerPairsTextarea tournamentId={Number(id)} defaultPairs={pairs} />
         </section>
+        <button
+          onClick={() => console.log('Génération du tirage…')} // à remplacer par ta vraie logique
+          className="w-full sm:w-auto mt-4 px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors font-medium text-sm"
+        >
+          Générer le tirage
+        </button>
       </div>
 
       <ToastContainer />

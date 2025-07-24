@@ -61,6 +61,7 @@ public class TournamentService {
     existing.setLevel(updatedTournament.getLevel());
     existing.setTournamentFormat(updatedTournament.getTournamentFormat());
     existing.setNbSeeds(updatedTournament.getNbSeeds());
+    existing.setNbMaxPairs(updatedTournament.getNbMaxPairs());
 
     return tournamentRepository.save(existing);
   }
