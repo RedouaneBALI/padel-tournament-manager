@@ -26,6 +26,7 @@ export default function TournamentPage({ params }: { params: Promise<{ id: strin
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
   const [pairs, setPairs] = useState<PlayerPair[]>([]);
   const [tournament, setTournament] = useState<Tournament | null>(null);
+  const [rounds, setRounds] = useState<Round[]>([]);
 
   useEffect(() => {
     async function fetchTournament() {
@@ -68,22 +69,27 @@ export default function TournamentPage({ params }: { params: Promise<{ id: strin
     }
   }
 
-  async function handleDraw() {
+  const handleDraw = async () => {
     try {
       const response = await fetch(`http://localhost:8080/tournaments/${id}/draw`, {
         method: 'POST',
       });
 
-      if (response.ok) {
-        toast.success('Tirage au sort généré avec succès !');
-      } else {
+      if (!response.ok) {
         toast.error('Erreur lors de la génération du tirage.');
+        return;
       }
+
+      const newRound: Round = await response.json();
+
+      setRounds(prev => [...prev, newRound]);
+
+      toast.success('Tirage généré avec succès !');
     } catch (error) {
-      toast.error('Erreur réseau.');
       console.error(error);
+      toast.error('Une erreur est survenue.');
     }
-  }
+  };
 
   return (
     <div className="container mx-auto max-w-3xl">

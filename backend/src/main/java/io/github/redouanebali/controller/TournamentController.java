@@ -2,6 +2,7 @@ package io.github.redouanebali.controller;
 
 import io.github.redouanebali.dto.RoundDTO;
 import io.github.redouanebali.dto.SimplePlayerPairDTO;
+import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.service.TournamentService;
 import java.util.List;
@@ -52,6 +53,11 @@ public class TournamentController {
   @GetMapping("/{id}")
   public Tournament getTournamentById(@PathVariable("id") Long tournamentId) {
     return tournamentService.getTournamentById(tournamentId);
+  }
+
+  @GetMapping("/{id}/rounds")
+  public List<Round> getTournamentRounds(@PathVariable("id") Long tournamentId) {
+    return tournamentService.getTournamentById(tournamentId).getRounds();
   }
 
 }

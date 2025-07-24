@@ -9,10 +9,12 @@ import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.TournamentFormat;
+import io.github.redouanebali.repository.GameRepository;
 import io.github.redouanebali.repository.PlayerPairRepository;
 import io.github.redouanebali.repository.PlayerRepository;
 import io.github.redouanebali.repository.RoundRepository;
 import io.github.redouanebali.repository.TournamentRepository;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,8 @@ public class TournamentService {
   private       TournamentRepository                  tournamentRepository;
   @Autowired
   private       RoundRepository                       roundRepository;
+  @Autowired
+  private       GameRepository                        gameRepository;
 
   public Tournament getTournamentById(Long id) {
     return tournamentRepository.findById(id)
@@ -113,9 +117,11 @@ public class TournamentService {
       generator = new KnockoutRoundGenerator();
     }
     Round round = generator.generate(tournament.getPlayerPairs(), tournament.getNbSeeds());
-
+    round.getGames().forEach(g -> gameRepository.save(g));
     roundRepository.save(round);
-
+    tournament.setRounds(new ArrayList<>());
+    tournament.getRounds().add(round);
+    tournamentRepository.save(tournament);
     return round;
   }
 }
