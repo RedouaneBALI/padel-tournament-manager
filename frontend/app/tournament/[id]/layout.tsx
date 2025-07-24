@@ -6,16 +6,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Tournament } from '@/app/types/Tournament';
+import { Tournament } from '@/types/tournament';
+import React from 'react';
+import { ReactNode } from 'react';
 
-export default function TournamentLayout({
-  children,
-  params,
-}: {
-  children: React.ReactNode;
-  params: { id: string };
-}) {
-  const { id } = params;
+export default function TournamentLayout({children,params,}: {children: ReactNode;params: Promise<{ id: string }>;}){
+  const { id } = React.use(params);
   const pathname = usePathname();
   const [tournament, setTournament] = useState<Tournament | null>(null);
 

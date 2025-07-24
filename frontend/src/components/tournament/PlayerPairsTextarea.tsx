@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { SimplePlayerPair } from '@/app/types/PlayerPair';
+import { PlayerPair } from '@/types/playerPair';
 import { toast } from 'react-toastify';
 
 interface Props {
   tournamentId: number;
-  defaultPairs: SimplePlayerPair[];
+  defaultPairs: PlayerPair[];
 }
 
 export default function PlayerPairsTextarea({ tournamentId, defaultPairs }: Props) {
@@ -16,7 +16,7 @@ export default function PlayerPairsTextarea({ tournamentId, defaultPairs }: Prop
     try {
       const response = await fetch(`http://localhost:8080/tournaments/${tournamentId}/pairs`);
       if (response.ok) {
-        const data: SimplePlayerPair[] = await response.json();
+        const data: PlayerPair[] = await response.json();
         setText(data.map(pair => `${pair.player1},${pair.player2}`).join('\n'));
       } else {
         toast.error("Impossible de récupérer les joueurs.");
@@ -39,7 +39,7 @@ export default function PlayerPairsTextarea({ tournamentId, defaultPairs }: Prop
       .map(line => line.trim())
       .filter(line => line !== '');
 
-  const pairs: SimplePlayerPair[] = lines.map((line, index) => {
+  const pairs: PlayerPair[] = lines.map((line, index) => {
     const [p1, p2] = line.split(',').map(s => s.trim());
     return { player1: p1, player2: p2, seed: index + 1 };
   });
@@ -69,12 +69,11 @@ export default function PlayerPairsTextarea({ tournamentId, defaultPairs }: Prop
   return (
     <div className="bg-white">
       <textarea
-        className="w-full h-60 p-2 border border-gray-300 rounded resize-none font-mono"
+        className="w-full h-60 p-2 border border-gray-300 rounded resize-none font-mono overflow-x-auto whitespace-pre"
+        wrap="off"
         value={text}
         onChange={e => setText(e.target.value)}
         placeholder={`Ghali Berrada,Selim Mekouar\nRedouane Bali,Ali Khobzaoui`}
-
-
       />
 
       <div className="flex justify-end gap-4 mt-4">

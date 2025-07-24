@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Tournament } from '@/app/types/Tournament';
-import { SimplePlayerPair } from '@/app/types/PlayerPair';
+import { Tournament } from '@/types/tournament';
+import { PlayerPair } from '@/types/playerPair';
+import React from 'react';
 
-export default function TournamentPlayersTab({ params }: { params: { id: string } }) {
-  const { id } = params;
-  const [playerPairs, setPlayerPairs] = useState<SimplePlayerPair[]>([]);
+export default function TournamentPlayersTab({ params }: {   params: Promise<{ id: string }>;}) {
+  const { id } = React.use(params);
+  const [playerPairs, setPlayerPairs] = useState<PlayerPair[]>([]);
 
   useEffect(() => {
     async function fetchPairs() {

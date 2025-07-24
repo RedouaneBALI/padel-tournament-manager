@@ -7,6 +7,7 @@ import { Loader2, Trophy } from 'lucide-react';
 import TournamentInfoSection from '@/components/tournament/TournamentInfoSection';
 import TournamentDatesSection from '@/components/tournament/TournamentDatesSection';
 import TournamentConfigSection from '@/components/tournament/TournamentConfigSection';
+import { Tournament } from '@/types/tournament';
 
 interface TournamentFormProps {
   initialData?: any;
@@ -35,7 +36,7 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev: Tournament) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

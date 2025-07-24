@@ -3,11 +3,12 @@
 import { useRouter } from 'next/navigation';
 import TournamentForm from '@/components/forms/TournamentForm';
 import { toast } from 'react-toastify';
+import type { Tournament } from '@/types/tournament';
 
 export default function NewTournamentPage() {
   const router = useRouter();
 
-  const handleCreate = async (data) => {
+  const handleCreate = async (data: Tournament) => {
     const res = await fetch('http://localhost:8080/tournaments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

@@ -6,11 +6,8 @@ import { toast, ToastContainer } from 'react-toastify';
 import PlayerPairsTextarea from '@/components/tournament/PlayerPairsTextarea';
 import Link from 'next/link';
 import { FileText, Settings } from 'lucide-react';
+import { PlayerPair } from '@/types/playerPair';
 
-interface PlayerPairInput {
-  player1: string;
-  player2: string;
-}
 
 interface Tournament {
   id: number;
@@ -24,10 +21,10 @@ interface Tournament {
   endDate?: string;
 }
 
-export default function TournamentPage({ params }: { params: { id: string } }) {
+export default function TournamentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params);
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-  const [pairs, setPairs] = useState<PlayerPairInput[]>([]);
+  const [pairs, setPairs] = useState<PlayerPair[]>([]);
   const [tournament, setTournament] = useState<Tournament | null>(null);
 
   useEffect(() => {
@@ -52,7 +49,7 @@ export default function TournamentPage({ params }: { params: { id: string } }) {
       try {
         const response = await fetch(`http://localhost:8080/tournaments/${id}/pairs`);
         if (response.ok) {
-          const data: PlayerPairInput[] = await response.json();
+          const data: PlayerPair[] = await response.json();
           setPairs(data);
         } else {
           toast.error('Impossible de récupérer les joueurs existants.');
@@ -68,6 +65,23 @@ export default function TournamentPage({ params }: { params: { id: string } }) {
     if (baseUrl) {
       await navigator.clipboard.writeText(`${baseUrl}/tournament/${id}`);
       toast.success('Lien copié dans le presse-papiers !');
+    }
+  }
+
+  async function handleDraw() {
+    try {
+      const response = await fetch(`http://localhost:8080/tournaments/${id}/draw`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        toast.success('Tirage au sort généré avec succès !');
+      } else {
+        toast.error('Erreur lors de la génération du tirage.');
+      }
+    } catch (error) {
+      toast.error('Erreur réseau.');
+      console.error(error);
     }
   }
 
@@ -114,7 +128,7 @@ export default function TournamentPage({ params }: { params: { id: string } }) {
           <PlayerPairsTextarea tournamentId={Number(id)} defaultPairs={pairs} />
         </section>
         <button
-          onClick={() => console.log('Génération du tirage…')} // à remplacer par ta vraie logique
+          onClick={handleDraw}
           className="w-full sm:w-auto mt-4 px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors font-medium text-sm"
         >
           Générer le tirage
