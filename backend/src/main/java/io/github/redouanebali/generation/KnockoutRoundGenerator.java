@@ -5,50 +5,96 @@ import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
+@Data
+@AllArgsConstructor
 public class KnockoutRoundGenerator implements RoundGenerator {
 
+  private final List<PlayerPair> pairs; // todo create abstract class
+  private final int              nbSeeds;
+
   @Override
-  public Round generate(List<PlayerPair> pairs, int nbSeeds) {
-    List<Game> games = createEmptyGames(pairs.size());
-    placeSeedTeams(games, pairs, nbSeeds);
-    placeRemainingTeamsRandomly(games, pairs, nbSeeds);
+  public Round generate() {
+    List<Game>       games     = createEmptyGames(pairs.size());
+    List<PlayerPair> remaining = placeSeedAndByeTeams(games, pairs, nbSeeds);
+    placeRemainingTeamsRandomly(games, remaining, nbSeeds);
     Round round = new Round();
     round.setGames(games);
     round.setInfo(Stage.fromNbTeams(pairs.size()));
     return round;
   }
-  
+
+  private void addByePairsIfNeeded() {
+    int originalSize = pairs.size();
+    int powerOfTwo   = 1;
+    while (powerOfTwo < originalSize) {
+      powerOfTwo *= 2;
+    }
+
+    int missing = powerOfTwo - originalSize;
+    for (int i = 0; i < missing; i++) {
+      pairs.add(PlayerPair.bye());
+    }
+  }
+
   private List<Game> createEmptyGames(int nbTeams) {
-    List<Game> games = new ArrayList<>();
-    for (int i = 0; i < nbTeams / 2; i++) {
+    int bracketSize = 1;
+    while (bracketSize < nbTeams) {
+      bracketSize *= 2;
+    }
+
+    int        nbGames = bracketSize / 2;
+    List<Game> games   = new ArrayList<>();
+
+    for (int i = 0; i < nbGames; i++) {
       games.add(new Game());
     }
+
     return games;
   }
 
   /**
-   * Place les têtes de série aux positions stratégiques
+   * Place seeds and bye teams at the stratégic positions
    */
-  private void placeSeedTeams(List<Game> games, List<PlayerPair> pairs, int nbSeeds) {
-    pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
+  private List<PlayerPair> placeSeedAndByeTeams(List<Game> games, List<PlayerPair> pairs, int nbSeeds) {
+    List<PlayerPair> seeds = pairs.stream()
+                                  .filter(p -> !p.isBye())
+                                  .sorted(Comparator.comparingInt(PlayerPair::getSeed))
+                                  .limit(nbSeeds)
+                                  .toList();
+
+    List<PlayerPair> byeTeams = pairs.stream()
+                                     .filter(PlayerPair::isBye)
+                                     .toList();
+
     List<Integer> seedsPositions = getSeedsPositions(pairs.size(), nbSeeds);
 
-    for (int i = 0; i < seedsPositions.size(); i++) {
+    for (int i = 0; i < seeds.size(); i++) {
       int gameIndex = seedsPositions.get(i) / 2;
-      games.get(gameIndex).setTeamA(pairs.get(i));
+      games.get(gameIndex).setTeamA(seeds.get(i));
+
+      if (i < byeTeams.size()) {
+        games.get(gameIndex).setTeamB(byeTeams.get(i));
+      }
     }
+
+    // On retourne une nouvelle liste : uniquement les paires restantes à placer
+    return new ArrayList<>(
+        pairs.stream()
+             .filter(p -> !seeds.contains(p) && !byeTeams.contains(p))
+             .toList()
+    );
   }
 
   /**
    * Place aléatoirement les équipes non-seeds dans les positions libres
    */
-  private void placeRemainingTeamsRandomly(List<Game> games, List<PlayerPair> pairs, int nbSeeds) {
-    List<PlayerPair> remainingTeams = new ArrayList<>(pairs.subList(nbSeeds, pairs.size()));
+  private void placeRemainingTeamsRandomly(List<Game> games, List<PlayerPair> remainingTeams, int nbSeeds) {
     Collections.shuffle(remainingTeams);
 
     int teamIndex = 0;
@@ -86,24 +132,34 @@ public class KnockoutRoundGenerator implements RoundGenerator {
    * Generate all the possible position recursively from the bracket structure
    */
   private List<Integer> generateAllSeedPositions(int nbTeams) {
-    if (nbTeams == 2) {
-      return Arrays.asList(0, 1);
+    if (nbTeams <= 1) {
+      return Collections.singletonList(0);
     }
 
-    List<Integer> halfBracket = generateAllSeedPositions(nbTeams / 2);
-    List<Integer> result      = new ArrayList<>();
+    int powerOfTwo = 1;
+    while (powerOfTwo < nbTeams) {
+      powerOfTwo *= 2;
+    }
 
-    for (int i = 0; i < halfBracket.size(); i += 2) {
-      int pos1 = halfBracket.get(i);
-      int pos2 = halfBracket.get(i + 1);
+    List<Integer> fullPositions = generatePerfectSeedPositions(powerOfTwo);
 
-      // Add positions for the first half
-      result.add(pos1);
-      result.add(nbTeams - 1 - pos1);
+    return fullPositions.subList(0, nbTeams);
+  }
 
-      // Add positions for the second half (reversed)
-      result.add(nbTeams - 1 - pos2);
-      result.add(pos2);
+  /**
+   * Génère les positions des seeds pour un bracket parfait (nbTeams doit être une puissance de 2)
+   */
+  private List<Integer> generatePerfectSeedPositions(int nbTeams) {
+    if (nbTeams == 1) {
+      return Collections.singletonList(0);
+    }
+
+    List<Integer> prev   = generatePerfectSeedPositions(nbTeams / 2);
+    List<Integer> result = new ArrayList<>();
+
+    for (int pos : prev) {
+      result.add(pos);
+      result.add(nbTeams - 1 - pos);
     }
 
     return result;
