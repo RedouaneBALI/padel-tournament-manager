@@ -7,19 +7,8 @@ import PlayerPairsTextarea from '@/src/components/tournament/PlayerPairsTextarea
 import Link from 'next/link';
 import { FileText, Settings } from 'lucide-react';
 import { PlayerPair } from '@/src/types/playerPair';
-
-
-interface Tournament {
-  id: number;
-  name: string;
-  description?: string;
-  city?: string;
-  club?: string;
-  gender?: string;
-  level?: string;
-  startDate?: string;
-  endDate?: string;
-}
+import { Tournament } from '@/src/types/tournament';
+import MatchFormatForm, { MatchFormat } from '@/src/components/round/MatchFormatForm';
 
 export default function TournamentPage({ params }: { params: { id: string } }) {
   const { id } = React.use(params);
@@ -27,6 +16,12 @@ export default function TournamentPage({ params }: { params: { id: string } }) {
   const [pairs, setPairs] = useState<PlayerPair[]>([]);
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [rounds, setRounds] = useState<Round[]>([]);
+  const [matchFormat, setMatchFormat] = useState<MatchFormat>({
+    numberOfSetsToWin: 2,
+    pointsPerSet: 6,
+    superTieBreakInFinalSet: true,
+    advantage: false,
+  });
 
   useEffect(() => {
     async function fetchTournament() {
@@ -99,7 +94,7 @@ export default function TournamentPage({ params }: { params: { id: string } }) {
         <div className="flex items-center gap-2 border-b border-border pb-3">
           <FileText className="h-5 w-5 text-muted-foreground" />
           <h1 className="text-xl font-semibold text-foreground">
-            {tournament?.name || `Tournoi #${id}`}
+            {tournament?.name || `Tournoi #${id}`} ({pairs.length} joueurs)
           </h1>
           <Link
             href={`/admin/tournament/${id}/edit`}
@@ -137,6 +132,9 @@ export default function TournamentPage({ params }: { params: { id: string } }) {
           tournamentId={Number(id)}
           defaultPairs={pairs} />
         </section>
+        <div className="mt-6">
+          <MatchFormatForm format={matchFormat} onChange={setMatchFormat} />
+        </div>
         <button
           onClick={handleDraw}
           disabled={pairs.length === 0}

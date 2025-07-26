@@ -91,7 +91,7 @@ export default function TournamentConfigSection({
               type="number"
               min="0"
               placeholder="0"
-              value={formData.nbSeeds ?? ''}
+              value={formData.nbSeeds ?? 8}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             />
@@ -106,7 +106,7 @@ export default function TournamentConfigSection({
               type="number"
               min="0"
               placeholder="Ex : 32"
-              value={formData.nbMaxPairs ?? ''}
+              value={formData.nbMaxPairs ?? 32}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             />

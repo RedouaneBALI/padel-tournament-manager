@@ -2,16 +2,12 @@
 
 import React from 'react';
 import { PlayerPair } from '@/src/types/playerPair';
+import { Game } from '@/src/types/game';
 
-interface MatchResultCardLightProps {
-  teamA: PlayerPair;
-  teamB: PlayerPair;
-}
-
-export default function MatchResultCardLight({ teamA, teamB }: MatchResultCardLightProps) {
+export default function MatchResultCardLight(game: Game) {
   return (
     <div className="rounded-lg bg-white shadow-sm border border-gray-200/80 p-3.5">
-      {[teamA, teamB].map((team, idx) => (
+      {[game.teamA, game.teamB].map((team, idx) => (
         <div key={idx} className={`flex justify-between items-center py-1 ${idx === 0 ? '' : 'border-t border-gray-100 mt-1 pt-2'}`}>
           <div className="space-y-1">
             <p className="text-sm text-gray-800 truncate">
