@@ -15,8 +15,10 @@ export default function CreateTournamentForm() {
     if (!res.ok) throw new Error();
     const tournament = await res.json();
     toast.success('Tournoi créé !');
-    router.push(`/admin/tournament/${tournament.id}`);
-  };
+
+    setTimeout(() => {
+      router.push(`/admin/tournament/${tournament.id}/edit`);
+    }, 300); // 300 ms suffisent souvent
 
   return <TournamentForm onSubmit={handleCreate} />;
 }

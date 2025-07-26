@@ -22,7 +22,7 @@ export default function NewTournamentPage() {
 
     const tournament = await res.json();
     toast.success('Tournoi créé !');
-    router.push(`/admin/tournament/${tournament.id}`);
+    router.push(`/admin/tournament/${tournament.id}/players`);
   };
 
   return (

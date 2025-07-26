@@ -96,12 +96,6 @@ export default function TournamentPage({ params }: { params: { id: string } }) {
           <h1 className="text-xl font-semibold text-foreground">
             {tournament?.name || `Tournoi #${id}`} ({pairs.length} joueurs)
           </h1>
-          <Link
-            href={`/admin/tournament/${id}/edit`}
-            className="ml-auto inline-flex items-center gap-1 rounded bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition"
-          >
-            <Settings className="h-6 w-6" />
-          </Link>
         </div>
 
         {/* Share link */}

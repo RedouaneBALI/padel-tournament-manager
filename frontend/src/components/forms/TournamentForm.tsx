@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Loader2, Trophy } from 'lucide-react';
@@ -33,6 +33,15 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
     nbMaxPairs: '',
     ...initialData,
   });
+
+  useEffect(() => {
+      if (initialData) {
+        setFormData(prev => ({
+          ...prev,
+          ...initialData,
+        }));
+      }
+    }, [initialData]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 

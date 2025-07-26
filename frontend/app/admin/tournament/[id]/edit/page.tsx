@@ -1,75 +1,56 @@
 'use client';
 
-import { use } from 'react';
-import { useEffect, useState } from 'react';
+import React,{use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import TournamentForm from '@/src/components/forms/TournamentForm';
 import type { Tournament } from '@/src/types/tournament';
 import { toast } from 'react-toastify';
-import { Loader2, Pencil } from 'lucide-react';
-import { ChevronLeft } from 'lucide-react';
 
-export default function EditTournamentPage({ params }: { params: Promise<{ id: string }> }) {
+export default function AdminEditTournamentPage({ params }: { params: { id: string } }) {
   const { id } = use(params);
   const router = useRouter();
-  const [initialData, setInitialData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [tournament, setTournament] = useState<Tournament | null>(null);
+  console.log(tournament); // works
 
   useEffect(() => {
-    fetch(`http://localhost:8080/tournaments/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setInitialData(data);
-        setIsLoading(false);
-      })
-      .catch(() => {
-        toast.error("Erreur lors du chargement du tournoi");
-        setIsLoading(false);
-      });
-  }, [id]);
-
-  const handleUpdate = async (data: Tournament) => {
-    const res = await fetch(`http://localhost:8080/tournaments/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-
-    if (!res.ok) {
-      toast.error("Échec de la mise à jour.");
-      return;
+    async function fetchTournament() {
+      try {
+        const res = await fetch(`http://localhost:8080/tournaments/${id}`);
+        if (!res.ok) throw new Error('Erreur lors de la récupération du tournoi');
+        const data: Tournament = await res.json();
+        setTournament(data);
+      } catch (err) {
+        toast.error('Impossible de charger les infos du tournoi.');
+      }
     }
 
-    toast.success('Tournoi mis à jour !');
-    router.push(`/admin/tournament/${id}`);
+    fetchTournament();
+  }, [id]);
+
+  const handleUpdate = async (updatedTournament: Tournament) => {
+    try {
+      const res = await fetch(`http://localhost:8080/tournaments/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedTournament),
+      });
+
+      if (!res.ok) throw new Error();
+      toast.success('Tournoi mis à jour !');
+      router.refresh();
+    } catch {
+      toast.error('Erreur lors de la mise à jour.');
+    }
   };
 
-  if (isLoading || !initialData) {
-    return (
-      <div className="flex justify-center items-center h-96">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        <span className="ml-2 text-muted-foreground">Chargement...</span>
-      </div>
-    );
-  }
+  if (!tournament) return <div>Chargement...</div>;
 
   return (
-    <>
-      <div className="mb-4">
-        <button
-          onClick={() => router.back()}
-          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4 mr-1" />
-          Retour
-        </button>
-      </div>
-        <TournamentForm
-          initialData={initialData}
-          onSubmit={handleUpdate}
-          isEditing={true}
-          title="Modifier le tournoi"
-        />
-      </>
+    <TournamentForm
+      title="Modifier le tournoi"
+      isEditing={true}
+      onSubmit={handleUpdate}
+      initialData={tournament}
+    />
   );
 }
