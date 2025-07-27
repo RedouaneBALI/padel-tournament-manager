@@ -24,11 +24,10 @@ public enum Stage {
    * Returns the RoundInfo corresponding to the given number of teams. If no exact match is found, returns the RoundInfo for the next lower round.
    */
   public static Stage fromNbTeams(int teams) {
-    Stage result = WINNER; // Default to WINNER if none matches
-    for (Stage round : Stage.values()) {
-      if (teams >= round.nbTeams) {
-        result = round;
-        break;
+    Stage result = null;
+    for (Stage stage : Stage.values()) {
+      if (teams <= stage.getNbTeams()) {
+        result = stage;
       }
     }
     return result;

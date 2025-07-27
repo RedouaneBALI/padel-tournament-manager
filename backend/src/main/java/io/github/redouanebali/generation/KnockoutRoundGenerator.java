@@ -25,7 +25,7 @@ public class KnockoutRoundGenerator implements RoundGenerator {
     placeRemainingTeamsRandomly(games, remaining, nbSeeds);
     Round round = new Round();
     round.setGames(games);
-    round.setInfo(Stage.fromNbTeams(pairs.size()));
+    round.setStage(Stage.fromNbTeams(pairs.size()));
     return round;
   }
 

@@ -1,5 +1,7 @@
 package io.github.redouanebali.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,6 +24,7 @@ public class PlayerPair {
   private Player player1;
   @ManyToOne
   private Player player2;
+  @JsonIgnore
   private int    seed;
 
   public static PlayerPair bye() {
@@ -36,6 +39,11 @@ public class PlayerPair {
     byePair.setPlayer2(bye2);
     byePair.setSeed(Integer.MAX_VALUE);
     return byePair;
+  }
+
+  @JsonProperty("seed")
+  public Integer getSeedForJson() {
+    return seed == Integer.MAX_VALUE ? null : seed;
   }
 
   public boolean isBye() {

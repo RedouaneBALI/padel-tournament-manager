@@ -3,9 +3,11 @@ package io.github.redouanebali.service;
 import io.github.redouanebali.dto.SimplePlayerPairDTO;
 import io.github.redouanebali.generation.KnockoutRoundGenerator;
 import io.github.redouanebali.model.Game;
+import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.GameRepository;
 import io.github.redouanebali.repository.PlayerPairRepository;
@@ -37,11 +39,30 @@ public class TournamentService {
   }
 
   public Tournament createTournament(final Tournament tournament) {
-    System.out.println("TournamentService.createTournament");
     if (tournament == null) {
       throw new IllegalArgumentException("Tournament cannot be null");
     }
-    return tournamentRepository.save(tournament);
+    // Sauvegarder d'abord le tournoi pour avoir son ID
+    Tournament saved = tournamentRepository.save(tournament);
+
+    if (saved.getNbMaxPairs() <= 1) {
+      return saved;
+    }
+
+    // Générer les rounds
+    List<Round> rounds  = new ArrayList<>();
+    Stage       current = Stage.fromNbTeams(saved.getNbMaxPairs());
+
+    while (current != null && current != Stage.WINNER) {
+      Round round = new Round(current);
+      roundRepository.save(round);           // persist round
+      rounds.add(round);
+      current = current.next();
+    }
+
+    saved.setRounds(rounds);
+    return tournamentRepository.save(saved);
+
   }
 
   public Tournament updateTournament(Long tournamentId, Tournament updatedTournament) {
@@ -93,10 +114,6 @@ public class TournamentService {
     tournamentRepository.save(tournament);
 
     return newPairs.size();
-  }
-
-  private String normalize(String name) {
-    return name == null ? "" : name.trim().toLowerCase();
   }
 
   public Round generateDraw(Long tournamentId) {
@@ -162,5 +179,27 @@ public class TournamentService {
     }
 
     return pair;
+  }
+
+  public MatchFormat getMatchFormatForRound(Long tournamentId, Stage stage) {
+    Tournament tournament = getTournamentById(tournamentId);
+    return tournament.getRounds().stream()
+                     .filter(round -> round.getStage() == stage)
+                     .findFirst()
+                     .map(Round::getMatchFormat)
+                     .orElseThrow(() -> new IllegalArgumentException("Round not found for stage: " + stage));
+  }
+
+  public MatchFormat updateMatchFormatForRound(Long tournamentId, Stage stage, MatchFormat newFormat) {
+    Tournament tournament = getTournamentById(tournamentId);
+
+    Round round = tournament.getRounds().stream()
+                            .filter(r -> r.getStage() == stage)
+                            .findFirst()
+                            .orElseThrow(() -> new IllegalArgumentException("Round not found for stage: " + stage));
+
+    round.setMatchFormat(newFormat);
+    roundRepository.save(round);
+    return newFormat;
   }
 }

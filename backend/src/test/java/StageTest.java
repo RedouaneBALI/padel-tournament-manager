@@ -1,0 +1,30 @@
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import io.github.redouanebali.model.Stage;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+
+public class StageTest {
+
+  @ParameterizedTest(name = "fromNbTeams({0}) should return {1}")
+  @CsvSource({
+      "2, FINAL",
+      "3, SEMIS",
+      "4, SEMIS",
+      "5, QUARTERS",
+      "8, QUARTERS",
+      "9, R16",
+      "16, R16",
+      "17, R32",
+      "32, R32",
+      "33, R64",
+      "64, R64",
+      "65, Q2",
+      "128, Q2",
+      "129, Q1",
+      "256, Q1"
+  })
+  void testFromNbTeams(int teamCount, Stage expectedStage) {
+    assertEquals(expectedStage, Stage.fromNbTeams(teamCount));
+  }
+}

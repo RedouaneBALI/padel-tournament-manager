@@ -21,7 +21,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 public class KnockoutRoundGeneratorTest {
 
-  private final KnockoutRoundGenerator generator = new KnockoutRoundGenerator();
+  private KnockoutRoundGenerator generator;
 
   static Stream<Arguments> provideBracketSeedPositionCases() {
     return Stream.of(
@@ -68,8 +68,9 @@ public class KnockoutRoundGeneratorTest {
   ) {
     List<PlayerPair> pairs = createPairs(nbTeams);
     pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
-    Round round = generator.generate(pairs, nbSeeds);
-    assertEquals(expectedStage, round.getInfo());
+    generator = new KnockoutRoundGenerator(pairs, nbSeeds);
+    Round round = generator.generate();
+    assertEquals(expectedStage, round.getStage());
     List<Game> games = round.getGames();
 
     // Vérification du placement des têtes de série

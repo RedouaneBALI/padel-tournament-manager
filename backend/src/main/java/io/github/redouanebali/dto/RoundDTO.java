@@ -13,7 +13,7 @@ public class RoundDTO {
   private List<GameInfo> games;
 
   public RoundDTO(Round round) {
-    this.roundName = round.getInfo().name();
+    this.roundName = round.getStage().name();
     this.games     = round.getGames().stream().map(game ->
                                                        new GameInfo(
                                                            game.getId(),

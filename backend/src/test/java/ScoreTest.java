@@ -74,7 +74,7 @@ public class ScoreTest {
       score.addSetScore(teamAScore, teamBScore);
     }
     game.setScore(score);
-    MatchFormat format = new MatchFormat(numberOfSetsToWin, pointsPerSet, superTieBreakInFinalSet);
+    MatchFormat format = new MatchFormat(numberOfSetsToWin, pointsPerSet, superTieBreakInFinalSet, false);
     assertEquals(expectedComplete, isMatchOver(score, format));
   }
 
