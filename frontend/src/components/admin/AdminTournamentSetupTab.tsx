@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import PlayerPairsTextarea from '@/src/components/tournament/PlayerPairsTextarea';
 import { FileText } from 'lucide-react';
@@ -11,8 +10,11 @@ import { MatchFormat } from '@/src/types/matchFormat';
 import { Round } from '@/src/types/round';
 import MatchFormatForm from '@/src/components/round/MatchFormatForm';
 
-export default function TournamentPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = React.use(params);
+interface Props {
+  tournamentId: string;
+}
+
+export default function AdminTournamentSetupTab({ tournamentId }: Props) {
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
   const [pairs, setPairs] = useState<PlayerPair[]>([]);
   const [tournament, setTournament] = useState<Tournament | null>(null);
@@ -27,7 +29,7 @@ export default function TournamentPage({ params }: { params: Promise<{ id: strin
   useEffect(() => {
     async function fetchTournament() {
       try {
-        const response = await fetch(`http://localhost:8080/tournaments/${id}`);
+        const response = await fetch(`http://localhost:8080/tournaments/${tournamentId}`);
         if (response.ok) {
           const data: Tournament = await response.json();
           setTournament(data);
@@ -39,16 +41,15 @@ export default function TournamentPage({ params }: { params: Promise<{ id: strin
       }
     }
     fetchTournament();
-  }, [id]);
+  }, [tournamentId]);
 
   useEffect(() => {
     async function fetchPairs() {
       try {
-        const response = await fetch(`http://localhost:8080/tournaments/${id}/pairs`);
+        const response = await fetch(`http://localhost:8080/tournaments/${tournamentId}/pairs`);
         if (response.ok) {
           const data: PlayerPair[] = await response.json();
           setPairs(data);
-          console.log('Pairs chargés :', data);
         } else {
           toast.error('Impossible de récupérer les joueurs existants.');
         }
@@ -57,18 +58,18 @@ export default function TournamentPage({ params }: { params: Promise<{ id: strin
       }
     }
     fetchPairs();
-  }, [id]);
+  }, [tournamentId]);
 
   async function copyLink() {
     if (baseUrl) {
-      await navigator.clipboard.writeText(`${baseUrl}/tournament/${id}`);
+      await navigator.clipboard.writeText(`${baseUrl}/tournament/${tournamentId}`);
       toast.success('Lien copié dans le presse-papiers !');
     }
   }
 
   const handleDraw = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/tournaments/${id}/draw`, {
+      const response = await fetch(`http://localhost:8080/tournaments/${tournamentId}/draw`, {
         method: 'POST',
       });
 
@@ -78,9 +79,7 @@ export default function TournamentPage({ params }: { params: Promise<{ id: strin
       }
 
       const newRound: Round = await response.json();
-
       setRounds(prev => [...prev, newRound]);
-
       toast.success('Tirage généré avec succès !');
     } catch (error) {
       console.error(error);
@@ -91,55 +90,23 @@ export default function TournamentPage({ params }: { params: Promise<{ id: strin
   return (
     <div className="container mx-auto max-w-3xl">
       <div className="bg-card shadow-sm p-6 space-y-6">
-        {/* Header with icon and title */}
         <div className="flex items-center gap-2 border-b border-border pb-3">
           <FileText className="h-5 w-5 text-muted-foreground" />
           <h1 className="text-xl font-semibold text-foreground">
-            {tournament?.name || `Tournoi #${id}`} ({pairs.length} joueurs)
+            {pairs.length} joueurs
           </h1>
         </div>
 
-        {/* Share link */}
-        <section className="space-y-1">
-          <p className="text-sm text-muted-foreground">Partagez ce lien avec les joueurs :</p>
-          <div className="flex gap-2">
-            <input
-              readOnly
-              value={`${baseUrl}/tournament/${id}`}
-              className="flex-grow rounded border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
-            />
-            <button
-              onClick={copyLink}
-              className="rounded bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition"
-            >
-              Copier
-            </button>
-          </div>
-        </section>
-
-        {/* Player pairs textarea */}
         <section>
           <h2 className="mb-3 text-base font-semibold text-foreground">
             Lister les joueurs ci-dessous (par ordre de classement)
           </h2>
           <PlayerPairsTextarea
-          onPairsChange={setPairs}
-          tournamentId={Number(id)} />
+            onPairsChange={setPairs}
+            tournamentId={Number(tournamentId)}
+          />
         </section>
-        <div className="mt-6">
-          <MatchFormatForm format={matchFormat} onChange={setMatchFormat} />
-        </div>
-        <button
-          onClick={handleDraw}
-          disabled={pairs.length === 0}
-          className={`w-full sm:w-auto mt-4 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            pairs.length === 0
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-emerald-600 text-white hover:bg-emerald-700'
-          }`}
-        >
-          Générer le tirage
-        </button>
+
       </div>
 
       <ToastContainer />

@@ -1,7 +1,10 @@
+// src/components/forms/CreateTournamentForm.tsx
+'use client';
+
 import { useRouter } from 'next/navigation';
-import type { Tournament } from '@/src/types/tournament';
-import TournamentForm from '@/src/components/forms/TournamentForm';
+import TournamentForm from './TournamentForm';
 import { toast } from 'react-toastify';
+import type { Tournament } from '@/src/types/tournament';
 
 export default function CreateTournamentForm() {
   const router = useRouter();
@@ -13,15 +16,21 @@ export default function CreateTournamentForm() {
       body: JSON.stringify(data),
     });
 
-    if (!res.ok) throw new Error();
+    if (!res.ok) {
+      toast.error("Erreur lors de la création du tournoi.");
+      return;
+    }
 
     const tournament = await res.json();
     toast.success('Tournoi créé !');
+    router.push(`/admin/tournament/${tournament.id}/players`);
+  };
 
-    setTimeout(() => {
-      router.push(`/admin/tournament/${tournament.id}/edit`);
-    }, 300);
-  }; // 👈 il manquait cette accolade
-
-  return <TournamentForm onSubmit={handleCreate} />;
+  return (
+    <TournamentForm
+      title="Créer un nouveau tournoi"
+      isEditing={false}
+      onSubmit={handleCreate}
+    />
+  );
 }

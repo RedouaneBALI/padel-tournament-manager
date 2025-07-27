@@ -3,7 +3,7 @@
 import React from 'react';
 import { Round } from '@/src/types/round';
 import { MatchFormat } from '@/src/types/matchFormat';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import { confirmAlert } from 'react-confirm-alert';
 
 interface Props {
@@ -105,7 +105,9 @@ export default function MatchFormatActions({
         >
           Générer le tirage
         </button>
+
       )}
+     <ToastContainer />
     </div>
   );
 }
