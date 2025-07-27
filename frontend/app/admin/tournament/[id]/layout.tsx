@@ -4,6 +4,7 @@ import React, { useEffect, useState, use } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import AdminTournamentHeader from '@/src/components/admin/AdminTournamentHeader';
 import type { Tournament } from '@/src/types/tournament';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function AdminTournamentLayout({
   children,

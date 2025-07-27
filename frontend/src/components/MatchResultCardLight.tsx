@@ -1,27 +1,47 @@
-// components/MatchResultCardLight.tsx
+'use client';
 
 import React from 'react';
-import { PlayerPair } from '@/src/types/playerPair';
-import { Game } from '@/src/types/game';
+import { PlayerPair } from '@/types/playerPair';
 
-export default function MatchResultCardLight(game: Game) {
-  return (
-    <div className="rounded-lg bg-white shadow-sm border border-gray-200/80 p-3.5">
-      {[game.teamA, game.teamB].map((team, idx) => (
-        <div key={idx} className={`flex justify-between items-center py-1 ${idx === 0 ? '' : 'border-t border-gray-100 mt-1 pt-2'}`}>
-          <div className="space-y-1">
-            <p className="text-sm text-gray-800 truncate">
-              {team.player1.name}
-            </p>
-            <p className="text-sm text-gray-800 truncate">
-              {team.player2.name}
-            </p>
-          </div>
-          {team.seed != null && (
-            <span className="text-xs text-gray-500 ml-2 whitespace-nowrap">({team.seed})</span>
-          )}
+interface Props {
+  teamA: PlayerPair | null;
+  teamB: PlayerPair | null;
+}
+
+export default function MatchResultCardLight({ teamA, teamB }: Props) {
+  const renderPair = (pair: PlayerPair | null) => {
+    return (
+      <div className="flex items-center justify-between px-4 h-[60px]">
+        <div className="flex flex-col flex-1">
+          <span className="text-sm text-foreground truncate">
+            {pair?.player1?.name || ''}
+          </span>
+          <span className="text-sm text-muted-foreground truncate">
+            {pair?.player2?.name || ''}
+          </span>
         </div>
-      ))}
+
+        <div className="flex items-center space-x-2">
+          {pair?.seed && (
+            <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-medium">
+              #{pair.seed}
+            </span>
+          )}
+          <div className="w-12 text-center">
+            {/* Score ou placeholder */}
+            <div className="text-xs text-muted-foreground opacity-50"></div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden min-w-[280px] max-w-[400px]">
+      <div className="divide-y divide-border">
+        <div>{renderPair(teamA)}</div>
+        <div>{renderPair(teamB)}</div>
+      </div>
     </div>
   );
 }

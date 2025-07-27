@@ -3,16 +3,15 @@
 import React from 'react';
 import { Round } from '@/src/types/round';
 import { MatchFormat } from '@/src/types/matchFormat';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { confirmAlert } from 'react-confirm-alert';
+import { useRouter } from 'next/navigation';
 
 interface Props {
   tournamentId: string;
   rounds: Round[];
   matchFormat: MatchFormat | null;
   currentStageIndex: number;
-  setRounds: (rounds: Round[]) => void;
-  setCurrentStageIndex: (index: number) => void;
   isLoading: boolean;
   setIsLoading: (value: boolean) => void;
 }
@@ -22,11 +21,11 @@ export default function MatchFormatActions({
   rounds,
   matchFormat,
   currentStageIndex,
-  setRounds,
-  setCurrentStageIndex,
   isLoading,
   setIsLoading,
 }: Props) {
+  const router = useRouter();
+
   const handleApplyAll = async () => {
     if (!matchFormat) return;
     setIsLoading(true);
@@ -51,8 +50,11 @@ export default function MatchFormatActions({
     }
   };
 
+  const isFirstRoundEmpty = rounds[0]?.games.every(
+    (game) => !game.teamA && !game.teamB
+  );
+
   const handleDraw = () => {
-    // @todo add check on pairs
     confirmAlert({
       title: 'Confirmer le tirage',
       message:
@@ -65,16 +67,14 @@ export default function MatchFormatActions({
               const res = await fetch(`http://localhost:8080/tournaments/${tournamentId}/draw`, {
                 method: 'POST',
               });
+
               if (!res.ok) {
                 toast.error("Tirage déjà effectué.");
                 return;
               }
 
               toast.success("Tirage généré !");
-              const roundRes = await fetch(`http://localhost:8080/tournaments/${tournamentId}/rounds`);
-              const data = await roundRes.json();
-              setRounds(data);
-              setCurrentStageIndex(0);
+              router.push(`/admin/tournament/${tournamentId}/rounds/results`);
             } catch {
               toast.error("Erreur lors de la génération du tirage.");
             }
@@ -98,16 +98,14 @@ export default function MatchFormatActions({
         Appliquer à tous les rounds
       </button>
 
-      {currentStageIndex === 0 && rounds[0]?.games.length === 0 && (
-        <button
-          onClick={handleDraw}
-          className="w-full sm:w-auto px-4 py-2 bg-white text-sm border border-gray-300 text-gray-800 rounded hover:bg-gray-100"
-        >
-          Générer le tirage
-        </button>
-
-      )}
-     <ToastContainer />
+    {currentStageIndex === 0 && isFirstRoundEmpty && (
+      <button
+        onClick={handleDraw}
+        className="w-full sm:w-auto px-4 py-2 bg-white text-sm border border-gray-300 text-gray-800 rounded hover:bg-gray-100"
+      >
+        Générer le tirage
+      </button>
+    )}
     </div>
   );
 }
