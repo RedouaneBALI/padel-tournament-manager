@@ -6,6 +6,8 @@ import MatchFormatForm from '@/src/components/round/MatchFormatForm';
 import { stageLabels } from '@/src/types/stage';
 import { MatchFormat }  from '@/src/types/matchFormat';
 import { Round } from '@/src/types/round';
+import RoundSelector from '@/src/components/round/RoundSelector';
+import MatchFormatActions from '@/src/components/round/MatchFormatActions';
 
 export default function MatchFormatConfigPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params);
@@ -99,38 +101,11 @@ export default function MatchFormatConfigPage({ params }: { params: Promise<{ id
     <div className="space-y-4">
       {rounds.length > 0 ? (
         <>
-          <div className="flex items-center justify-center gap-4">
-            <button
-              onClick={handlePrevious}
-              disabled={currentStageIndex === 0}
-              className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-30"
-            >
-              ←
-            </button>
-
-            <select
-              value={currentStage}
-              onChange={(e) => {
-                const index = rounds.findIndex((r) => r.stage === e.target.value);
-                if (index !== -1) setCurrentStageIndex(index);
-              }}
-              className="text-center text-sm px-3 py-1 border border-gray-300 rounded"
-            >
-              {rounds.map((round) => (
-                <option key={round.id} value={round.stage}>
-                  {stageLabels[round.stage]}
-                </option>
-              ))}
-            </select>
-
-            <button
-              onClick={handleNext}
-              disabled={currentStageIndex === rounds.length - 1}
-              className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-30"
-            >
-              →
-            </button>
-          </div>
+          <RoundSelector
+            rounds={rounds}
+            currentIndex={currentStageIndex}
+            onChange={setCurrentStageIndex}
+          />
 
           {isLoading ? (
             <div className="text-center text-sm text-gray-500 mt-4">Chargement du format...</div>
@@ -144,36 +119,16 @@ export default function MatchFormatConfigPage({ params }: { params: Promise<{ id
                       saveFormat(newFormat);
                     }}
                   />
-
-                  <button
-                    onClick={async () => {
-                      if (!matchFormat) return;
-                      setIsLoading(true);
-                      try {
-                        await Promise.all(
-                          rounds.map((round) =>
-                            fetch(
-                              `http://localhost:8080/tournaments/${id}/rounds/${round.stage}/match-format`,
-                              {
-                                method: 'PUT',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(matchFormat),
-                              }
-                            )
-                          )
-                        );
-                        toast.success('Format appliqué à tous les rounds.');
-                      } catch {
-                        toast.error('Erreur lors de la mise à jour des rounds.');
-                      } finally {
-                        setIsLoading(false);
-                      }
-                    }}
-                    disabled={isLoading}
-                    className="mt-4 px-4 py-2 bg-gray-100 text-sm border border-gray-300 rounded hover:bg-gray-200 disabled:opacity-50"
-                  >
-                    Appliquer à tous les rounds
-                  </button>
+                   <MatchFormatActions
+                     tournamentId={id}
+                     rounds={rounds}
+                     currentStageIndex={currentStageIndex}
+                     matchFormat={matchFormat}
+                     setRounds={setRounds}
+                     setCurrentStageIndex={setCurrentStageIndex}
+                     isLoading={isLoading}
+                     setIsLoading={setIsLoading}
+                   />
                 </>
             )
           )}

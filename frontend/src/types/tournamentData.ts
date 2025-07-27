@@ -7,8 +7,8 @@ export type TournamentFormData = {
   gender: string | null;
   level: string | null;
   tournamentFormat: string | null;
-  nbSeeds: string | number | null;
+  nbSeeds: 16;
   startDate: string | null;
   endDate: string | null;
-  nbMaxPairs: string | number | null;
+  nbMaxPairs: 48;
 };

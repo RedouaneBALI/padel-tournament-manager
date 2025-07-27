@@ -27,10 +27,10 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
     gender: '',
     level: '',
     tournamentFormat: '',
-    nbSeeds: '',
+    nbSeeds: 16,
     startDate: '',
     endDate: '',
-    nbMaxPairs: '',
+    nbMaxPairs: 48,
     ...initialData,
   });
 

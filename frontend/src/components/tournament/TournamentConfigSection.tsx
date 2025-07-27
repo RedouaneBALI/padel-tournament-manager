@@ -66,17 +66,21 @@ export default function TournamentConfigSection({
               <Zap className="h-4 w-4" />
               Format
             </label>
-            <select
-              name="tournamentFormat"
-              value={formData.tournamentFormat ?? ''}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
-            >
-              <option value="">Sélectionnez un format</option>
-              <option value="KNOCKOUT">Élimination directe</option>
-              <option value="QUALIF_KNOCKOUT">Qualif + Élimination directe</option>
-              <option value="GROUP_STAGE">Phase de poules + Elim</option>
-            </select>
+        <select
+          name="tournamentFormat"
+          value={formData.tournamentFormat ?? ''}
+          onChange={handleInputChange}
+          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+        >
+          <option value="">Sélectionnez un format</option>
+          <option value="KNOCKOUT">Élimination directe</option>
+          <option value="QUALIF_KNOCKOUT" disabled className="text-muted-foreground cursor-not-allowed">
+            Qualif + Élimination directe
+          </option>
+          <option value="GROUP_STAGE" disabled className="text-muted-foreground cursor-not-allowed">
+            Phase de poules + Elim
+          </option>
+        </select>
           </div>
         </div>
 
@@ -90,8 +94,7 @@ export default function TournamentConfigSection({
               name="nbSeeds"
               type="number"
               min="0"
-              placeholder="0"
-              value={formData.nbSeeds ?? 8}
+              value={formData.nbSeeds ?? 16}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             />
@@ -105,8 +108,7 @@ export default function TournamentConfigSection({
               name="nbMaxPairs"
               type="number"
               min="0"
-              placeholder="Ex : 32"
-              value={formData.nbMaxPairs ?? 32}
+              value={formData.nbMaxPairs ?? 48}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             />

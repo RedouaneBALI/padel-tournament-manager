@@ -34,7 +34,7 @@ export default function AdminTournamentLayout({ children, params }: { children: 
     <div className="max-w-4xl mx-auto p-6">
       <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold">
-            Admin – {tournament?.name ?? 'Chargement...'}
+            {tournament?.name ?? 'Chargement...'}
           </h1>
           <div className="flex items-center gap-2">
             <button
