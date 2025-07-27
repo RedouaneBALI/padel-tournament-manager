@@ -6,8 +6,9 @@ import Link from 'next/link';
 import { ToastContainer, toast } from 'react-toastify';
 import { Settings } from 'lucide-react';
 import type { Tournament } from '@/src/types/tournament';
+import { Share2 } from 'lucide-react';
 
-export default function AdminTournamentLayout({ children, params }: { children: React.ReactNode; params: { id: string } }) {
+export default function AdminTournamentLayout({ children, params }: { children: React.ReactNode; params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const pathname = usePathname();
   const router = useRouter();
@@ -32,16 +33,31 @@ export default function AdminTournamentLayout({ children, params }: { children: 
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">
-          Admin – {tournament?.name ?? 'Chargement...'}
-        </h1>
-        <button
-          onClick={() => router.push(`/admin/tournament/${id}/edit`)}
-          className="p-2 rounded hover:bg-muted transition-colors cursor-pointer"
-          title="Modifier le tournoi"
-        >
-          <Settings className="h-5 w-5 text-muted-foreground hover:text-primary" />
-        </button>
+          <h1 className="text-2xl font-bold">
+            Admin – {tournament?.name ?? 'Chargement...'}
+          </h1>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const shareUrl = `http://localhost:3000/tournament/${id}`;
+                navigator.clipboard.writeText(shareUrl)
+                  .then(() => toast.success('Lien copié dans le presse-papiers !'))
+                  .catch(() => prompt('Copiez ce lien :', shareUrl));
+              }}
+              className="p-2 rounded hover:bg-muted transition-colors cursor-pointer"
+              title="Partager le lien aux joueurs"
+            >
+              <Share2 className="h-5 w-5 text-muted-foreground hover:text-primary" />
+            </button>
+
+            <button
+              onClick={() => router.push(`/admin/tournament/${id}/edit`)}
+              className="p-2 rounded hover:bg-muted transition-colors cursor-pointer"
+              title="Modifier le tournoi"
+            >
+              <Settings className="h-5 w-5 text-muted-foreground hover:text-primary" />
+            </button>
+          </div>
       </div>
 
       <div className="flex justify-center mb-6 space-x-4 border-b">

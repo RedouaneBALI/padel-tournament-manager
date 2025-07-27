@@ -6,11 +6,10 @@ import { toast } from 'react-toastify';
 
 interface Props {
   tournamentId: number;
-  defaultPairs: PlayerPair[];
   onPairsChange?: (pairs: PlayerPair[]) => void; // OK dans interface
 }
 
-export default function PlayerPairsTextarea({ tournamentId, defaultPairs, onPairsChange }: Props) { // <-- ajoute onPairsChange ici
+export default function PlayerPairsTextarea({ tournamentId, onPairsChange }: Props) {
   const [text, setText] = useState('');
 
   const fetchUpdatedPairs = async () => {
@@ -60,7 +59,7 @@ export default function PlayerPairsTextarea({ tournamentId, defaultPairs, onPair
       toast.success('Joueurs ajoutés avec succès !');
       await fetchUpdatedPairs();
     } catch (error) {
-      toast.error('Erreur réseau. Veuillez réessayer.');
+      toast.error('Erreur réseau. Veuillez réessayer : ' + error);
     }
   };
 

@@ -5,7 +5,7 @@ import PlayerPairsTextarea from '@/src/components/tournament/PlayerPairsTextarea
 import { PlayerPair } from '@/src/types/playerPair';
 import { toast } from 'react-toastify';
 
-export default function AdminPlayersPage({ params }: { params: { id: string } }) {
+export default function AdminPlayersPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [pairs, setPairs] = useState<PlayerPair[]>([]);
 
@@ -31,7 +31,6 @@ export default function AdminPlayersPage({ params }: { params: { id: string } })
       <PlayerPairsTextarea
         onPairsChange={setPairs}
         tournamentId={Number(id)}
-        defaultPairs={pairs}
       />
     </div>
   );

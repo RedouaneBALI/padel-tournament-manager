@@ -4,8 +4,7 @@ import React from 'react';
 import TournamentOverviewTab from './TournamentOverviewTab';
 
 export default function TournamentOverviewPage({ params }: { params: Promise<{ id: string }> }) {
-  const actualParams = React.use(params);
-  const { id } = actualParams;
+  const { id } = React.use(params);
 
   const [tournament, setTournament] = React.useState(null);
 

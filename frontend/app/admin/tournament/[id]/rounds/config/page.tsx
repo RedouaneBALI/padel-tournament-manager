@@ -2,13 +2,15 @@
 
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import MatchFormatForm, { MatchFormat } from '@/src/components/round/MatchFormatForm';
-import { Stage, stageLabels } from '@/src/types/stage';
+import MatchFormatForm from '@/src/components/round/MatchFormatForm';
+import { stageLabels } from '@/src/types/stage';
+import { MatchFormat }  from '@/src/types/matchFormat';
+import { Round } from '@/src/types/round';
 
 export default function MatchFormatConfigPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params);
 
-  const [rounds, setRounds] = useState<{ stage: Stage }[]>([]);
+  const [rounds, setRounds] = useState<Round[]>([]);
   const [currentStageIndex, setCurrentStageIndex] = useState<number>(0);
   const [matchFormat, setMatchFormat] = useState<MatchFormat | null>(null);
   const [isLoading, setIsLoading] = useState(false);

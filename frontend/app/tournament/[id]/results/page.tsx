@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import React from 'react';
 import { toast } from 'react-toastify';
 import { Round } from '@/src/types/round';
+import { Game } from '@/src/types/game';
 import MatchResultCardLight from '@/src/components/MatchResultCardLight';
 
 
@@ -20,7 +21,7 @@ export default function TournamentResultsTab({ params }: { params: Promise<{ id:
         const data: Round[] = await response.json();
         setRounds(data);
       } catch (err) {
-        toast.error("Impossible de récupérer les rounds.");
+        toast.error("Impossible de récupérer les rounds : " + err);
       }
     }
     fetchRounds();
@@ -35,11 +36,11 @@ return (
     ) : (
       rounds.map((round) => (
         <div key={round.id} className="p-4 border rounded-md shadow-sm space-y-4 bg-muted/50">
-          <h3 className="text-lg font-bold text-primary">{round.name}</h3>
+          <h3 className="text-lg font-bold text-primary">{round.stage}</h3>
 
           {round.games?.length > 0 ? (
             <div className="space-y-3">
-              {round.games.map((game: any) => (
+              {round.games.map((game: Game) => (
                 <div key={game.id}>
                   <MatchResultCardLight teamA={game.teamA} teamB={game.teamB} />
                 </div>

@@ -16,7 +16,7 @@ export default function TournamentOverviewTab({ tournament }: TournamentOverview
       <p><strong>Niveau :</strong> {tournament.level || '—'}</p>
       <p><strong>Format :</strong> {tournament.tournamentFormat || '—'}</p>
       <p><strong>Nombre de têtes de série :</strong> {tournament.nbSeeds}</p>
-      <p><strong>Nombre maximum d'équipes :</strong> {tournament.nbMaxPairs}</p>
+      <p><strong>Nombre maximum d&apos;équipes :</strong> {tournament.nbMaxPairs}</p>
       <p><strong>Date de début :</strong> {tournament.startDate || '—'}</p>
       <p><strong>Date de fin :</strong> {tournament.endDate || '—'}</p>
     </section>

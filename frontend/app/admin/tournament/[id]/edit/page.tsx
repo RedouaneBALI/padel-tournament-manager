@@ -6,7 +6,7 @@ import TournamentForm from '@/src/components/forms/TournamentForm';
 import type { Tournament } from '@/src/types/tournament';
 import { toast } from 'react-toastify';
 
-export default function AdminEditTournamentPage({ params }: { params: { id: string } }) {
+export default function AdminEditTournamentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const [tournament, setTournament] = useState<Tournament | null>(null);
@@ -20,7 +20,7 @@ export default function AdminEditTournamentPage({ params }: { params: { id: stri
         const data: Tournament = await res.json();
         setTournament(data);
       } catch (err) {
-        toast.error('Impossible de charger les infos du tournoi.');
+        toast.error('Impossible de charger les infos du tournoi : ' + err);
       }
     }
 

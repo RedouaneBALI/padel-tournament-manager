@@ -4,13 +4,14 @@ import { useEffect, useState } from 'react';
 import React from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import PlayerPairsTextarea from '@/src/components/tournament/PlayerPairsTextarea';
-import Link from 'next/link';
-import { FileText, Settings } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { PlayerPair } from '@/src/types/playerPair';
 import { Tournament } from '@/src/types/tournament';
-import MatchFormatForm, { MatchFormat } from '@/src/components/round/MatchFormatForm';
+import { MatchFormat } from '@/src/types/matchFormat';
+import { Round } from '@/src/types/round';
+import MatchFormatForm from '@/src/components/round/MatchFormatForm';
 
-export default function TournamentPage({ params }: { params: { id: string } }) {
+export default function TournamentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params);
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
   const [pairs, setPairs] = useState<PlayerPair[]>([]);
@@ -123,8 +124,7 @@ export default function TournamentPage({ params }: { params: { id: string } }) {
           </h2>
           <PlayerPairsTextarea
           onPairsChange={setPairs}
-          tournamentId={Number(id)}
-          defaultPairs={pairs} />
+          tournamentId={Number(id)} />
         </section>
         <div className="mt-6">
           <MatchFormatForm format={matchFormat} onChange={setMatchFormat} />

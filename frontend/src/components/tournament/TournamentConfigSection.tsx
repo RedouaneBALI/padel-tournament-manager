@@ -98,7 +98,7 @@ export default function TournamentConfigSection({
           </div>
           <div className="space-y-2 max-w-xs">
             <label htmlFor="nbMaxPairs" className="block text-sm font-medium text-foreground">
-              Nombre d'équipes maximum
+              Nombre d&apos;équipes maximum
             </label>
             <input
               id="nbMaxPairs"

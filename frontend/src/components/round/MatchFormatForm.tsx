@@ -2,13 +2,7 @@
 
 import React from 'react';
 import { Switch } from '@/components/ui/switch';
-
-export interface MatchFormat {
-  numberOfSetsToWin: number;
-  pointsPerSet: number;
-  superTieBreakInFinalSet: boolean;
-  advantage: boolean;
-}
+import { MatchFormat }  from '@/src/types/matchFormat';
 
 interface MatchFormatFormProps {
   format: MatchFormat;
@@ -16,7 +10,8 @@ interface MatchFormatFormProps {
 }
 
 export default function MatchFormatForm({ format, onChange }: MatchFormatFormProps) {
-  const handleChange = (key: keyof MatchFormat, value: any) => {
+  type MatchFormatValue = number | boolean;
+  const handleChange = (key: keyof MatchFormat, value: MatchFormatValue) => {
     onChange({ ...format, [key]: value });
   };
 
