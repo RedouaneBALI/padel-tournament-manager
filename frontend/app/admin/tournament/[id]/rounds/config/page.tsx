@@ -1,53 +1,61 @@
 'use client';
 
-import React, { use, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import MatchFormatForm, { MatchFormat } from '@/src/components/round/MatchFormatForm';
+import { Stage, stageLabels } from '@/src/types/stage';
 
-export default function MatchFormatConfigPage({ params }: { params: { id: string } }) {
-  const { id } = use(params)
-  const [roundId, setRoundId] = useState<number | null>(null);
-  const [format, setFormat] = useState<MatchFormat>({
-    numberOfSetsToWin: 2,
-    pointsPerSet: 6,
-    superTieBreakInFinalSet: true,
-    advantage: false,
-  });
+export default function MatchFormatConfigPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = React.use(params);
+
+  const [rounds, setRounds] = useState<{ stage: Stage }[]>([]);
+  const [currentStageIndex, setCurrentStageIndex] = useState<number>(0);
+  const [matchFormat, setMatchFormat] = useState<MatchFormat | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const currentStage = rounds[currentStageIndex]?.stage;
 
   useEffect(() => {
-    async function fetchFirstRound() {
+    async function fetchRounds() {
       try {
         const res = await fetch(`http://localhost:8080/tournaments/${id}/rounds`);
         if (!res.ok) throw new Error();
-        const rounds = await res.json();
-
-        if (rounds.length > 0) {
-          const firstRound = rounds[0];
-          setRoundId(firstRound.id);
-
-          // Ensuite, fetch le match format du round
-          const formatRes = await fetch(`http://localhost:8080/tournaments/${id}/rounds/${firstRound.id}/match-format`);
-          if (!formatRes.ok) throw new Error();
-          const matchFormat = await formatRes.json();
-          setFormat(matchFormat);
-        }
+        const data = await res.json();
+        setRounds(data);
       } catch {
-        toast.error('Erreur lors du chargement du format ou des rounds.');
+        toast.error('Erreur lors du chargement des rounds.');
       }
     }
 
-    fetchFirstRound();
+    fetchRounds();
   }, [id]);
 
-  const saveFormat = async (newFormat: MatchFormat) => {
-    if (!roundId) {
-      toast.error('Aucun round existant pour enregistrer le format.');
-      return;
+  useEffect(() => {
+    async function fetchFormat() {
+      if (!currentStage) return;
+      setIsLoading(true);
+      try {
+        const res = await fetch(
+          `http://localhost:8080/tournaments/${id}/rounds/${currentStage}/match-format`
+        );
+        if (!res.ok) throw new Error();
+        const format = await res.json();
+        setMatchFormat(format);
+      } catch {
+        toast.error('Erreur lors du chargement du format.');
+      } finally {
+        setIsLoading(false);
+      }
     }
 
+    fetchFormat();
+  }, [currentStage, id]);
+
+  const saveFormat = async (newFormat: MatchFormat) => {
+    if (!currentStage) return;
     try {
       const res = await fetch(
-        `http://localhost:8080/tournaments/${id}/rounds/${roundId}/match-format`,
+        `http://localhost:8080/tournaments/${id}/rounds/${currentStage}/match-format`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -55,9 +63,9 @@ export default function MatchFormatConfigPage({ params }: { params: { id: string
         }
       );
       if (!res.ok) throw new Error();
-      toast.success('Format enregistré !');
+      toast.success('Format enregistré');
     } catch {
-      toast.error("Erreur lors de l'enregistrement du format.");
+      toast.error("Erreur lors de l'enregistrement.");
     }
   };
 
@@ -67,56 +75,120 @@ export default function MatchFormatConfigPage({ params }: { params: { id: string
         method: 'POST',
       });
       if (!res.ok) throw new Error();
-      toast.success('Tirage généré avec succès !');
-
-      // Recharge les rounds (et le match format du premier)
+      toast.success('Tirage généré');
       const roundRes = await fetch(`http://localhost:8080/tournaments/${id}/rounds`);
-      if (!roundRes.ok) throw new Error();
-      const rounds = await roundRes.json();
-
-      if (rounds.length > 0) {
-        const first = rounds[0];
-        setRoundId(first.id);
-        const formatRes = await fetch(`http://localhost:8080/tournaments/${id}/rounds/${first.id}/match-format`);
-        const matchFormat = await formatRes.json();
-        setFormat(matchFormat);
-      }
+      const data = await roundRes.json();
+      setRounds(data);
+      setCurrentStageIndex(0);
     } catch {
       toast.error('Erreur lors de la génération du tirage.');
     }
   };
 
+  const handlePrevious = () => {
+    setCurrentStageIndex((i) => Math.max(i - 1, 0));
+  };
+
+  const handleNext = () => {
+    setCurrentStageIndex((i) => Math.min(i + 1, rounds.length - 1));
+  };
+
   return (
-    <>
-      {roundId ? (
+    <div className="space-y-4">
+      {rounds.length > 0 ? (
         <>
-          <MatchFormatForm
-            format={format}
-            onChange={(f) => {
-              setFormat(f);
-              saveFormat(f);
-            }}
-          />
-          <button
-            onClick={handleDraw}
-            className="mt-4 px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700"
-          >
-            Générer le tirage
-          </button>
+          <div className="flex items-center justify-center gap-4">
+            <button
+              onClick={handlePrevious}
+              disabled={currentStageIndex === 0}
+              className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-30"
+            >
+              ←
+            </button>
+
+            <select
+              value={currentStage}
+              onChange={(e) => {
+                const index = rounds.findIndex((r) => r.stage === e.target.value);
+                if (index !== -1) setCurrentStageIndex(index);
+              }}
+              className="text-center text-sm px-3 py-1 border border-gray-300 rounded"
+            >
+              {rounds.map((round) => (
+                <option key={round.id} value={round.stage}>
+                  {stageLabels[round.stage]}
+                </option>
+              ))}
+            </select>
+
+            <button
+              onClick={handleNext}
+              disabled={currentStageIndex === rounds.length - 1}
+              className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-30"
+            >
+              →
+            </button>
+          </div>
+
+          {isLoading ? (
+            <div className="text-center text-sm text-gray-500 mt-4">Chargement du format...</div>
+          ) : (
+            matchFormat && (
+              <>
+                  <MatchFormatForm
+                    format={matchFormat}
+                    onChange={(newFormat) => {
+                      setMatchFormat(newFormat);
+                      saveFormat(newFormat);
+                    }}
+                  />
+
+                  <button
+                    onClick={async () => {
+                      if (!matchFormat) return;
+                      setIsLoading(true);
+                      try {
+                        await Promise.all(
+                          rounds.map((round) =>
+                            fetch(
+                              `http://localhost:8080/tournaments/${id}/rounds/${round.stage}/match-format`,
+                              {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(matchFormat),
+                              }
+                            )
+                          )
+                        );
+                        toast.success('Format appliqué à tous les rounds.');
+                      } catch {
+                        toast.error('Erreur lors de la mise à jour des rounds.');
+                      } finally {
+                        setIsLoading(false);
+                      }
+                    }}
+                    disabled={isLoading}
+                    className="mt-4 px-4 py-2 bg-gray-100 text-sm border border-gray-300 rounded hover:bg-gray-200 disabled:opacity-50"
+                  >
+                    Appliquer à tous les rounds
+                  </button>
+                </>
+            )
+          )}
         </>
       ) : (
         <>
-          <p className="mb-4 text-sm text-gray-600">
+          <p className="text-sm text-gray-600">
             Aucun round encore généré. Cliquez sur le bouton ci-dessous pour générer un tirage.
           </p>
           <button
             onClick={handleDraw}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             Générer le tirage
           </button>
         </>
       )}
-    </>
+    </div>
   );
 }

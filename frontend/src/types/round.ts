@@ -2,6 +2,6 @@ import { Game } from '@/src/types/game';
 
 export interface Round {
   id?: number;
-  name: string;
+  stage: string;
   matches: Game[];
 }
