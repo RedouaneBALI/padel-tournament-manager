@@ -52,6 +52,7 @@ export default function MatchFormatActions({
   };
 
   const handleDraw = () => {
+    // @todo add check on pairs
     confirmAlert({
       title: 'Confirmer le tirage',
       message:

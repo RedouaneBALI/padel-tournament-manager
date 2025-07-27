@@ -1,6 +1,8 @@
+import { Player } from '@/src/types/player';
+
 export interface PlayerPair {
   id?: number;
   seed?: number;
-  player1: string;
-  player2: string;
+  player1: Player;
+  player2: Player;
 }

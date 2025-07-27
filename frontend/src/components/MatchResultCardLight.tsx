@@ -11,10 +11,10 @@ export default function MatchResultCardLight(game: Game) {
         <div key={idx} className={`flex justify-between items-center py-1 ${idx === 0 ? '' : 'border-t border-gray-100 mt-1 pt-2'}`}>
           <div className="space-y-1">
             <p className="text-sm text-gray-800 truncate">
-              {team.player1}
+              {team.player1.name}
             </p>
             <p className="text-sm text-gray-800 truncate">
-              {team.player2}
+              {team.player2.name}
             </p>
           </div>
           {team.seed != null && (

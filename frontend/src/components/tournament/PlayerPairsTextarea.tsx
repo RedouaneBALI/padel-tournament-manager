@@ -17,7 +17,7 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange }: Pro
       const response = await fetch(`http://localhost:8080/tournaments/${tournamentId}/pairs`);
       if (response.ok) {
         const data: PlayerPair[] = await response.json();
-        setText(data.map(pair => `${pair.player1},${pair.player2}`).join('\n'));
+        setText(data.map(pair => `${pair.player1.name},${pair.player2.name}`).join('\n'));
         if (onPairsChange) onPairsChange(data); // <-- maintenant ça fonctionne bien
       } else {
         toast.error("Impossible de récupérer les joueurs.");

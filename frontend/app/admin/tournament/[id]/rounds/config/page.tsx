@@ -4,21 +4,23 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import MatchFormatForm from '@/src/components/round/MatchFormatForm';
 import { stageLabels } from '@/src/types/stage';
-import { MatchFormat }  from '@/src/types/matchFormat';
+import { MatchFormat } from '@/src/types/matchFormat';
 import { Round } from '@/src/types/round';
 import RoundSelector from '@/src/components/round/RoundSelector';
 import MatchFormatActions from '@/src/components/round/MatchFormatActions';
+import { PlayerPair } from '@/src/types/playerPair';
 
-export default function MatchFormatConfigPage({ params }: { params: Promise<{ id: string }> }) {
+interface MatchFormatConfigPageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default function MatchFormatConfigPage({ params }: MatchFormatConfigPageProps) {
   const { id } = React.use(params);
-
   const [rounds, setRounds] = useState<Round[]>([]);
   const [currentStageIndex, setCurrentStageIndex] = useState<number>(0);
   const [matchFormat, setMatchFormat] = useState<MatchFormat | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
   const currentStage = rounds[currentStageIndex]?.stage;
-
   useEffect(() => {
     async function fetchRounds() {
       try {
@@ -112,24 +114,24 @@ export default function MatchFormatConfigPage({ params }: { params: Promise<{ id
           ) : (
             matchFormat && (
               <>
-                  <MatchFormatForm
-                    format={matchFormat}
-                    onChange={(newFormat) => {
-                      setMatchFormat(newFormat);
-                      saveFormat(newFormat);
-                    }}
-                  />
-                   <MatchFormatActions
-                     tournamentId={id}
-                     rounds={rounds}
-                     currentStageIndex={currentStageIndex}
-                     matchFormat={matchFormat}
-                     setRounds={setRounds}
-                     setCurrentStageIndex={setCurrentStageIndex}
-                     isLoading={isLoading}
-                     setIsLoading={setIsLoading}
-                   />
-                </>
+                <MatchFormatForm
+                  format={matchFormat}
+                  onChange={(newFormat) => {
+                    setMatchFormat(newFormat);
+                    saveFormat(newFormat);
+                  }}
+                />
+                <MatchFormatActions
+                  tournamentId={id}
+                  rounds={rounds}
+                  currentStageIndex={currentStageIndex}
+                  matchFormat={matchFormat}
+                  setRounds={setRounds}
+                  setCurrentStageIndex={setCurrentStageIndex}
+                  isLoading={isLoading}
+                  setIsLoading={setIsLoading}
+                />
+              </>
             )
           )}
         </>

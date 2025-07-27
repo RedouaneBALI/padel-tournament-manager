@@ -37,7 +37,7 @@ export default function TournamentPlayersTab({ params }: {   params: Promise<{ i
               <span className="font-semibold text-primary">
                 {pair.seed && pair.seed > 0 ? `#${pair.seed} ` : ''}
               </span>
-              {pair.player1} – {pair.player2}
+              {pair.player1.name} – {pair.player2.name}
             </li>
           ))}
         </ul>
