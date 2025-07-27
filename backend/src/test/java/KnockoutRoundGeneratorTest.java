@@ -48,6 +48,7 @@ public class KnockoutRoundGeneratorTest {
     List<PlayerPair> pairs = createPairs(nbTeams);
     // On trie les équipes par seed croissant pour que seed 1 soit à l'indice 0, seed 2 à 1, etc.
     pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
+    generator = new KnockoutRoundGenerator(pairs, nbSeeds);
     List<Integer> seedPositions = generator.getSeedsPositions(nbTeams, nbSeeds);
     // Vérification pour tous les seeds concernés
     for (int i = 0; i < expectedSeedIndices.length; i++) {

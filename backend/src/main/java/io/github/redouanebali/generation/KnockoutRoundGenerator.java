@@ -15,7 +15,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class KnockoutRoundGenerator implements RoundGenerator {
 
-  private final List<PlayerPair> pairs; // todo create abstract class
+  private final List<PlayerPair> pairs;
   private final int              nbSeeds;
 
   @Override
@@ -27,19 +27,6 @@ public class KnockoutRoundGenerator implements RoundGenerator {
     round.setGames(games);
     round.setStage(Stage.fromNbTeams(pairs.size()));
     return round;
-  }
-
-  private void addByePairsIfNeeded() {
-    int originalSize = pairs.size();
-    int powerOfTwo   = 1;
-    while (powerOfTwo < originalSize) {
-      powerOfTwo *= 2;
-    }
-
-    int missing = powerOfTwo - originalSize;
-    for (int i = 0; i < missing; i++) {
-      pairs.add(PlayerPair.bye());
-    }
   }
 
   private List<Game> createEmptyGames(int nbTeams) {
@@ -157,12 +144,19 @@ public class KnockoutRoundGenerator implements RoundGenerator {
     List<Integer> prev   = generatePerfectSeedPositions(nbTeams / 2);
     List<Integer> result = new ArrayList<>();
 
-    for (int pos : prev) {
-      result.add(pos);
-      result.add(nbTeams - 1 - pos);
+    for (int i = 0; i < prev.size(); i++) {
+      int pos = prev.get(i);
+      if (i % 2 == 0) {
+        // Pour les indices pairs, on met la position en première moitié
+        result.add(pos);
+        result.add(nbTeams - 1 - pos);
+      } else {
+        // Pour les indices impairs, on inverse l'ordre
+        result.add(nbTeams - 1 - pos);
+        result.add(pos);
+      }
     }
 
     return result;
   }
-
 }
