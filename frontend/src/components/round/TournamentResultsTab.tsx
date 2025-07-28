@@ -1,63 +1,5 @@
 import { useEffect, useState } from 'react';
-
-// Types simulés pour la démo
-interface PlayerPair {
-  id: string;
-  player1?: { name: string };
-  player2?: { name: string };
-  seed?: number;
-}
-
-interface Game {
-  id: string;
-  teamA: PlayerPair | null;
-  teamB: PlayerPair | null;
-}
-
-interface Round {
-  id: string;
-  stage: string;
-  games: Game[];
-}
-
-// Composant MatchResultCardLight
-function MatchResultCardLight({ teamA, teamB }: { teamA: PlayerPair | null; teamB: PlayerPair | null }) {
-  const renderPair = (pair: PlayerPair | null) => {
-    return (
-      <div className="flex items-center px-4 h-[60px]">
-        <div className="flex flex-col flex-1">
-          <span className="text-sm text-gray-900 truncate">
-            {pair?.player1?.name || ''}
-          </span>
-          <span className="text-sm text-gray-900 truncate">
-            {pair?.player2?.name || ''}
-          </span>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          {pair?.seed && (
-            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
-              #{pair.seed}
-            </span>
-          )}
-          <div className="w-12 text-center">
-            {/* Score ou placeholder */}
-            <div className="text-xs text-gray-400 opacity-50"></div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden min-w-[280px] max-w-[400px]">
-      <div className="divide-y divide-gray-200">
-        <div>{renderPair(teamA)}</div>
-        <div>{renderPair(teamB)}</div>
-      </div>
-    </div>
-  );
-}
+import MatchResultCardLight from '@/src/components/MatchResultCardLight';
 
 // Fonction pour calculer la position verticale correcte de chaque match
 function calculateMatchPositions(rounds: Round[]) {
@@ -94,7 +36,13 @@ function calculateMatchPositions(rounds: Round[]) {
 }
 
 // Composant principal
-export default function TournamentResultsTab({ tournamentId }: { tournamentId: string }) {
+interface TournamentResultsTabProps {
+  tournamentId: string;
+  editable?: boolean;
+}
+
+export default function TournamentResultsTab({ tournamentId, editable = false }: TournamentResultsTabProps) {
+  console.log('editable is', editable); // always false
   const [rounds, setRounds] = useState<Round[]>([]);
 
   useEffect(() => {
@@ -158,8 +106,7 @@ export default function TournamentResultsTab({ tournamentId }: { tournamentId: s
                     right: '10px'
                   }}
                 >
-                  <MatchResultCardLight teamA={game.teamA} teamB={game.teamB} />
-                </div>
+                <MatchResultCardLight teamA={game.teamA} teamB={game.teamB} editable={editable} />                </div>
               ))}
 
               {/* Lignes de connexion vers le round suivant */}

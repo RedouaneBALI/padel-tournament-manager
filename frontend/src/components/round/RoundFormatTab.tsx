@@ -99,56 +99,42 @@ export default function RoundFormatTab({ tournamentId, pairs }: RoundFormatTabPr
 
   return (
     <div className="space-y-4">
-      {rounds.length > 0 ? (
-        <>
-          <RoundSelector
-            rounds={rounds}
-            currentIndex={currentStageIndex}
-            onChange={setCurrentStageIndex}
-          />
+      <>
+        <RoundSelector
+          rounds={rounds}
+          currentIndex={currentStageIndex}
+          onChange={setCurrentStageIndex}
+        />
 
-          {isLoading ? (
-            <div className="text-center text-sm text-gray-500 mt-4">
-              Chargement du format...
-            </div>
-          ) : (
-            matchFormat && (
-              <>
-                <MatchFormatForm
-                  format={matchFormat}
-                  onChange={(newFormat) => {
-                    setMatchFormat(newFormat);
-                    saveFormat(newFormat);
-                  }}
-                />
-                <MatchFormatActions
-                  tournamentId={tournamentId}
-                  rounds={rounds}
-                  currentStageIndex={currentStageIndex}
-                  matchFormat={matchFormat}
-                  setRounds={setRounds}
-                  setCurrentStageIndex={setCurrentStageIndex}
-                  isLoading={isLoading}
-                  setIsLoading={setIsLoading}
-                  pairs={pairs}
-                />
-              </>
-            )
-          )}
-        </>
-      ) : (
-        <>
-          <p className="text-sm text-gray-600">
-            Aucun round encore généré. Cliquez sur le bouton ci-dessous pour générer un tirage.
-          </p>
-          <button
-            onClick={handleDraw}
-            className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Générer le tirage
-          </button>
-        </>
-      )}
+        {isLoading ? (
+          <div className="text-center text-sm text-gray-500 mt-4">
+            Chargement du format...
+          </div>
+        ) : (
+          matchFormat && (
+            <>
+              <MatchFormatForm
+                format={matchFormat}
+                onChange={(newFormat) => {
+                  setMatchFormat(newFormat);
+                  saveFormat(newFormat);
+                }}
+              />
+              <MatchFormatActions
+                tournamentId={tournamentId}
+                rounds={rounds}
+                currentStageIndex={currentStageIndex}
+                matchFormat={matchFormat}
+                setRounds={setRounds}
+                setCurrentStageIndex={setCurrentStageIndex}
+                isLoading={isLoading}
+                setIsLoading={setIsLoading}
+                pairs={pairs}
+              />
+            </>
+          )
+        )}
+      </>
     </div>
   );
 }
