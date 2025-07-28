@@ -4,9 +4,19 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.MatchFormat;
+import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Score;
+import io.github.redouanebali.model.SetScore;
+import io.github.redouanebali.model.Stage;
+import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.service.TournamentProgressionService;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -167,5 +177,138 @@ public class TournamentProgressionServiceTest {
       case "NONE" -> assertNull(actual);
       default -> fail("Invalid expectedWinner value: " + expectedWinner);
     }
+  }
+
+  @Test
+  void testPropagateWinners() {
+    Round roundCurrent = new Round();
+    roundCurrent.setStage(Stage.R32);
+
+    List<Game> gamesCurrent = new ArrayList<>();
+
+    // Joueurs / paires
+    PlayerPair byePair = PlayerPair.bye();
+    byePair.setId(99L);
+
+    PlayerPair pair1 = createPlayerPair(1L);
+    PlayerPair pair2 = createPlayerPair(2L);
+    PlayerPair pair3 = createPlayerPair(3L);
+    PlayerPair pair4 = createPlayerPair(4L);
+    PlayerPair pair5 = createPlayerPair(5L);
+    PlayerPair pair6 = createPlayerPair(6L);
+
+    // Création de 4 matchs dans roundCurrent
+    // Match 0 : pair1 vs pair2 (terminé, pair1 gagne)
+    Game game0 = new Game();
+    game0.setTeamA(pair1);
+    game0.setTeamB(pair2);
+    game0.setScore(createScoreWithWinner(pair1));
+    game0.setFormat(createSimpleFormat());
+
+    // Match 1 : pair3 vs BYE (pair3 passe automatiquement)
+    Game game1 = new Game();
+    game1.setTeamA(pair3);
+    game1.setTeamB(byePair);
+    game1.setScore(null); // pas joué, mais BYE présent
+    game1.setFormat(createSimpleFormat());
+
+    // Match 2 : pair4 vs pair5 (pas terminé)
+    Game game2 = new Game();
+    game2.setTeamA(pair4);
+    game2.setTeamB(pair5);
+    game2.setScore(null);
+    game2.setFormat(createSimpleFormat());
+
+    // Match 3 : pair6 vs BYE (pair6 passe automatiquement)
+    Game game3 = new Game();
+    game3.setTeamA(pair6);
+    game3.setTeamB(byePair);
+    game3.setScore(null);
+    game3.setFormat(createSimpleFormat());
+
+    gamesCurrent.add(game0);
+    gamesCurrent.add(game1);
+    gamesCurrent.add(game2);
+    gamesCurrent.add(game3);
+
+    roundCurrent.setGames(gamesCurrent);
+
+    // Round suivant (ex: R16) avec 2 matchs (indices 0 et 1)
+    Round roundNext = new Round();
+    roundNext.setStage(Stage.R16);
+    List<Game> gamesNext = new ArrayList<>();
+
+    Game nextGame0 = new Game(); // Correspond aux matchs 0 et 1 du round actuel
+    Game nextGame1 = new Game(); // Correspond aux matchs 2 et 3 du round actuel
+
+    gamesNext.add(nextGame0);
+    gamesNext.add(nextGame1);
+
+    roundNext.setGames(gamesNext);
+
+    // Tournoi
+    Tournament tournament = new Tournament();
+    Set<Round> rounds     = new LinkedHashSet<>();
+    rounds.add(roundCurrent);
+    rounds.add(roundNext);
+    tournament.setRounds(rounds);
+
+    // Action
+    service.propagateWinners(tournament);
+
+    // Vérification match nextGame0 (issu des matchs 0 et 1)
+    // i=0 -> pair1 (vainqueur de game0) en teamA
+    assertEquals(pair1, nextGame0.getTeamA());
+    // i=1 -> pair3 (match gagné par BYE) en teamB
+    assertEquals(pair3, nextGame0.getTeamB());
+
+    // Vérification match nextGame1 (issu des matchs 2 et 3)
+    // i=2 -> game2 non terminé donc teamA = null
+    assertNull(nextGame1.getTeamA());
+    // i=3 -> pair6 (BYE) en teamB
+    assertEquals(pair6, nextGame1.getTeamB());
+  }
+
+  // Helpers
+
+  private Score createScoreWithWinner(PlayerPair winner) {
+    Score score = new Score();
+    // Simple score pour indiquer que le match est terminé et que "winner" a gagné
+    // Exemple : 6-0
+    SetScore setScore = new SetScore();
+    if (winner.getId() % 2 == 0) { // arbitraire juste pour varier
+      setScore.setTeamAScore(0);
+      setScore.setTeamBScore(6);
+    } else {
+      setScore.setTeamAScore(6);
+      setScore.setTeamBScore(0);
+    }
+    score.setSets(List.of(setScore));
+    return score;
+  }
+
+  private MatchFormat createSimpleFormat() {
+    MatchFormat format = new MatchFormat();
+    format.setNumberOfSetsToWin(1);
+    format.setPointsPerSet(6);
+    format.setSuperTieBreakInFinalSet(false);
+    return format;
+  }
+
+  private PlayerPair createPlayerPair(long id) {
+    Player player1 = new Player();
+    player1.setId(id * 10 + 1);
+    player1.setName("Player" + player1.getId() + "A");
+
+    Player player2 = new Player();
+    player2.setId(id * 10 + 2);
+    player2.setName("Player" + player2.getId() + "B");
+
+    PlayerPair pair = new PlayerPair();
+    pair.setId(id);
+    pair.setPlayer1(player1);
+    pair.setPlayer2(player2);
+
+    return pair;
   }
 }

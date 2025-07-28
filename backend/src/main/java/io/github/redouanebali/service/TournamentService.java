@@ -169,9 +169,10 @@ public class TournamentService {
     }
 
     roundRepository.save(existingRound);
-    tournamentRepository.save(tournament);
+    tournament.setRounds(new LinkedHashSet<>(tournament.getRounds())); // pour s'assurer qu'on a une version modifiable
+    new TournamentProgressionService().propagateWinners(tournament);
 
-    return tournament;
+    return tournamentRepository.save(tournament);
   }
 
   private PlayerPair persistPairIfNeeded(PlayerPair pair) {
