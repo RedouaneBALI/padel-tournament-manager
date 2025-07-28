@@ -15,11 +15,14 @@ import io.github.redouanebali.repository.PlayerRepository;
 import io.github.redouanebali.repository.RoundRepository;
 import io.github.redouanebali.repository.TournamentRepository;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@Setter
 public class TournamentService {
 
   @Autowired
@@ -42,27 +45,36 @@ public class TournamentService {
     if (tournament == null) {
       throw new IllegalArgumentException("Tournament cannot be null");
     }
-    // Sauvegarder d'abord le tournoi pour avoir son ID
     Tournament saved = tournamentRepository.save(tournament);
 
     if (saved.getNbMaxPairs() <= 1) {
       return saved;
     }
 
-    // Générer les rounds
-    List<Round> rounds  = new ArrayList<>();
-    Stage       current = Stage.fromNbTeams(saved.getNbMaxPairs());
+    LinkedHashSet<Round> rounds  = new LinkedHashSet<>();
+    Stage                current = Stage.fromNbTeams(saved.getNbMaxPairs());
 
     while (current != null && current != Stage.WINNER) {
       Round round = new Round(current);
-      roundRepository.save(round);           // persist round
+
+      int nbMatches = current.getNbTeams() / 2;
+
+      List<Game> games = new ArrayList<>();
+      for (int i = 0; i < nbMatches; i++) {
+        Game game = new Game();
+        games.add(game);
+        gameRepository.save(game);
+      }
+      round.setGames(games);
+
+      roundRepository.save(round);
       rounds.add(round);
+
       current = current.next();
     }
 
     saved.setRounds(rounds);
     return tournamentRepository.save(saved);
-
   }
 
   public Tournament updateTournament(Long tournamentId, Tournament updatedTournament) {
@@ -116,13 +128,12 @@ public class TournamentService {
     return newPairs.size();
   }
 
-  public Round generateDraw(Long tournamentId) {
+  public Tournament generateDraw(Long tournamentId) {
     Tournament tournament = tournamentRepository.findById(tournamentId)
                                                 .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
 
     List<PlayerPair> pairs = new ArrayList<>(tournament.getPlayerPairs());
 
-    // 🔧 Ajouter les BYE manuellement
     int originalSize = pairs.size();
     int powerOfTwo   = 1;
     while (powerOfTwo < originalSize) {
@@ -136,20 +147,31 @@ public class TournamentService {
       pairs.add(bye);
     }
 
-    // ✅ Toutes les paires sont maintenant persistées
     KnockoutRoundGenerator generator = new KnockoutRoundGenerator(pairs, tournament.getNbSeeds());
-    Round                  round     = generator.generate();
+    Round                  newRound  = generator.generate();
 
-    // Enregistrer les games
-    for (Game game : round.getGames()) {
-      gameRepository.save(game);
+    Round existingRound = tournament.getRounds().stream()
+                                    .filter(r -> r.getStage().equals(newRound.getStage()))
+                                    .findFirst()
+                                    .orElseThrow(() -> new IllegalArgumentException("Round not found"));
+
+    List<Game> existingGames = existingRound.getGames();
+
+    // Mise à jour des games existants avec les nouvelles équipes
+    for (int i = 0; i < existingGames.size() && i < newRound.getGames().size(); i++) {
+      Game existingGame = existingGames.get(i);
+      Game newGame      = newRound.getGames().get(i);
+
+      existingGame.setTeamA(newGame.getTeamA());
+      existingGame.setTeamB(newGame.getTeamB());
+
+      gameRepository.save(existingGame);
     }
 
-    roundRepository.save(round);
-    tournament.getRounds().add(round);
+    roundRepository.save(existingRound);
     tournamentRepository.save(tournament);
 
-    return round;
+    return tournament;
   }
 
   private PlayerPair persistPairIfNeeded(PlayerPair pair) {

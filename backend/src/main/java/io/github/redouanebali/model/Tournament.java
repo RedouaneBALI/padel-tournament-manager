@@ -6,7 +6,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import java.util.List;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,7 +30,8 @@ public class Tournament {
   private TournamentLevel  level;
   private TournamentFormat tournamentFormat;
   @OneToMany
-  private List<Round>      rounds;
+  @OrderBy("stage ASC")
+  private Set<Round>       rounds;
   private int              nbSeeds;
   @OneToMany(orphanRemoval = true)
   @JoinColumn(name = "tournament_id")

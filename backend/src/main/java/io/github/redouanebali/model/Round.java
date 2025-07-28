@@ -31,4 +31,21 @@ public class Round {
     this.stage = stage;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Round round = (Round) o;
+    return stage == round.getStage();
+  }
+
+  @Override
+  public int hashCode() {
+    return stage != null ? stage.hashCode() : 0;
+  }
+
 }

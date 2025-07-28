@@ -26,4 +26,7 @@ public class Player {
   @JsonProperty("birth_year")
   private Integer birthYear;
 
+  public Player(String name) {
+    this.name = name;
+  }
 }

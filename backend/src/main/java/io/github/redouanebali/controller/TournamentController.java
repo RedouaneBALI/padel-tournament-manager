@@ -1,13 +1,14 @@
 package io.github.redouanebali.controller;
 
-import io.github.redouanebali.dto.RoundDTO;
 import io.github.redouanebali.dto.SimplePlayerPairDTO;
 import io.github.redouanebali.model.MatchFormat;
+import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.service.TournamentService;
 import java.util.List;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,8 +36,8 @@ public class TournamentController {
   }
 
   @PostMapping("/{id}/draw")
-  public RoundDTO generateDraw(@PathVariable("id") Long tournamentId) {
-    return new RoundDTO(tournamentService.generateDraw(tournamentId));
+  public Tournament generateDraw(@PathVariable("id") Long tournamentId) {
+    return tournamentService.generateDraw(tournamentId);
   }
 
   @PostMapping("/{id}/pairs")
@@ -45,11 +46,9 @@ public class TournamentController {
   }
 
   @GetMapping("/{id}/pairs")
-  public List<SimplePlayerPairDTO> getPairsByTournament(@PathVariable("id") Long tournamentId) {
+  public List<PlayerPair> getPairsByTournament(@PathVariable("id") Long tournamentId) {
     Tournament tournament = tournamentService.getTournamentById(tournamentId);
-    return tournament.getPlayerPairs().stream()
-                     .map(SimplePlayerPairDTO::fromPlayerPair)
-                     .toList();
+    return tournament.getPlayerPairs();
   }
 
   @GetMapping("/{id}")
@@ -58,7 +57,7 @@ public class TournamentController {
   }
 
   @GetMapping("/{id}/rounds")
-  public List<Round> getTournamentRounds(@PathVariable("id") Long tournamentId) {
+  public Set<Round> getTournamentRounds(@PathVariable("id") Long tournamentId) {
     return tournamentService.getTournamentById(tournamentId).getRounds();
   }
 
