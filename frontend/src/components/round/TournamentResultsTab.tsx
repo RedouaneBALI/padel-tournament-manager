@@ -27,7 +27,7 @@ function MatchResultCardLight({ teamA, teamB }: { teamA: PlayerPair | null; team
       <div className="flex items-center px-4 h-[60px]">
         <div className="flex flex-col flex-1">
           <span className="text-sm text-gray-900 truncate">
-            {pair?.player1?.name || 'TBD'}
+            {pair?.player1?.name || ''}
           </span>
           <span className="text-sm text-gray-900 truncate">
             {pair?.player2?.name || ''}
@@ -41,6 +41,7 @@ function MatchResultCardLight({ teamA, teamB }: { teamA: PlayerPair | null; team
             </span>
           )}
           <div className="w-12 text-center">
+            {/* Score ou placeholder */}
             <div className="text-xs text-gray-400 opacity-50"></div>
           </div>
         </div>
@@ -116,6 +117,8 @@ export default function TournamentResultsTab({ tournamentId }: { tournamentId: s
   }
 
   const ROUND_WIDTH = 320;
+  const CARD_HEIGHT = 120; // 2 * 60px
+  const CARD_MARGIN = 16; // mb-4 = 16px
   const matchPositions = calculateMatchPositions(rounds);
 
   // Calculer la hauteur totale nécessaire
@@ -165,9 +168,10 @@ export default function TournamentResultsTab({ tournamentId }: { tournamentId: s
                   {round.games.map((game, gameIndex) => {
                     // Dessiner les lignes seulement pour les matchs pairs (qui se connectent)
                     if (gameIndex % 2 === 0 && gameIndex + 1 < round.games.length) {
-                      const currentY1 = matchPositions[roundIndex][gameIndex] + 40 + 60; // Centre du premier match
-                      const currentY2 = matchPositions[roundIndex][gameIndex + 1] + 40 + 60; // Centre du second match
-                      const nextY = matchPositions[roundIndex + 1][Math.floor(gameIndex / 2)] + 40 + 60; // Centre du match suivant
+                      // Ajustement pour aligner parfaitement avec la ligne de séparation réelle
+                      const currentY1 = matchPositions[roundIndex][gameIndex] + 40 + 61; // +1px d'ajustement pour la bordure
+                      const currentY2 = matchPositions[roundIndex][gameIndex + 1] + 40 + 61; // +1px d'ajustement pour la bordure
+                      const nextY = matchPositions[roundIndex + 1][Math.floor(gameIndex / 2)] + 40 + 61; // +1px d'ajustement pour la bordure
 
                       return (
                         <svg

@@ -32,7 +32,7 @@ export default function AdminTournamentLayout({
   }, [id]);
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
       <AdminTournamentHeader tournament={tournament} tournamentId={id} />
       <div className="mt-6">{children}</div>
       <ToastContainer />

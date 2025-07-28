@@ -33,9 +33,8 @@ export default function TournamentLayout({children,params,}: {children: ReactNod
   if (!tournament) return <div>Chargement...</div>;
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
       <h1 className="text-2xl font-bold mb-4">Tournoi #{id} – {tournament.name}</h1>
-
       <div className="flex justify-center mb-6 space-x-4 border-b">
         <Link
           href={`/tournament/${id}`}
