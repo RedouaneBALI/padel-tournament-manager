@@ -30,14 +30,14 @@ export default function TeamScoreRow({
 
   return (
     <div className="flex items-center px-4 h-[60px]">
-      <div className="flex flex-1 items-center justify-between">
+      <div className="flex flex-1 items-center">
         <div className="flex flex-col">
           <span className="text-sm">{team?.player1?.name || ''}</span>
           <span className="text-sm">{team?.player2?.name || ''}</span>
         </div>
 
         {team?.seed && (
-          <span className="text-xs text-muted-foreground font-medium self-center">
+          <span className="text-xs text-muted-foreground font-medium self-center px-2">
             ({team.seed})
           </span>
         )}

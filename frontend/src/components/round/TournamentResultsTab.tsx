@@ -42,7 +42,6 @@ interface TournamentResultsTabProps {
 }
 
 export default function TournamentResultsTab({ tournamentId, editable = false }: TournamentResultsTabProps) {
-  console.log('editable is', editable); // always false
   const [rounds, setRounds] = useState<Round[]>([]);
 
   useEffect(() => {
@@ -106,7 +105,14 @@ export default function TournamentResultsTab({ tournamentId, editable = false }:
                     right: '10px'
                   }}
                 >
-                <MatchResultCardLight teamA={game.teamA} teamB={game.teamB} editable={editable} />                </div>
+                  <MatchResultCardLight
+                  teamA={game.teamA}
+                  teamB={game.teamB}
+                  tournamentId={tournamentId}
+                  gameId={game.id}
+                  score={game.score}
+                  editable={editable} />
+                 </div>
               ))}
 
               {/* Lignes de connexion vers le round suivant */}

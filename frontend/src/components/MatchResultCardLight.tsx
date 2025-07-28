@@ -1,26 +1,43 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { PlayerPair } from '@/types/playerPair';
+import { Score } from '@/types/score';
 import TeamScoreRow from '@/src/components/match/TeamScoreRow';
 
 interface Props {
   teamA: PlayerPair | null;
   teamB: PlayerPair | null;
   editable?: boolean;
+  gameId: string;
+  tournamentId: string;
+  score?: Score;
 }
 
-export default function MatchResultCardLight({ teamA, teamB, editable = false }: Props) {
+export default function MatchResultCardLight({ teamA, teamB, editable = false, gameId, score, tournamentId }: Props) {
   const [editing, setEditing] = useState(false);
-  const [scores, setScores] = useState([
-    ['', '', ''], // teamA scores
-    ['', '', ''], // teamB scores
-  ]);
+  const [scores, setScores] = useState<string[][]>(() => {
+    const initialScores: string[][] = [[], []];
+    for (let i = 0; i < 3; i++) {
+      initialScores[0][i] = score?.sets[i]?.teamAScore?.toString() || '';
+      initialScores[1][i] = score?.sets[i]?.teamBScore?.toString() || '';
+    }
+    return initialScores;
+  });
 
   // Refs : un tableau par équipe, contenant refs inputs sets
   const inputRefs = useRef<(HTMLInputElement | null)[][]>(
     Array.from({ length: 2 }, () => Array(3).fill(null))
   );
+
+  function convertToScoreObject(scores: string[][]) {
+    const sets = scores[0].map((_, i) => ({
+      teamAScore: parseInt(scores[0][i] || '0', 10),
+      teamBScore: parseInt(scores[1][i] || '0', 10),
+    }));
+
+    return { sets };
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent, teamIndex: number, setIndex: number) => {
     if (e.key === 'Tab') {
@@ -47,6 +64,29 @@ export default function MatchResultCardLight({ teamA, teamB, editable = false }:
       if (nextInput) {
         nextInput.focus();
       }
+    }
+  };
+
+  const saveScores = async () => {
+    try {
+      const scorePayload = convertToScoreObject(scores);
+      const response = await fetch(`http://localhost:8080/tournaments/${tournamentId}/games/${gameId}/score`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(scorePayload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la sauvegarde');
+      }
+
+      // Optionnel : confirmation visuelle, toast, etc.
+      console.log('Scores enregistrés avec succès');
+    } catch (error) {
+      console.error('Erreur API:', error);
+      // Optionnel : affichage d'une erreur utilisateur
     }
   };
 
@@ -84,8 +124,8 @@ export default function MatchResultCardLight({ teamA, teamB, editable = false }:
                 Annuler
               </button>
               <button
-                onClick={() => {
-                  console.log('Sauvegarder scores:', scores);
+                onClick={async () => {
+                  await saveScores();
                   setEditing(false);
                 }}
                 className="text-sm px-3 py-1 text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors"
