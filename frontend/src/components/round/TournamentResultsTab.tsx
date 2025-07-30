@@ -38,10 +38,9 @@ function calculateMatchPositions(rounds: Round[]) {
 // Composant principal
 interface TournamentResultsTabProps {
   tournamentId: string;
-  editable?: boolean;
 }
 
-export default function TournamentResultsTab({ tournamentId, editable = false }: TournamentResultsTabProps) {
+export default function TournamentResultsTab({ tournamentId}: TournamentResultsTabProps) {
   const [rounds, setRounds] = useState<Round[]>([]);
 
   useEffect(() => {
@@ -111,7 +110,7 @@ export default function TournamentResultsTab({ tournamentId, editable = false }:
                   tournamentId={tournamentId}
                   gameId={game.id}
                   score={game.score}
-                  editable={editable} />
+                  editable={false} />
                  </div>
               ))}
 

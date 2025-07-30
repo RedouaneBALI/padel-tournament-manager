@@ -31,10 +31,19 @@ export default function MatchResultCardLight({ teamA, teamB, editable = false, g
   );
 
   function convertToScoreObject(scores: string[][]) {
-    const sets = scores[0].map((_, i) => ({
-      teamAScore: parseInt(scores[0][i] || '0', 10),
-      teamBScore: parseInt(scores[1][i] || '0', 10),
-    }));
+    const sets = scores[0].map((_, i) => {
+      const teamAStr = scores[0][i];
+      const teamBStr = scores[1][i];
+
+      if ((teamAStr === '' || teamAStr === undefined) && (teamBStr === '' || teamBStr === undefined)) {
+        return null;
+      }
+
+      return {
+        teamAScore: teamAStr === '' ? null : parseInt(teamAStr, 10),
+        teamBScore: teamBStr === '' ? null : parseInt(teamBStr, 10),
+      };
+    }).filter(set => set !== null);
 
     return { sets };
   }

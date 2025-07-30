@@ -27,6 +27,9 @@ export default function AdminTournamentTabs({ tournamentId, pathname }: Props) {
       <Link href={`/admin/tournament/${tournamentId}/rounds/config`} className={tabClass('/rounds/config')}>
         Format
       </Link>
+      <Link href={`/admin/tournament/${tournamentId}/games`} className={tabClass('/games')}>
+        Matchs
+      </Link>
       <Link href={`/admin/tournament/${tournamentId}/rounds/results`} className={tabClass('/rounds/results')}>
         Tableau
       </Link>
