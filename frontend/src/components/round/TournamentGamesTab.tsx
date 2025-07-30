@@ -7,9 +7,10 @@ import type { Game } from '@/app/types/game';
 
 interface TournamentGamesTabProps {
   tournamentId: string;
+  editable: boolean
 }
 
-export default function TournamentGamesTab({ tournamentId }: TournamentGamesTabProps) {
+export default function TournamentGamesTab({ tournamentId, editable }: TournamentGamesTabProps) {
   const [games, setGames] = useState<Game[]>([]); // type précisable si tu as un type Game
 
   useEffect(() => {
@@ -44,7 +45,7 @@ return (
         score={game.score}
         gameId={game.id}
         tournamentId={tournamentId}
-        editable={true}
+        editable={editable}
       />
     ))}
   </div>

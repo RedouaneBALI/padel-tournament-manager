@@ -49,6 +49,12 @@ export default function TournamentLayout({children,params,}: {children: ReactNod
           Joueurs
         </Link>
         <Link
+          href={`/tournament/${id}/games`}
+          className={`pb-2 px-4 font-semibold ${pathname === `/tournament/${id}/games` ? 'border-b-2 border-[#1b2d5e] text-primary' : 'text-gray-500 hover:text-primary'}`}
+        >
+          Matchs
+        </Link>
+        <Link
           href={`/tournament/${id}/results`}
           className={`pb-2 px-4 font-semibold ${pathname === `/tournament/${id}/results` ? 'border-b-2 border-[#1b2d5e] text-primary' : 'text-gray-500 hover:text-primary'}`}
         >

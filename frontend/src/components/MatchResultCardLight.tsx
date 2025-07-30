@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { PlayerPair } from '@/types/playerPair';
 import { Score } from '@/types/score';
 import TeamScoreRow from '@/src/components/match/TeamScoreRow';
+import { Edit3, Save, X } from 'lucide-react';
 
 interface Props {
   teamA: PlayerPair | null;
@@ -23,6 +24,16 @@ export default function MatchResultCardLight({ teamA, teamB, editable = false, g
       initialScores[1][i] = score?.sets[i]?.teamBScore?.toString() || '';
     }
     return initialScores;
+  });
+
+  // Sauvegarder les scores initiaux pour pouvoir les restaurer lors de l'annulation
+  const [initialScores, setInitialScores] = useState<string[][]>(() => {
+    const initial: string[][] = [[], []];
+    for (let i = 0; i < 3; i++) {
+      initial[0][i] = score?.sets[i]?.teamAScore?.toString() || '';
+      initial[1][i] = score?.sets[i]?.teamBScore?.toString() || '';
+    }
+    return initial;
   });
 
   // Refs : un tableau par équipe, contenant refs inputs sets
@@ -91,67 +102,80 @@ export default function MatchResultCardLight({ teamA, teamB, editable = false, g
         throw new Error('Erreur lors de la sauvegarde');
       }
 
-      // Optionnel : confirmation visuelle, toast, etc.
       console.log('Scores enregistrés avec succès');
     } catch (error) {
       console.error('Erreur API:', error);
-      // Optionnel : affichage d'une erreur utilisateur
     }
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden min-w-[280px] max-w-[400px]">
-      <div className="divide-y divide-gray-200 dark:divide-gray-700">
-        <TeamScoreRow
-          team={teamA}
-          teamIndex={0}
-          scores={scores[0]}
-          editing={editing}
-          setScores={(newScores) => setScores((prev) => [newScores, prev[1]])}
-          inputRefs={{ current: inputRefs.current[0] }}
-          handleKeyDown={handleKeyDown}
-        />
-        <TeamScoreRow
-          team={teamB}
-          teamIndex={1}
-          scores={scores[1]}
-          editing={editing}
-          setScores={(newScores) => setScores((prev) => [prev[0], newScores])}
-          inputRefs={{ current: inputRefs.current[1] }}
-          handleKeyDown={handleKeyDown}
-        />
-      </div>
+    <div className={`relative bg-card border border-border rounded-lg shadow-sm overflow-hidden min-w-[280px] max-w-[400px] transition-all duration-200 ${
+      editing ? 'ring-2 ring-edit-border bg-edit-bg/30' : ''
+    }`}>
+      <div className="relative">
+        {/* Boutons d'action - positionnés de manière plus élégante */}
+        {editable && (
+          <div className="absolute top-3 right-3 z-10">
+            {editing ? (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    // Restaurer les scores initiaux lors de l'annulation
+                    setScores([...initialScores]);
+                    setEditing(false);
+                  }}
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 rounded-md px-3"
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Annuler
+                </button>
+                <button
+                  onClick={async () => {
+                    await saveScores();
+                    // Mettre à jour les scores initiaux après la sauvegarde
+                    setInitialScores([...scores]);
+                    setEditing(false);
+                  }}
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-white hover:bg-green-700 h-9 rounded-md px-3 shadow-md"
+                >
+                  <Save className="h-3 w-3 mr-1" />
+                  Sauver
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setEditing(true)}
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-9 w-9 p-0 hover:bg-primary/10 hover:text-primary"
+                title="Modifier les scores"
+              >
+                <Edit3 className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        )}
 
-      {editable && (
-        <div className="flex justify-end space-x-2 p-2 bg-gray-50 dark:bg-gray-900">
-          {editing ? (
-            <>
-              <button
-                onClick={() => setEditing(false)}
-                className="text-sm px-3 py-1 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
-              >
-                Annuler
-              </button>
-              <button
-                onClick={async () => {
-                  await saveScores();
-                  setEditing(false);
-                }}
-                className="text-sm px-3 py-1 text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors"
-              >
-                Enregistrer
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={() => setEditing(true)}
-              className="text-sm px-3 py-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
-            >
-              Modifier
-            </button>
-          )}
+        {/* Zone des scores avec padding amélioré */}
+        <div className="divide-y divide-border pt-12 pb-4">
+          <TeamScoreRow
+            team={teamA}
+            teamIndex={0}
+            scores={scores[0]}
+            editing={editing}
+            setScores={(newScores) => setScores((prev) => [newScores, prev[1]])}
+            inputRefs={{ current: inputRefs.current[0] }}
+            handleKeyDown={handleKeyDown}
+          />
+          <TeamScoreRow
+            team={teamB}
+            teamIndex={1}
+            scores={scores[1]}
+            editing={editing}
+            setScores={(newScores) => setScores((prev) => [prev[0], newScores])}
+            inputRefs={{ current: inputRefs.current[1] }}
+            handleKeyDown={handleKeyDown}
+          />
         </div>
-      )}
+      </div>
     </div>
   );
 }
