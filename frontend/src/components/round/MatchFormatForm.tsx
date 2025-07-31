@@ -16,7 +16,7 @@ export default function MatchFormatForm({ format, onChange }: MatchFormatFormPro
   };
 
   return (
-    <fieldset className="space-y-4 p-4 border rounded-md">
+    <fieldset className="space-y-4 p-4 border rounded-md max-w-[600px] mx-auto">
       <legend className="font-semibold text-base mb-2 text-foreground">Format du match</legend>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import MatchResultCardLight from '@/src/components/MatchResultCardLight';
+import { fetchRounds } from '@/src/utils/fetchRounds';
 
 // Fonction pour calculer la position verticale correcte de chaque match
 function calculateMatchPositions(rounds: Round[]) {
@@ -43,19 +44,19 @@ interface TournamentResultsTabProps {
 export default function TournamentResultsTab({ tournamentId}: TournamentResultsTabProps) {
   const [rounds, setRounds] = useState<Round[]>([]);
 
+
+
   useEffect(() => {
-    async function fetchRounds() {
+    async function load() {
       try {
-        const response = await fetch(`http://localhost:8080/tournaments/${tournamentId}/rounds`);
-        if (!response.ok) throw new Error();
-        const data: Round[] = await response.json();
+        const data = await fetchRounds(tournamentId);
         setRounds(data);
       } catch (err) {
         console.error("Erreur lors du chargement des rounds : " + err);
       }
     }
 
-    fetchRounds();
+    load();
   }, [tournamentId]);
 
   if (rounds.length === 0) {
@@ -69,6 +70,7 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
 
   // Calculer la hauteur totale nécessaire
   const maxPosition = Math.max(...matchPositions.flat()) + 200; // +200 pour la hauteur du dernier match
+
 
   return (
     <div className="w-full">
@@ -110,7 +112,8 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
                   tournamentId={tournamentId}
                   gameId={game.id}
                   score={game.score}
-                  editable={false} />
+                  editable={false}
+                   />
                  </div>
               ))}
 

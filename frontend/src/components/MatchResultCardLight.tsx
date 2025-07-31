@@ -13,9 +13,10 @@ interface Props {
   gameId: string;
   tournamentId: string;
   score?: Score;
+  onScoreSaved: (result: { tournamentUpdated: boolean; winner: PlayerPair | null }) => void;
 }
 
-export default function MatchResultCardLight({ teamA, teamB, editable = false, gameId, score, tournamentId }: Props) {
+export default function MatchResultCardLight({ teamA, teamB, editable = false, gameId, score, tournamentId, onScoreSaved }: Props) {
   const [editing, setEditing] = useState(false);
   const [scores, setScores] = useState<string[][]>(() => {
     const initialScores: string[][] = [[], []];
@@ -88,21 +89,19 @@ export default function MatchResultCardLight({ teamA, teamB, editable = false, g
   };
 
   const saveScores = async () => {
+    console.log("saveScores");
     try {
       const scorePayload = convertToScoreObject(scores);
       const response = await fetch(`http://localhost:8080/tournaments/${tournamentId}/games/${gameId}/score`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(scorePayload),
       });
 
-      if (!response.ok) {
-        throw new Error('Erreur lors de la sauvegarde');
-      }
+      if (!response.ok) throw new Error('Erreur lors de la sauvegarde');
 
-      console.log('Scores enregistrés avec succès');
+      const result = await response.json();
+      onScoreSaved(result);
     } catch (error) {
       console.error('Erreur API:', error);
     }
@@ -129,13 +128,12 @@ export default function MatchResultCardLight({ teamA, teamB, editable = false, g
                   <X className="h-3 w-3 mr-1" />
                   Annuler
                 </button>
-                <button
-                  onClick={async () => {
-                    await saveScores();
-                    // Mettre à jour les scores initiaux après la sauvegarde
-                    setInitialScores([...scores]);
-                    setEditing(false);
-                  }}
+                  <button
+                    onClick={async () => {
+                      await saveScores();
+                      setInitialScores([...scores]);
+                      setEditing(false);
+                    }}
                   className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-white hover:bg-green-700 h-9 rounded-md px-3 shadow-md"
                 >
                   <Save className="h-3 w-3 mr-1" />
@@ -155,7 +153,7 @@ export default function MatchResultCardLight({ teamA, teamB, editable = false, g
         )}
 
         {/* Zone des scores avec padding amélioré */}
-        <div className="divide-y divide-border pt-12 pb-4">
+        <div className={`divide-y divide-border ${editable ? 'pt-12 pb-4' : 'pt-0'}`}>
           <TeamScoreRow
             team={teamA}
             teamIndex={0}

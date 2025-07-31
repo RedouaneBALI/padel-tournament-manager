@@ -89,11 +89,11 @@ export default function MatchFormatActions({
   };
 
   return (
-    <div className="flex flex-col sm:flex-row gap-2 mt-4">
+    <div className="flex flex-col sm:flex-row gap-2 mt-4 sm:w-auto justify-center items-center">
       <button
         onClick={handleApplyAll}
         disabled={isLoading}
-        className="w-full sm:w-auto px-4 py-2 bg-white text-sm border border-gray-300 text-gray-800 rounded hover:bg-gray-100 disabled:opacity-50"
+        className="w-full px-4 py-2 bg-white text-sm border border-gray-300 text-gray-800 rounded hover:bg-gray-100 disabled:opacity-50 max-w-[400px]"
       >
         Appliquer à tous les rounds
       </button>
@@ -101,7 +101,7 @@ export default function MatchFormatActions({
     {currentStageIndex === 0 && isFirstRoundEmpty && (
       <button
         onClick={handleDraw}
-        className="w-full sm:w-auto px-4 py-2 bg-white text-sm border border-gray-300 text-gray-800 rounded hover:bg-gray-100"
+        className="w-full px-4 py-2 bg-white text-sm border border-gray-300 text-gray-800 rounded hover:bg-gray-100 max-w-[400px]"
       >
         Générer le tirage
       </button>
