@@ -16,7 +16,7 @@ interface Props {
   onScoreSaved: (result: { tournamentUpdated: boolean; winner: PlayerPair | null }) => void;
 }
 
-export default function MatchResultCardLight({ teamA, teamB, editable = false, gameId, score, tournamentId, onScoreSaved }: Props) {
+export default function MatchResultCard({ teamA, teamB, editable = false, gameId, score, tournamentId, onScoreSaved }: Props) {
   const [editing, setEditing] = useState(false);
   const [scores, setScores] = useState<string[][]>(() => {
     const initialScores: string[][] = [[], []];

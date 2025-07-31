@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import MatchResultCardLight from '@/src/components/MatchResultCardLight';
+import MatchResultCard from '@/src/components/ui/MatchResultCard';
 import type { Round } from '@/app/types/round';
 import type { Game } from '@/app/types/game';
 import { fetchRounds } from '@/src/utils/fetchRounds';
@@ -44,18 +44,26 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
 
 return (
   <div className="flex flex-col items-center space-y-4">
-    {games.map((game) => (
-      <MatchResultCardLight
-        key={game.id}
-        teamA={game.teamA}
-        teamB={game.teamB}
-        score={game.score}
-        gameId={game.id}
-        tournamentId={tournamentId}
-        editable={editable}
-        onScoreSaved={handleScoreSaved}
-      />
-    ))}
+    {games
+      .filter(game =>
+        (game.teamA !== null || game.teamB !== null) &&
+        (game.teamA?.player1?.name !== 'BYE' &&
+         game.teamA?.player2?.name !== 'BYE' &&
+         game.teamB?.player1?.name !== 'BYE' &&
+         game.teamB?.player2?.name !== 'BYE')
+      )
+      .map((game) => (
+        <MatchResultCard
+          key={game.id}
+          teamA={game.teamA}
+          teamB={game.teamB}
+          score={game.score}
+          gameId={game.id}
+          tournamentId={tournamentId}
+          editable={editable}
+          onScoreSaved={handleScoreSaved}
+        />
+      ))}
   </div>
 );
 }

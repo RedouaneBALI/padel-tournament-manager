@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import MatchResultCardLight from '@/src/components/MatchResultCardLight';
+import MatchResultCardLight from '@/src/components/ui/MatchResultCardLight';
 import { fetchRounds } from '@/src/utils/fetchRounds';
 
 // Fonction pour calculer la position verticale correcte de chaque match
