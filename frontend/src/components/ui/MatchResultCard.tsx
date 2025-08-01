@@ -15,9 +15,10 @@ interface Props {
   score?: Score;
   onScoreSaved: (result: { tournamentUpdated: boolean; winner: String | null }) => void;
   winnerSide?: number;
+  stage?: string;
 }
 
-export default function MatchResultCard({ teamA, teamB, editable = false, gameId, score, tournamentId, onScoreSaved, winnerSide }: Props) {
+export default function MatchResultCard({ teamA, teamB, editable = false, gameId, score, tournamentId, onScoreSaved, winnerSide, stage }: Props) {
   const [editing, setEditing] = useState(false);
   const [scores, setScores] = useState<string[][]>(() => {
     const initialScores: string[][] = [[], []];
@@ -177,6 +178,11 @@ export default function MatchResultCard({ teamA, teamB, editable = false, gameId
           />
         </div>
       </div>
+      {stage && (
+        <div className="text-center text-xs text-muted-foreground border-t border-border px-4 py-2">
+          {stage}
+        </div>
+      )}
     </div>
   );
 }

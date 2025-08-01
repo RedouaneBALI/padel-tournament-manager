@@ -12,66 +12,72 @@ interface TournamentGamesTabProps {
 }
 
 export default function TournamentGamesTab({ tournamentId, editable }: TournamentGamesTabProps) {
-  const [games, setGames] = useState<Game[]>([]); // type précisable si tu as un type Game
+  const [rounds, setRounds] = useState<Round[]>([]);
 
-  const handleScoreSaved = (result: { tournamentUpdated: boolean; winner: PlayerPair | null }) => {
-        console.log("handleScoreSaved");
-        console.log(result);
-        if (result.tournamentUpdated) {
-          fetchRounds(tournamentId);
-        }
-      };
-
-
-    useEffect(() => {
-      async function loadRounds() {
-        try {
-          const rounds = await fetchRounds(tournamentId);
-          const allGames = rounds.flatMap(round => round.games);
-          setGames(allGames);
-        } catch (err) {
-          console.error('Erreur lors du chargement des matchs :', err);
-        }
+  const handleScoreSaved = async (result: { tournamentUpdated: boolean; winner: PlayerPair | null }) => {
+    if (result.tournamentUpdated) {
+      try {
+        const rounds = await fetchRounds(tournamentId);
+        setRounds(rounds);
+      } catch (error) {
+        console.error("Erreur lors du rafraîchissement des rounds :", error);
       }
+    }
+  };
 
-      loadRounds();
-    }, [tournamentId]);
 
-  if (games.length === 0) {
+  useEffect(() => {
+    async function loadRounds() {
+      try {
+        const rounds = await fetchRounds(tournamentId);
+        setRounds(rounds);
+      } catch (err) {
+        console.error('Erreur lors du chargement des matchs :', err);
+      }
+    }
+
+    loadRounds();
+  }, [tournamentId]);
+
+  if (rounds.length === 0) {
     return <p className="text-gray-500">Aucun match défini pour le moment.</p>;
   }
 
 return (
   <div className="flex flex-col items-center space-y-4">
-    {games
-      .filter(game =>
-        (game.teamA !== null || game.teamB !== null) &&
-        (game.teamA?.player1?.name !== 'BYE' &&
-         game.teamA?.player2?.name !== 'BYE' &&
-         game.teamB?.player1?.name !== 'BYE' &&
-         game.teamB?.player2?.name !== 'BYE')
-      )
-      .map((game) => (
-        <MatchResultCard
-          key={game.id}
-          teamA={game.teamA}
-          teamB={game.teamB}
-          score={game.score}
-          gameId={game.id}
-          tournamentId={tournamentId}
-          editable={editable}
-          onScoreSaved={handleScoreSaved}
-          winnerSide={
-            game.finished
-              ? game.winnerSide === 'TEAM_A'
-                ? 0
-                : game.winnerSide === 'TEAM_B'
-                  ? 1
+    {rounds.flatMap(round =>
+      round.games
+        .filter(game =>
+          (game.teamA !== null || game.teamB !== null) &&
+          (game.teamA?.player1?.name !== 'BYE' &&
+           game.teamA?.player2?.name !== 'BYE' &&
+           game.teamB?.player1?.name !== 'BYE' &&
+           game.teamB?.player2?.name !== 'BYE')
+        )
+        .map(game => (
+          <div key={game.id}>
+            <MatchResultCard
+              teamA={game.teamA}
+              teamB={game.teamB}
+              score={game.score}
+              gameId={game.id}
+              tournamentId={tournamentId}
+              editable={editable}
+              onScoreSaved={handleScoreSaved}
+              winnerSide={
+                game.finished
+                  ? game.winnerSide === 'TEAM_A'
+                    ? 0
+                    : game.winnerSide === 'TEAM_B'
+                      ? 1
+                      : undefined
                   : undefined
-              : undefined
-          }
-        />
-      ))}
+              }
+              stage={round.stage}
+            />
+          </div>
+        ))
+    )}
   </div>
 );
 }
