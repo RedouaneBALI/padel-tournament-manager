@@ -11,6 +11,7 @@ interface Props {
   setScores: (scores: string[]) => void;
   inputRefs: React.MutableRefObject<(HTMLInputElement | null)[]>;
   handleKeyDown: (e: React.KeyboardEvent, teamIndex: number, setIndex: number) => void;
+  winnerSide?: number;
 }
 
 export default function TeamScoreRow({
@@ -21,6 +22,7 @@ export default function TeamScoreRow({
   setScores,
   inputRefs,
   handleKeyDown,
+  winnerSide,
 }: Props) {
   const handleChange = (setIndex: number, value: string) => {
     const updated = [...scores];
@@ -28,10 +30,11 @@ export default function TeamScoreRow({
     setScores(updated);
   };
 
+
   return (
     <div className="flex items-center px-4 h-[60px]">
-      <div className="flex flex-1 items-center">
-        <div className="flex flex-col">
+      <div className={`flex flex-1 items-center ${winnerSide === teamIndex ? 'font-bold' : ''}`}>
+        <div className={`flex flex-col ${winnerSide !== undefined && winnerSide !== teamIndex ? 'text-gray-400' : ''}`}>
           <span className="text-sm">{team?.player1?.name || ''}</span>
           <span className="text-sm">{team?.player2?.name || ''}</span>
         </div>
@@ -60,11 +63,17 @@ export default function TeamScoreRow({
             ))}
           </div>
         ) : (
-          <div className="flex space-x-2 text-base font-semibold text-gray-800 dark:text-gray-100">
+          <div className="grid grid-cols-3 text-base font-semibold text-gray-800 dark:text-gray-100">
             {scores.filter(Boolean).length > 0 ? (
-              scores.map((s, i) => <span key={i}>{s}</span>)
+              (() => {
+                const nonEmptyScores = scores.filter(s => s !== '');
+                const displayedScores = [...Array(3 - nonEmptyScores.length).fill(''), ...nonEmptyScores];
+                return displayedScores.map((s, i) => (
+                  <span key={i} className="text-center min-w-[2ch]">{s}</span>
+                ));
+              })()
             ) : (
-              <span className="text-gray-400">-</span>
+              <span className="text-gray-400 col-span-3 text-center">-</span>
             )}
           </div>
         )}

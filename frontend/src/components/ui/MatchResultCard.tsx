@@ -13,10 +13,11 @@ interface Props {
   gameId: string;
   tournamentId: string;
   score?: Score;
-  onScoreSaved: (result: { tournamentUpdated: boolean; winner: PlayerPair | null }) => void;
+  onScoreSaved: (result: { tournamentUpdated: boolean; winner: String | null }) => void;
+  winnerSide?: number;
 }
 
-export default function MatchResultCard({ teamA, teamB, editable = false, gameId, score, tournamentId, onScoreSaved }: Props) {
+export default function MatchResultCard({ teamA, teamB, editable = false, gameId, score, tournamentId, onScoreSaved, winnerSide }: Props) {
   const [editing, setEditing] = useState(false);
   const [scores, setScores] = useState<string[][]>(() => {
     const initialScores: string[][] = [[], []];
@@ -162,6 +163,7 @@ export default function MatchResultCard({ teamA, teamB, editable = false, gameId
             setScores={(newScores) => setScores((prev) => [newScores, prev[1]])}
             inputRefs={{ current: inputRefs.current[0] }}
             handleKeyDown={handleKeyDown}
+            winnerSide={winnerSide}
           />
           <TeamScoreRow
             team={teamB}
@@ -171,6 +173,7 @@ export default function MatchResultCard({ teamA, teamB, editable = false, gameId
             setScores={(newScores) => setScores((prev) => [prev[0], newScores])}
             inputRefs={{ current: inputRefs.current[1] }}
             handleKeyDown={handleKeyDown}
+            winnerSide={winnerSide}
           />
         </div>
       </div>

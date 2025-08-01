@@ -26,7 +26,6 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
     useEffect(() => {
       async function loadRounds() {
         try {
-          console.log("tournamentId : " + tournamentId);
           const rounds = await fetchRounds(tournamentId);
           const allGames = rounds.flatMap(round => round.games);
           setGames(allGames);
@@ -62,6 +61,15 @@ return (
           tournamentId={tournamentId}
           editable={editable}
           onScoreSaved={handleScoreSaved}
+          winnerSide={
+            game.finished
+              ? game.winnerSide === 'TEAM_A'
+                ? 0
+                : game.winnerSide === 'TEAM_B'
+                  ? 1
+                  : undefined
+              : undefined
+          }
         />
       ))}
   </div>

@@ -113,6 +113,15 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
                   gameId={game.id}
                   score={game.score}
                   editable={false}
+                  winnerSide={
+                    game.finished
+                      ? game.winnerSide === 'TEAM_A'
+                        ? 0
+                        : game.winnerSide === 'TEAM_B'
+                          ? 1
+                          : undefined
+                      : undefined
+                  }
                    />
                  </div>
               ))}
