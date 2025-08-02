@@ -264,6 +264,11 @@ public class TournamentService {
                          .orElseThrow(() -> new IllegalArgumentException("Game not found"));
   }
 
+  public List<PlayerPair> getPairsByTournamentId(Long tournamentId) {
+    Tournament tournament = getTournamentById(tournamentId);
+    return tournament.getPlayerPairs();
+  }
+
   public Set<Game> getGamesByTournamentAndStage(Long tournamentId, Stage stage) {
     Tournament tournament = getTournamentById(tournamentId);
 

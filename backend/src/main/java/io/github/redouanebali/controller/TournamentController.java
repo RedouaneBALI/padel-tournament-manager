@@ -4,6 +4,7 @@ import io.github.redouanebali.dto.ScoreUpdateResponse;
 import io.github.redouanebali.dto.SimplePlayerPairDTO;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.MatchFormat;
+import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
@@ -22,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/tournaments")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class TournamentController {
 
   @Autowired
@@ -43,9 +44,14 @@ public class TournamentController {
     return tournamentService.getTournamentById(id);
   }
 
-  @PostMapping("/{id}/players")
-  public int addPlayers(@PathVariable Long id, @RequestBody List<SimplePlayerPairDTO> players) {
+  @PostMapping("/{id}/pairs")
+  public int addPairs(@PathVariable Long id, @RequestBody List<SimplePlayerPairDTO> players) {
     return tournamentService.addPairs(id, players);
+  }
+
+  @GetMapping("/{id}/pairs")
+  public List<PlayerPair> getPairs(@PathVariable Long id) {
+    return tournamentService.getPairsByTournamentId(id);
   }
 
   @PostMapping("/{id}/draw")
