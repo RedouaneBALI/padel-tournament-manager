@@ -9,6 +9,7 @@ import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.service.GameService;
 import io.github.redouanebali.service.TournamentService;
 import java.util.Comparator;
 import java.util.List;
@@ -31,6 +32,9 @@ public class TournamentController {
 
   @Autowired
   private TournamentService tournamentService;
+
+  @Autowired
+  private GameService gameService;
 
   @PostMapping
   public Tournament createTournament(@RequestBody Tournament tournament) {
@@ -87,6 +91,6 @@ public class TournamentController {
 
   @PutMapping("/{tournamentId}/games/{gameId}/score")
   public ScoreUpdateResponse updateScore(@PathVariable Long tournamentId, @PathVariable Long gameId, @RequestBody Score score) {
-    return tournamentService.updateGameScore(tournamentId, gameId, score);
+    return gameService.updateGameScore(tournamentId, gameId, score);
   }
 }

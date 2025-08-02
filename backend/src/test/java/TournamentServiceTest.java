@@ -19,6 +19,7 @@ import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.GameRepository;
 import io.github.redouanebali.repository.ScoreRepository;
 import io.github.redouanebali.repository.TournamentRepository;
+import io.github.redouanebali.service.GameService;
 import io.github.redouanebali.service.TournamentProgressionService;
 import io.github.redouanebali.service.TournamentService;
 import java.util.LinkedHashSet;
@@ -31,6 +32,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 class TournamentServiceTest {
 
   private TournamentService            tournamentService;
+  private GameService                  gameService;
   private TournamentProgressionService progressionService;
   private TournamentRepository         tournamentRepository;
   private GameRepository               gameRepository;
@@ -49,6 +51,7 @@ class TournamentServiceTest {
     tournamentService.setGameRepository(gameRepository);
     tournamentService.setScoreRepository(scoreRepository);
     tournamentService.setProgressionService(progressionService);
+    gameService = new GameService(scoreRepository, gameRepository, tournamentRepository, progressionService, tournamentService);
   }
 
   @ParameterizedTest
@@ -101,7 +104,7 @@ class TournamentServiceTest {
       when(progressionService.getWinner(game)).thenReturn(teamB);
     }
 
-    ScoreUpdateResponse response = tournamentService.updateGameScore(tournamentId, gameId, score);
+    ScoreUpdateResponse response = gameService.updateGameScore(tournamentId, gameId, score);
 
     if (expectedWinner.equals("TEAM_A")) {
       assertEquals(TeamSide.TEAM_A, response.getWinner());
