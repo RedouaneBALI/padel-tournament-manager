@@ -85,7 +85,7 @@ public class TournamentProgressionServiceTest {
     format.setPointsPerSet(pointsPerSet);
     format.setSuperTieBreakInFinalSet(isSuperTieBreakInFinalSet);
 
-    Game game = new Game();
+    Game game = new Game(createSimpleFormat());
     game.setFormat(format);
     game.setTeamA(new PlayerPair());
     game.setTeamB(new PlayerPair());
@@ -97,7 +97,7 @@ public class TournamentProgressionServiceTest {
     }
     game.setScore(score);
 
-    boolean result = service.isGameFinished(game);
+    boolean result = game.isFinished();
     assertEquals(expected, result);
   }
 
@@ -157,7 +157,7 @@ public class TournamentProgressionServiceTest {
     PlayerPair teamB = new PlayerPair();
     teamB.setId(2L);
 
-    Game game = new Game();
+    Game game = new Game(format);
     game.setTeamA(teamA);
     game.setTeamB(teamB);
     game.setFormat(format);
@@ -199,32 +199,29 @@ public class TournamentProgressionServiceTest {
 
     // Création de 4 matchs dans roundCurrent
     // Match 0 : pair1 vs pair2 (terminé, pair1 gagne)
-    Game game0 = new Game();
+    Game game0 = new Game(createSimpleFormat());
     game0.setTeamA(pair1);
     game0.setTeamB(pair2);
     game0.setScore(createScoreWithWinner(pair1));
     game0.setFormat(createSimpleFormat());
 
     // Match 1 : pair3 vs BYE (pair3 passe automatiquement)
-    Game game1 = new Game();
+    Game game1 = new Game(createSimpleFormat());
     game1.setTeamA(pair3);
     game1.setTeamB(byePair);
     game1.setScore(null); // pas joué, mais BYE présent
-    game1.setFormat(createSimpleFormat());
 
     // Match 2 : pair4 vs pair5 (pas terminé)
-    Game game2 = new Game();
+    Game game2 = new Game(createSimpleFormat());
     game2.setTeamA(pair4);
     game2.setTeamB(pair5);
     game2.setScore(null);
-    game2.setFormat(createSimpleFormat());
 
     // Match 3 : pair6 vs BYE (pair6 passe automatiquement)
-    Game game3 = new Game();
+    Game game3 = new Game(createSimpleFormat());
     game3.setTeamA(pair6);
     game3.setTeamB(byePair);
     game3.setScore(null);
-    game3.setFormat(createSimpleFormat());
 
     gamesCurrent.add(game0);
     gamesCurrent.add(game1);
@@ -238,8 +235,8 @@ public class TournamentProgressionServiceTest {
     roundNext.setStage(Stage.R16);
     List<Game> gamesNext = new ArrayList<>();
 
-    Game nextGame0 = new Game(); // Correspond aux matchs 0 et 1 du round actuel
-    Game nextGame1 = new Game(); // Correspond aux matchs 2 et 3 du round actuel
+    Game nextGame0 = new Game(createSimpleFormat()); // Correspond aux matchs 0 et 1 du round actuel
+    Game nextGame1 = new Game(createSimpleFormat()); // Correspond aux matchs 2 et 3 du round actuel
 
     gamesNext.add(nextGame0);
     gamesNext.add(nextGame1);

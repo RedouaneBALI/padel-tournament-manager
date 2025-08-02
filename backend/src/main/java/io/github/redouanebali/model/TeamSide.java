@@ -1,4 +1,6 @@
 package io.github.redouanebali.model;
 
-public class TeamSide {
+public enum TeamSide {
+  TEAM_A,
+  TEAM_B
 }

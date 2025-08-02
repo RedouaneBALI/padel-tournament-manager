@@ -1,5 +1,6 @@
 package io.github.redouanebali.service;
 
+import io.github.redouanebali.dto.ScoreUpdateResponse;
 import io.github.redouanebali.dto.SimplePlayerPairDTO;
 import io.github.redouanebali.generation.KnockoutRoundGenerator;
 import io.github.redouanebali.model.Game;
@@ -7,16 +8,21 @@ import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.Stage;
+import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.GameRepository;
+import io.github.redouanebali.repository.MatchFormatRepository;
 import io.github.redouanebali.repository.PlayerPairRepository;
 import io.github.redouanebali.repository.PlayerRepository;
 import io.github.redouanebali.repository.RoundRepository;
+import io.github.redouanebali.repository.ScoreRepository;
 import io.github.redouanebali.repository.TournamentRepository;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,15 +32,21 @@ import org.springframework.stereotype.Service;
 public class TournamentService {
 
   @Autowired
-  private PlayerPairRepository playerPairRepository;
+  private PlayerPairRepository         playerPairRepository;
   @Autowired
-  private PlayerRepository     playerRepository;
+  private PlayerRepository             playerRepository;
   @Autowired
-  private TournamentRepository tournamentRepository;
+  private TournamentRepository         tournamentRepository;
   @Autowired
-  private RoundRepository      roundRepository;
+  private RoundRepository              roundRepository;
   @Autowired
-  private GameRepository       gameRepository;
+  private GameRepository               gameRepository;
+  @Autowired
+  private ScoreRepository              scoreRepository;
+  @Autowired
+  private MatchFormatRepository        matchFormatRepository;
+  @Autowired
+  private TournamentProgressionService progressionService;
 
   public Tournament getTournamentById(Long id) {
     return tournamentRepository.findById(id)
@@ -57,16 +69,22 @@ public class TournamentService {
     while (current != null && current != Stage.WINNER) {
       Round round = new Round(current);
 
+      MatchFormat matchFormat = round.getMatchFormat();
+      if (matchFormat != null && matchFormat.getId() == null) {
+        matchFormat = matchFormatRepository.save(matchFormat);
+        round.setMatchFormat(matchFormat);
+      }
+
       int nbMatches = current.getNbTeams() / 2;
 
       List<Game> games = new ArrayList<>();
       for (int i = 0; i < nbMatches; i++) {
-        Game game = new Game();
+        Game game = new Game(matchFormat);
         games.add(game);
         gameRepository.save(game);
       }
-      round.setGames(games);
 
+      round.setGames(games);
       roundRepository.save(round);
       rounds.add(round);
 
@@ -78,8 +96,7 @@ public class TournamentService {
   }
 
   public Tournament updateTournament(Long tournamentId, Tournament updatedTournament) {
-    Tournament existing = tournamentRepository.findById(tournamentId)
-                                              .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
+    Tournament existing = getTournamentById(tournamentId);
 
     existing.setName(updatedTournament.getName());
     existing.setStartDate(updatedTournament.getStartDate());
@@ -97,12 +114,10 @@ public class TournamentService {
   }
 
   public int addPairs(Long tournamentId, List<SimplePlayerPairDTO> playerPairsDto) {
-    Tournament tournament = tournamentRepository.findById(tournamentId)
-                                                .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
+    Tournament tournament = getTournamentById(tournamentId);
 
-    // Supprimer les anciennes paires
     tournament.getPlayerPairs().clear();
-    tournamentRepository.save(tournament); // Nécessaire si orphanRemoval = true
+    tournamentRepository.save(tournament);
 
     List<PlayerPair> newPairs = playerPairsDto.stream().map(dto -> {
       Player p1 = new Player();
@@ -115,27 +130,21 @@ public class TournamentService {
       playerRepository.save(p2);
 
       PlayerPair pair = new PlayerPair(null, p1, p2, dto.getSeed());
-
-      // Sauvegarde immédiate
       return playerPairRepository.save(pair);
     }).toList();
 
-    // Ajout des paires désormais persistées
     tournament.getPlayerPairs().addAll(newPairs);
-
     tournamentRepository.save(tournament);
 
     return newPairs.size();
   }
 
   public Tournament generateDraw(Long tournamentId) {
-    Tournament tournament = tournamentRepository.findById(tournamentId)
-                                                .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
+    Tournament tournament = getTournamentById(tournamentId);
 
-    List<PlayerPair> pairs = new ArrayList<>(tournament.getPlayerPairs());
-
-    int originalSize = pairs.size();
-    int powerOfTwo   = 1;
+    List<PlayerPair> pairs        = new ArrayList<>(tournament.getPlayerPairs());
+    int              originalSize = pairs.size();
+    int              powerOfTwo   = 1;
     while (powerOfTwo < originalSize) {
       powerOfTwo *= 2;
     }
@@ -156,20 +165,16 @@ public class TournamentService {
                                     .orElseThrow(() -> new IllegalArgumentException("Round not found"));
 
     List<Game> existingGames = existingRound.getGames();
-
-    // Mise à jour des games existants avec les nouvelles équipes
     for (int i = 0; i < existingGames.size() && i < newRound.getGames().size(); i++) {
       Game existingGame = existingGames.get(i);
       Game newGame      = newRound.getGames().get(i);
-
       existingGame.setTeamA(newGame.getTeamA());
       existingGame.setTeamB(newGame.getTeamB());
-
       gameRepository.save(existingGame);
     }
 
     roundRepository.save(existingRound);
-    tournament.setRounds(new LinkedHashSet<>(tournament.getRounds())); // pour s'assurer qu'on a une version modifiable
+    tournament.setRounds(new LinkedHashSet<>(tournament.getRounds()));
     new TournamentProgressionService().propagateWinners(tournament);
 
     return tournamentRepository.save(tournament);
@@ -183,20 +188,16 @@ public class TournamentService {
     Player p1 = pair.getPlayer1();
     Player p2 = pair.getPlayer2();
 
-    // Sauvegarde les joueurs s’ils ne le sont pas encore
     if (p1 != null && p1.getId() == null) {
       p1 = playerRepository.save(p1);
     }
-
     if (p2 != null && p2.getId() == null) {
       p2 = playerRepository.save(p2);
     }
 
-    // Mets à jour les références dans la paire
     pair.setPlayer1(p1);
     pair.setPlayer2(p2);
 
-    // Sauvegarde la paire si nécessaire
     if (pair.getId() == null) {
       pair = playerPairRepository.save(pair);
     }
@@ -221,8 +222,56 @@ public class TournamentService {
                             .findFirst()
                             .orElseThrow(() -> new IllegalArgumentException("Round not found for stage: " + stage));
 
-    round.setMatchFormat(newFormat);
+    MatchFormat persistedFormat = matchFormatRepository.save(newFormat);
+    round.setMatchFormat(persistedFormat);
     roundRepository.save(round);
-    return newFormat;
+    return persistedFormat;
+  }
+
+  public ScoreUpdateResponse updateGameScore(Long tournamentId, Long gameId, Score score) {
+    Game       game       = getGameById(gameId);
+    Tournament tournament = getTournamentById(tournamentId);
+
+    boolean belongsToTournament = tournament.getRounds().stream()
+                                            .flatMap(round -> round.getGames().stream())
+                                            .anyMatch(g -> g.getId().equals(gameId));
+
+    if (!belongsToTournament) {
+      throw new IllegalArgumentException("Game does not belong to the tournament");
+    }
+
+    Score persistedScore = scoreRepository.save(score);
+    game.setScore(persistedScore);
+    gameRepository.save(game);
+
+    TeamSide winner = null;
+    if (game.isFinished()) {
+      progressionService.propagateWinners(tournament);
+      tournamentRepository.save(tournament);
+
+      winner = progressionService.getWinner(game).equals(game.getTeamA())
+               ? TeamSide.TEAM_A
+               : TeamSide.TEAM_B;
+
+      return new ScoreUpdateResponse(true, winner);
+    }
+
+    return new ScoreUpdateResponse(false, null);
+  }
+
+  public Game getGameById(Long gameId) {
+    return gameRepository.findById(gameId)
+                         .orElseThrow(() -> new IllegalArgumentException("Game not found"));
+  }
+
+  public Set<Game> getGamesByTournamentAndStage(Long tournamentId, Stage stage) {
+    Tournament tournament = getTournamentById(tournamentId);
+
+    Round round = tournament.getRounds().stream()
+                            .filter(r -> r.getStage() == stage)
+                            .findFirst()
+                            .orElseThrow(() -> new IllegalArgumentException("Round not found for stage: " + stage));
+
+    return new LinkedHashSet<>(round.getGames());
   }
 }

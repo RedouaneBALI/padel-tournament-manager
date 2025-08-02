@@ -1,6 +1,7 @@
 package io.github.redouanebali.generation;
 
 import io.github.redouanebali.model.Game;
+import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
@@ -39,7 +40,7 @@ public class KnockoutRoundGenerator implements RoundGenerator {
     List<Game> games   = new ArrayList<>();
 
     for (int i = 0; i < nbGames; i++) {
-      games.add(new Game());
+      games.add(new Game(new MatchFormat()));
     }
 
     return games;

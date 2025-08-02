@@ -74,6 +74,11 @@
       <version>5.11.0</version>
     </dependency>
 
+    <dependency>
+      <artifactId>spring-boot-starter-validation</artifactId>
+      <groupId>org.springframework.boot</groupId>
+      <version>3.5.3</version>
+    </dependency>
 
   </dependencies>
   <groupId>io.github.redouanebali</groupId>
