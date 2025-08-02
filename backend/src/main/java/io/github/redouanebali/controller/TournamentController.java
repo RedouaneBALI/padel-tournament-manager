@@ -5,12 +5,15 @@ import io.github.redouanebali.dto.SimplePlayerPairDTO;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.service.TournamentService;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -57,6 +60,14 @@ public class TournamentController {
   @PostMapping("/{id}/draw")
   public Tournament generateDraw(@PathVariable Long id) {
     return tournamentService.generateDraw(id);
+  }
+
+  @GetMapping("/{id}/rounds")
+  public List<Round> getRounds(@PathVariable Long id) {
+    Tournament tournament = tournamentService.getTournamentById(id);
+    return tournament.getRounds().stream()
+                     .sorted(Comparator.comparing(r -> r.getStage().getOrder()))
+                     .collect(Collectors.toList());
   }
 
   @GetMapping("/{id}/rounds/{stage}/games")

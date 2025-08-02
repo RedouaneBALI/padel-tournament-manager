@@ -15,7 +15,6 @@ import io.github.redouanebali.service.TournamentProgressionService;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -244,8 +243,8 @@ public class TournamentProgressionServiceTest {
     roundNext.setGames(gamesNext);
 
     // Tournoi
-    Tournament tournament = new Tournament();
-    Set<Round> rounds     = new LinkedHashSet<>();
+    Tournament           tournament = new Tournament();
+    LinkedHashSet<Round> rounds     = new LinkedHashSet<>();
     rounds.add(roundCurrent);
     rounds.add(roundNext);
     tournament.setRounds(rounds);

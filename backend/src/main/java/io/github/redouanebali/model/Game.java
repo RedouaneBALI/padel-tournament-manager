@@ -33,6 +33,8 @@ public class Game {
   @ManyToOne
   private MatchFormat format;
 
+  private TeamSide winnerSide;
+
   public Game(MatchFormat format) {
     this.format = format;
   }
@@ -103,4 +105,14 @@ public class Game {
 
     return setsWonByA > setsWonByB ? teamA : teamB;
   }
+
+  public void setScore(Score score) {
+    this.score = score;
+    if (this.isFinished()) {
+      this.winnerSide = getWinner().equals(teamA) ? TeamSide.TEAM_A : TeamSide.TEAM_B;
+    } else {
+      this.winnerSide = null;
+    }
+  }
+
 }

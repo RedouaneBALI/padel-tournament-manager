@@ -34,7 +34,7 @@ public class Round {
   private List<Game> games = new ArrayList<>();
 
   @ManyToOne(cascade = CascadeType.ALL)
-  private MatchFormat matchFormat;
+  private MatchFormat matchFormat = new MatchFormat();
 
   public Round(Stage stage) {
     this.stage = stage;
