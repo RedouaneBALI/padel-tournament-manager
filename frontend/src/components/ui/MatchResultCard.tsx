@@ -70,15 +70,12 @@ export default function MatchResultCard({ teamA, teamB, editable = false, gameId
       let nextSetIndex: number;
 
       if (teamIndex === 0) {
-        // Passage à la même colonne équipe 1
         nextTeamIndex = 1;
         nextSetIndex = setIndex;
       } else {
-        // équipe 1 → équipe 0, set suivant
         nextTeamIndex = 0;
         nextSetIndex = setIndex + 1;
         if (nextSetIndex >= scores[0].length) {
-          // boucle à début
           nextSetIndex = 0;
         }
       }
