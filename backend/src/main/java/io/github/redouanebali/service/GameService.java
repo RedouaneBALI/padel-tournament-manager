@@ -22,7 +22,8 @@ public class GameService {
   private final TournamentService            tournamentService;
 
   public ScoreUpdateResponse updateGameScore(Long tournamentId, Long gameId, Score score) {
-    Game       game       = tournamentService.getGameById(gameId);
+    Game game = gameRepository.findById(gameId)
+                              .orElseThrow(() -> new IllegalArgumentException("Game not found with ID: " + gameId));
     Tournament tournament = tournamentService.getTournamentById(tournamentId);
 
     boolean belongsToTournament = tournament.getRounds().stream()

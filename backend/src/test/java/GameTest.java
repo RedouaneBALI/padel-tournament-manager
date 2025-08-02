@@ -7,34 +7,23 @@ import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Score;
-import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.MethodSource;
 
 public class GameTest {
-
-  private static Stream<Arguments> winnerTestCases() {
-    return Stream.of(
-        Arguments.of("6-4,6-4", 2, 6, false, "A"),
-        Arguments.of("4-6,4-6", 2, 6, false, "B"),
-        Arguments.of("6-4,4-6,7-5", 2, 6, false, "A"),
-        Arguments.of("4-6,6-4,5-7", 2, 6, false, "B"),
-        Arguments.of("6-4,4-6", 2, 6, false, "null") // match not finished
-    );
-  }
 
   @ParameterizedTest
   @CsvSource({
       "'6-4,6-4', 2, 6, false, true",
       "'7-5,7-5', 2, 6, false, true",
       "'6-0,6-0', 2, 6, false, true",
+      "'6-0,0-6,6-4', 2, 6, false, true",
       "'4-6,6-4,7-5', 2, 6, false, true",
       "'6-4,5-7', 2, 6, false, false",
       "'6-4,5-4', 2, 6, false, false",
       "'4-6,5-6', 2, 6, false, false",
       "'6-0,6-5', 2, 6, false, false",
+      "'6-0,4-6,6-4', 2, 6, true, false",
       "'9-7', 1, 9, false, true",
       "'5-3,5-4', 2, 4, false, true",
       "'5-3,3-5,5-3', 2, 4, false, true",
@@ -68,23 +57,29 @@ public class GameTest {
   }
 
   @ParameterizedTest
-  @MethodSource("winnerTestCases")
+  @CsvSource({
+      "'6-4,6-4', 2, 6, false, A",
+      "'4-6,4-6', 2, 6, false, B",
+      "'6-4,4-6,7-5', 2, 6, false, A",
+      "'4-6,6-4,5-7', 2, 6, false, B",
+      "'6-4,4-6', 2, 6, false, null",
+      "'6-4,4-6,10-7', 2, 6, true, A",
+      "'6-4,4-6,7-10', 2, 6, true, B",
+      "'9-7', 1, 9, false, A",
+      "'4-9', 1, 9, false, B",
+      "'5-3,5-4', 2, 4, false, A",
+      "'3-5,4-5', 2, 4, false, B",
+      "'4-5,5-4', 2, 4, false, null",
+      "'6-0,4-6,6-4', 2, 6, true, null",
+  })
   public void testGetWinner(String scores,
                             int numberOfSetsToWin,
                             int pointsPerSet,
                             boolean superTieBreakInFinalSet,
                             String expectedWinner) {
-    Player player1 = new Player();
-    player1.setName("Player A1");
-    Player player2 = new Player();
-    player2.setName("Player A2");
-    Player player3 = new Player();
-    player3.setName("Player B1");
-    Player player4 = new Player();
-    player4.setName("Player B2");
 
-    PlayerPair teamA = new PlayerPair(-1L, player1, player2, 1);
-    PlayerPair teamB = new PlayerPair(-1L, player3, player4, 2);
+    PlayerPair teamA = new PlayerPair(-1L, new Player("A1"), new Player("A2"), 1);
+    PlayerPair teamB = new PlayerPair(-1L, new Player("B1"), new Player("B2"), 2);
     Game       game  = new Game(new MatchFormat(1L, numberOfSetsToWin, pointsPerSet, superTieBreakInFinalSet, false));
     game.setTeamA(teamA);
     game.setTeamB(teamB);

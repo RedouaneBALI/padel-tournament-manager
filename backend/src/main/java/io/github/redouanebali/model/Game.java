@@ -40,35 +40,40 @@ public class Game {
   }
 
   public boolean isFinished() {
-    int teamAWonSets = 0;
-    int teamBWonSets = 0;
-
-    if (score == null) {
+    if (score == null || score.getSets().isEmpty()) {
       return false;
     }
 
-    for (SetScore set : score.getSets()) {
-      if (isSetWonBy(set.getTeamAScore(), set.getTeamBScore(), format.getPointsPerSet())) {
-        teamAWonSets++;
-      } else if (isSetWonBy(set.getTeamBScore(), set.getTeamAScore(), format.getPointsPerSet())) {
-        teamBWonSets++;
+    int     teamAWonSets = 0;
+    int     teamBWonSets = 0;
+    int     setsToWin    = format.getNumberOfSetsToWin();
+    int     pointsPerSet = format.getPointsPerSet();
+    boolean superTie     = format.isSuperTieBreakInFinalSet();
+
+    for (int i = 0; i < score.getSets().size(); i++) {
+      SetScore set        = score.getSets().get(i);
+      boolean  isFinalSet = (i == score.getSets().size() - 1) && (teamAWonSets == setsToWin - 1) && (teamBWonSets == setsToWin - 1);
+
+      if (isFinalSet && superTie) {
+        int a = set.getTeamAScore();
+        int b = set.getTeamBScore();
+        if ((a >= 10 || b >= 10) && Math.abs(a - b) >= 2) {
+          if (a > b) {
+            teamAWonSets++;
+          } else {
+            teamBWonSets++;
+          }
+        }
+      } else {
+        if (isSetWonBy(set.getTeamAScore(), set.getTeamBScore(), pointsPerSet)) {
+          teamAWonSets++;
+        } else if (isSetWonBy(set.getTeamBScore(), set.getTeamAScore(), pointsPerSet)) {
+          teamBWonSets++;
+        }
       }
     }
 
-    if (teamAWonSets >= format.getNumberOfSetsToWin() || teamBWonSets >= format.getNumberOfSetsToWin()) {
-      return true;
-    }
-
-    if (format.isSuperTieBreakInFinalSet()
-        && teamAWonSets == format.getNumberOfSetsToWin() - 1
-        && teamBWonSets == format.getNumberOfSetsToWin() - 1) {
-      int superTieA = score.getSets().getLast().getTeamAScore();
-      int superTieB = score.getSets().getLast().getTeamBScore();
-
-      return (superTieA >= 10 || superTieB >= 10) && Math.abs(superTieA - superTieB) >= 2;
-    }
-
-    return false;
+    return teamAWonSets >= setsToWin || teamBWonSets >= setsToWin;
   }
 
   public boolean isSetWonBy(int teamScore, int opponentScore, int maxPointsPerSet) {
