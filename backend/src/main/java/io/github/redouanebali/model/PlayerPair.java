@@ -52,7 +52,7 @@ public class PlayerPair {
 
   @Override
   public String toString() {
-    return player1 + " - " + player2 + " : " + seed;
+    return player1.getName() + ":" + player2.getName();
   }
 }
 

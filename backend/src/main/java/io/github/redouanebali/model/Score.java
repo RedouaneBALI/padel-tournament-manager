@@ -28,6 +28,29 @@ public class Score {
   @JoinColumn(name = "score_id")
   private List<SetScore> sets = new ArrayList<>();
 
+  public static Score fromString(String scoreStr) {
+    Score score = new Score();
+    if (scoreStr == null || scoreStr.isBlank()) {
+      return score;
+    }
+    String[] setStrings = scoreStr.trim().split("[,\\s]+");
+    for (String setStr : setStrings) {
+      String[] parts = setStr.split("-");
+      if (parts.length == 2) {
+        try {
+          int teamAScore = Integer.parseInt(parts[0]);
+          int teamBScore = Integer.parseInt(parts[1]);
+          score.addSetScore(teamAScore, teamBScore);
+        } catch (NumberFormatException e) {
+          throw new IllegalArgumentException("Invalid score format: " + setStr, e);
+        }
+      } else {
+        throw new IllegalArgumentException("Invalid set score format: " + setStr);
+      }
+    }
+    return score;
+  }
+
   public void addSetScore(int teamAScore, int teamBScore) {
     sets.add(new SetScore(teamAScore, teamBScore));
   }

@@ -23,4 +23,7 @@ public class Group {
   private       Long            id;
   private       String          name;
 
+  public void addPair(PlayerPair pair) {
+    this.pairs.add(pair);
+  }
 }

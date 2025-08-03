@@ -53,6 +53,10 @@ public class Round {
     this.games.add(game);
   }
 
+  public void addGame(Game game) {
+    this.games.add(game);
+  }
+
 
   @Override
   public boolean equals(Object o) {

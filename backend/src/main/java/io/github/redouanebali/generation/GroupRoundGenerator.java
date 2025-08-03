@@ -7,12 +7,12 @@ import io.github.redouanebali.model.Stage;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PoolGenerator extends AbstractRoundGenerator implements RoundGenerator {
+public class GroupRoundGenerator extends AbstractRoundGenerator implements RoundGenerator {
 
   private final int nbPools;
   private final int nbTeamPerPool;
 
-  public PoolGenerator(final List<PlayerPair> pairs, final int nbSeeds, int nbPools, int nbTeamPerPool) {
+  public GroupRoundGenerator(final List<PlayerPair> pairs, final int nbSeeds, int nbPools, int nbTeamPerPool) {
     super(pairs, nbSeeds);
     this.nbPools       = nbPools;
     this.nbTeamPerPool = nbTeamPerPool;
