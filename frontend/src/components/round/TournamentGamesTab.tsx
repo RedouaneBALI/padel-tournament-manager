@@ -55,7 +55,7 @@ return (
            game.teamB?.player2?.name !== 'BYE')
         )
         .map(game => (
-          <div key={game.id}>
+          <div key={game.id} className="w-full flex justify-center">
             <MatchResultCard
               teamA={game.teamA}
               teamB={game.teamB}

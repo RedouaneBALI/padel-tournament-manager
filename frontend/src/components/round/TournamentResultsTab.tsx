@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
 import MatchResultCardLight from '@/src/components/ui/MatchResultCardLight';
 import { fetchRounds } from '@/src/utils/fetchRounds';
+import { toPng } from 'html-to-image';
 
 // Fonction pour calculer la position verticale correcte de chaque match
 function calculateMatchPositions(rounds: Round[]) {
@@ -71,12 +73,35 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
   // Calculer la hauteur totale nécessaire
   const maxPosition = Math.max(...matchPositions.flat()) + 200; // +200 pour la hauteur du dernier match
 
+  const exportBracketAsImage = async () => {
+    const node = document.getElementById('bracket-container');
+    if (!node) return;
+
+    try {
+      const dataUrl = await toPng(node);
+      const link = document.createElement('a');
+      link.download = 'bracket.png';
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Erreur lors de l’export en image :', err);
+    }
+  };
 
   return (
     <div className="w-full">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">Arbre du tournoi</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold text-gray-900">Arbre du tournoi</h2>
+        <button
+          onClick={exportBracketAsImage}
+          className="p-2 text-white bg-gray-500 hover:bg-blue-700 rounded-md"
+          title="Exporter en PNG"
+        >
+          <ArrowDownTrayIcon className="h-5 w-5" />
+        </button>
+      </div>
 
-      <div className="relative overflow-auto border border-gray-200 rounded-lg p-8 bg-gray-50" style={{ minHeight: `${maxPosition}px` }}>
+      <div id="bracket-container" className="relative overflow-auto border border-gray-200 rounded-lg p-8 bg-gray-50" style={{ minHeight: `${maxPosition}px` }}>
         <div
           className="relative flex"
           style={{

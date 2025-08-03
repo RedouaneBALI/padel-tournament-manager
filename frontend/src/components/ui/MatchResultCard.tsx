@@ -116,54 +116,56 @@ export default function MatchResultCard({ teamA, teamB, editable = false, gameId
 
   return (
     <div
-      className={`relative bg-card border border-border rounded-lg shadow-sm overflow-hidden min-w-[280px] max-w-[400px] transition-all duration-200 ${
+      className={`relative bg-card border border-border rounded-lg shadow-sm overflow-hidden w-full sm:max-w-[400px] transition-all duration-200 ${
         editing ? 'ring-2 ring-edit-border bg-edit-bg/30' : ''
       }`}
     >
-      {stage && (
-        <div className="absolute top-2 left-2 z-10 bg-gray-100 text-gray-800 text-xs font-semibold px-2 py-1 rounded">
-          {stage}
-        </div>
-      )}
-      {editable && (
-        <div className="absolute top-3 right-3 z-10">
-          {editing ? (
-            <div className="flex gap-2">
+      <div className="flex justify-between items-start px-2 pt-2">
+        {stage && (
+          <div className="inline-block bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 text-xs rounded mt-1 mx-1 px-3 py-0.5">
+            {stage}
+          </div>
+        )}
+        {editable && (
+          <div className="z-10">
+            {editing ? (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setScores([...initialScores]);
+                    setEditing(false);
+                  }}
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 rounded-md px-3"
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Annuler
+                </button>
+                <button
+                  onClick={async () => {
+                    await saveGameDetails();
+                    setInitialScores([...scores]);
+                    setEditing(false);
+                  }}
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-white hover:bg-green-700 h-9 rounded-md px-3 shadow-md"
+                >
+                  <Save className="h-3 w-3 mr-1" />
+                  Sauver
+                </button>
+              </div>
+            ) : (
               <button
-                onClick={() => {
-                  setScores([...initialScores]);
-                  setEditing(false);
-                }}
-                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 rounded-md px-3"
+                onClick={() => setEditing(true)}
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-7 w-7 p-0 hover:bg-primary/10 hover:text-primary"
+                title="Modifier les scores"
               >
-                <X className="h-3 w-3 mr-1" />
-                Annuler
+                <Edit3 className="h-4 w-4" />
               </button>
-              <button
-                onClick={async () => {
-                  await saveGameDetails();
-                  setInitialScores([...scores]);
-                  setEditing(false);
-                }}
-                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-white hover:bg-green-700 h-9 rounded-md px-3 shadow-md"
-              >
-                <Save className="h-3 w-3 mr-1" />
-                Sauver
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setEditing(true)}
-              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-9 w-9 p-0 hover:bg-primary/10 hover:text-primary"
-              title="Modifier les scores"
-            >
-              <Edit3 className="h-4 w-4" />
-            </button>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        )}
+      </div>
 
-      <div className={`divide-y divide-border ${editable ? 'pt-8' : 'pt-0'}`}>
+      <div className={`divide-y divide-border`}>
         <TeamScoreRow
           team={teamA}
           teamIndex={0}
@@ -185,7 +187,13 @@ export default function MatchResultCard({ teamA, teamB, editable = false, gameId
           winnerSide={winnerSide}
         />
       </div>
-      <div className="border-t border-border px-4 py-2 text-sm bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100">
+      <div
+        className={`border-t border-border px-4 py-2 text-sm ${
+          editing
+            ? 'bg-white text-gray-900'
+            : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'
+        }`}
+      >
         {editing ? (
           <div className="flex gap-4 items-center">
             <input
