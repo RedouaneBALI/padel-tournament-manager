@@ -14,7 +14,7 @@ interface TournamentGamesTabProps {
 export default function TournamentGamesTab({ tournamentId, editable }: TournamentGamesTabProps) {
   const [rounds, setRounds] = useState<Round[]>([]);
 
-  const handleScoreSaved = async (result: { tournamentUpdated: boolean; winner: PlayerPair | null }) => {
+  const handleInfoSaved = async (result: { tournamentUpdated: boolean; winner: PlayerPair | null }) => {
     if (result.tournamentUpdated) {
       try {
         const rounds = await fetchRounds(tournamentId);
@@ -63,7 +63,9 @@ return (
               gameId={game.id}
               tournamentId={tournamentId}
               editable={editable}
-              onScoreSaved={handleScoreSaved}
+              court={game.court}
+              scheduledTime={game.scheduledTime}
+              onInfoSaved={handleInfoSaved}
               winnerSide={
                 game.finished
                   ? game.winnerSide === 'TEAM_A'

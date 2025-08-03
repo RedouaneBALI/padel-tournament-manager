@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import Clock from 'react-clock';
+import 'react-clock/dist/Clock.css';
+import { setHours, setMinutes } from 'date-fns';
 import { PlayerPair } from '@/types/playerPair';
 import { Score } from '@/types/score';
 import TeamScoreRow from '@/src/components/match/TeamScoreRow';
@@ -13,14 +16,16 @@ interface Props {
   gameId: string;
   tournamentId: string;
   score?: Score;
-  onScoreSaved: (result: { tournamentUpdated: boolean; winner: String | null }) => void;
+  onInfoSaved: (result: { tournamentUpdated: boolean; winner: String | null }) => void;
   winnerSide?: number;
   stage?: string;
   court?: string;
   scheduledTime?: string;
 }
 
-export default function MatchResultCard({ teamA, teamB, editable = false, gameId, score, tournamentId, onScoreSaved, winnerSide, stage, court, scheduledTime }: Props) {
+export default function MatchResultCard({ teamA, teamB, editable = false, gameId, score, tournamentId, onInfoSaved, winnerSide, stage, court, scheduledTime }: Props) {
+  const [localCourt, setLocalCourt] = useState(court || 'Court central');
+  const [localScheduledTime, setLocalScheduledTime] = useState(scheduledTime || '00:00');
   const [editing, setEditing] = useState(false);
   const [scores, setScores] = useState<string[][]>(() => {
     const initialScores: string[][] = [[], []];
@@ -87,19 +92,23 @@ export default function MatchResultCard({ teamA, teamB, editable = false, gameId
     }
   };
 
-  const saveScores = async () => {
+  const saveGameDetails = async () => {
     try {
       const scorePayload = convertToScoreObject(scores);
-      const response = await fetch(`http://localhost:8080/tournaments/${tournamentId}/games/${gameId}/score`, {
+      const response = await fetch(`http://localhost:8080/tournaments/${tournamentId}/games/${gameId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(scorePayload),
+        body: JSON.stringify({
+          score: scorePayload,
+          court: localCourt,
+          scheduledTime: localScheduledTime,
+        }),
       });
 
       if (!response.ok) throw new Error('Erreur lors de la sauvegarde');
 
       const result = await response.json();
-      onScoreSaved(result);
+      onInfoSaved(result);
     } catch (error) {
       console.error('Erreur API:', error);
     }
@@ -132,7 +141,7 @@ export default function MatchResultCard({ teamA, teamB, editable = false, gameId
               </button>
               <button
                 onClick={async () => {
-                  await saveScores();
+                  await saveGameDetails();
                   setInitialScores([...scores]);
                   setEditing(false);
                 }}
@@ -177,7 +186,29 @@ export default function MatchResultCard({ teamA, teamB, editable = false, gameId
         />
       </div>
       <div className="border-t border-border px-4 py-2 text-sm bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100">
-        {`${court || 'Court central'} - ${scheduledTime || '00:00'}`}
+        {editing ? (
+          <div className="flex gap-4 items-center">
+            <input
+              type="text"
+              value={localCourt}
+              onChange={(e) => setLocalCourt(e.target.value)}
+              className="px-2 py-1 rounded border text-sm text-gray-900 bg-white"
+              placeholder="Court"
+            />
+            <input
+              type="time"
+              step="300"
+              value={localScheduledTime}
+              onChange={(e) => setLocalScheduledTime(e.target.value)}
+              className="px-2 py-1 rounded border text-sm text-gray-900 bg-white"
+            />
+          </div>
+        ) : (
+          <div className="flex justify-between">
+            <span>{localCourt}</span>
+            <span>{localScheduledTime}</span>
+          </div>
+        )}
       </div>
     </div>
   );
