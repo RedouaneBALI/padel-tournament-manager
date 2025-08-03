@@ -14,36 +14,27 @@ import io.github.redouanebali.repository.MatchFormatRepository;
 import io.github.redouanebali.repository.PlayerPairRepository;
 import io.github.redouanebali.repository.PlayerRepository;
 import io.github.redouanebali.repository.RoundRepository;
-import io.github.redouanebali.repository.ScoreRepository;
 import io.github.redouanebali.repository.TournamentRepository;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import lombok.Setter;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
-@Setter
+@RequiredArgsConstructor
+@Slf4j
 public class TournamentService {
 
-  @Autowired
-  private PlayerPairRepository         playerPairRepository;
-  @Autowired
-  private PlayerRepository             playerRepository;
-  @Autowired
-  private TournamentRepository         tournamentRepository;
-  @Autowired
-  private RoundRepository              roundRepository;
-  @Autowired
-  private GameRepository               gameRepository;
-  @Autowired
-  private ScoreRepository              scoreRepository;
-  @Autowired
-  private MatchFormatRepository        matchFormatRepository;
-  @Autowired
-  private TournamentProgressionService progressionService;
+  private final PlayerPairRepository         playerPairRepository;
+  private final PlayerRepository             playerRepository;
+  private final TournamentRepository         tournamentRepository;
+  private final RoundRepository              roundRepository;
+  private final GameRepository               gameRepository;
+  private final MatchFormatRepository        matchFormatRepository;
+  private final TournamentProgressionService progressionService;
 
   public Tournament getTournamentById(Long id) {
     return tournamentRepository.findById(id)
@@ -55,6 +46,7 @@ public class TournamentService {
       throw new IllegalArgumentException("Tournament cannot be null");
     }
     Tournament saved = tournamentRepository.save(tournament);
+    log.info("Created tournament with id {}", saved.getId());
 
     if (saved.getNbMaxPairs() <= 1) {
       return saved;
@@ -172,7 +164,8 @@ public class TournamentService {
 
     roundRepository.save(existingRound);
     tournament.setRounds(new LinkedHashSet<>(tournament.getRounds()));
-    new TournamentProgressionService().propagateWinners(tournament);
+    progressionService.propagateWinners(tournament);
+    log.info("Generated draw for tournament id {}", tournamentId);
 
     return tournamentRepository.save(tournament);
   }
@@ -185,12 +178,8 @@ public class TournamentService {
     Player p1 = pair.getPlayer1();
     Player p2 = pair.getPlayer2();
 
-    if (p1 != null && p1.getId() == null) {
-      p1 = playerRepository.save(p1);
-    }
-    if (p2 != null && p2.getId() == null) {
-      p2 = playerRepository.save(p2);
-    }
+    p1 = (p1 != null && p1.getId() == null) ? playerRepository.save(p1) : p1;
+    p2 = (p2 != null && p2.getId() == null) ? playerRepository.save(p2) : p2;
 
     pair.setPlayer1(p1);
     pair.setPlayer2(p2);

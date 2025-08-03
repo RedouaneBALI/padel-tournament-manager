@@ -7,9 +7,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
+import java.time.LocalTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 @Data
@@ -34,6 +36,11 @@ public class Game {
   private MatchFormat format;
 
   private TeamSide winnerSide;
+
+  @DateTimeFormat(pattern = "HH:mm")
+  private LocalTime scheduledTime;
+
+  private String court;
 
   public Game(MatchFormat format) {
     this.format = format;
