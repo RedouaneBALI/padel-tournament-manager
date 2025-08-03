@@ -1,5 +1,6 @@
 package io.github.redouanebali.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -38,6 +39,7 @@ public class Game {
   private TeamSide winnerSide;
 
   @DateTimeFormat(pattern = "HH:mm")
+  @JsonFormat(pattern = "HH:mm")
   private LocalTime scheduledTime;
 
   private String court;

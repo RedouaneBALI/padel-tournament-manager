@@ -11,7 +11,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -36,8 +38,19 @@ public class Round {
   @ManyToOne(cascade = CascadeType.ALL)
   private MatchFormat matchFormat = new MatchFormat();
 
+  @OneToMany(mappedBy = "round", cascade = CascadeType.ALL, orphanRemoval = true)
+  private Set<Group> groups = new LinkedHashSet<>();
+
   public Round(Stage stage) {
     this.stage = stage;
+  }
+
+  public void addGame(PlayerPair teamA, PlayerPair teamB) {
+    Game game = new Game();
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+    game.setFormat(this.matchFormat);
+    this.games.add(game);
   }
 
 

@@ -1,5 +1,6 @@
 package io.github.redouanebali.controller;
 
+import io.github.redouanebali.dto.GameUpdateRequest;
 import io.github.redouanebali.dto.ScoreUpdateResponse;
 import io.github.redouanebali.dto.SimplePlayerPairDTO;
 import io.github.redouanebali.model.Game;
@@ -92,5 +93,12 @@ public class TournamentController {
   @PutMapping("/{tournamentId}/games/{gameId}/score")
   public ScoreUpdateResponse updateScore(@PathVariable Long tournamentId, @PathVariable Long gameId, @RequestBody Score score) {
     return gameService.updateGameScore(tournamentId, gameId, score);
+  }
+
+  @PutMapping("/{tournamentId}/games/{gameId}")
+  public ScoreUpdateResponse updateGame(@PathVariable Long tournamentId,
+                                        @PathVariable Long gameId,
+                                        @RequestBody GameUpdateRequest request) {
+    return gameService.updateGame(tournamentId, gameId, request);
   }
 }

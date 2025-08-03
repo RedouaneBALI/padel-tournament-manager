@@ -7,6 +7,7 @@ import lombok.Getter;
 @Getter
 public enum Stage {
 
+  GROUPS("Groupes", 0, 0),
   Q1("Qualifications 1", 256, 1),
   Q2("Qualifications 2", 128, 2),
   R64("1/32 de finale", 64, 3),

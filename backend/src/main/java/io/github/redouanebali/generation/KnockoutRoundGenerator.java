@@ -9,24 +9,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 
-@Data
-@AllArgsConstructor
-public class KnockoutRoundGenerator implements RoundGenerator {
+public class KnockoutRoundGenerator extends AbstractRoundGenerator implements RoundGenerator {
 
-  private final List<PlayerPair> pairs;
-  private final int              nbSeeds;
+  public KnockoutRoundGenerator(final List<PlayerPair> pairs, final int nbSeeds) {
+    super(pairs, nbSeeds);
+  }
 
   @Override
   public Round generate() {
-    List<Game>       games     = createEmptyGames(pairs.size());
-    List<PlayerPair> remaining = placeSeedAndByeTeams(games, pairs, nbSeeds);
-    placeRemainingTeamsRandomly(games, remaining, nbSeeds);
+    List<Game>       games     = createEmptyGames(getPairs().size());
+    List<PlayerPair> remaining = placeSeedAndByeTeams(games, getPairs(), getNbSeeds());
+    placeRemainingTeamsRandomly(games, remaining, getNbSeeds());
     Round round = new Round();
     round.setGames(games);
-    round.setStage(Stage.fromNbTeams(pairs.size()));
+    round.setStage(Stage.fromNbTeams(getPairs().size()));
     return round;
   }
 

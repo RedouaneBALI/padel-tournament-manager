@@ -1,5 +1,6 @@
 package io.github.redouanebali.service;
 
+import io.github.redouanebali.dto.GameUpdateRequest;
 import io.github.redouanebali.dto.ScoreUpdateResponse;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Score;
@@ -26,14 +27,27 @@ public class GameService {
                               .orElseThrow(() -> new IllegalArgumentException("Game not found with ID: " + gameId));
     Tournament tournament = tournamentService.getTournamentById(tournamentId);
 
-    boolean belongsToTournament = tournament.getRounds().stream()
-                                            .flatMap(round -> round.getGames().stream())
-                                            .anyMatch(g -> g.getId().equals(gameId));
+    validateGameBelongsToTournament(gameId, tournament);
 
-    if (!belongsToTournament) {
-      throw new IllegalArgumentException("Game does not belong to the tournament");
-    }
+    return updateScoreAndPropagate(game, tournament, score);
+  }
 
+  public ScoreUpdateResponse updateGame(Long tournamentId, Long gameId, GameUpdateRequest request) {
+    Game game = gameRepository.findById(gameId)
+                              .orElseThrow(() -> new IllegalArgumentException("Game not found with ID: " + gameId));
+
+    Tournament tournament = tournamentService.getTournamentById(tournamentId);
+
+    validateGameBelongsToTournament(gameId, tournament);
+
+    // Update time and court
+    game.setScheduledTime(request.getScheduledTime());
+    game.setCourt(request.getCourt());
+
+    return updateScoreAndPropagate(game, tournament, request.getScore());
+  }
+
+  private ScoreUpdateResponse updateScoreAndPropagate(Game game, Tournament tournament, Score score) {
     Score persistedScore = scoreRepository.save(score);
     game.setScore(persistedScore);
     gameRepository.save(game);
@@ -42,13 +56,20 @@ public class GameService {
     if (game.isFinished()) {
       progressionService.propagateWinners(tournament);
       tournamentRepository.save(tournament);
-
-      winner = progressionService.getWinner(game).equals(game.getTeamA())
-               ? TeamSide.TEAM_A
-               : TeamSide.TEAM_B;
-      return new ScoreUpdateResponse(true, winner);
+      winner = game.getWinner().equals(game.getTeamA()) ? TeamSide.TEAM_A : TeamSide.TEAM_B;
     }
 
-    return new ScoreUpdateResponse(false, null);
+    return new ScoreUpdateResponse(game.isFinished(), winner);
   }
+
+  private void validateGameBelongsToTournament(Long gameId, Tournament tournament) {
+    boolean belongsToTournament = tournament.getRounds().stream()
+                                            .flatMap(round -> round.getGames().stream())
+                                            .anyMatch(g -> g.getId().equals(gameId));
+
+    if (!belongsToTournament) {
+      throw new IllegalArgumentException("Game does not belong to the tournament");
+    }
+  }
+
 }
