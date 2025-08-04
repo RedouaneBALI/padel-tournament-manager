@@ -1,6 +1,7 @@
+package io.github.redouanebali.model;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.github.redouanebali.model.Stage;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 

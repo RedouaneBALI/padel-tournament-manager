@@ -1,6 +1,7 @@
+package io.github.redouanebali.model;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.github.redouanebali.model.Player;
 import org.junit.jupiter.api.Test;
 
 public class PlayerTest {

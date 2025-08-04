@@ -72,13 +72,10 @@ export default function TournamentConfigSection({
           onChange={handleInputChange}
           className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
         >
-          <option value="">Sélectionnez un format</option>
           <option value="KNOCKOUT">Élimination directe</option>
+          <option value="GROUP_STAGE"> Phase de poules </option>
           <option value="QUALIF_KNOCKOUT" disabled className="text-muted-foreground cursor-not-allowed">
             Qualif + Élimination directe
-          </option>
-          <option value="GROUP_STAGE" disabled className="text-muted-foreground cursor-not-allowed">
-            Phase de poules + Elim
           </option>
         </select>
           </div>
@@ -99,20 +96,70 @@ export default function TournamentConfigSection({
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             />
           </div>
-          <div className="space-y-2 max-w-xs">
-            <label htmlFor="nbMaxPairs" className="block text-sm font-medium text-foreground">
-              Nombre d&apos;équipes maximum
-            </label>
-            <input
-              id="nbMaxPairs"
-              name="nbMaxPairs"
-              type="number"
-              min="0"
-              value={formData.nbMaxPairs ?? 48}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
-            />
-          </div>
+          {formData.tournamentFormat !== 'GROUP_STAGE' && (
+            <div className="space-y-2 max-w-xs">
+              <label htmlFor="nbMaxPairs" className="block text-sm font-medium text-foreground">
+                Nombre d&apos;équipes maximum
+              </label>
+              <input
+                id="nbMaxPairs"
+                name="nbMaxPairs"
+                type="number"
+                min="0"
+                value={formData.nbMaxPairs ?? 48}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+              />
+            </div>
+          )}
+          {formData.tournamentFormat === 'GROUP_STAGE' && (
+            <>
+              <div className="space-y-2 max-w-xs">
+                <label htmlFor="nbGroups" className="block text-sm font-medium text-foreground">
+                  Nombre de poules
+                </label>
+                <input
+                  id="nbGroups"
+                  name="nbGroups"
+                  type="number"
+                  min="1"
+                  value={formData.nbGroups ?? 4}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+                />
+              </div>
+
+              <div className="space-y-2 max-w-xs">
+                <label htmlFor="nbPairsPerGroup" className="block text-sm font-medium text-foreground">
+                  Équipes par poule
+                </label>
+                <input
+                  id="nbPairsPerGroup"
+                  name="nbPairsPerGroup"
+                  type="number"
+                  min="1"
+                  value={formData.nbPairsPerGroup ?? 4}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+                />
+              </div>
+
+              <div className="space-y-2 max-w-xs">
+                <label htmlFor="nbQualifiedByGroup" className="block text-sm font-medium text-foreground">
+                  Équipes qualifiées par poule
+                </label>
+                <input
+                  id="nbQualifiedByGroup"
+                  name="nbQualifiedByGroup"
+                  type="number"
+                  min="1"
+                  value={formData.nbQualifiedByGroup ?? 2}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

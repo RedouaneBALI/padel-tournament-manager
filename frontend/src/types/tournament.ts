@@ -17,4 +17,7 @@ export interface Tournament {
   startDate?: string;  // format ISO recommandé : "2025-07-24"
   endDate?: string;
   nbMaxPairs: number;
+  nbGroups: number;
+  nbPairsPerGroup: number;
+  nbQualifiedByGroup: number;
 }

@@ -11,7 +11,6 @@ frontend/yarn-debug.log*
 frontend/yarn-error.log*
 frontend/.eslintcache
 frontend/package-lock.json # facultatif selon ta stratégie de lockfile
-
 # === BACKEND (Java / Maven / Spring Boot) ===
 backend/target/
 backend/.idea/
@@ -43,6 +42,7 @@ Thumbs.db
 
 # MacOS
 .DS_Store
+*.DS_Store
 
 # Logs
 logs/

@@ -1,3 +1,5 @@
+package io.github.redouanebali.service;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -18,8 +20,6 @@ import io.github.redouanebali.repository.PlayerPairRepository;
 import io.github.redouanebali.repository.PlayerRepository;
 import io.github.redouanebali.repository.RoundRepository;
 import io.github.redouanebali.repository.TournamentRepository;
-import io.github.redouanebali.service.TournamentProgressionService;
-import io.github.redouanebali.service.TournamentService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

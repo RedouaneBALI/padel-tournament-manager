@@ -73,7 +73,7 @@ public class TournamentService {
         gameRepository.save(game);
       }
 
-      round.addGames(games);
+      round.addPools(games);
       roundRepository.save(round);
       rounds.add(round);
 
@@ -234,4 +234,5 @@ public class TournamentService {
 
     return new LinkedHashSet<>(round.getGames());
   }
+
 }

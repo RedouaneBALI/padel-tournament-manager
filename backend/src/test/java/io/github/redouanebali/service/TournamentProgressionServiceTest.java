@@ -1,3 +1,5 @@
+package io.github.redouanebali.service;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -11,7 +13,6 @@ import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.SetScore;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.service.TournamentProgressionService;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -227,7 +228,7 @@ public class TournamentProgressionServiceTest {
     gamesCurrent.add(game2);
     gamesCurrent.add(game3);
 
-    roundCurrent.addGames(gamesCurrent);
+    roundCurrent.addPools(gamesCurrent);
 
     // Round suivant (ex: R16) avec 2 matchs (indices 0 et 1)
     Round roundNext = new Round();
@@ -240,7 +241,7 @@ public class TournamentProgressionServiceTest {
     gamesNext.add(nextGame0);
     gamesNext.add(nextGame1);
 
-    roundNext.addGames(gamesNext);
+    roundNext.addPools(gamesNext);
 
     // Tournoi
     Tournament           tournament = new Tournament();

@@ -1,12 +1,9 @@
+package io.github.redouanebali.model;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
-import io.github.redouanebali.model.Game;
-import io.github.redouanebali.model.MatchFormat;
-import io.github.redouanebali.model.Player;
-import io.github.redouanebali.model.PlayerPair;
-import io.github.redouanebali.model.Score;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 

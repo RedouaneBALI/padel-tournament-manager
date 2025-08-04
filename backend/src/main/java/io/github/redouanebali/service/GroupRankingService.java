@@ -1,17 +1,23 @@
 package io.github.redouanebali.service;
 
 import io.github.redouanebali.model.Game;
-import io.github.redouanebali.model.Group;
-import io.github.redouanebali.model.GroupRankingDetails;
 import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Pool;
+import io.github.redouanebali.model.PoolRanking;
+import io.github.redouanebali.model.PoolRankingDetails;
+import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.TeamSide;
+import io.github.redouanebali.model.Tournament;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
 
+@Service
 public class GroupRankingService {
 
-  public static List<GroupRankingDetails> computeRanking(Group group, List<Game> allGamesOfRound) {
+  public static List<PoolRankingDetails> computeRanking(Pool pool, List<Game> allGamesOfRound) {
     class SetStats {
 
       int points    = 0;
@@ -21,7 +27,7 @@ public class GroupRankingService {
 
     Map<PlayerPair, SetStats> statsMap = new HashMap<>();
 
-    for (PlayerPair pair : group.getPairs()) {
+    for (PlayerPair pair : pool.getPairs()) {
       statsMap.put(pair, new SetStats());
     }
 
@@ -29,7 +35,7 @@ public class GroupRankingService {
       PlayerPair teamA = game.getTeamA();
       PlayerPair teamB = game.getTeamB();
 
-      if (group.getPairs().contains(teamA) && group.getPairs().contains(teamB) && game.isFinished()) {
+      if (pool.getPairs().contains(teamA) && pool.getPairs().contains(teamB) && game.isFinished()) {
         TeamSide winner = game.getWinnerSide();
         if (winner == TeamSide.TEAM_A) {
           statsMap.get(teamA).points += 1;
@@ -50,24 +56,33 @@ public class GroupRankingService {
       }
     }
 
-    List<GroupRankingDetails> result = statsMap.entrySet().stream()
-                                               .sorted((e1, e2) -> {
-                                                 int cmp = Integer.compare(e2.getValue().points, e1.getValue().points);
-                                                 if (cmp != 0) {
-                                                   return cmp;
-                                                 }
-                                                 int diff1 = e1.getValue().gamesWon - e1.getValue().gamesLost;
-                                                 int diff2 = e2.getValue().gamesWon - e2.getValue().gamesLost;
-                                                 return Integer.compare(diff2, diff1);
-                                               })
-                                               .map(entry -> new GroupRankingDetails(
-                                                   entry.getKey(),
-                                                   entry.getValue().points,
-                                                   entry.getValue().gamesWon - entry.getValue().gamesLost
-                                               ))
-                                               .toList();
-    group.setRanking(result); // @todo dirty ?
+    List<PoolRankingDetails> result = statsMap.entrySet().stream()
+                                              .sorted((e1, e2) -> {
+                                                int cmp = Integer.compare(e2.getValue().points, e1.getValue().points);
+                                                if (cmp != 0) {
+                                                  return cmp;
+                                                }
+                                                int diff1 = e1.getValue().gamesWon - e1.getValue().gamesLost;
+                                                int diff2 = e2.getValue().gamesWon - e2.getValue().gamesLost;
+                                                return Integer.compare(diff2, diff1);
+                                              })
+                                              .map(entry -> new PoolRankingDetails(
+                                                  entry.getKey(),
+                                                  entry.getValue().points,
+                                                  entry.getValue().gamesWon - entry.getValue().gamesLost
+                                              ))
+                                              .toList();
+    pool.setPoolRanking(new PoolRanking(result)); // @todo to fix
     return result;
+  }
+
+
+  public static List<PoolRanking> getGroupRankings(Tournament tournament) {
+    return tournament.getRounds().stream()
+                     .filter(round -> round.getStage() == Stage.GROUPS)
+                     .flatMap(round -> round.getPools().stream())
+                     .map(Pool::getPoolRanking)
+                     .collect(Collectors.toList());
   }
 
 }

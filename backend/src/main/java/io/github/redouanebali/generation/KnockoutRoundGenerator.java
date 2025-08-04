@@ -22,7 +22,7 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator implements Ro
     List<PlayerPair> remaining = placeSeedAndByeTeams(games, getPairs(), getNbSeeds());
     placeRemainingTeamsRandomly(games, remaining, getNbSeeds());
     Round round = new Round();
-    round.addGames(games);
+    round.addPools(games);
     round.setStage(Stage.fromNbTeams(getPairs().size()));
     return round;
   }

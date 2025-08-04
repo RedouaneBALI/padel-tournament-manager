@@ -1,7 +1,7 @@
 package io.github.redouanebali.generation;
 
-import io.github.redouanebali.model.Group;
 import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import java.util.ArrayList;
@@ -25,18 +25,18 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
 
     // Create groups and assign names
     for (int i = 0; i < nbPools; i++) {
-      Group group = new Group();
-      group.setName("Poule " + (char) ('A' + i));
-      round.getGroups().add(group);
+      Pool pool = new Pool();
+      pool.setName("Poule " + (char) ('A' + i));
+      round.getPools().add(pool);
     }
 
     // Assign player pairs to each group in block order (not round-robin)
-    List<Group> groups = round.getGroups().stream().toList();
-    int         index  = 0;
-    for (Group group : groups) {
+    List<Pool> pools = round.getPools().stream().toList();
+    int        index = 0;
+    for (Pool pool : pools) {
       for (int j = 0; j < nbTeamPerPool; j++) {
         if (index < getPairs().size()) {
-          group.addPair(getPairs().get(index++));
+          pool.addPair(getPairs().get(index++));
         }
       }
     }
@@ -47,8 +47,8 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
   }
 
   private void generateGroupGames(Round round) {
-    for (Group group : round.getGroups()) {
-      List<PlayerPair> pairList = new ArrayList<>(group.getPairs());
+    for (Pool pool : round.getPools()) {
+      List<PlayerPair> pairList = new ArrayList<>(pool.getPairs());
       for (int i = 0; i < pairList.size(); i++) {
         for (int j = i + 1; j < pairList.size(); j++) {
           round.addGame(pairList.get(i), pairList.get(j));

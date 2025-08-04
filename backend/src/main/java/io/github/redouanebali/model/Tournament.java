@@ -48,6 +48,7 @@ public class Tournament {
   private int              nbMaxPairs;
   // for group stage
   private int              nbGroups;
+  private int              nbPairsPerGroup;
   private int              nbQualifiedByGroup;
 
 }

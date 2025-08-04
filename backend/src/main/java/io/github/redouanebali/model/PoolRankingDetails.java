@@ -1,11 +1,13 @@
 package io.github.redouanebali.model;
 
+import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+@Embeddable
 @AllArgsConstructor
 @Data
-public class GroupRankingDetails {
+public class PoolRankingDetails {
 
   private PlayerPair playerPair;
   private int        points; // 1 victory = 1 point

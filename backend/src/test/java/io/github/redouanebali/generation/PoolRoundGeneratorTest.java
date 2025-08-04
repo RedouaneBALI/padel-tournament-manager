@@ -1,9 +1,10 @@
+package io.github.redouanebali.generation;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.github.redouanebali.generation.GroupRoundGenerator;
-import io.github.redouanebali.model.Group;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Round;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-public class GroupRoundGeneratorTest {
+public class PoolRoundGeneratorTest {
 
   private GroupRoundGenerator generator;
 
@@ -27,10 +28,10 @@ public class GroupRoundGeneratorTest {
     generator = new GroupRoundGenerator(createPairs(nbPairs), 0, expectedGroups, expectedPairsPerGroup);
     Round round = generator.generate();
 
-    assertEquals(expectedGroups, round.getGroups().size());
-    for (Group group : round.getGroups()) {
-      System.out.println(group);
-      assertEquals(expectedPairsPerGroup, group.getPairs().size());
+    assertEquals(expectedGroups, round.getPools().size());
+    for (Pool pool : round.getPools()) {
+      System.out.println(pool);
+      assertEquals(expectedPairsPerGroup, pool.getPairs().size());
     }
 
     assertEquals(expectedNbGames, round.getGames().size());

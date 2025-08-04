@@ -6,11 +6,13 @@ import io.github.redouanebali.dto.SimplePlayerPairDTO;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.PoolRanking;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.service.GameService;
+import io.github.redouanebali.service.GroupRankingService;
 import io.github.redouanebali.service.TournamentService;
 import java.util.Comparator;
 import java.util.List;
@@ -36,6 +38,9 @@ public class TournamentController {
 
   @Autowired
   private GameService gameService;
+
+  @Autowired
+  private GroupRankingService groupRankingService;
 
   @PostMapping
   public Tournament createTournament(@RequestBody Tournament tournament) {
@@ -100,5 +105,10 @@ public class TournamentController {
                                         @PathVariable Long gameId,
                                         @RequestBody GameUpdateRequest request) {
     return gameService.updateGame(tournamentId, gameId, request);
+  }
+
+  @GetMapping("/{id}/groups/ranking")
+  public List<PoolRanking> getGroupRankings(@PathVariable Long id) {
+    return GroupRankingService.getGroupRankings(tournamentService.getTournamentById(id));
   }
 }

@@ -1,3 +1,5 @@
+package io.github.redouanebali.service;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -19,9 +21,6 @@ import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.GameRepository;
 import io.github.redouanebali.repository.ScoreRepository;
 import io.github.redouanebali.repository.TournamentRepository;
-import io.github.redouanebali.service.GameService;
-import io.github.redouanebali.service.TournamentProgressionService;
-import io.github.redouanebali.service.TournamentService;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -61,7 +60,7 @@ public class GameServiceTest {
     game.setTeamB(teamB);
 
     Round round = new Round();
-    round.addGames(List.of(game));
+    round.addPools(List.of(game));
 
     Tournament tournament = new Tournament();
     tournament.setRounds(new LinkedHashSet<>(List.of(round)));
@@ -94,7 +93,7 @@ public class GameServiceTest {
     game.setTeamB(teamB);
 
     Round round = new Round();
-    round.addGames(List.of(game));
+    round.addPools(List.of(game));
 
     Tournament tournament = new Tournament();
     tournament.setRounds(new LinkedHashSet<>(List.of(round)));

@@ -27,8 +27,9 @@ public class Round {
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "round_id") // FK in Game table
   private final List<Game>  games       = new ArrayList<>();
-  @OneToMany(mappedBy = "round", cascade = CascadeType.ALL, orphanRemoval = true)
-  private final Set<Group>  groups      = new LinkedHashSet<>();
+  @OneToMany(cascade = CascadeType.ALL)
+  @JoinColumn(name = "round_id")
+  private final Set<Pool>   pools       = new LinkedHashSet<>();
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private       Long        id;
@@ -53,12 +54,12 @@ public class Round {
     this.games.add(game);
   }
 
-  public void addGames(List<Game> games) {
+  public void addPools(List<Game> games) {
     this.games.addAll(games);
   }
 
-  public void addGroup(Group group) {
-    this.groups.add(group);
+  public void addPool(Pool pool) {
+    this.pools.add(pool);
   }
 
 

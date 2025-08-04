@@ -1,24 +1,28 @@
+package io.github.redouanebali.service;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.github.redouanebali.model.Game;
-import io.github.redouanebali.model.Group;
-import io.github.redouanebali.model.GroupRankingDetails;
 import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Pool;
+import io.github.redouanebali.model.PoolRanking;
+import io.github.redouanebali.model.PoolRankingDetails;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.Stage;
-import io.github.redouanebali.service.GroupRankingService;
+import io.github.redouanebali.model.Tournament;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-public class GroupRankingServiceTest {
+public class GroupPoolRankingServiceTest {
 
   private List<PlayerPair> defaultPairs;
 
@@ -58,7 +62,7 @@ public class GroupRankingServiceTest {
       "'0-6,0-6', '3-6,3-6', '6-4,6-4', 'C:D|E:F|A:B'"
   })
   void testComputeRankingParameterized(String score1, String score2, String score3, String expectedRankingStr) {
-    Group group = new Group("A", defaultPairs);
+    Pool pool = new Pool("A", defaultPairs);
 
     List<Game> games = new ArrayList<>();
     games.add(buildGame(score1, defaultPairs.get(0), defaultPairs.get(1)));
@@ -67,15 +71,23 @@ public class GroupRankingServiceTest {
 
     Round round = new Round(Stage.GROUPS);
     games.forEach(round::addGame);
+    round.addPool(pool);
 
     List<PlayerPair> expectedRanking = new ArrayList<>();
     Arrays.stream(expectedRankingStr.split("\\|")).forEach(p -> {
       String[] names = p.split(":");
       expectedRanking.add(new PlayerPair(null, new Player(names[0]), new Player(names[1]), 0));
     });
-    List<GroupRankingDetails> ranking = GroupRankingService.computeRanking(group, round.getGames());
+    List<PoolRankingDetails> ranking = GroupRankingService.computeRanking(pool, round.getGames());
     ranking.forEach(System.out::println);
     System.out.println();
-    assertEquals(expectedRanking, ranking.stream().map(GroupRankingDetails::getPlayerPair).collect(Collectors.toList()));
+    assertEquals(expectedRanking, ranking.stream().map(PoolRankingDetails::getPlayerPair).collect(Collectors.toList()));
+
+    Tournament tournament = new Tournament();
+    tournament.setId(1L);
+    tournament.setRounds(Set.of(round));
+    List<PoolRanking> poolRankings = GroupRankingService.getGroupRankings(tournament);
+    assertEquals(1, poolRankings.size());
+    assertEquals(defaultPairs.size(), poolRankings.getFirst().getDetails().size());
   }
 }
