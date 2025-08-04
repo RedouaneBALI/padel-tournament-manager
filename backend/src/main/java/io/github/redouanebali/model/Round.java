@@ -24,22 +24,18 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Round {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
-
-  @Enumerated(EnumType.STRING)
-  private Stage stage;
-
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "round_id") // FK in Game table
-  private List<Game> games = new ArrayList<>();
-
-  @ManyToOne(cascade = CascadeType.ALL)
-  private MatchFormat matchFormat = new MatchFormat();
-
+  private final List<Game>  games       = new ArrayList<>();
   @OneToMany(mappedBy = "round", cascade = CascadeType.ALL, orphanRemoval = true)
-  private Set<Group> groups = new LinkedHashSet<>();
+  private final Set<Group>  groups      = new LinkedHashSet<>();
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private       Long        id;
+  @Enumerated(EnumType.STRING)
+  private       Stage       stage;
+  @ManyToOne(cascade = CascadeType.ALL)
+  private       MatchFormat matchFormat = new MatchFormat();
 
   public Round(Stage stage) {
     this.stage = stage;
@@ -55,6 +51,14 @@ public class Round {
 
   public void addGame(Game game) {
     this.games.add(game);
+  }
+
+  public void addGames(List<Game> games) {
+    this.games.addAll(games);
+  }
+
+  public void addGroup(Group group) {
+    this.groups.add(group);
   }
 
 

@@ -73,7 +73,7 @@ public class TournamentService {
         gameRepository.save(game);
       }
 
-      round.setGames(games);
+      round.addGames(games);
       roundRepository.save(round);
       rounds.add(round);
 

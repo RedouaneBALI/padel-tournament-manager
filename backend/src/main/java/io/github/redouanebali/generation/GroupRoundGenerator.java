@@ -36,7 +36,7 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
     for (Group group : groups) {
       for (int j = 0; j < nbTeamPerPool; j++) {
         if (index < getPairs().size()) {
-          group.getPairs().add(getPairs().get(index++));
+          group.addPair(getPairs().get(index++));
         }
       }
     }

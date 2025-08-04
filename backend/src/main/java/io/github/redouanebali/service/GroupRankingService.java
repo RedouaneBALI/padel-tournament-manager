@@ -2,6 +2,7 @@ package io.github.redouanebali.service;
 
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Group;
+import io.github.redouanebali.model.GroupRankingDetails;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.TeamSide;
 import java.util.HashMap;
@@ -10,7 +11,7 @@ import java.util.Map;
 
 public class GroupRankingService {
 
-  public static List<PlayerPair> computeRanking(Group group, List<Game> allGamesOfRound) {
+  public static List<GroupRankingDetails> computeRanking(Group group, List<Game> allGamesOfRound) {
     class SetStats {
 
       int points    = 0;
@@ -49,17 +50,24 @@ public class GroupRankingService {
       }
     }
 
-    return statsMap.entrySet().stream()
-                   .sorted((e1, e2) -> {
-                     int cmp = Integer.compare(e2.getValue().points, e1.getValue().points);
-                     if (cmp != 0) {
-                       return cmp;
-                     }
-                     int diff1 = e1.getValue().gamesWon - e1.getValue().gamesLost;
-                     int diff2 = e2.getValue().gamesWon - e2.getValue().gamesLost;
-                     return Integer.compare(diff2, diff1);
-                   })
-                   .map(Map.Entry::getKey)
-                   .toList();
+    List<GroupRankingDetails> result = statsMap.entrySet().stream()
+                                               .sorted((e1, e2) -> {
+                                                 int cmp = Integer.compare(e2.getValue().points, e1.getValue().points);
+                                                 if (cmp != 0) {
+                                                   return cmp;
+                                                 }
+                                                 int diff1 = e1.getValue().gamesWon - e1.getValue().gamesLost;
+                                                 int diff2 = e2.getValue().gamesWon - e2.getValue().gamesLost;
+                                                 return Integer.compare(diff2, diff1);
+                                               })
+                                               .map(entry -> new GroupRankingDetails(
+                                                   entry.getKey(),
+                                                   entry.getValue().points,
+                                                   entry.getValue().gamesWon - entry.getValue().gamesLost
+                                               ))
+                                               .toList();
+    group.setRanking(result); // @todo dirty ?
+    return result;
   }
+
 }

@@ -29,6 +29,7 @@ public class GroupRoundGeneratorTest {
 
     assertEquals(expectedGroups, round.getGroups().size());
     for (Group group : round.getGroups()) {
+      System.out.println(group);
       assertEquals(expectedPairsPerGroup, group.getPairs().size());
     }
 

@@ -2,6 +2,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Group;
+import io.github.redouanebali.model.GroupRankingDetails;
 import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
@@ -12,6 +13,7 @@ import io.github.redouanebali.service.GroupRankingService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -56,8 +58,7 @@ public class GroupRankingServiceTest {
       "'0-6,0-6', '3-6,3-6', '6-4,6-4', 'C:D|E:F|A:B'"
   })
   void testComputeRankingParameterized(String score1, String score2, String score3, String expectedRankingStr) {
-    Group group = new Group(1L, "A");
-    defaultPairs.forEach(group::addPair);
+    Group group = new Group("A", defaultPairs);
 
     List<Game> games = new ArrayList<>();
     games.add(buildGame(score1, defaultPairs.get(0), defaultPairs.get(1)));
@@ -72,8 +73,9 @@ public class GroupRankingServiceTest {
       String[] names = p.split(":");
       expectedRanking.add(new PlayerPair(null, new Player(names[0]), new Player(names[1]), 0));
     });
-
-    List<PlayerPair> ranking = GroupRankingService.computeRanking(group, round.getGames());
-    assertEquals(expectedRanking, ranking);
+    List<GroupRankingDetails> ranking = GroupRankingService.computeRanking(group, round.getGames());
+    ranking.forEach(System.out::println);
+    System.out.println();
+    assertEquals(expectedRanking, ranking.stream().map(GroupRankingDetails::getPlayerPair).collect(Collectors.toList()));
   }
 }
