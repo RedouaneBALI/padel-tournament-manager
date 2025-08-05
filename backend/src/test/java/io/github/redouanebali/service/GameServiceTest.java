@@ -60,7 +60,7 @@ public class GameServiceTest {
     game.setTeamB(teamB);
 
     Round round = new Round();
-    round.addPools(List.of(game));
+    round.addGames(List.of(game));
 
     Tournament tournament = new Tournament();
     tournament.setRounds(new LinkedHashSet<>(List.of(round)));
@@ -93,7 +93,7 @@ public class GameServiceTest {
     game.setTeamB(teamB);
 
     Round round = new Round();
-    round.addPools(List.of(game));
+    round.addGames(List.of(game));
 
     Tournament tournament = new Tournament();
     tournament.setRounds(new LinkedHashSet<>(List.of(round)));

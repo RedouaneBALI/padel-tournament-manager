@@ -15,12 +15,14 @@ import java.util.Set;
 
 public class KnockoutRoundGenerator extends AbstractRoundGenerator {
 
-  public KnockoutRoundGenerator(final List<PlayerPair> pairs, final int nbSeeds) {
-    super(pairs, nbSeeds);
+  public KnockoutRoundGenerator(final int nbSeeds) {
+    super(nbSeeds);
   }
 
   @Override
   public Round generate() {
+    int originalSize = this.getPairs().size();
+    addMissingByePairsToReachPowerOfTwo(this.getPairs(), originalSize);
     List<Game>       games     = createEmptyGames(getPairs().size());
     List<PlayerPair> remaining = placeSeedAndByeTeams(games, getPairs(), getNbSeeds());
     placeRemainingTeamsRandomly(games, remaining, getNbSeeds());
@@ -189,5 +191,19 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
     }
 
     return rounds;
+  }
+
+  private void addMissingByePairsToReachPowerOfTwo(List<PlayerPair> pairs, int originalSize) {
+    int powerOfTwo = 1;
+    while (powerOfTwo < originalSize) {
+      powerOfTwo *= 2;
+    }
+    int missing = powerOfTwo - originalSize;
+
+    for (int i = 0; i < missing; i++) {
+      PlayerPair bye = PlayerPair.bye();
+      //    persistPairIfNeeded(bye);
+      pairs.add(bye);
+    }
   }
 }

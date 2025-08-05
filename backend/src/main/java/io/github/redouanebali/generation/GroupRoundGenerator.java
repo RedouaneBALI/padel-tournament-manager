@@ -17,14 +17,15 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
   private final int nbPools;
   private final int nbTeamPerPool;
 
-  public GroupRoundGenerator(final List<PlayerPair> pairs, final int nbSeeds, int nbPools, int nbTeamPerPool) {
-    super(pairs, nbSeeds);
+  public GroupRoundGenerator(final int nbSeeds, int nbPools, int nbTeamPerPool) {
+    super(nbSeeds);
     this.nbPools       = nbPools;
     this.nbTeamPerPool = nbTeamPerPool;
   }
 
   @Override
   public Round generate() {
+    //     addMissingByePairsToReachPowerOfTwo(this.getPairs(), originalSize);
     Round round = new Round();
     round.setStage(Stage.GROUPS);
 

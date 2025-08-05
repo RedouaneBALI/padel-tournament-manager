@@ -228,7 +228,7 @@ public class TournamentProgressionServiceTest {
     gamesCurrent.add(game2);
     gamesCurrent.add(game3);
 
-    roundCurrent.addPools(gamesCurrent);
+    roundCurrent.addGames(gamesCurrent);
 
     // Round suivant (ex: R16) avec 2 matchs (indices 0 et 1)
     Round roundNext = new Round();
@@ -241,7 +241,7 @@ public class TournamentProgressionServiceTest {
     gamesNext.add(nextGame0);
     gamesNext.add(nextGame1);
 
-    roundNext.addPools(gamesNext);
+    roundNext.addGames(gamesNext);
 
     // Tournoi
     Tournament           tournament = new Tournament();

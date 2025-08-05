@@ -11,13 +11,13 @@ import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.TournamentFormat;
 import io.github.redouanebali.repository.GameRepository;
 import io.github.redouanebali.repository.MatchFormatRepository;
 import io.github.redouanebali.repository.PlayerPairRepository;
 import io.github.redouanebali.repository.PlayerRepository;
 import io.github.redouanebali.repository.RoundRepository;
 import io.github.redouanebali.repository.TournamentRepository;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -78,10 +78,10 @@ public class TournamentService {
   private AbstractRoundGenerator getGenerator(Tournament tournament) {
     AbstractRoundGenerator generator;
     switch (tournament.getTournamentFormat()) {
-      case KNOCKOUT -> generator = new KnockoutRoundGenerator(tournament.getPlayerPairs(), tournament.getNbSeeds());
+      case KNOCKOUT -> generator = new KnockoutRoundGenerator(tournament.getNbSeeds());
       case GROUP_STAGE -> generator =
-          new GroupRoundGenerator(tournament.getPlayerPairs(), tournament.getNbSeeds(), tournament.getNbPools(), tournament.getNbPairsPerPool());
-      default -> generator = new KnockoutRoundGenerator(tournament.getPlayerPairs(), tournament.getNbSeeds());
+          new GroupRoundGenerator(tournament.getNbSeeds(), tournament.getNbPools(), tournament.getNbPairsPerPool());
+      default -> generator = new KnockoutRoundGenerator(tournament.getNbSeeds());
     }
     return generator;
   }
@@ -128,28 +128,14 @@ public class TournamentService {
     tournament.getPlayerPairs().addAll(newPairs);
     tournamentRepository.save(tournament);
 
+    generator.getPairs().addAll(newPairs);
     return newPairs.size();
   }
 
   public Tournament generateDraw(Long tournamentId) {
     Tournament tournament = getTournamentById(tournamentId);
 
-    List<PlayerPair> pairs        = new ArrayList<>(tournament.getPlayerPairs());
-    int              originalSize = pairs.size();
-    int              powerOfTwo   = 1;
-    while (powerOfTwo < originalSize) {
-      powerOfTwo *= 2;
-    }
-    int missing = powerOfTwo - originalSize;
-
-    for (int i = 0; i < missing; i++) {
-      PlayerPair bye = PlayerPair.bye();
-      persistPairIfNeeded(bye);
-      pairs.add(bye);
-    }
-
-    KnockoutRoundGenerator generator = new KnockoutRoundGenerator(pairs, tournament.getNbSeeds());
-    Round                  newRound  = generator.generate();
+    Round newRound = generator.generate();
 
     Round existingRound = tournament.getRounds().stream()
                                     .filter(r -> r.getStage().equals(newRound.getStage()))
@@ -167,12 +153,17 @@ public class TournamentService {
 
     roundRepository.save(existingRound);
     tournament.setRounds(new LinkedHashSet<>(tournament.getRounds()));
-    progressionService.propagateWinners(tournament);
+    // @todo dirty, to change
+    if (tournament.getTournamentFormat() != TournamentFormat.GROUP_STAGE) {
+      progressionService.propagateWinners(tournament);
+    }
     log.info("Generated draw for tournament id {}", tournamentId);
 
     return tournamentRepository.save(tournament);
   }
 
+
+  // @todo to delete ?
   private PlayerPair persistPairIfNeeded(PlayerPair pair) {
     if (pair == null) {
       return null;

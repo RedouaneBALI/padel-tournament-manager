@@ -11,6 +11,7 @@ export enum Stage {
 }
 
 export const stageLabels: Record<Stage, string> = {
+  GROUPS: 'Phase de groupe',
   Q1: 'Qualifications 1',
   Q2: 'Qualifications 2',
   R64: '1/32 de finale',
