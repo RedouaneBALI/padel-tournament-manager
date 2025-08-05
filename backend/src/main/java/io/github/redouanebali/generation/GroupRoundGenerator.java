@@ -1,11 +1,16 @@
 package io.github.redouanebali.generation;
 
+import io.github.redouanebali.model.Game;
+import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
+import io.github.redouanebali.model.Tournament;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class GroupRoundGenerator extends AbstractRoundGenerator implements RoundGenerator {
 
@@ -26,7 +31,7 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
     // Create groups and assign names
     for (int i = 0; i < nbPools; i++) {
       Pool pool = new Pool();
-      pool.setName("Poule " + (char) ('A' + i));
+      pool.setName("" + (char) ('A' + i));
       round.getPools().add(pool);
     }
 
@@ -44,6 +49,31 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
     generateGroupGames(round);
 
     return round;
+  }
+
+  public Set<Round> createRounds(final Tournament tournament) {
+    Round round = new Round();
+    round.setStage(Stage.GROUPS);
+
+    MatchFormat sharedFormat = round.getMatchFormat();
+
+    int nbPools        = tournament.getNbPools();
+    int nbPairsPerPool = tournament.getNbPairsPerPool();
+
+    for (int i = 0; i < nbPools; i++) {
+      Pool pool = new Pool();
+      pool.setName("" + (char) ('A' + i));
+      round.getPools().add(pool);
+
+      List<Game> games     = new ArrayList<>();
+      int        nbMatches = nbPairsPerPool * (nbPairsPerPool - 1) / 2;
+      for (int j = 0; j < nbMatches; j++) {
+        games.add(new Game(sharedFormat)); // Partager le même MatchFormat
+      }
+      round.addGames(games); // Assumant que vous avez cette méthode
+    }
+
+    return new HashSet<>(Set.of(round));
   }
 
   private void generateGroupGames(Round round) {

@@ -1,23 +1,43 @@
-import { PlayerPair } from '@/src/types/playerPair';
-import { Round } from '@/src/types/round';
+import React, { useState } from 'react';
+import { Tournament } from '@/src/types/tournament';
 
-// types/tournament.ts
-export interface Tournament {
-  id?: number;
+interface TournamentFormData {
   name: string;
-  description?: string;
-  city?: string;
-  club?: string;
-  gender?: 'MALE' | 'FEMALE' | 'MIXED';
-  level?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'; // adapte à tes enums Java
-  tournamentFormat?: 'SINGLE_ELIMINATION' | 'ROUND_ROBIN' | 'DOUBLE_ELIMINATION'; // idem
+  description: string;
+  city: string;
+  club: string;
+  gender: string;
+  level: string;
+  tournamentFormat: string;
   nbSeeds: number;
-  playerPairs?: PlayerPair[];
-  rounds?: Round[];
-  startDate?: string;  // format ISO recommandé : "2025-07-24"
-  endDate?: string;
+  startDate: string;
+  endDate: string;
   nbMaxPairs: number;
-  nbGroups: number;
-  nbPairsPerGroup: number;
-  nbQualifiedByGroup: number;
+  nbPools: number;
+  nbPairsPerPool: number;
+  nbQualifiedByPool: number;
 }
+
+const getInitialFormData = (initialData?: Partial<Tournament>): TournamentFormData => ({
+  name: '',
+  description: '',
+  city: '',
+  club: '',
+  gender: '',
+  level: '',
+  tournamentFormat: '',
+  nbSeeds: 16,
+  startDate: '',
+  endDate: '',
+  nbMaxPairs: 48,
+  nbPools: 4,
+  nbPairsPerPool: 4,
+  nbQualifiedByPool: 2,
+  ...initialData,
+});
+
+const TournamentForm: React.FC<{ initialData?: Partial<Tournament> }> = ({ initialData }) => {
+  const [formData, setFormData] = useState<TournamentFormData>(getInitialFormData(initialData));
+
+  // ...rest of the component code
+};

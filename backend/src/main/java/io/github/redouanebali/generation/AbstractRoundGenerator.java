@@ -7,7 +7,7 @@ import lombok.Data;
 
 @AllArgsConstructor
 @Data
-public class AbstractRoundGenerator {
+public abstract class AbstractRoundGenerator implements RoundGenerator {
 
   private final List<PlayerPair> pairs;
   private final int              nbSeeds;

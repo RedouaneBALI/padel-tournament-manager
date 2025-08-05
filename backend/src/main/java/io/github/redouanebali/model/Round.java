@@ -8,8 +8,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -35,7 +35,8 @@ public class Round {
   private       Long        id;
   @Enumerated(EnumType.STRING)
   private       Stage       stage;
-  @ManyToOne(cascade = CascadeType.ALL)
+  @OneToOne(cascade = CascadeType.ALL)
+  @JoinColumn(name = "match_format_id")
   private       MatchFormat matchFormat = new MatchFormat();
 
   public Round(Stage stage) {
@@ -54,8 +55,12 @@ public class Round {
     this.games.add(game);
   }
 
-  public void addPools(List<Game> games) {
+  public void addGames(List<Game> games) {
     this.games.addAll(games);
+  }
+
+  public void addPools(List<Pool> pools) {
+    this.pools.addAll(pools);
   }
 
   public void addPool(Pool pool) {
@@ -79,5 +84,6 @@ public class Round {
   public int hashCode() {
     return stage != null ? stage.hashCode() : 0;
   }
+
 
 }

@@ -115,45 +115,45 @@ export default function TournamentConfigSection({
           {formData.tournamentFormat === 'GROUP_STAGE' && (
             <>
               <div className="space-y-2 max-w-xs">
-                <label htmlFor="nbGroups" className="block text-sm font-medium text-foreground">
+                <label htmlFor="nbPools" className="block text-sm font-medium text-foreground">
                   Nombre de poules
                 </label>
                 <input
-                  id="nbGroups"
-                  name="nbGroups"
+                  id="nbPools"
+                  name="nbPools"
                   type="number"
                   min="1"
-                  value={formData.nbGroups ?? 4}
+                  value={formData.nbPools ?? 4}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
                 />
               </div>
 
               <div className="space-y-2 max-w-xs">
-                <label htmlFor="nbPairsPerGroup" className="block text-sm font-medium text-foreground">
+                <label htmlFor="nbPairsPerPool" className="block text-sm font-medium text-foreground">
                   Équipes par poule
                 </label>
                 <input
-                  id="nbPairsPerGroup"
-                  name="nbPairsPerGroup"
+                  id="nbPairsPerPool"
+                  name="nbPairsPerPool"
                   type="number"
                   min="1"
-                  value={formData.nbPairsPerGroup ?? 4}
+                  value={formData.nbPairsPerPool ?? 4}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
                 />
               </div>
 
               <div className="space-y-2 max-w-xs">
-                <label htmlFor="nbQualifiedByGroup" className="block text-sm font-medium text-foreground">
+                <label htmlFor="nbQualifiedByPool" className="block text-sm font-medium text-foreground">
                   Équipes qualifiées par poule
                 </label>
                 <input
-                  id="nbQualifiedByGroup"
-                  name="nbQualifiedByGroup"
+                  id="nbQualifiedByPool"
+                  name="nbQualifiedByPool"
                   type="number"
                   min="1"
-                  value={formData.nbQualifiedByGroup ?? 2}
+                  value={formData.nbQualifiedByPool ?? 2}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
                 />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Loader2, Trophy } from 'lucide-react';
@@ -9,6 +9,24 @@ import TournamentDatesSection from '@/src/components/tournament/TournamentDatesS
 import TournamentConfigSection from '@/src/components/tournament/TournamentConfigSection';
 import { Tournament } from '@/src/types/tournament';
 import { TournamentFormData } from '@/src/types/tournamentData';
+
+const getInitialFormData = (initialData?: Partial<Tournament>): TournamentFormData => ({
+  name: '',
+  description: '',
+  city: '',
+  club: '',
+  gender: '',
+  level: '',
+  tournamentFormat: '',
+  nbSeeds: 16,
+  startDate: '',
+  endDate: '',
+  nbMaxPairs: 48,
+  nbPools: 4,
+  nbPairsPerPool: 4,
+  nbQualifiedByPool: 2,
+  ...initialData,
+});
 
 interface TournamentFormProps {
   initialData?: Partial<Tournament>;
@@ -19,29 +37,7 @@ interface TournamentFormProps {
 
 
 export default function TournamentForm({ initialData, onSubmit, isEditing = false, title }: TournamentFormProps) {
-  const [formData, setFormData] = useState<TournamentFormData>({
-    name: '',
-    description: '',
-    city: '',
-    club: '',
-    gender: '',
-    level: '',
-    tournamentFormat: '',
-    nbSeeds: 16,
-    startDate: '',
-    endDate: '',
-    nbMaxPairs: 48,
-    ...initialData,
-  });
-
-  useEffect(() => {
-      if (initialData) {
-        setFormData(prev => ({
-          ...prev,
-          ...initialData,
-        }));
-      }
-    }, [initialData]);
+  const [formData, setFormData] = useState<TournamentFormData>(getInitialFormData(initialData));
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -68,7 +64,7 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
     });
 
     try {
-      const tournament = mapFormDataToTournament(payload);
+      const tournament = payload as Tournament;
       await onSubmit(tournament);
       toast.success(isEditing ? "Tournoi mis à jour avec succès!" : "Tournoi créé avec succès!");
     } catch (error) {
@@ -78,23 +74,6 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
       setIsSubmitting(false);
     }
   };
-
- function mapFormDataToTournament(data: TournamentFormData): Tournament {
-    return {
-      id: data.id ?? undefined,
-      name: data.name ?? '',
-      description: data.description ?? '',
-      city: data.city ?? '',
-      club: data.club ?? '',
-      gender: data.gender as Tournament['gender'],
-      level: data.level as Tournament['level'],
-      tournamentFormat: data.tournamentFormat as Tournament['tournamentFormat'],
-      nbSeeds: typeof data.nbSeeds === 'string' ? parseInt(data.nbSeeds) : data.nbSeeds ?? 0,
-      startDate: data.startDate ?? '',
-      endDate: data.endDate ?? '',
-      nbMaxPairs: typeof data.nbMaxPairs === 'string' ? parseInt(data.nbMaxPairs) : data.nbMaxPairs ?? 0,
-    };
-  }
 
   return (
     <div className="container mx-auto max-w-4xl">

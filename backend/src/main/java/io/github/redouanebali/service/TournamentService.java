@@ -1,6 +1,8 @@
 package io.github.redouanebali.service;
 
 import io.github.redouanebali.dto.SimplePlayerPairDTO;
+import io.github.redouanebali.generation.AbstractRoundGenerator;
+import io.github.redouanebali.generation.GroupRoundGenerator;
 import io.github.redouanebali.generation.KnockoutRoundGenerator;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.MatchFormat;
@@ -35,6 +37,7 @@ public class TournamentService {
   private final GameRepository               gameRepository;
   private final MatchFormatRepository        matchFormatRepository;
   private final TournamentProgressionService progressionService;
+  private       AbstractRoundGenerator       generator;
 
   public Tournament getTournamentById(Long id) {
     return tournamentRepository.findById(id)
@@ -45,44 +48,44 @@ public class TournamentService {
     if (tournament == null) {
       throw new IllegalArgumentException("Tournament cannot be null");
     }
-    Tournament saved = tournamentRepository.save(tournament);
-    log.info("Created tournament with id {}", saved.getId());
+    Tournament savedTournament = tournamentRepository.save(tournament);
+    log.info("Created tournament with id {}", savedTournament.getId());
 
-    if (saved.getNbMaxPairs() <= 1) {
-      return saved;
+    if (savedTournament.getNbMaxPairs() <= 1) {
+      return savedTournament;
     }
 
-    LinkedHashSet<Round> rounds  = new LinkedHashSet<>();
-    Stage                current = Stage.fromNbTeams(saved.getNbMaxPairs());
+    generator = getGenerator(savedTournament);
 
-    while (current != null && current != Stage.WINNER) {
-      Round round = new Round(current);
+    Set<Round> rounds = generator.createRounds(savedTournament);
+    savedTournament.setRounds(rounds);
+    saveRoundInfo(rounds);
+    return tournamentRepository.save(savedTournament);
+  }
 
-      MatchFormat matchFormat = round.getMatchFormat();
-      if (matchFormat != null && matchFormat.getId() == null) {
-        matchFormat = matchFormatRepository.save(matchFormat);
-        round.setMatchFormat(matchFormat);
-      }
+  private void saveRoundInfo(Set<Round> rounds) {
+    for (Round round : rounds) {
+      System.out.println("Saving round with MatchFormat ID: " +
+                         (round.getMatchFormat() != null ? round.getMatchFormat().getId() : "null"));
+      Round savedRound = roundRepository.save(round);
 
-      int nbMatches = current.getNbTeams() / 2;
-
-      List<Game> games = new ArrayList<>();
-      for (int i = 0; i < nbMatches; i++) {
-        Game game = new Game(matchFormat);
-        games.add(game);
+      for (Game game : savedRound.getGames()) {
         gameRepository.save(game);
       }
-
-      round.addPools(games);
-      roundRepository.save(round);
-      rounds.add(round);
-
-      current = current.next();
     }
-
-    saved.setRounds(rounds);
-    return tournamentRepository.save(saved);
   }
+
+  private AbstractRoundGenerator getGenerator(Tournament tournament) {
+    AbstractRoundGenerator generator;
+    switch (tournament.getTournamentFormat()) {
+      case KNOCKOUT -> generator = new KnockoutRoundGenerator(tournament.getPlayerPairs(), tournament.getNbSeeds());
+      case GROUP_STAGE -> generator =
+          new GroupRoundGenerator(tournament.getPlayerPairs(), tournament.getNbSeeds(), tournament.getNbPools(), tournament.getNbPairsPerPool());
+      default -> generator = new KnockoutRoundGenerator(tournament.getPlayerPairs(), tournament.getNbSeeds());
+    }
+    return generator;
+  }
+
 
   public Tournament updateTournament(Long tournamentId, Tournament updatedTournament) {
     Tournament existing = getTournamentById(tournamentId);

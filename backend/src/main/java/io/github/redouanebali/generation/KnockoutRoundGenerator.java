@@ -5,12 +5,15 @@ import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
+import io.github.redouanebali.model.Tournament;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
-public class KnockoutRoundGenerator extends AbstractRoundGenerator implements RoundGenerator {
+public class KnockoutRoundGenerator extends AbstractRoundGenerator {
 
   public KnockoutRoundGenerator(final List<PlayerPair> pairs, final int nbSeeds) {
     super(pairs, nbSeeds);
@@ -22,7 +25,7 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator implements Ro
     List<PlayerPair> remaining = placeSeedAndByeTeams(games, getPairs(), getNbSeeds());
     placeRemainingTeamsRandomly(games, remaining, getNbSeeds());
     Round round = new Round();
-    round.addPools(games);
+    round.addGames(games);
     round.setStage(Stage.fromNbTeams(getPairs().size()));
     return round;
   }
@@ -156,5 +159,35 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator implements Ro
     }
 
     return result;
+  }
+
+  @Override
+  public Set<Round> createRounds(Tournament tournament) {
+    LinkedHashSet<Round> rounds  = new LinkedHashSet<>();
+    Stage                current = Stage.fromNbTeams(tournament.getNbMaxPairs());
+
+    while (current != null && current != Stage.WINNER) {
+      Round round = new Round(current);
+
+      MatchFormat matchFormat = round.getMatchFormat();
+      if (matchFormat != null && matchFormat.getId() == null) {
+        round.setMatchFormat(matchFormat);
+      }
+
+      int nbMatches = current.getNbTeams() / 2;
+
+      List<Game> games = new ArrayList<>();
+      for (int i = 0; i < nbMatches; i++) {
+        Game game = new Game(matchFormat);
+        games.add(game);
+      }
+
+      round.addGames(games);
+      rounds.add(round);
+
+      current = current.next();
+    }
+
+    return rounds;
   }
 }

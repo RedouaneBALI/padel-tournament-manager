@@ -47,8 +47,8 @@ public class Tournament {
   private LocalDate        endDate;
   private int              nbMaxPairs;
   // for group stage
-  private int              nbGroups;
-  private int              nbPairsPerGroup;
-  private int              nbQualifiedByGroup;
+  private int              nbPools;
+  private int              nbPairsPerPool;
+  private int              nbQualifiedByPool;
 
 }
