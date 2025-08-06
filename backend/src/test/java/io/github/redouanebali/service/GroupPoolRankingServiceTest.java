@@ -16,7 +16,6 @@ import io.github.redouanebali.model.Tournament;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -85,7 +84,7 @@ public class GroupPoolRankingServiceTest {
 
     Tournament tournament = new Tournament();
     tournament.setId(1L);
-    tournament.setRounds(Set.of(round));
+    tournament.setRounds(List.of(round));
     List<PoolRanking> poolRankings = GroupRankingService.getGroupRankings(tournament);
     assertEquals(1, poolRankings.size());
     assertEquals(defaultPairs.size(), poolRankings.getFirst().getDetails().size());

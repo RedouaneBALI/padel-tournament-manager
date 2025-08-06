@@ -1,5 +1,6 @@
 package io.github.redouanebali.model;
 
+import io.github.redouanebali.service.GroupRankingService;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -62,5 +63,12 @@ public class Pool {
     for (PlayerPair pair : pairs) {
       poolRanking.addDetails(new PoolRankingDetails(pair, 0, 0));
     }
+  }
+
+  public void recalculateRanking(final List<Game> poolGames) {
+    List<PoolRankingDetails> newRanking = GroupRankingService.computeRanking(this, poolGames);
+    PoolRanking              ranking    = new PoolRanking();
+    ranking.setDetails(newRanking);
+    this.setPoolRanking(ranking);
   }
 }

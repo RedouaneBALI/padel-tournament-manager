@@ -8,7 +8,6 @@ import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Round;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.IntStream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -26,8 +25,8 @@ public class GroupRoundGeneratorTest {
       "18,6,3,18"  // 6 groups of 3 => 3 games per group, total = 18
   })
   public void checkPoolGeneration(int nbPairs, int expectedGroups, int expectedPairsPerGroup, int expectedNbGames) {
-    generator = new GroupRoundGenerator(createPairs(nbPairs), 0, expectedGroups, expectedPairsPerGroup);
-    Round round = generator.generate();
+    generator = new GroupRoundGenerator(0, expectedGroups, expectedPairsPerGroup);
+    Round round = generator.generate(createPairs(nbPairs));
 
     assertEquals(expectedGroups, round.getPools().size());
     for (Pool pool : round.getPools()) {
@@ -61,8 +60,8 @@ public class GroupRoundGeneratorTest {
     tournament.setNbPools(nbPools);
     tournament.setNbPairsPerPool(nbPairsPerPool);
 
-    GroupRoundGenerator generator = new GroupRoundGenerator(new ArrayList<>(), 0, nbPools, nbPairsPerPool);
-    Set<Round>          rounds    = generator.createRounds(tournament);
+    GroupRoundGenerator generator = new GroupRoundGenerator(0, nbPools, nbPairsPerPool);
+    List<Round>         rounds    = generator.createRounds(tournament);
     Round               round     = rounds.iterator().next();
 
     assertEquals(expectedNbGames, round.getGames().size());

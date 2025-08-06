@@ -9,9 +9,8 @@ import io.github.redouanebali.model.Tournament;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 public class KnockoutRoundGenerator extends AbstractRoundGenerator {
 
@@ -164,9 +163,9 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
   }
 
   @Override
-  public Set<Round> createRounds(Tournament tournament) {
-    LinkedHashSet<Round> rounds  = new LinkedHashSet<>();
-    Stage                current = Stage.fromNbTeams(tournament.getNbMaxPairs());
+  public List<Round> createRounds(Tournament tournament) {
+    LinkedList<Round> rounds  = new LinkedList<>();
+    Stage             current = Stage.fromNbTeams(tournament.getNbMaxPairs());
 
     while (current != null && current != Stage.WINNER) {
       Round round = new Round(current);

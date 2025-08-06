@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.github.redouanebali.dto.ScoreUpdateResponse;
@@ -19,32 +18,29 @@ import io.github.redouanebali.model.SetScore;
 import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.TournamentRepository;
-import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 public class GameServiceTest {
 
-  private ScoreRepository              scoreRepository;
-  private GameRepository               gameRepository;
   private TournamentRepository         tournamentRepository;
   private TournamentProgressionService progressionService;
   private TournamentService            tournamentService;
+  private MatchFormatService           matchFormatService;
   private GameService                  gameService;
 
   @BeforeEach
   void setUp() {
-    scoreRepository      = mock(ScoreRepository.class);
-    gameRepository       = mock(GameRepository.class);
     tournamentRepository = mock(TournamentRepository.class);
     progressionService   = mock(TournamentProgressionService.class);
     tournamentService    = mock(TournamentService.class);
+    matchFormatService   = mock(MatchFormatService.class);
 
     MatchFormat matchFormat = new MatchFormat();
-    when(tournamentService.getMatchFormatForRound(any(), any())).thenReturn(matchFormat);
+    when(matchFormatService.getMatchFormatForRound(any(), any())).thenReturn(matchFormat);
 
     // Setup a Tournament with a Round and a Game, and stub the getTournamentById method.
     PlayerPair teamA = new PlayerPair();
@@ -61,11 +57,11 @@ public class GameServiceTest {
     round.addGames(List.of(game));
 
     Tournament tournament = new Tournament();
-    tournament.setRounds(new LinkedHashSet<>(List.of(round)));
+    tournament.setRounds(new LinkedList<>(List.of(round)));
 
     when(tournamentService.getTournamentById(any())).thenReturn(tournament);
 
-    gameService = new GameService(scoreRepository, gameRepository, tournamentRepository, progressionService, tournamentService);
+    gameService = new GameService(tournamentRepository, progressionService, tournamentService);
   }
 
   @ParameterizedTest
@@ -94,7 +90,7 @@ public class GameServiceTest {
     round.addGames(List.of(game));
 
     Tournament tournament = new Tournament();
-    tournament.setRounds(new LinkedHashSet<>(List.of(round)));
+    tournament.setRounds(new LinkedList<>(List.of(round)));
 
     Score score = new Score();
     score.setSets(List.of(
@@ -102,10 +98,10 @@ public class GameServiceTest {
         new SetScore(a2, b2)
     ));
 
-    when(scoreRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-    when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
+    //   when(scoreRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+    //   when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
     when(tournamentService.getTournamentById(tournamentId)).thenReturn(tournament);
-    when(gameRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+    //   when(gameRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
     if (expectedWinner.equals("TEAM_A")) {
       when(progressionService.getWinner(game)).thenReturn(teamA);
@@ -126,7 +122,7 @@ public class GameServiceTest {
       assertFalse(response.isTournamentUpdated());
     }
 
-    verify(scoreRepository).save(score);
-    verify(gameRepository).save(game);
+    //   verify(scoreRepository).save(score);
+    //   verify(gameRepository).save(game);
   }
 }

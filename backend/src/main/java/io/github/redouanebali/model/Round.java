@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -29,6 +30,7 @@ public class Round {
   private final List<Game>  games       = new ArrayList<>();
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "round_id")
+  @OrderBy("name ASC")
   private final Set<Pool>   pools       = new LinkedHashSet<>();
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

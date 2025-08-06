@@ -8,7 +8,6 @@ import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -52,7 +51,7 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
     return round;
   }
 
-  public Set<Round> createRounds(final Tournament tournament) {
+  public List<Round> createRounds(final Tournament tournament) {
     Round round = new Round();
     round.setStage(Stage.GROUPS);
 
@@ -74,7 +73,7 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
       round.addGames(games); // Assumant que vous avez cette méthode
     }
 
-    return new HashSet<>(Set.of(round));
+    return new ArrayList<>(Set.of(round));
   }
 
   private void generateGroupGames(Round round) {

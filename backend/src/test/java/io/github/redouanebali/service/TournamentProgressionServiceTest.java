@@ -13,8 +13,9 @@ import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.SetScore;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.TournamentFormat;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -244,8 +245,9 @@ public class TournamentProgressionServiceTest {
     roundNext.addGames(gamesNext);
 
     // Tournoi
-    Tournament           tournament = new Tournament();
-    LinkedHashSet<Round> rounds     = new LinkedHashSet<>();
+    Tournament tournament = new Tournament();
+    tournament.setTournamentFormat(TournamentFormat.KNOCKOUT);
+    List<Round> rounds = new LinkedList<>();
     rounds.add(roundCurrent);
     rounds.add(roundNext);
     tournament.setRounds(rounds);

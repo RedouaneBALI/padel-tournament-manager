@@ -13,6 +13,8 @@ import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.service.GameService;
 import io.github.redouanebali.service.GroupRankingService;
+import io.github.redouanebali.service.MatchFormatService;
+import io.github.redouanebali.service.PlayerPairService;
 import io.github.redouanebali.service.TournamentService;
 import java.util.Comparator;
 import java.util.List;
@@ -37,10 +39,16 @@ public class TournamentController {
   private TournamentService tournamentService;
 
   @Autowired
+  private PlayerPairService playerPairService;
+
+  @Autowired
   private GameService gameService;
 
   @Autowired
   private GroupRankingService groupRankingService;
+
+  @Autowired
+  private MatchFormatService matchFormatService;
 
   @PostMapping
   public Tournament createTournament(@RequestBody Tournament tournament) {
@@ -59,12 +67,12 @@ public class TournamentController {
 
   @PostMapping("/{id}/pairs")
   public Tournament addPairs(@PathVariable Long id, @RequestBody List<SimplePlayerPairDTO> players) {
-    return tournamentService.addPairs(id, players);
+    return playerPairService.addPairs(id, players);
   }
 
   @GetMapping("/{id}/pairs")
   public List<PlayerPair> getPairs(@PathVariable Long id) {
-    return tournamentService.getPairsByTournamentId(id);
+    return playerPairService.getPairsByTournamentId(id);
   }
 
   @PostMapping("/{id}/draw")
@@ -87,12 +95,12 @@ public class TournamentController {
 
   @GetMapping("/{id}/rounds/{stage}/match-format")
   public MatchFormat getMatchFormat(@PathVariable Long id, @PathVariable Stage stage) {
-    return tournamentService.getMatchFormatForRound(id, stage);
+    return matchFormatService.getMatchFormatForRound(id, stage);
   }
 
   @PutMapping("/{id}/rounds/{stage}/match-format")
   public MatchFormat updateMatchFormat(@PathVariable Long id, @PathVariable Stage stage, @RequestBody MatchFormat newFormat) {
-    return tournamentService.updateMatchFormatForRound(id, stage, newFormat);
+    return matchFormatService.updateMatchFormatForRound(id, stage, newFormat);
   }
 
   @PutMapping("/{tournamentId}/games/{gameId}/score")

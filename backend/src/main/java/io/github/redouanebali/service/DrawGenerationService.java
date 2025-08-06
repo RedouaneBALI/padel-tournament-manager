@@ -1,0 +1,73 @@
+package io.github.redouanebali.service;
+
+import io.github.redouanebali.generation.AbstractRoundGenerator;
+import io.github.redouanebali.generation.GroupRoundGenerator;
+import io.github.redouanebali.generation.KnockoutRoundGenerator;
+import io.github.redouanebali.model.Game;
+import io.github.redouanebali.model.Pool;
+import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.TournamentFormat;
+import io.github.redouanebali.repository.TournamentRepository;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class DrawGenerationService {
+
+  private final TournamentRepository         tournamentRepository;
+  private final TournamentProgressionService progressionService;
+
+  public Tournament generateDraw(Tournament tournament) {
+    AbstractRoundGenerator generator = getGenerator(tournament);
+    Round                  newRound  = generator.generate(tournament.getPlayerPairs());
+
+    Round existingRound = tournament.getRounds().stream()
+                                    .filter(r -> r.getStage() == newRound.getStage())
+                                    .findFirst()
+                                    .orElseThrow(() -> new IllegalArgumentException("Round not found for stage: " + newRound.getStage()));
+
+    updatePools(existingRound, newRound);
+    updateGames(existingRound, newRound);
+
+    if (tournament.getTournamentFormat() != TournamentFormat.GROUP_STAGE) {
+      progressionService.propagateWinners(tournament);
+    }
+
+    log.info("Generated draw for tournament id {}", tournament.getId());
+    return tournamentRepository.save(tournament);
+  }
+
+  private AbstractRoundGenerator getGenerator(Tournament tournament) {
+    return switch (tournament.getTournamentFormat()) {
+      case KNOCKOUT -> new KnockoutRoundGenerator(tournament.getNbSeeds());
+      case GROUP_STAGE -> new GroupRoundGenerator(tournament.getNbSeeds(), tournament.getNbPools(), tournament.getNbPairsPerPool());
+      default -> throw new IllegalArgumentException("Unsupported tournament format");
+    };
+  }
+
+  private void updatePools(Round existingRound, Round newRound) {
+    for (Pool pool : existingRound.getPools()) {
+      for (Pool newPool : newRound.getPools()) {
+        if (pool.getName().equals(newPool.getName())) {
+          pool.initPairs(newPool.getPairs());
+        }
+      }
+    }
+  }
+
+  private void updateGames(Round existingRound, Round newRound) {
+    List<Game> existingGames = existingRound.getGames();
+    List<Game> newGames      = newRound.getGames();
+    for (int i = 0; i < existingGames.size() && i < newGames.size(); i++) {
+      Game existingGame = existingGames.get(i);
+      Game newGame      = newGames.get(i);
+      existingGame.setTeamA(newGame.getTeamA());
+      existingGame.setTeamB(newGame.getTeamB());
+    }
+  }
+}
