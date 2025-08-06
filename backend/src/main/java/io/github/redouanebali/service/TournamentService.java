@@ -108,15 +108,13 @@ public class TournamentService {
   public Tournament generateDraw(Long tournamentId) {
     Tournament             tournament = getTournamentById(tournamentId);
     AbstractRoundGenerator generator  = getGenerator(tournament);
-    Round                  newRound   = generator.generate();
+    Round                  newRound   = generator.generate(tournament.getPlayerPairs());
 
     Round existingRound = getRoundByStage(tournament, newRound.getStage());
 
     updatePools(existingRound, newRound);
     updateGames(existingRound, newRound);
-
-    tournament.setRounds(new LinkedHashSet<>(tournament.getRounds()));
-
+    
     if (tournament.getTournamentFormat() != TournamentFormat.GROUP_STAGE) {
       progressionService.propagateWinners(tournament);
     }

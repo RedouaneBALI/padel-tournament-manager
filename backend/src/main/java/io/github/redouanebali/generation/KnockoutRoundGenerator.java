@@ -20,15 +20,15 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
   }
 
   @Override
-  public Round generate() {
-    int originalSize = this.getPairs().size();
-    addMissingByePairsToReachPowerOfTwo(this.getPairs(), originalSize);
-    List<Game>       games     = createEmptyGames(getPairs().size());
-    List<PlayerPair> remaining = placeSeedAndByeTeams(games, getPairs(), getNbSeeds());
+  public Round generate(List<PlayerPair> pairs) {
+    int originalSize = pairs.size();
+    addMissingByePairsToReachPowerOfTwo(pairs, originalSize);
+    List<Game>       games     = createEmptyGames(pairs.size());
+    List<PlayerPair> remaining = placeSeedAndByeTeams(games, pairs, getNbSeeds());
     placeRemainingTeamsRandomly(games, remaining, getNbSeeds());
     Round round = new Round();
     round.addGames(games);
-    round.setStage(Stage.fromNbTeams(getPairs().size()));
+    round.setStage(Stage.fromNbTeams(pairs.size()));
     return round;
   }
 

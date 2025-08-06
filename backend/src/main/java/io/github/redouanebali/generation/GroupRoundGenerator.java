@@ -24,7 +24,7 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
   }
 
   @Override
-  public Round generate() {
+  public Round generate(List<PlayerPair> pairs) {
     //     addMissingByePairsToReachPowerOfTwo(this.getPairs(), originalSize);
     Round round = new Round();
     round.setStage(Stage.GROUPS);
@@ -41,8 +41,8 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
     int        index = 0;
     for (Pool pool : pools) {
       for (int j = 0; j < nbTeamPerPool; j++) {
-        if (index < getPairs().size()) {
-          pool.addPair(getPairs().get(index++));
+        if (index < pairs.size()) {
+          pool.addPair(pairs.get(index++));
         }
       }
     }
