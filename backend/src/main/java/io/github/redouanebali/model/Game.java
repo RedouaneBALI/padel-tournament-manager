@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import java.time.LocalTime;
@@ -43,6 +44,10 @@ public class Game {
   private LocalTime scheduledTime;
 
   private String court;
+
+  @ManyToOne(cascade = CascadeType.ALL)
+  @JoinColumn(name = "pool_id")
+  private Pool pool;
 
   public Game(MatchFormat format) {
     this.format = format;

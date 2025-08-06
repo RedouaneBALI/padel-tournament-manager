@@ -21,12 +21,14 @@ interface Props {
   stage?: string;
   court?: string;
   scheduledTime?: string;
+  pool?: { name?: string };
 }
 
-export default function MatchResultCard({ teamA, teamB, editable = false, gameId, score, tournamentId, onInfoSaved, winnerSide, stage, court, scheduledTime }: Props) {
+export default function MatchResultCard({ teamA, teamB, editable = false, gameId, score, tournamentId, onInfoSaved, winnerSide, stage, court, scheduledTime, pool }: Props) {
   const [localCourt, setLocalCourt] = useState(court || 'Court central');
   const [localScheduledTime, setLocalScheduledTime] = useState(scheduledTime || '00:00');
   const [editing, setEditing] = useState(false);
+  console.log(pool); // always undefined
   const [scores, setScores] = useState<string[][]>(() => {
     const initialScores: string[][] = [[], []];
     for (let i = 0; i < 3; i++) {
@@ -109,9 +111,9 @@ export default function MatchResultCard({ teamA, teamB, editable = false, gameId
       }`}
     >
       <div className="flex justify-between items-start px-2 pt-2">
-        {stage && (
+        {(pool?.name || stage) && (
           <div className="inline-block bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 text-xs rounded mt-1 mx-1 px-3 py-0.5">
-            {stage}
+            {pool?.name ? `Groupe ${pool.name}` : stage}
           </div>
         )}
         {editable && (

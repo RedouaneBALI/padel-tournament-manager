@@ -68,7 +68,9 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
       List<Game> games     = new ArrayList<>();
       int        nbMatches = nbPairsPerPool * (nbPairsPerPool - 1) / 2;
       for (int j = 0; j < nbMatches; j++) {
-        games.add(new Game(sharedFormat)); // Partager le même MatchFormat
+        Game newGame = new Game(sharedFormat);
+        newGame.setPool(pool);
+        games.add(newGame); // Partager le même MatchFormat
       }
       round.addGames(games); // Assumant que vous avez cette méthode
     }

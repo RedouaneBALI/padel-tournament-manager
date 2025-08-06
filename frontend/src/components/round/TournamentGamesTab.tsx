@@ -75,7 +75,7 @@ return (
                   : undefined
               }
               stage={round.stage}
-            />
+              pool={game.pool}            />
           </div>
         ))
     )}
