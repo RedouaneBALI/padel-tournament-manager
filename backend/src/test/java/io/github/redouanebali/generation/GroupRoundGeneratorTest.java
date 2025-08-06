@@ -26,7 +26,7 @@ public class GroupRoundGeneratorTest {
   })
   public void checkPoolGeneration(int nbPairs, int expectedGroups, int expectedPairsPerGroup, int expectedNbGames) {
     generator = new GroupRoundGenerator(0, expectedGroups, expectedPairsPerGroup);
-    Round round = generator.generate(createPairs(nbPairs));
+    Round round = generator.generateManualRound(createPairs(nbPairs));
 
     assertEquals(expectedGroups, round.getPools().size());
     for (Pool pool : round.getPools()) {
@@ -55,13 +55,13 @@ public class GroupRoundGeneratorTest {
       "5,4,30",  // 5 pools of 4 => 6 games per pool = 4*3/2 = 6, total = 30
       "6,3,18"   // 6 pools of 3 => 3 games per pool = 3*2/2 = 3, total = 18
   })
-  public void testCreateRounds(int nbPools, int nbPairsPerPool, int expectedNbGames) {
+  public void testInitRoundsAndGames(int nbPools, int nbPairsPerPool, int expectedNbGames) {
     io.github.redouanebali.model.Tournament tournament = new io.github.redouanebali.model.Tournament();
     tournament.setNbPools(nbPools);
     tournament.setNbPairsPerPool(nbPairsPerPool);
 
     GroupRoundGenerator generator = new GroupRoundGenerator(0, nbPools, nbPairsPerPool);
-    List<Round>         rounds    = generator.createRounds(tournament);
+    List<Round>         rounds    = generator.initRoundsAndGames(tournament);
     Round               round     = rounds.iterator().next();
 
     assertEquals(expectedNbGames, round.getGames().size());

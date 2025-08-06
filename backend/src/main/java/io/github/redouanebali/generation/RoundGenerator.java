@@ -7,7 +7,9 @@ import java.util.List;
 
 public interface RoundGenerator {
 
-  Round generate(List<PlayerPair> pairs);
+  Round generateAlgorithmicRound(List<PlayerPair> pairs);
 
-  List<Round> createRounds(Tournament tournament);
+  Round generateManualRound(List<PlayerPair> pairs);
+
+  List<Round> initRoundsAndGames(Tournament tournament);
 }

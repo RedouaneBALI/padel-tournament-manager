@@ -56,7 +56,7 @@ class DrawGenerationServiceTest {
     tournament.setRounds(List.of(existingRound));
 
     KnockoutRoundGenerator generator = new KnockoutRoundGenerator(2);
-    Round                  newRound  = generator.generate(tournament.getPlayerPairs());
+    Round                  newRound  = generator.generateAlgorithmicRound(tournament.getPlayerPairs());
 
     // inject the same stage to match
     newRound.setStage(Stage.SEMIS);
@@ -64,7 +64,7 @@ class DrawGenerationServiceTest {
     // Mock the repository save
     when(tournamentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-    Tournament updated = drawGenerationService.generateDraw(tournament);
+    Tournament updated = drawGenerationService.generateDraw(tournament, false);
 
     assertEquals(tournament, updated);
     verify(tournamentRepository).save(tournament);
@@ -86,7 +86,7 @@ class DrawGenerationServiceTest {
     tournament.setPlayerPairs(List.of(pair1, pair2, pair3));
 
     GroupRoundGenerator generator = new GroupRoundGenerator(3, 1, 3);
-    Round               newRound  = generator.generate(tournament.getPlayerPairs());
+    Round               newRound  = generator.generateManualRound(tournament.getPlayerPairs());
     newRound.setStage(Stage.GROUPS);
 
     Round existingRound = new Round();
@@ -96,7 +96,7 @@ class DrawGenerationServiceTest {
 
     when(tournamentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-    Tournament updated = drawGenerationService.generateDraw(tournament);
+    Tournament updated = drawGenerationService.generateDraw(tournament, false);
 
     assertEquals(tournament, updated);
     verify(tournamentRepository).save(tournament);

@@ -9,9 +9,9 @@ export default function GroupStageResults({
   return (
     <div className="space-y-4">
       {rounds.map(round =>
-        round.pools?.map(group => (
-          <div key={group.name} className="bg-white rounded shadow">
-            <h3 className="text-lg font-semibold mb-2">Groupe {group.name}</h3>
+        round.pools?.map(pool => (
+          <div key={pool.name} className="bg-white rounded shadow">
+            <h3 className="text-lg font-semibold mb-2">Groupe {pool.name}</h3>
 
             <table className="w-full text-sm text-left text-gray-700 border border-gray-300">
               <thead>
@@ -23,7 +23,7 @@ export default function GroupStageResults({
                 </tr>
               </thead>
               <tbody>
-                {group.poolRanking?.details?.map((entry, index) => (
+                {pool.poolRanking?.details?.map((entry, index) => (
                   <tr
                     key={index}
                     className={

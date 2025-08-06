@@ -16,7 +16,8 @@ interface Props {
   gameId: string;
   tournamentId: string;
   score?: Score;
-  onInfoSaved: (result: { tournamentUpdated: boolean; winner: String | null }) => void;
+  onInfoSaved?: (result: { tournamentUpdated: boolean; winner: String | null }) => void;
+  onTimeChanged?: (gameId: string, newTime: string) => void; // Nouvelle prop
   winnerSide?: number;
   stage?: string;
   court?: string;
@@ -24,7 +25,21 @@ interface Props {
   pool?: { name?: string };
 }
 
-export default function MatchResultCard({ teamA, teamB, editable = false, gameId, score, tournamentId, onInfoSaved, winnerSide, stage, court, scheduledTime, pool }: Props) {
+export default function MatchResultCard({
+  teamA,
+  teamB,
+  editable = false,
+  gameId,
+  score,
+  tournamentId,
+  onInfoSaved,
+  onTimeChanged, // Nouvelle prop
+  winnerSide,
+  stage,
+  court,
+  scheduledTime,
+  pool
+}: Props) {
   const [localCourt, setLocalCourt] = useState(court || 'Court central');
   const [localScheduledTime, setLocalScheduledTime] = useState(scheduledTime || '00:00');
   const [editing, setEditing] = useState(false);
@@ -98,7 +113,16 @@ export default function MatchResultCard({ teamA, teamB, editable = false, gameId
     try {
       const scorePayload = convertToScoreObject(scores);
       const result = await updateGameDetails(tournamentId, gameId, scorePayload, localCourt, localScheduledTime);
-      onInfoSaved(result);
+
+      // Mise à jour locale de l'heure si elle a changé
+      if (onTimeChanged && localScheduledTime !== scheduledTime) {
+        onTimeChanged(gameId, localScheduledTime);
+      }
+
+      // Appel de l'ancien callback si présent
+      if (onInfoSaved) {
+        onInfoSaved(result);
+      }
     } catch (error) {
       console.error('Erreur API:', error);
     }
@@ -123,6 +147,8 @@ export default function MatchResultCard({ teamA, teamB, editable = false, gameId
                 <button
                   onClick={() => {
                     setScores([...initialScores]);
+                    setLocalCourt(court || 'Court central');
+                    setLocalScheduledTime(scheduledTime || '00:00');
                     setEditing(false);
                   }}
                   className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 rounded-md px-3"

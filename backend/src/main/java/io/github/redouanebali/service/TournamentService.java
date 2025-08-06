@@ -48,7 +48,7 @@ public class TournamentService {
 
     AbstractRoundGenerator generator = getGenerator(savedTournament);
 
-    List<Round> rounds = generator.createRounds(savedTournament);
+    List<Round> rounds = generator.initRoundsAndGames(savedTournament);
     savedTournament.setRounds(rounds);
     return tournamentRepository.save(savedTournament);
   }
@@ -85,11 +85,12 @@ public class TournamentService {
    * Call generator.generate() and dispatch all the players into games from the created round
    *
    * @param tournamentId the id of the tournament
+   * @param manual flag indicating manual draw generation
    * @return the new Tournament
    */
-  public Tournament generateDraw(Long tournamentId) {
+  public Tournament generateDraw(Long tournamentId, boolean manual) {
     Tournament tournament = getTournamentById(tournamentId);
-    return drawGenerationService.generateDraw(tournament);
+    return drawGenerationService.generateDraw(tournament, manual);
   }
 
   private void updatePools(Round existingRound, Round newRound) {

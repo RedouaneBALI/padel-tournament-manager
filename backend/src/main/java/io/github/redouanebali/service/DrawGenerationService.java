@@ -22,9 +22,14 @@ public class DrawGenerationService {
   private final TournamentRepository         tournamentRepository;
   private final TournamentProgressionService progressionService;
 
-  public Tournament generateDraw(Tournament tournament) {
+  public Tournament generateDraw(Tournament tournament, boolean manual) {
     AbstractRoundGenerator generator = getGenerator(tournament);
-    Round                  newRound  = generator.generate(tournament.getPlayerPairs());
+    Round                  newRound;
+    if (manual) {
+      newRound = generator.generateManualRound(tournament.getPlayerPairs());
+    } else {
+      newRound = generator.generateAlgorithmicRound(tournament.getPlayerPairs());
+    }
 
     Round existingRound = tournament.getRounds().stream()
                                     .filter(r -> r.getStage() == newRound.getStage())

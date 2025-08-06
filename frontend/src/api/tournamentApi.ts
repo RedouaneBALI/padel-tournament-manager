@@ -103,9 +103,11 @@ export async function savePlayerPairs(tournamentId: number, pairs: PlayerPair[])
   return await response.json();
 }
 
-export async function generateDraw(tournamentId: string) {
+export async function generateDraw(tournamentId: string, manual: boolean) {
   const response = await fetch(`${BASE_URL}/${tournamentId}/draw`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ manual }),
   });
 
   if (!response.ok) {

@@ -19,12 +19,34 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
   }
 
   @Override
-  public Round generate(List<PlayerPair> pairs) {
+  public Round generateAlgorithmicRound(List<PlayerPair> pairs) {
     int originalSize = pairs.size();
     addMissingByePairsToReachPowerOfTwo(pairs, originalSize);
     List<Game>       games     = createEmptyGames(pairs.size());
     List<PlayerPair> remaining = placeSeedAndByeTeams(games, pairs, getNbSeeds());
     placeRemainingTeamsRandomly(games, remaining, getNbSeeds());
+    Round round = new Round();
+    round.addGames(games);
+    round.setStage(Stage.fromNbTeams(pairs.size()));
+    return round;
+  }
+
+  @Override
+  public Round generateManualRound(final List<PlayerPair> pairs) {
+    int originalSize = pairs.size();
+    addMissingByePairsToReachPowerOfTwo(pairs, originalSize);
+    List<Game> games = createEmptyGames(pairs.size());
+
+    int teamIndex = 0;
+    for (Game game : games) {
+      if (teamIndex < pairs.size()) {
+        game.setTeamA(pairs.get(teamIndex++));
+      }
+      if (teamIndex < pairs.size()) {
+        game.setTeamB(pairs.get(teamIndex++));
+      }
+    }
+
     Round round = new Round();
     round.addGames(games);
     round.setStage(Stage.fromNbTeams(pairs.size()));
@@ -163,7 +185,7 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
   }
 
   @Override
-  public List<Round> createRounds(Tournament tournament) {
+  public List<Round> initRoundsAndGames(Tournament tournament) {
     LinkedList<Round> rounds  = new LinkedList<>();
     Stage             current = Stage.fromNbTeams(tournament.getNbMaxPairs());
 
@@ -179,7 +201,7 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
 
       List<Game> games = new ArrayList<>();
       for (int i = 0; i < nbMatches; i++) {
-        Game game = new Game(matchFormat);
+        Game game = new Game(matchFormat); // @todo useless ?
         games.add(game);
       }
 

@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -75,9 +76,12 @@ public class TournamentController {
     return playerPairService.getPairsByTournamentId(id);
   }
 
+  /**
+   * @param manual if true, the rounds will be generated using the players in the same order otherwise, the algorithm will be used
+   */
   @PostMapping("/{id}/draw")
-  public Tournament generateDraw(@PathVariable Long id) {
-    return tournamentService.generateDraw(id);
+  public Tournament generateDraw(@PathVariable Long id, @RequestParam(defaultValue = "false") boolean manual) {
+    return tournamentService.generateDraw(id, manual);
   }
 
   @GetMapping("/{id}/rounds")

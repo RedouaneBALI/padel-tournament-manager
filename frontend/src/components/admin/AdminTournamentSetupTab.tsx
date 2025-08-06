@@ -3,6 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import PlayerPairsTextarea from '@/src/components/tournament/PlayerPairsTextarea';
+import { useRouter } from 'next/navigation';
+import { confirmAlert } from 'react-confirm-alert';
+import { generateDraw } from '@/src/api/tournamentApi';
 import { FileText } from 'lucide-react';
 import { PlayerPair } from '@/src/types/playerPair';
 import { Tournament } from '@/src/types/tournament';
@@ -15,6 +18,36 @@ interface Props {
 export default function AdminTournamentSetupTab({ tournamentId }: Props) {
   const [pairs, setPairs] = useState<PlayerPair[]>([]);
   const [tournament, setTournament] = useState<Tournament | null>(null);
+
+  const [drawMode, setDrawMode] = useState('seeded');
+  const router = useRouter();
+
+  const handleDraw = () => {
+    confirmAlert({
+      title: 'Confirmer le tirage',
+      message:
+        'Êtes-vous sûr de vouloir générer le tirage ? Cette action créera tous les matchs du premier round.',
+      buttons: [
+        {
+          label: 'Oui',
+          onClick: async () => {
+            try {
+              const manual = drawMode === 'order';
+              await generateDraw(tournamentId, manual);
+              toast.success("Tirage généré !");
+              router.push(`/admin/tournament/${tournamentId}/rounds/results`);
+            } catch {
+              toast.error("Tirage déjà effectué ou erreur serveur.");
+            }
+          },
+        },
+        {
+          label: 'Annuler',
+          onClick: () => {},
+        },
+      ],
+    });
+  };
 
   useEffect(() => {
     async function loadTournament() {
@@ -53,12 +86,36 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
 
         <section>
           <h2 className="mb-3 text-base font-semibold text-foreground">
-            Lister les joueurs ci-dessous (par ordre de classement)
+            Lister les joueurs ci-dessous (par ordre de classement ou du tirage)
           </h2>
           <PlayerPairsTextarea
             onPairsChange={setPairs}
             tournamentId={Number(tournamentId)}
           />
+          {pairs.length > 0 && (
+            <>
+              <hr className="my-6 border-t border-gray-300" />
+              <div className="flex flex-col sm:flex-row sm:justify-center sm:items-end gap-4 mt-6">
+                <div className="flex flex-col gap-2">
+                  <label className="text-xl font-semibold text-foreground text-center">Tirage</label>
+                  <select
+                    onChange={(e) => setDrawMode(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-md text-sm h-10 shadow-sm text-center"
+                    value={drawMode}
+                  >
+                    <option value="seeded">Par classement (TS)</option>
+                    <option value="order">Par ordre d&apos;enregistrement</option>
+                  </select>
+                  <button
+                    onClick={handleDraw}
+                    className="px-4 py-2 bg-[#1b2d5e] text-white rounded hover:bg-blue-900 h-10"
+                  >
+                    Générer le tirage
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </section>
 
       </div>

@@ -71,7 +71,7 @@ public class KnockoutRoundGeneratorTest {
     List<PlayerPair> pairs = createPairs(nbTeams);
     pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
     generator = new KnockoutRoundGenerator(nbSeeds);
-    Round round = generator.generate(pairs);
+    Round round = generator.generateAlgorithmicRound(pairs);
     assertEquals(expectedStage, round.getStage());
     List<Game> games = round.getGames();
 

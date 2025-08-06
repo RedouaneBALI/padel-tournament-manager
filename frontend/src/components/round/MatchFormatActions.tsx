@@ -84,14 +84,6 @@ export default function MatchFormatActions({
         Appliquer à tous les rounds
       </button>
 
-    {currentStageIndex === 0 && isFirstRoundEmpty && (
-      <button
-        onClick={handleDraw}
-        className="w-full px-4 py-2 bg-white text-sm border border-gray-300 text-gray-800 rounded hover:bg-gray-100 max-w-[400px]"
-      >
-        Générer le tirage
-      </button>
-    )}
     </div>
   );
 }

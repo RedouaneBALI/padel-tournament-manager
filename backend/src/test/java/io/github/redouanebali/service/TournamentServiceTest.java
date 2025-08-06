@@ -44,11 +44,11 @@ public class TournamentServiceTest {
     tournament.setId(1L);
 
     when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
-    when(drawGenerationService.generateDraw(tournament)).thenReturn(tournament);
+    when(drawGenerationService.generateDraw(tournament, false)).thenReturn(tournament);
 
-    Tournament result = tournamentService.generateDraw(1L);
+    Tournament result = tournamentService.generateDraw(1L, false);
 
-    verify(drawGenerationService, times(1)).generateDraw(tournament);
+    verify(drawGenerationService, times(1)).generateDraw(tournament, false);
     assertEquals(tournament, result);
   }
 
