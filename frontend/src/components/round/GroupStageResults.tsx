@@ -1,32 +1,44 @@
 // src/components/round/GroupStageResults.tsx
-export default function GroupStageResults({ rounds }: { rounds: Round[] }) {
-  console.log(rounds);
+export default function GroupStageResults({
+  rounds,
+  nbQualifiedByPool,
+}: {
+  rounds: Round[];
+  nbQualifiedByPool: number;
+}) {
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {rounds.map(round =>
-        round.groups?.map(group => (
-          <div key={group.name} className="bg-white rounded shadow p-4">
+        round.pools?.map(group => (
+          <div key={group.name} className="bg-white rounded shadow">
             <h3 className="text-lg font-semibold mb-2">Groupe {group.name}</h3>
 
-            {/* Affichage du classement */}
             <table className="w-full text-sm text-left text-gray-700 border border-gray-300">
               <thead>
                 <tr className="bg-gray-100 text-gray-900">
-                  <th className="p-2 border">#</th>
-                  <th className="p-2 border">Équipe</th>
-                  <th className="p-2 border">Pts</th>
-                  <th className="p-2 border">Sets</th>
-                  <th className="p-2 border">Jeux</th>
+                  <th className="p-2 border text-center">#</th>
+                  <th className="p-2 border text-center">Équipe</th>
+                  <th className="p-2 border text-center">Victoires</th>
+                  <th className="p-2 border text-center">Diff. jeux</th>
                 </tr>
               </thead>
               <tbody>
-                {group.poolRanking?.ranking?.map((entry, index) => (
-                  <tr key={index}>
-                    <td className="p-2 border">{index + 1}</td>
-                    <td className="p-2 border">{entry.pair.name}</td>
-                    <td className="p-2 border">{entry.points}</td>
-                    <td className="p-2 border">{entry.setAverage}</td>
-                    <td className="p-2 border">{entry.gameAverage}</td>
+                {group.poolRanking?.details?.map((entry, index) => (
+                  <tr
+                    key={index}
+                    className={
+                      index < nbQualifiedByPool ? 'border-l-4 border-green-500' : ''
+                    }
+                  >
+                    <td className="p-2 border text-center">{index + 1}</td>
+                    <td className="p-2 border text-center">
+                      <div className="flex flex-col items-center">
+                        <span>{entry.playerPair?.player1?.name}</span>
+                        <span>{entry.playerPair?.player2?.name}</span>
+                      </div>
+                    </td>
+                    <td className="p-2 border text-center">{entry.points}</td>
+                    <td className="p-2 border text-center">{entry.setAverage}</td>
                   </tr>
                 ))}
               </tbody>

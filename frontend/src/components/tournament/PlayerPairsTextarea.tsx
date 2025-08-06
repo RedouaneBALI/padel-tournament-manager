@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { PlayerPair } from '@/src/types/playerPair';
 import { toast } from 'react-toastify';
+import { fetchPairs, savePlayerPairs } from '@/src/api/tournamentApi';
 
 interface Props {
   tournamentId: number;
@@ -14,14 +15,9 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange }: Pro
 
   const fetchUpdatedPairs = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/tournaments/${tournamentId}/pairs`);
-      if (response.ok) {
-        const data: PlayerPair[] = await response.json();
-        setText(data.map(pair => `${pair.player1.name},${pair.player2.name}`).join('\n'));
-        if (onPairsChange) onPairsChange(data); // <-- maintenant ça fonctionne bien
-      } else {
-        toast.error("Impossible de récupérer les joueurs.");
-      }
+      const data = await fetchPairs(tournamentId);
+      setText(data.map(pair => `${pair.player1.name},${pair.player2.name}`).join('\n'));
+      if (onPairsChange) onPairsChange(data);
     } catch {
       toast.error("Erreur réseau lors du chargement des joueurs.");
     }
@@ -45,22 +41,14 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange }: Pro
     });
 
     try {
-      const response = await fetch(`http://localhost:8080/tournaments/${tournamentId}/pairs`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(pairs),
-      });
-
-      if (!response.ok) {
-        toast.error("Erreur lors de l'enregistrement des joueurs.");
-        return;
-      }
-
-      toast.success('Joueurs ajoutés avec succès !');
-      await fetchUpdatedPairs();
-    } catch (error) {
-      toast.error('Erreur réseau. Veuillez réessayer : ' + error);
+      await savePlayerPairs(tournamentId, pairs);
+    } catch {
+      toast.error("Erreur lors de l'enregistrement des joueurs.");
+      return;
     }
+
+    toast.success('Joueurs ajoutés avec succès !');
+    await fetchUpdatedPairs();
   };
 
   return (

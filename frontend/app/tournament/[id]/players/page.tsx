@@ -1,5 +1,8 @@
 'use client';
 
+'use client';
+
+import { fetchPairs } from '@/src/api/tournamentApi';
 import { useEffect, useState } from 'react';
 import { PlayerPair } from '@/src/types/playerPair';
 import React from 'react';
@@ -9,18 +12,11 @@ export default function TournamentPlayersTab({ params }: {   params: Promise<{ i
   const [playerPairs, setPlayerPairs] = useState<PlayerPair[]>([]);
 
   useEffect(() => {
-    async function fetchPairs() {
-      try {
-        const response = await fetch(`http://localhost:8080/tournaments/${id}/pairs`);
-        if (!response.ok) throw new Error();
-        const data = await response.json();
-        setPlayerPairs(data);
-      } catch (error) {
+    fetchPairs(id)
+      .then(setPlayerPairs)
+      .catch((error) => {
         console.error("Erreur lors du chargement des joueurs : " + error);
-      }
-    }
-
-    fetchPairs();
+      });
   }, [id]);
 
   return (

@@ -8,6 +8,7 @@ import { Round } from '@/src/types/round';
 import RoundSelector from '@/src/components/round/RoundSelector';
 import MatchFormatActions from '@/src/components/round/MatchFormatActions';
 import { PlayerPair } from '@/src/types/playerPair';
+import { fetchRounds, fetchMatchFormat, updateMatchFormat } from '@/src/api/tournamentApi';
 
 interface RoundFormatTabProps {
   tournamentId: string;
@@ -22,30 +23,24 @@ export default function RoundFormatTab({ tournamentId, pairs }: RoundFormatTabPr
   const currentStage = rounds[currentStageIndex]?.stage;
 
   useEffect(() => {
-    async function fetchRounds() {
+    async function loadRounds() {
       try {
-        const res = await fetch(`http://localhost:8080/tournaments/${tournamentId}/rounds`);
-        if (!res.ok) throw new Error();
-        const data = await res.json();
+        const data = await fetchRounds(tournamentId);
         setRounds(data);
       } catch {
         toast.error('Erreur lors du chargement des rounds.');
       }
     }
 
-    fetchRounds();
+    loadRounds();
   }, [tournamentId]);
 
   useEffect(() => {
-    async function fetchFormat() {
+    async function loadFormat() {
       if (!currentStage) return;
       setIsLoading(true);
       try {
-        const res = await fetch(
-          `http://localhost:8080/tournaments/${tournamentId}/rounds/${currentStage}/match-format`
-        );
-        if (!res.ok) throw new Error();
-        const format = await res.json();
+        const format = await fetchMatchFormat(tournamentId, currentStage);
         setMatchFormat(format);
       } catch {
         toast.error('Erreur lors du chargement du format.');
@@ -54,21 +49,13 @@ export default function RoundFormatTab({ tournamentId, pairs }: RoundFormatTabPr
       }
     }
 
-    fetchFormat();
+    loadFormat();
   }, [currentStage, tournamentId]);
 
   const saveFormat = async (newFormat: MatchFormat) => {
     if (!currentStage) return;
     try {
-      const res = await fetch(
-        `http://localhost:8080/tournaments/${tournamentId}/rounds/${currentStage}/match-format`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newFormat),
-        }
-      );
-      if (!res.ok) throw new Error();
+      await updateMatchFormat(tournamentId, currentStage, newFormat);
       toast.success('Format enregistré');
     } catch {
       toast.error("Erreur lors de l'enregistrement.");

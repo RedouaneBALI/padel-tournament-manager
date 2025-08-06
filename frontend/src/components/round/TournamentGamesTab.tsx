@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import MatchResultCard from '@/src/components/ui/MatchResultCard';
 import type { Round } from '@/app/types/round';
-import { fetchRounds } from '@/src/utils/fetchRounds';
+import { fetchRounds } from '@/src/api/tournamentApi';
 
 interface TournamentGamesTabProps {
   tournamentId: string;

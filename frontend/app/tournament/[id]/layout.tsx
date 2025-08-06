@@ -9,6 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { Tournament } from '@/src/types/tournament';
 import React from 'react';
 import { ReactNode } from 'react';
+import { fetchTournament } from '@/src/api/tournamentApi';
 
 export default function TournamentLayout({children,params,}: {children: ReactNode;params: Promise<{ id: string }>;}){
   const { id } = React.use(params);
@@ -16,18 +17,9 @@ export default function TournamentLayout({children,params,}: {children: ReactNod
   const [tournament, setTournament] = useState<Tournament | null>(null);
 
   useEffect(() => {
-    async function fetchTournament() {
-      try {
-        const response = await fetch(`http://localhost:8080/tournaments/${id}`);
-        if (!response.ok) throw new Error();
-        const data = await response.json();
-        setTournament(data);
-      } catch {
-        toast.error('Erreur lors du chargement du tournoi.');
-      }
-    }
-
-    fetchTournament();
+    fetchTournament(id)
+      .then(setTournament)
+      .catch(() => toast.error('Erreur lors du chargement du tournoi.'));
   }, [id]);
 
   if (!tournament) return <div>Chargement...</div>;

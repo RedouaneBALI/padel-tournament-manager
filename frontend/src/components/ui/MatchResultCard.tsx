@@ -7,6 +7,7 @@ import { PlayerPair } from '@/types/playerPair';
 import { Score } from '@/types/score';
 import TeamScoreRow from '@/src/components/ui/TeamScoreRow';
 import { Edit3, Save, X } from 'lucide-react';
+import { updateGameDetails } from '@/src/api/tournamentApi';
 
 interface Props {
   teamA: PlayerPair | null;
@@ -94,19 +95,7 @@ export default function MatchResultCard({ teamA, teamB, editable = false, gameId
   const saveGameDetails = async () => {
     try {
       const scorePayload = convertToScoreObject(scores);
-      const response = await fetch(`http://localhost:8080/tournaments/${tournamentId}/games/${gameId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          score: scorePayload,
-          court: localCourt,
-          scheduledTime: localScheduledTime,
-        }),
-      });
-
-      if (!response.ok) throw new Error('Erreur lors de la sauvegarde');
-
-      const result = await response.json();
+      const result = await updateGameDetails(tournamentId, gameId, scorePayload, localCourt, localScheduledTime);
       onInfoSaved(result);
     } catch (error) {
       console.error('Erreur API:', error);

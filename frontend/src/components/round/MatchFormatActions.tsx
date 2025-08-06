@@ -6,6 +6,7 @@ import { MatchFormat } from '@/src/types/matchFormat';
 import { toast } from 'react-toastify';
 import { confirmAlert } from 'react-confirm-alert';
 import { useRouter } from 'next/navigation';
+import { updateMatchFormat, generateDraw } from '@/src/api/tournamentApi';
 
 interface Props {
   tournamentId: string;
@@ -32,14 +33,7 @@ export default function MatchFormatActions({
     try {
       await Promise.all(
         rounds.map((round) =>
-          fetch(
-            `http://localhost:8080/tournaments/${tournamentId}/rounds/${round.stage}/match-format`,
-            {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(matchFormat),
-            }
-          )
+          updateMatchFormat(tournamentId, round.stage, matchFormat)
         )
       );
       toast.success('Format appliqué à tous les rounds.');
@@ -64,19 +58,11 @@ export default function MatchFormatActions({
           label: 'Oui',
           onClick: async () => {
             try {
-              const res = await fetch(`http://localhost:8080/tournaments/${tournamentId}/draw`, {
-                method: 'POST',
-              });
-
-              if (!res.ok) {
-                toast.error("Tirage déjà effectué.");
-                return;
-              }
-
+              await generateDraw(tournamentId);
               toast.success("Tirage généré !");
               router.push(`/admin/tournament/${tournamentId}/rounds/results`);
             } catch {
-              toast.error("Erreur lors de la génération du tirage.");
+              toast.error("Tirage déjà effectué ou erreur serveur.");
             }
           },
         },

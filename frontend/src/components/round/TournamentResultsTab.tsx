@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
-import { fetchRounds } from '@/src/utils/fetchRounds';
+import { fetchTournament } from '@/src/api/tournamentApi';
 import { toPng } from 'html-to-image';
 import KnockoutBracket from '@/src/components/round/KnockoutBracket';
 import GroupStageResults from '@/src/components/round/GroupStageResults';
@@ -45,15 +45,13 @@ interface TournamentResultsTabProps {
 }
 
 export default function TournamentResultsTab({ tournamentId}: TournamentResultsTabProps) {
-  const [rounds, setRounds] = useState<Round[]>([]);
-
-
+  const [tournament, setTournament] = useState<Tournament | null>(null);
 
   useEffect(() => {
     async function load() {
       try {
-        const data = await fetchRounds(tournamentId);
-        setRounds(data);
+        const data = await fetchTournament(tournamentId);
+        setTournament(data);
       } catch (err) {
         console.error("Erreur lors du chargement des rounds : " + err);
       }
@@ -62,11 +60,11 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
     load();
   }, [tournamentId]);
 
-  if (rounds.length === 0) {
+  if ((tournament?.rounds ?? []).length === 0) {
     return <p className="text-gray-500">Aucun tirage généré pour le moment.</p>;
   }
 
-  const matchPositions = calculateMatchPositions(rounds);
+  const matchPositions = calculateMatchPositions(tournament?.rounds ?? []);
 
   // Calculer la hauteur totale nécessaire
   const maxPosition = Math.max(...matchPositions.flat()) + 200; // +200 pour la hauteur du dernier match
@@ -86,9 +84,9 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
     }
   };
 
-  const isGroupStage = rounds.length > 0 && rounds[0].stage === 'GROUPS';
+  const isGroupStage = tournament?.rounds?.[0]?.stage === 'GROUPS';
   return isGroupStage ? (
-    <GroupStageResults rounds={rounds} />
+    <GroupStageResults rounds={tournament.rounds} nbQualifiedByPool={tournament.nbQualifiedByPool} />
   ) : (
     <div className="w-full">
       <div className="flex items-center justify-between mb-4">
@@ -103,7 +101,7 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
       </div>
 
       <div id="bracket-container" className="relative overflow-auto border border-gray-200 rounded-lg p-8 bg-gray-50" style={{ minHeight: `${maxPosition}px` }}>
-        <KnockoutBracket rounds={rounds} tournamentId={tournamentId} />
+        <KnockoutBracket rounds={tournament?.rounds ?? []} tournamentId={tournamentId} />
       </div>
     </div>
   );

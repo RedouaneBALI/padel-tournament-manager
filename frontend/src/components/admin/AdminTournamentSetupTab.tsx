@@ -6,6 +6,7 @@ import PlayerPairsTextarea from '@/src/components/tournament/PlayerPairsTextarea
 import { FileText } from 'lucide-react';
 import { PlayerPair } from '@/src/types/playerPair';
 import { Tournament } from '@/src/types/tournament';
+import { fetchTournament, fetchPairs } from '@/src/api/tournamentApi';
 
 interface Props {
   tournamentId: string;
@@ -16,37 +17,27 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
   const [tournament, setTournament] = useState<Tournament | null>(null);
 
   useEffect(() => {
-    async function fetchTournament() {
+    async function loadTournament() {
       try {
-        const response = await fetch(`http://localhost:8080/tournaments/${tournamentId}`);
-        if (response.ok) {
-          const data: Tournament = await response.json();
-          setTournament(data);
-        } else {
-          toast.error('Impossible de récupérer les infos du tournoi.');
-        }
+        const data = await fetchTournament(tournamentId);
+        setTournament(data);
       } catch {
         toast.error('Erreur réseau lors de la récupération du tournoi.');
       }
     }
-    fetchTournament();
+    loadTournament();
   }, [tournamentId]);
 
   useEffect(() => {
-    async function fetchPairs() {
+    async function loadPairs() {
       try {
-        const response = await fetch(`http://localhost:8080/tournaments/${tournamentId}/pairs`);
-        if (response.ok) {
-          const data: PlayerPair[] = await response.json();
-          setPairs(data);
-        } else {
-          toast.error('Impossible de récupérer les joueurs existants.');
-        }
+        const data = await fetchPairs(tournamentId);
+        setPairs(data);
       } catch {
         toast.error('Erreur réseau lors de la récupération des joueurs.');
       }
     }
-    fetchPairs();
+    loadPairs();
   }, [tournamentId]);
 
 

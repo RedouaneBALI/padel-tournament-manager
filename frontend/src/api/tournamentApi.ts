@@ -104,7 +104,7 @@ export async function savePlayerPairs(tournamentId: number, pairs: PlayerPair[])
 }
 
 export async function generateDraw(tournamentId: string) {
-  const response = await fetch(`${BASE_URL}/${tournamentId}/generate-draw`, {
+  const response = await fetch(`${BASE_URL}/${tournamentId}/draw`, {
     method: 'POST',
   });
 

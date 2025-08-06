@@ -5,6 +5,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import AdminTournamentHeader from '@/src/components/admin/AdminTournamentHeader';
 import type { Tournament } from '@/src/types/tournament';
 import 'react-toastify/dist/ReactToastify.css';
+import { fetchTournament } from '@/src/api/tournamentApi';
 
 export default function AdminTournamentLayout({
   children,
@@ -17,18 +18,16 @@ export default function AdminTournamentLayout({
   const [tournament, setTournament] = useState<Tournament | null>(null);
 
   useEffect(() => {
-    async function fetchTournament() {
+    async function loadTournament() {
       try {
-        const res = await fetch(`http://localhost:8080/tournaments/${id}`);
-        if (!res.ok) throw new Error();
-        const data = await res.json();
+        const data = await fetchTournament(id);
         setTournament(data);
       } catch (err) {
         toast.error('Erreur lors du chargement du tournoi : ' + err);
       }
     }
 
-    fetchTournament();
+    loadTournament();
   }, [id]);
 
   return (

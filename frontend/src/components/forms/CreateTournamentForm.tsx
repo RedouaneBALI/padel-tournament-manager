@@ -5,25 +5,19 @@ import { useRouter } from 'next/navigation';
 import TournamentForm from './TournamentForm';
 import { toast } from 'react-toastify';
 import type { Tournament } from '@/src/types/tournament';
+import { createTournament } from '@/src/api/tournamentApi';
 
 export default function CreateTournamentForm() {
   const router = useRouter();
 
   const handleCreate = async (data: Tournament) => {
-    const res = await fetch('http://localhost:8080/tournaments', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-
-    if (!res.ok) {
+    try {
+      const tournament = await createTournament(data);
+      toast.success('Tournoi créé !');
+      router.push(`/admin/tournament/${tournament.id}/players`);
+    } catch (error) {
       toast.error("Erreur lors de la création du tournoi.");
-      return;
     }
-
-    const tournament = await res.json();
-    toast.success('Tournoi créé !');
-    router.push(`/admin/tournament/${tournament.id}/players`);
   };
 
   return (

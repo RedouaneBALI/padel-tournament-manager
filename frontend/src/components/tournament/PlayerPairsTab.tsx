@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { fetchPairs } from '@/src/api/tournamentApi';
 import type { PlayerPair } from '@/src/types/playerPair';
 
 interface Props {
@@ -12,19 +13,12 @@ export default function PlayerPairsTab({ tournamentId }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchPairs() {
-      try {
-        const response = await fetch(`http://localhost:8080/tournaments/${tournamentId}/pairs`);
-        if (!response.ok) throw new Error('Erreur HTTP');
-        const data = await response.json();
-        setPlayerPairs(data);
-      } catch (err) {
+    fetchPairs(tournamentId)
+      .then(setPlayerPairs)
+      .catch((err) => {
         console.error("Erreur lors du chargement des paires :", err);
         setError('Impossible de charger les équipes.');
-      }
-    }
-
-    fetchPairs();
+      });
   }, [tournamentId]);
 
   if (error) {

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import TournamentOverviewTab from './TournamentOverviewTab';
+import { fetchTournament } from '@/src/api/tournamentApi';
 
 export default function TournamentOverviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params);
@@ -9,13 +10,15 @@ export default function TournamentOverviewPage({ params }: { params: Promise<{ i
   const [tournament, setTournament] = React.useState(null);
 
   React.useEffect(() => {
-    async function fetchTournament() {
-      const res = await fetch(`http://localhost:8080/tournaments/${id}`);
-      if (res.ok) {
-        setTournament(await res.json());
+    async function loadTournament() {
+      try {
+        const tournament = await fetchTournament(id);
+        setTournament(tournament);
+      } catch (error) {
+        console.error(error);
       }
     }
-    fetchTournament();
+    loadTournament();
   }, [id]);
 
   if (!tournament) return <div>Chargement...</div>;

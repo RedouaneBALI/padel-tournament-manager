@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import TournamentForm from '@/src/components/forms/TournamentForm';
 import type { Tournament } from '@/src/types/tournament';
+import { fetchTournament, updateTournament } from '@/src/api/tournamentApi';
 
 interface Props {
   tournamentId: string;
@@ -15,29 +16,21 @@ export default function AdminTournamentEditForm({ tournamentId }: Props) {
   const [tournament, setTournament] = useState<Tournament | null>(null);
 
   useEffect(() => {
-    async function fetchTournament() {
+    async function loadTournament() {
       try {
-        const res = await fetch(`http://localhost:8080/tournaments/${tournamentId}`);
-        if (!res.ok) throw new Error('Erreur lors de la récupération du tournoi');
-        const data: Tournament = await res.json();
+        const data: Tournament = await fetchTournament(tournamentId);
         setTournament(data);
       } catch (err) {
         toast.error('Impossible de charger les infos du tournoi : ' + err);
       }
     }
 
-    fetchTournament();
+    loadTournament();
   }, [tournamentId]);
 
   const handleUpdate = async (updatedTournament: Tournament) => {
     try {
-      const res = await fetch(`http://localhost:8080/tournaments/${tournamentId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedTournament),
-      });
-
-      if (!res.ok) throw new Error();
+      await updateTournament(tournamentId, updatedTournament);
       toast.success('Tournoi mis à jour !');
       router.refresh();
     } catch {
