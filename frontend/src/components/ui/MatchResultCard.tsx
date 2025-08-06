@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import Clock from 'react-clock';
 import 'react-clock/dist/Clock.css';
 import { setHours, setMinutes } from 'date-fns';
 import { PlayerPair } from '@/types/playerPair';
 import { Score } from '@/types/score';
-import TeamScoreRow from '@/src/components/match/TeamScoreRow';
+import TeamScoreRow from '@/src/components/ui/TeamScoreRow';
 import { Edit3, Save, X } from 'lucide-react';
 
 interface Props {

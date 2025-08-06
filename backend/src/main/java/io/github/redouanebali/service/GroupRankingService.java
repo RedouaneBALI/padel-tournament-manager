@@ -72,7 +72,9 @@ public class GroupRankingService {
                                                   entry.getValue().gamesWon - entry.getValue().gamesLost
                                               ))
                                               .toList();
-    pool.setPoolRanking(new PoolRanking(result)); // @todo to fix
+    PoolRanking poolRanking = new PoolRanking();
+    poolRanking.setDetails(result);
+    pool.setPoolRanking(poolRanking); // @todo to fix
     return result;
   }
 

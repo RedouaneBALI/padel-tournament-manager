@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import MatchResultCard from '@/src/components/ui/MatchResultCard';
 import type { Round } from '@/app/types/round';
-import type { Game } from '@/app/types/game';
 import { fetchRounds } from '@/src/utils/fetchRounds';
 
 interface TournamentGamesTabProps {

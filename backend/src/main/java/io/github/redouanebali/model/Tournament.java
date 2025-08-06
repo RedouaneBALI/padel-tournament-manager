@@ -1,6 +1,7 @@
 package io.github.redouanebali.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -32,18 +33,19 @@ public class Tournament {
   private Gender           gender;
   private TournamentLevel  level;
   private TournamentFormat tournamentFormat;
-  @OneToMany
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "tournament_id")
   @OrderBy("stage ASC")
   private Set<Round>       rounds;
   private int              nbSeeds;
-  @OneToMany(orphanRemoval = true)
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "tournament_id")
   private List<PlayerPair> playerPairs;
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-  @DateTimeFormat(pattern = "dd/MM/yyyy")
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
   private LocalDate        startDate;
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-  @DateTimeFormat(pattern = "dd/MM/yyyy")
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
   private LocalDate        endDate;
   private int              nbMaxPairs;
   // for group stage

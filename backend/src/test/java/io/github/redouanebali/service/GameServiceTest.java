@@ -18,8 +18,6 @@ import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.SetScore;
 import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.repository.GameRepository;
-import io.github.redouanebali.repository.ScoreRepository;
 import io.github.redouanebali.repository.TournamentRepository;
 import java.util.LinkedHashSet;
 import java.util.List;

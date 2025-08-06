@@ -58,7 +58,7 @@ public class TournamentController {
   }
 
   @PostMapping("/{id}/pairs")
-  public int addPairs(@PathVariable Long id, @RequestBody List<SimplePlayerPairDTO> players) {
+  public Tournament addPairs(@PathVariable Long id, @RequestBody List<SimplePlayerPairDTO> players) {
     return tournamentService.addPairs(id, players);
   }
 

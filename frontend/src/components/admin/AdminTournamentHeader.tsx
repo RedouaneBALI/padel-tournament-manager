@@ -3,7 +3,6 @@
 import { useRouter, usePathname } from 'next/navigation';
 import { Settings, Share2 } from 'lucide-react';
 import { toast } from 'react-toastify';
-import Link from 'next/link';
 import AdminTournamentTabs from './AdminTournamentTabs';
 import type { Tournament } from '@/src/types/tournament';
 

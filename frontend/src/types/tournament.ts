@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Tournament } from '@/src/types/tournament';
 
+// @todo duplicate of Tournament, to remove ?
 interface TournamentFormData {
   name: string;
   description: string;
@@ -18,26 +19,3 @@ interface TournamentFormData {
   nbQualifiedByPool: number;
 }
 
-const getInitialFormData = (initialData?: Partial<Tournament>): TournamentFormData => ({
-  name: '',
-  description: '',
-  city: '',
-  club: '',
-  gender: '',
-  level: '',
-  tournamentFormat: '',
-  nbSeeds: 16,
-  startDate: '',
-  endDate: '',
-  nbMaxPairs: 48,
-  nbPools: 4,
-  nbPairsPerPool: 4,
-  nbQualifiedByPool: 2,
-  ...initialData,
-});
-
-const TournamentForm: React.FC<{ initialData?: Partial<Tournament> }> = ({ initialData }) => {
-  const [formData, setFormData] = useState<TournamentFormData>(getInitialFormData(initialData));
-
-  // ...rest of the component code
-};

@@ -1,10 +1,12 @@
 package io.github.redouanebali.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Transient;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -18,20 +20,22 @@ import lombok.NoArgsConstructor;
 @Data
 public class Pool {
 
-  @ManyToMany
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "pool_id")
   private final Set<PlayerPair> pairs       = new LinkedHashSet<>();
   @Id
   @GeneratedValue
   private       Long            id;
   private       String          name;
-  @Transient
+  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "pool_ranking_id")
   private       PoolRanking     poolRanking = new PoolRanking();
 
   public Pool(String name, List<PlayerPair> pairs) {
     this.name = name;
     if (pairs != null) {
       this.pairs.addAll(pairs);
-      pairs.forEach(pair -> poolRanking.addDetails(new PoolRankingDetails(pair, 0, 0)));
+      initRanking();
     }
   }
 
@@ -49,4 +53,14 @@ public class Pool {
     return sb.toString();
   }
 
+  public void initRanking() {
+    pairs.forEach(pair -> poolRanking.addDetails(new PoolRankingDetails(pair, 0, 0)));
+  }
+
+  public void initPairs(final Set<PlayerPair> pairs) {
+    this.pairs.addAll(pairs);
+    for (PlayerPair pair : pairs) {
+      poolRanking.addDetails(new PoolRankingDetails(pair, 0, 0));
+    }
+  }
 }

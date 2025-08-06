@@ -27,7 +27,7 @@ public class Round {
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "round_id") // FK in Game table
   private final List<Game>  games       = new ArrayList<>();
-  @OneToMany(cascade = CascadeType.ALL)
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "round_id")
   private final Set<Pool>   pools       = new LinkedHashSet<>();
   @Id
@@ -35,7 +35,7 @@ public class Round {
   private       Long        id;
   @Enumerated(EnumType.STRING)
   private       Stage       stage;
-  @OneToOne(cascade = CascadeType.ALL)
+  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "match_format_id")
   private       MatchFormat matchFormat = new MatchFormat();
 
@@ -84,6 +84,5 @@ public class Round {
   public int hashCode() {
     return stage != null ? stage.hashCode() : 0;
   }
-
 
 }

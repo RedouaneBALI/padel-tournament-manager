@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import MatchFormatForm from '@/src/components/round/MatchFormatForm';
-import { stageLabels } from '@/src/types/stage';
 import { MatchFormat } from '@/src/types/matchFormat';
 import { Round } from '@/src/types/round';
 import RoundSelector from '@/src/components/round/RoundSelector';
@@ -73,27 +72,6 @@ export default function RoundFormatTab({ tournamentId, pairs }: RoundFormatTabPr
       toast.success('Format enregistré');
     } catch {
       toast.error("Erreur lors de l'enregistrement.");
-    }
-  };
-
-  const handleDraw = async () => {
-    if (pairs.length < 2) {
-      toast.error('Il faut au moins 2 équipes pour générer un tirage.');
-      return;
-    }
-
-    try {
-      const res = await fetch(`http://localhost:8080/tournaments/${tournamentId}/draw`, {
-        method: 'POST',
-      });
-      if (!res.ok) throw new Error();
-      toast.success('Tirage généré');
-      const roundRes = await fetch(`http://localhost:8080/tournaments/${tournamentId}/rounds`);
-      const data = await roundRes.json();
-      setRounds(data);
-      setCurrentStageIndex(0);
-    } catch {
-      toast.error('Erreur lors de la génération du tirage.');
     }
   };
 

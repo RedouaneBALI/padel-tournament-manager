@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
-import MatchResultCardLight from '@/src/components/ui/MatchResultCardLight';
 import { fetchRounds } from '@/src/utils/fetchRounds';
 import { toPng } from 'html-to-image';
+import KnockoutBracket from '@/src/components/round/KnockoutBracket';
+import GroupStageResults from '@/src/components/round/GroupStageResults';
 
 // Fonction pour calculer la position verticale correcte de chaque match
 function calculateMatchPositions(rounds: Round[]) {
@@ -65,9 +66,6 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
     return <p className="text-gray-500">Aucun tirage généré pour le moment.</p>;
   }
 
-  const ROUND_WIDTH = 320;
-  const CARD_HEIGHT = 120; // 2 * 60px
-  const CARD_MARGIN = 16; // mb-4 = 16px
   const matchPositions = calculateMatchPositions(rounds);
 
   // Calculer la hauteur totale nécessaire
@@ -88,7 +86,10 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
     }
   };
 
-  return (
+  const isGroupStage = rounds.length > 0 && rounds[0].stage === 'GROUPS';
+  return isGroupStage ? (
+    <GroupStageResults rounds={rounds} />
+  ) : (
     <div className="w-full">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-gray-900">Arbre du tournoi</h2>
@@ -102,123 +103,7 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
       </div>
 
       <div id="bracket-container" className="relative overflow-auto border border-gray-200 rounded-lg p-8 bg-gray-50" style={{ minHeight: `${maxPosition}px` }}>
-        <div
-          className="relative flex"
-          style={{
-            width: `${rounds.length * ROUND_WIDTH}px`,
-            height: `${maxPosition}px`
-          }}
-        >
-          {rounds.map((round, roundIndex) => (
-            <div
-              key={round.id}
-              className="relative"
-              style={{ width: ROUND_WIDTH }}
-            >
-              {/* Titre du round */}
-              <div className="absolute top-0 left-0 right-0 text-center mb-4 text-sm font-semibold text-blue-600">
-                {round.stage}
-              </div>
-
-              {/* Matchs du round positionnés absolument */}
-              {round.games.map((game, gameIndex) => (
-                <div
-                  key={game.id}
-                  className="absolute"
-                  style={{
-                    top: `${matchPositions[roundIndex][gameIndex] + 40}px`, // +40 pour laisser de la place au titre
-                    left: '10px',
-                    right: '10px'
-                  }}
-                >
-                  <MatchResultCardLight
-                  teamA={game.teamA}
-                  teamB={game.teamB}
-                  tournamentId={tournamentId}
-                  gameId={game.id}
-                  score={game.score}
-                  editable={false}
-                  winnerSide={
-                    game.finished
-                      ? game.winnerSide === 'TEAM_A'
-                        ? 0
-                        : game.winnerSide === 'TEAM_B'
-                          ? 1
-                          : undefined
-                      : undefined
-                  }
-                   />
-                 </div>
-              ))}
-
-              {/* Lignes de connexion vers le round suivant */}
-              {roundIndex < rounds.length - 1 && (
-                <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-                  {round.games.map((game, gameIndex) => {
-                    // Dessiner les lignes seulement pour les matchs pairs (qui se connectent)
-                    if (gameIndex % 2 === 0 && gameIndex + 1 < round.games.length) {
-                      // Ajustement pour aligner parfaitement avec la ligne de séparation réelle
-                      const currentY1 = matchPositions[roundIndex][gameIndex] + 40 + 61; // +1px d'ajustement pour la bordure
-                      const currentY2 = matchPositions[roundIndex][gameIndex + 1] + 40 + 61; // +1px d'ajustement pour la bordure
-                      const nextY = matchPositions[roundIndex + 1][Math.floor(gameIndex / 2)] + 40 + 61; // +1px d'ajustement pour la bordure
-
-                      return (
-                        <svg
-                          key={`connection-${gameIndex}`}
-                          className="absolute"
-                          style={{
-                            left: '290px',
-                            top: '0px',
-                            width: '40px',
-                            height: '100%'
-                          }}
-                        >
-                          {/* Ligne horizontale du premier match */}
-                          <line
-                            x1="0"
-                            y1={currentY1}
-                            x2="20"
-                            y2={currentY1}
-                            stroke="#e5e7eb"
-                            strokeWidth="1"
-                          />
-                          {/* Ligne horizontale du second match */}
-                          <line
-                            x1="0"
-                            y1={currentY2}
-                            x2="20"
-                            y2={currentY2}
-                            stroke="#e5e7eb"
-                            strokeWidth="1"
-                          />
-                          {/* Ligne verticale de connexion */}
-                          <line
-                            x1="20"
-                            y1={currentY1}
-                            x2="20"
-                            y2={currentY2}
-                            stroke="#e5e7eb"
-                            strokeWidth="1"
-                          />
-                          {/* Ligne horizontale vers le match suivant */}
-                          <line
-                            x1="20"
-                            y1={nextY}
-                            x2="40"
-                            y2={nextY}
-                            stroke="#e5e7eb"
-                            strokeWidth="1"
-                          />
-                        </svg>
-                      );
-                    }
-                    return null;
-                  })}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+        <KnockoutBracket rounds={rounds} tournamentId={tournamentId} />
       </div>
     </div>
   );

@@ -24,16 +24,16 @@ public class Game {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne
+  @ManyToOne(cascade = CascadeType.ALL)
   private PlayerPair teamA;
 
-  @ManyToOne
+  @ManyToOne(cascade = CascadeType.ALL)
   private PlayerPair teamB;
 
   @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
   private Score score;
 
-  @ManyToOne
+  @ManyToOne(cascade = CascadeType.ALL)
   private MatchFormat format;
 
   private TeamSide winnerSide;

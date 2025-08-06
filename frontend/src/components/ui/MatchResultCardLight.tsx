@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { PlayerPair } from '@/types/playerPair';
 import { Score } from '@/types/score';
-import TeamScoreRow from '@/src/components/match/TeamScoreRow';
+import TeamScoreRow from '@/src/components/ui/TeamScoreRow';
 
 interface Props {
   teamA: PlayerPair | null;

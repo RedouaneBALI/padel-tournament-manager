@@ -6,25 +6,14 @@ import PlayerPairsTextarea from '@/src/components/tournament/PlayerPairsTextarea
 import { FileText } from 'lucide-react';
 import { PlayerPair } from '@/src/types/playerPair';
 import { Tournament } from '@/src/types/tournament';
-import { MatchFormat } from '@/src/types/matchFormat';
-import { Round } from '@/src/types/round';
-import MatchFormatForm from '@/src/components/round/MatchFormatForm';
 
 interface Props {
   tournamentId: string;
 }
 
 export default function AdminTournamentSetupTab({ tournamentId }: Props) {
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
   const [pairs, setPairs] = useState<PlayerPair[]>([]);
   const [tournament, setTournament] = useState<Tournament | null>(null);
-  const [rounds, setRounds] = useState<Round[]>([]);
-  const [matchFormat, setMatchFormat] = useState<MatchFormat>({
-    numberOfSetsToWin: 2,
-    pointsPerSet: 6,
-    superTieBreakInFinalSet: true,
-    advantage: false,
-  });
 
   useEffect(() => {
     async function fetchTournament() {
@@ -60,32 +49,6 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
     fetchPairs();
   }, [tournamentId]);
 
-  async function copyLink() {
-    if (baseUrl) {
-      await navigator.clipboard.writeText(`${baseUrl}/tournament/${tournamentId}`);
-      toast.success('Lien copié dans le presse-papiers !');
-    }
-  }
-
-  const handleDraw = async () => {
-    try {
-      const response = await fetch(`http://localhost:8080/tournaments/${tournamentId}/draw`, {
-        method: 'POST',
-      });
-
-      if (!response.ok) {
-        toast.error('Erreur lors de la génération du tirage.');
-        return;
-      }
-
-      const newRound: Round = await response.json();
-      setRounds(prev => [...prev, newRound]);
-      toast.success('Tirage généré avec succès !');
-    } catch (error) {
-      console.error(error);
-      toast.error('Une erreur est survenue.');
-    }
-  };
 
   return (
     <div className="container mx-auto max-w-3xl">

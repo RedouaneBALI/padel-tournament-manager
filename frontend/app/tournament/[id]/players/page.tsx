@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Tournament } from '@/src/types/tournament';
 import { PlayerPair } from '@/src/types/playerPair';
 import React from 'react';
 

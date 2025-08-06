@@ -7,8 +7,11 @@ export type TournamentFormData = {
   gender: string | null;
   level: string | null;
   tournamentFormat: string | null;
-  nbSeeds: 16;
+  nbSeeds: number | null;
   startDate: string | null;
   endDate: string | null;
-  nbMaxPairs: 48;
+  nbMaxPairs: number | null;
+  nbPools: number | null;
+  nbPairsPerPool: number | null;
+  nbQualifiedByPool: number | null;
 };

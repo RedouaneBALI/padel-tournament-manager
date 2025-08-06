@@ -8,15 +8,11 @@ import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.TournamentFormat;
-import io.github.redouanebali.repository.GameRepository;
-import io.github.redouanebali.repository.MatchFormatRepository;
-import io.github.redouanebali.repository.PlayerPairRepository;
-import io.github.redouanebali.repository.PlayerRepository;
-import io.github.redouanebali.repository.RoundRepository;
 import io.github.redouanebali.repository.TournamentRepository;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -30,14 +26,10 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class TournamentService {
 
-  private final PlayerPairRepository         playerPairRepository;
-  private final PlayerRepository             playerRepository;
-  private final TournamentRepository         tournamentRepository;
-  private final RoundRepository              roundRepository;
-  private final GameRepository               gameRepository;
-  private final MatchFormatRepository        matchFormatRepository;
+
+  private final TournamentRepository tournamentRepository;
+
   private final TournamentProgressionService progressionService;
-  private       AbstractRoundGenerator       generator;
 
   public Tournament getTournamentById(Long id) {
     return tournamentRepository.findById(id)
@@ -55,35 +47,19 @@ public class TournamentService {
       return savedTournament;
     }
 
-    generator = getGenerator(savedTournament);
+    AbstractRoundGenerator generator = getGenerator(savedTournament);
 
     Set<Round> rounds = generator.createRounds(savedTournament);
     savedTournament.setRounds(rounds);
-    saveRoundInfo(rounds);
     return tournamentRepository.save(savedTournament);
   }
 
-  private void saveRoundInfo(Set<Round> rounds) {
-    for (Round round : rounds) {
-      System.out.println("Saving round with MatchFormat ID: " +
-                         (round.getMatchFormat() != null ? round.getMatchFormat().getId() : "null"));
-      Round savedRound = roundRepository.save(round);
-
-      for (Game game : savedRound.getGames()) {
-        gameRepository.save(game);
-      }
-    }
-  }
-
   private AbstractRoundGenerator getGenerator(Tournament tournament) {
-    AbstractRoundGenerator generator;
-    switch (tournament.getTournamentFormat()) {
-      case KNOCKOUT -> generator = new KnockoutRoundGenerator(tournament.getNbSeeds());
-      case GROUP_STAGE -> generator =
-          new GroupRoundGenerator(tournament.getNbSeeds(), tournament.getNbPools(), tournament.getNbPairsPerPool());
-      default -> generator = new KnockoutRoundGenerator(tournament.getNbSeeds());
-    }
-    return generator;
+    return switch (tournament.getTournamentFormat()) {
+      case KNOCKOUT -> new KnockoutRoundGenerator(tournament.getNbSeeds());
+      case GROUP_STAGE -> new GroupRoundGenerator(tournament.getNbSeeds(), tournament.getNbPools(), tournament.getNbPairsPerPool());
+      default -> new KnockoutRoundGenerator(tournament.getNbSeeds());
+    };
   }
 
 
@@ -105,11 +81,8 @@ public class TournamentService {
     return tournamentRepository.save(existing);
   }
 
-  public int addPairs(Long tournamentId, List<SimplePlayerPairDTO> playerPairsDto) {
+  public Tournament addPairs(Long tournamentId, List<SimplePlayerPairDTO> playerPairsDto) {
     Tournament tournament = getTournamentById(tournamentId);
-
-    tournament.getPlayerPairs().clear();
-    tournamentRepository.save(tournament);
 
     List<PlayerPair> newPairs = playerPairsDto.stream().map(dto -> {
       Player p1 = new Player();
@@ -118,72 +91,61 @@ public class TournamentService {
       Player p2 = new Player();
       p2.setName(dto.getPlayer2());
 
-      playerRepository.save(p1);
-      playerRepository.save(p2);
-
-      PlayerPair pair = new PlayerPair(null, p1, p2, dto.getSeed());
-      return playerPairRepository.save(pair);
+      return new PlayerPair(null, p1, p2, dto.getSeed());
     }).toList();
 
+    tournament.getPlayerPairs().clear();
     tournament.getPlayerPairs().addAll(newPairs);
-    tournamentRepository.save(tournament);
-
-    generator.getPairs().addAll(newPairs);
-    return newPairs.size();
-  }
-
-  public Tournament generateDraw(Long tournamentId) {
-    Tournament tournament = getTournamentById(tournamentId);
-
-    Round newRound = generator.generate();
-
-    Round existingRound = tournament.getRounds().stream()
-                                    .filter(r -> r.getStage().equals(newRound.getStage()))
-                                    .findFirst()
-                                    .orElseThrow(() -> new IllegalArgumentException("Round not found"));
-
-    List<Game> existingGames = existingRound.getGames();
-    for (int i = 0; i < existingGames.size() && i < newRound.getGames().size(); i++) {
-      Game existingGame = existingGames.get(i);
-      Game newGame      = newRound.getGames().get(i);
-      existingGame.setTeamA(newGame.getTeamA());
-      existingGame.setTeamB(newGame.getTeamB());
-      gameRepository.save(existingGame);
-    }
-
-    roundRepository.save(existingRound);
-    tournament.setRounds(new LinkedHashSet<>(tournament.getRounds()));
-    // @todo dirty, to change
-    if (tournament.getTournamentFormat() != TournamentFormat.GROUP_STAGE) {
-      progressionService.propagateWinners(tournament);
-    }
-    log.info("Generated draw for tournament id {}", tournamentId);
-
     return tournamentRepository.save(tournament);
   }
 
+  /**
+   * Call generator.generate() and dispatch all the players into games from the created round
+   *
+   * @param tournamentId the id of the tournament
+   * @return the new Tournament
+   */
+  public Tournament generateDraw(Long tournamentId) {
+    Tournament             tournament = getTournamentById(tournamentId);
+    AbstractRoundGenerator generator  = getGenerator(tournament);
+    Round                  newRound   = generator.generate();
 
-  // @todo to delete ?
-  private PlayerPair persistPairIfNeeded(PlayerPair pair) {
-    if (pair == null) {
-      return null;
+    Round existingRound = getRoundByStage(tournament, newRound.getStage());
+
+    updatePools(existingRound, newRound);
+    updateGames(existingRound, newRound);
+
+    tournament.setRounds(new LinkedHashSet<>(tournament.getRounds()));
+
+    if (tournament.getTournamentFormat() != TournamentFormat.GROUP_STAGE) {
+      progressionService.propagateWinners(tournament);
     }
 
-    Player p1 = pair.getPlayer1();
-    Player p2 = pair.getPlayer2();
-
-    p1 = (p1 != null && p1.getId() == null) ? playerRepository.save(p1) : p1;
-    p2 = (p2 != null && p2.getId() == null) ? playerRepository.save(p2) : p2;
-
-    pair.setPlayer1(p1);
-    pair.setPlayer2(p2);
-
-    if (pair.getId() == null) {
-      pair = playerPairRepository.save(pair);
-    }
-
-    return pair;
+    log.info("Generated draw for tournament id {}", tournamentId);
+    return tournamentRepository.save(tournament);
   }
+
+  private void updatePools(Round existingRound, Round newRound) {
+    for (Pool pool : existingRound.getPools()) {
+      for (Pool newPool : newRound.getPools()) {
+        if (pool.getName().equals(newPool.getName())) {
+          pool.initPairs(newPool.getPairs());
+        }
+      }
+    }
+  }
+
+  private void updateGames(Round existingRound, Round newRound) {
+    List<Game> existingGames = existingRound.getGames();
+    List<Game> newGames      = newRound.getGames();
+    for (int i = 0; i < existingGames.size() && i < newGames.size(); i++) {
+      Game existingGame = existingGames.get(i);
+      Game newGame      = newGames.get(i);
+      existingGame.setTeamA(newGame.getTeamA());
+      existingGame.setTeamB(newGame.getTeamB());
+    }
+  }
+
 
   public MatchFormat getMatchFormatForRound(Long tournamentId, Stage stage) {
     Tournament tournament = getTournamentById(tournamentId);
@@ -196,22 +158,24 @@ public class TournamentService {
 
   public MatchFormat updateMatchFormatForRound(Long tournamentId, Stage stage, MatchFormat newFormat) {
     Tournament tournament = getTournamentById(tournamentId);
-
     Round round = tournament.getRounds().stream()
                             .filter(r -> r.getStage() == stage)
                             .findFirst()
                             .orElseThrow(() -> new IllegalArgumentException("Round not found for stage: " + stage));
+    MatchFormat currentFormat = round.getMatchFormat();
 
-    MatchFormat persistedFormat = matchFormatRepository.save(newFormat);
-    round.setMatchFormat(persistedFormat);
-    roundRepository.save(round);
-    return persistedFormat;
+    if (currentFormat == null) {
+      round.setMatchFormat(newFormat);
+    } else {
+      currentFormat.setNumberOfSetsToWin(newFormat.getNumberOfSetsToWin());
+      currentFormat.setPointsPerSet(newFormat.getPointsPerSet());
+      currentFormat.setAdvantage(newFormat.isAdvantage());
+      currentFormat.setSuperTieBreakInFinalSet(newFormat.isSuperTieBreakInFinalSet());
+    }
+    tournamentRepository.save(tournament);
+    return newFormat;
   }
 
-  public Game getGameById(Long gameId) {
-    return gameRepository.findById(gameId)
-                         .orElseThrow(() -> new IllegalArgumentException("Game not found"));
-  }
 
   public List<PlayerPair> getPairsByTournamentId(Long tournamentId) {
     Tournament tournament = getTournamentById(tournamentId);
@@ -227,6 +191,13 @@ public class TournamentService {
                             .orElseThrow(() -> new IllegalArgumentException("Round not found for stage: " + stage));
 
     return new LinkedHashSet<>(round.getGames());
+  }
+
+  private Round getRoundByStage(Tournament tournament, Stage stage) {
+    return tournament.getRounds().stream()
+                     .filter(r -> r.getStage() == stage)
+                     .findFirst()
+                     .orElseThrow(() -> new IllegalArgumentException("Round not found for stage: " + stage));
   }
 
 }
