@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class Pool {
 
-  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(cascade = CascadeType.ALL/*, orphanRemoval = true*/)
   @JoinColumn(name = "pool_id")
   private final Set<PlayerPair> pairs       = new LinkedHashSet<>();
   @Id
@@ -59,6 +59,8 @@ public class Pool {
   }
 
   public void initPairs(final Set<PlayerPair> pairs) {
+    this.pairs.clear();
+    this.poolRanking.getDetails().clear();
     this.pairs.addAll(pairs);
     for (PlayerPair pair : pairs) {
       poolRanking.addDetails(new PoolRankingDetails(pair, 0, 0));

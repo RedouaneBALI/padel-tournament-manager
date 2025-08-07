@@ -8,9 +8,10 @@ import { fetchPairs, savePlayerPairs } from '@/src/api/tournamentApi';
 interface Props {
   tournamentId: number;
   onPairsChange?: (pairs: PlayerPair[]) => void; // OK dans interface
+  hasStarted?: boolean;
 }
 
-export default function PlayerPairsTextarea({ tournamentId, onPairsChange }: Props) {
+export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasStarted }: Props) {
   const [text, setText] = useState('');
 
   const fetchUpdatedPairs = async () => {
@@ -59,22 +60,25 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange }: Pro
         value={text}
         onChange={e => setText(e.target.value)}
         placeholder={`Ghali Berrada,Selim Mekouar\nRedouane Bali,Ali Khobzaoui`}
+        disabled={hasStarted}
       />
 
-      <div className="flex justify-center gap-4 mt-4">
-        <button
-          onClick={handleClear}
-          className="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-100"
-        >
-          Effacer
-        </button>
-        <button
-          onClick={handleSave}
-          className="px-4 py-2 bg-[#1b2d5e] text-white rounded hover:bg-blue-900"
-        >
-          Enregistrer les joueurs
-        </button>
-      </div>
+      {!hasStarted && (
+        <div className="flex justify-center gap-4 mt-4">
+          <button
+            onClick={handleClear}
+            className="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-100"
+          >
+            Effacer
+          </button>
+          <button
+            onClick={handleSave}
+            className="px-4 py-2 bg-[#1b2d5e] text-white rounded hover:bg-blue-900"
+          >
+            Enregistrer les joueurs
+          </button>
+        </div>
+      )}
     </div>
   );
 }

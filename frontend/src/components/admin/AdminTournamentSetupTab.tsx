@@ -18,6 +18,7 @@ interface Props {
 export default function AdminTournamentSetupTab({ tournamentId }: Props) {
   const [pairs, setPairs] = useState<PlayerPair[]>([]);
   const [tournament, setTournament] = useState<Tournament | null>(null);
+  const [tournamentStarted, setTournamentStarted] = useState(false);
 
   const [drawMode, setDrawMode] = useState('seeded');
   const router = useRouter();
@@ -54,6 +55,10 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
       try {
         const data = await fetchTournament(tournamentId);
         setTournament(data);
+        const hasStarted = data.rounds?.some(round =>
+          round.games?.some(game => game.score !== null)
+        );
+        setTournamentStarted(hasStarted);
       } catch {
         toast.error('Erreur réseau lors de la récupération du tournoi.');
       }
@@ -91,8 +96,9 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
           <PlayerPairsTextarea
             onPairsChange={setPairs}
             tournamentId={Number(tournamentId)}
+            hasStarted={tournamentStarted}
           />
-          {pairs.length > 0 && (
+          {pairs.length > 0 && !tournamentStarted && (
             <>
               <hr className="my-6 border-t border-gray-300" />
               <div className="flex flex-col sm:flex-row sm:justify-center sm:items-end gap-4 mt-6">

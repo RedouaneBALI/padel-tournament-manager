@@ -35,7 +35,7 @@ public class DrawGenerationService {
                                     .filter(r -> r.getStage() == newRound.getStage())
                                     .findFirst()
                                     .orElseThrow(() -> new IllegalArgumentException("Round not found for stage: " + newRound.getStage()));
-
+    // @todo construct again the playerpair if it was removed
     updatePools(existingRound, newRound);
     updateGames(existingRound, newRound);
 
@@ -57,6 +57,9 @@ public class DrawGenerationService {
 
   private void updatePools(Round existingRound, Round newRound) {
     for (Pool pool : existingRound.getPools()) {
+      // Reset pool state before updating
+      pool.getPairs().clear();
+      pool.getPoolRanking().getDetails().clear();
       for (Pool newPool : newRound.getPools()) {
         if (pool.getName().equals(newPool.getName())) {
           pool.initPairs(newPool.getPairs());
