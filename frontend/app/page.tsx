@@ -1,6 +1,6 @@
-import { redirect } from 'next/navigation';
+import ConnexionPage from '@/src/components/auth/ConnexionPage';
 
 export default function Home() {
-  redirect('/admin/tournament/new');
+  return <ConnexionPage />;
 }
 

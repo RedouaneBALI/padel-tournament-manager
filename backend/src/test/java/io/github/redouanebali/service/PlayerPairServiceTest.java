@@ -34,14 +34,14 @@ public class PlayerPairServiceTest {
     Tournament tournament = new Tournament();
     tournament.setId(1L);
 
-    PlayerPair       dto1    = new PlayerPair("Alice", "Bob", 1);
-    PlayerPair       dto2    = new PlayerPair("Charlie", "Dave", 2);
-    List<PlayerPair> dtoList = List.of(dto1, dto2);
+    PlayerPair       pp1   = new PlayerPair("Alice", "Bob", 1);
+    PlayerPair       pp2   = new PlayerPair("Charlie", "Dave", 2);
+    List<PlayerPair> pairs = List.of(pp1, pp2);
 
     when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
     when(tournamentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-    Tournament updated = playerPairService.addPairs(1L, dtoList);
+    Tournament updated = playerPairService.addPairs(1L, pairs);
 
     assertEquals(2, updated.getPlayerPairs().size());
   }
@@ -57,7 +57,7 @@ public class PlayerPairServiceTest {
   void testGetPairsByTournamentId_shouldReturnPairs() {
     Tournament tournament = new Tournament();
     tournament.setId(1L);
-    PlayerPair pair = new PlayerPair();
+    PlayerPair pair = new PlayerPair("A1", "A2", 0);
     tournament.getPlayerPairs().add(pair);
 
     when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));

@@ -2,26 +2,19 @@ package io.github.redouanebali.controller;
 
 import io.github.redouanebali.dto.GameUpdateRequest;
 import io.github.redouanebali.dto.ScoreUpdateResponse;
-import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.PlayerPair;
-import io.github.redouanebali.model.PoolRanking;
-import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.service.GameService;
-import io.github.redouanebali.service.GroupRankingService;
 import io.github.redouanebali.service.MatchFormatService;
 import io.github.redouanebali.service.PlayerPairService;
 import io.github.redouanebali.service.TournamentService;
-import java.util.Comparator;
+import jakarta.validation.Valid;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -30,10 +23,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@RequestMapping("/admin/tournaments")
 @RestController
-@RequestMapping("/tournaments")
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
-public class TournamentController {
+public class AdminTournamentController {
 
   @Autowired
   private TournamentService tournamentService;
@@ -45,72 +37,48 @@ public class TournamentController {
   private GameService gameService;
 
   @Autowired
-  private GroupRankingService groupRankingService;
-
-  @Autowired
   private MatchFormatService matchFormatService;
 
+  @PreAuthorize("isAuthenticated()")
   @PostMapping
   public Tournament createTournament(@RequestBody Tournament tournament) {
     return tournamentService.createTournament(tournament);
   }
 
+  @PreAuthorize("isAuthenticated()")
   @PutMapping("/{id}")
   public Tournament updateTournament(@PathVariable Long id, @RequestBody Tournament updated) {
     return tournamentService.updateTournament(id, updated);
   }
 
-  @GetMapping("/{id}")
-  public Tournament getTournament(@PathVariable Long id) {
-    return tournamentService.getTournamentById(id);
-  }
-
+  @PreAuthorize("isAuthenticated()")
   @PostMapping("/{id}/pairs")
-  public Tournament addPairs(@PathVariable Long id, @RequestBody List<PlayerPair> players) {
+  public Tournament addPairs(@PathVariable Long id, @RequestBody @Valid List<PlayerPair> players) {
     return playerPairService.addPairs(id, players);
-  }
-
-  @GetMapping("/{id}/pairs")
-  public List<PlayerPair> getPairs(@PathVariable Long id) {
-    return playerPairService.getPairsByTournamentId(id);
   }
 
   /**
    * @param manual if true, the rounds will be generated using the players in the same order otherwise, the algorithm will be used
    */
+  @PreAuthorize("isAuthenticated()")
   @PostMapping("/{id}/draw")
   public Tournament generateDraw(@PathVariable Long id, @RequestParam(defaultValue = "false") boolean manual) {
     return tournamentService.generateDraw(id, manual);
   }
 
-  @GetMapping("/{id}/rounds")
-  public List<Round> getRounds(@PathVariable Long id) {
-    Tournament tournament = tournamentService.getTournamentById(id);
-    return tournament.getRounds().stream()
-                     .sorted(Comparator.comparing(r -> r.getStage().getOrder()))
-                     .collect(Collectors.toList());
-  }
-
-  @GetMapping("/{id}/rounds/{stage}/games")
-  public Set<Game> getGamesByStage(@PathVariable Long id, @PathVariable Stage stage) {
-    return tournamentService.getGamesByTournamentAndStage(id, stage);
-  }
-
-  @GetMapping("/{id}/rounds/{stage}/match-format")
-  public MatchFormat getMatchFormat(@PathVariable Long id, @PathVariable Stage stage) {
-    return matchFormatService.getMatchFormatForRound(id, stage);
-  }
-
+  @PreAuthorize("isAuthenticated()")
   @PutMapping("/{id}/rounds/{stage}/match-format")
   public MatchFormat updateMatchFormat(@PathVariable Long id, @PathVariable Stage stage, @RequestBody MatchFormat newFormat) {
     return matchFormatService.updateMatchFormatForRound(id, stage, newFormat);
   }
 
+  @PreAuthorize("isAuthenticated()")
   @PutMapping("/{tournamentId}/games/{gameId}/score")
   public ScoreUpdateResponse updateScore(@PathVariable Long tournamentId, @PathVariable Long gameId, @RequestBody Score score) {
     return gameService.updateGameScore(tournamentId, gameId, score);
   }
 
+  @PreAuthorize("isAuthenticated()")
   @PutMapping("/{tournamentId}/games/{gameId}")
   public ScoreUpdateResponse updateGame(@PathVariable Long tournamentId,
                                         @PathVariable Long gameId,
@@ -118,8 +86,4 @@ public class TournamentController {
     return gameService.updateGame(tournamentId, gameId, request);
   }
 
-  @GetMapping("/{id}/groups/ranking")
-  public List<PoolRanking> getGroupRankings(@PathVariable Long id) {
-    return GroupRankingService.getGroupRankings(tournamentService.getTournamentById(id));
-  }
 }

@@ -34,7 +34,7 @@ public class Tournament {
   private TournamentFormat tournamentFormat;
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "tournament_id")
-  private List<Round>      rounds;
+  private List<Round>      rounds      = new ArrayList<>();
   private int              nbSeeds;
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "tournament_id")
