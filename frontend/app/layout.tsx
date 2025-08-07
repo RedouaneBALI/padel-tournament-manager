@@ -5,7 +5,7 @@ import 'react-confirm-alert/src/react-confirm-alert.css';
 import SessionProviderWrapper from './SessionProviderWrapper';
 import LogoutButton from '@/src/components/auth/LogoutButton';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/app/api/auth/[...nextauth]/authOptions';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
