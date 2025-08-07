@@ -1,16 +1,16 @@
 'use client';
 
 import React from 'react';
-import { PlayerPair } from '@/types/playerPair';
+import { PlayerPair } from '@/src/types/playerPair';
 
 interface Props {
   team: PlayerPair | null;
   teamIndex: number;
   scores: string[];
   editing: boolean;
-  setScores: (scores: string[]) => void;
-  inputRefs: React.MutableRefObject<(HTMLInputElement | null)[]>;
-  handleKeyDown: (e: React.KeyboardEvent, teamIndex: number, setIndex: number) => void;
+  setScores?: (scores: string[]) => void;
+  inputRefs?: React.MutableRefObject<(HTMLInputElement | null)[]>;
+  handleKeyDown?: (e: React.KeyboardEvent, teamIndex: number, setIndex: number) => void;
   winnerSide?: number;
 }
 
@@ -27,7 +27,7 @@ export default function TeamScoreRow({
   const handleChange = (setIndex: number, value: string) => {
     const updated = [...scores];
     updated[setIndex] = value;
-    setScores(updated);
+    setScores?.(updated);
   };
 
 
@@ -54,9 +54,11 @@ export default function TeamScoreRow({
                 key={setIndex}
                 type="text"
                 value={setScore}
-                ref={(el) => (inputRefs.current[setIndex] = el)}
+                ref={(el) => {
+                  if (inputRefs) inputRefs.current[setIndex] = el;
+                }}
                 onChange={(e) => handleChange(setIndex, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(e, teamIndex, setIndex)}
+                onKeyDown={(e) => handleKeyDown?.(e, teamIndex, setIndex)}
                 className="w-8 text-xs text-center border border-gray-300 rounded"
                 placeholder="-"
               />

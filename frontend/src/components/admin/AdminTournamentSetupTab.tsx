@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import PlayerPairsTextarea from '@/src/components/tournament/PlayerPairsTextarea';
+import PlayerPairList from '@/src/components/tournament/PlayerPairsList';
 import { useRouter } from 'next/navigation';
 import { confirmAlert } from 'react-confirm-alert';
 import { generateDraw } from '@/src/api/tournamentApi';
@@ -81,23 +82,29 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
 
   return (
     <div className="container mx-auto max-w-3xl">
-      <div className="bg-card shadow-sm p-6 space-y-6">
+      <div className="bg-card shadow-sm">
         <div className="flex items-center gap-2 border-b border-border pb-3">
           <FileText className="h-5 w-5 text-muted-foreground" />
           <h1 className="text-xl font-semibold text-foreground">
-            {pairs.length} joueurs
+            {pairs.length} paires
           </h1>
         </div>
 
         <section>
-          <h2 className="mb-3 text-base font-semibold text-foreground">
-            Lister les joueurs ci-dessous (par ordre de classement ou du tirage)
-          </h2>
-          <PlayerPairsTextarea
-            onPairsChange={setPairs}
-            tournamentId={Number(tournamentId)}
-            hasStarted={tournamentStarted}
-          />
+          {tournamentStarted ? (
+            <PlayerPairList pairs={pairs} />
+          ) : (
+            <>
+              <h2 className="mb-3 text-base font-semibold text-foreground">
+                Lister les joueurs ci-dessous (par ordre de classement ou du tirage)
+              </h2>
+              <PlayerPairsTextarea
+                onPairsChange={setPairs}
+                tournamentId={tournamentId}
+                hasStarted={tournamentStarted}
+              />
+            </>
+          )}
           {pairs.length > 0 && !tournamentStarted && (
             <>
               <hr className="my-6 border-t border-gray-300" />

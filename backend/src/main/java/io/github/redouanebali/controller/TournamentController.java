@@ -2,7 +2,6 @@ package io.github.redouanebali.controller;
 
 import io.github.redouanebali.dto.GameUpdateRequest;
 import io.github.redouanebali.dto.ScoreUpdateResponse;
-import io.github.redouanebali.dto.SimplePlayerPairDTO;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.PlayerPair;
@@ -67,7 +66,7 @@ public class TournamentController {
   }
 
   @PostMapping("/{id}/pairs")
-  public Tournament addPairs(@PathVariable Long id, @RequestBody List<SimplePlayerPairDTO> players) {
+  public Tournament addPairs(@PathVariable Long id, @RequestBody List<PlayerPair> players) {
     return playerPairService.addPairs(id, players);
   }
 

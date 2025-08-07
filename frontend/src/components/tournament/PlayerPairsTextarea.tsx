@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import { fetchPairs, savePlayerPairs } from '@/src/api/tournamentApi';
 
 interface Props {
-  tournamentId: number;
+  tournamentId: string;
   onPairsChange?: (pairs: PlayerPair[]) => void; // OK dans interface
   hasStarted?: boolean;
 }
@@ -38,7 +38,11 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
 
     const pairs: PlayerPair[] = lines.map((line, index) => {
       const [p1, p2] = line.split(',').map(s => s.trim());
-      return { player1: p1, player2: p2, seed: index + 1 };
+      return {
+        player1: { name: p1 },
+        player2: { name: p2 },
+        seed: index + 1,
+      };
     });
 
     try {

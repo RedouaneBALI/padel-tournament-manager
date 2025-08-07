@@ -6,5 +6,5 @@ import TournamentResultsTab from '@/src/components/round/TournamentResultsTab';
 
 export default function AdminTournamentResultsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  return <TournamentResultsTab tournamentId={id} editable={false} />
+  return <TournamentResultsTab tournamentId={id} />
 }

@@ -1,13 +1,11 @@
-'use client';
-
 import React from 'react';
 import TournamentOverviewTab from './TournamentOverviewTab';
 import { fetchTournament } from '@/src/api/tournamentApi';
+import type { Tournament } from '@/src/types/tournament';
 
 export default function TournamentOverviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params);
-
-  const [tournament, setTournament] = React.useState(null);
+  const [tournament, setTournament] = React.useState<Tournament | null>(null);
 
   React.useEffect(() => {
     async function loadTournament() {

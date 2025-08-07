@@ -1,6 +1,5 @@
 package io.github.redouanebali.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -28,8 +27,13 @@ public class PlayerPair {
   @ManyToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "player2_id")
   private Player player2;
-  @JsonIgnore
   private int    seed;
+
+  public PlayerPair(String name1, String name2, int seed) {
+    this.player1 = new Player(name1);
+    this.player2 = new Player(name2);
+    this.seed    = seed;
+  }
 
   public static PlayerPair bye() {
     Player bye1 = new Player();

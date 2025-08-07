@@ -1,6 +1,6 @@
 export interface SetScore {
-  teamAScore: number;
-  teamBScore: number;
+  teamAScore: number | null;
+  teamBScore: number | null;
 }
 
 export interface Score {

@@ -1,4 +1,5 @@
-// src/components/round/GroupStageResults.tsx
+import type { Round } from '@/src/types/round';
+
 export default function GroupStageResults({
   rounds,
   nbQualifiedByPool,
@@ -23,7 +24,7 @@ export default function GroupStageResults({
                 </tr>
               </thead>
               <tbody>
-                {pool.poolRanking?.details?.map((entry, index) => (
+                {pool.poolRanking?.flatMap(ranking => ranking.details)?.map((entry, index) => (
                   <tr
                     key={index}
                     className={

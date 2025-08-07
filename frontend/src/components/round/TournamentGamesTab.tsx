@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import MatchResultCard from '@/src/components/ui/MatchResultCard';
 import RoundSelector from '@/src/components/round/RoundSelector';
-import type { Round, Game } from '@/app/types/round';
+import type { Round } from '@/src/types/round';
+import type { Game } from '@/src/types/game';
 import { fetchRounds } from '@/src/api/tournamentApi';
 
 interface TournamentGamesTabProps {
@@ -55,15 +56,11 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
     });
   }, []);
 
-  // Fonction pour gérer les autres mises à jour (scores, etc.)
-  const handleInfoSaved = useCallback(async (result: { tournamentUpdated: boolean; winner: String | null }) => {
+  const handleInfoSaved = useCallback((result: { tournamentUpdated: boolean; winner: string | null }) => {
     if (result.tournamentUpdated) {
-      try {
-        const newRounds = await fetchRounds(tournamentId);
-        setRounds(newRounds);
-      } catch (error) {
-        console.error("Erreur lors du rafraîchissement des rounds :", error);
-      }
+      fetchRounds(tournamentId)
+        .then(newRounds => setRounds(newRounds))
+        .catch(error => console.error("Erreur lors du rafraîchissement des rounds :", error));
     }
   }, [tournamentId]);
 
@@ -104,7 +101,7 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
       />
 
       {sortedGames.length === 0 ? (
-        <p className="text-gray-500">Aucun match valide trouvé pour ce round.</p>
+        <p className="text-gray-500">Aucun match trouvé pour ce round.</p>
       ) : (
         <div className="flex flex-col items-center space-y-4 w-full">
           {sortedGames.map(game => (

@@ -16,7 +16,7 @@ export default function CreateTournamentForm() {
       toast.success('Tournoi créé !');
       router.push(`/admin/tournament/${tournament.id}/players`);
     } catch (error) {
-      toast.error("Erreur lors de la création du tournoi.");
+      toast.error("Erreur lors de la création du tournoi : " + error);
     }
   };
 

@@ -3,8 +3,8 @@
 import React, { useState, useRef } from 'react';
 import 'react-clock/dist/Clock.css';
 import { setHours, setMinutes } from 'date-fns';
-import { PlayerPair } from '@/types/playerPair';
-import { Score } from '@/types/score';
+import { PlayerPair } from '@/src/types/playerPair';
+import { Score } from '@/src/types/score';
 import TeamScoreRow from '@/src/components/ui/TeamScoreRow';
 import { Edit3, Save, X } from 'lucide-react';
 import { updateGameDetails } from '@/src/api/tournamentApi';
@@ -16,7 +16,7 @@ interface Props {
   gameId: string;
   tournamentId: string;
   score?: Score;
-  onInfoSaved?: (result: { tournamentUpdated: boolean; winner: String | null }) => void;
+  onInfoSaved?: (result: { tournamentUpdated: boolean; winner: string | null }) => void;
   onTimeChanged?: (gameId: string, newTime: string) => void; // Nouvelle prop
   winnerSide?: number;
   stage?: string;

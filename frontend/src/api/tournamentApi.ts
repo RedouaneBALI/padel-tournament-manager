@@ -1,7 +1,8 @@
 import type { Round } from '@/src/types/round';
-import type { PlayerPair } from '@/src/types/PlayerPair';
-import type { Tournament } from '@/src/types/Tournament';
-import type { MatchFormat } from '@/src/types/MatchFormat';
+import type { PlayerPair } from '@/src/types/playerPair';
+import type { Tournament } from '@/src/types/tournament';
+import type { MatchFormat } from '@/src/types/matchFormat';
+import type { Score } from '@/src/types/score';
 
 const BASE_URL = 'http://localhost:8080/tournaments';
 
@@ -29,7 +30,7 @@ export async function fetchMatchFormat(tournamentId: string, currentStage: strin
   return await response.json();
 }
 
-export async function updateGameDetails(tournamentId: string, gameId: string, scorePayload: any, court: string, scheduledTime: string) {
+export async function updateGameDetails(tournamentId: string, gameId: string, scorePayload: Score, court: string, scheduledTime: string) {
   const response = await fetch(`${BASE_URL}/${tournamentId}/games/${gameId}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -89,7 +90,7 @@ export async function updateTournament(tournamentId: string, updatedTournament: 
   return await response.json();
 }
 
-export async function savePlayerPairs(tournamentId: number, pairs: PlayerPair[]) {
+export async function savePlayerPairs(tournamentId: string, pairs: PlayerPair[]) {
   const response = await fetch(`${BASE_URL}/${tournamentId}/pairs`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

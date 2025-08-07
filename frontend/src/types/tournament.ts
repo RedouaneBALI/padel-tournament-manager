@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Tournament } from '@/src/types/tournament';
+import type { Round } from '@/src/types/round';
+import type { PlayerPair } from '@/src/types/playerPair';
 
-// @todo duplicate of Tournament, to remove ?
-interface TournamentFormData {
+export interface Tournament {
+  id: number;
   name: string;
   description: string;
   city: string;
@@ -10,9 +10,11 @@ interface TournamentFormData {
   gender: string;
   level: string;
   tournamentFormat: string;
+  rounds: Round[];
   nbSeeds: number;
-  startDate: string;
-  endDate: string;
+  playerPairs: PlayerPair[];
+  startDate: string; // ISO format "yyyy-MM-dd"
+  endDate: string;   // ISO format "yyyy-MM-dd"
   nbMaxPairs: number;
   nbPools: number;
   nbPairsPerPool: number;

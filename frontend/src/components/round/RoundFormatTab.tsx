@@ -90,11 +90,8 @@ export default function RoundFormatTab({ tournamentId, pairs }: RoundFormatTabPr
                 rounds={rounds}
                 currentStageIndex={currentStageIndex}
                 matchFormat={matchFormat}
-                setRounds={setRounds}
-                setCurrentStageIndex={setCurrentStageIndex}
                 isLoading={isLoading}
                 setIsLoading={setIsLoading}
-                pairs={pairs}
               />
             </>
           )

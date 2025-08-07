@@ -1,11 +1,10 @@
 'use client';
 
-'use client';
-
 import { fetchPairs } from '@/src/api/tournamentApi';
 import { useEffect, useState } from 'react';
 import { PlayerPair } from '@/src/types/playerPair';
 import React from 'react';
+import PlayerPairList from '@/src/components/tournament/PlayerPairsList';
 
 export default function TournamentPlayersTab({ params }: {   params: Promise<{ id: string }>;}) {
   const { id } = React.use(params);
@@ -22,21 +21,7 @@ export default function TournamentPlayersTab({ params }: {   params: Promise<{ i
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4">Equipes inscrites</h2>
-
-      {playerPairs.length === 0 ? (
-        <p className="text-gray-500 italic">Aucune paire inscrite pour le moment.</p>
-      ) : (
-        <ul className="space-y-2">
-          {playerPairs.map((pair, index) => (
-            <li key={index} className="border rounded px-4 py-2 bg-gray-50 shadow-sm">
-              <span className="font-semibold text-primary">
-                {pair.seed && pair.seed > 0 ? `#${pair.seed} ` : ''}
-              </span>
-              {pair.player1.name} – {pair.player2.name}
-            </li>
-          ))}
-        </ul>
-      )}
+      <PlayerPairList pairs={playerPairs} />
     </div>
   );
 }

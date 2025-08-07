@@ -1,16 +1,15 @@
-'use client';
-
 import React from 'react';
-import { use } from 'react';
-import { PlayerPair } from '@/src/types/playerPair';
 import RoundFormatTab from '@/src/components/round/RoundFormatTab';
+import { fetchPairs } from '@/src/api/tournamentApi';
 
-interface PageProps {
-  params: Promise<{ id: string }>;
-  pairs: PlayerPair[];
-}
+type Props = {
+  params: Promise<{
+    id: string;
+  }>;
+};
 
-export default function MatchFormatConfigPage({ params, pairs }: PageProps) {
-  const { id } = use(params);
+export default async function MatchFormatConfigPage({ params }: Props) {
+  const { id } = await params;
+  const pairs = await fetchPairs(id);
   return <RoundFormatTab tournamentId={id} pairs={pairs} />;
 }

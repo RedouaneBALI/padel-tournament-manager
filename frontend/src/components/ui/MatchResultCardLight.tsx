@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { PlayerPair } from '@/types/playerPair';
-import { Score } from '@/types/score';
+import { PlayerPair } from '@/src/types/playerPair';
+import { Score } from '@/src/types/score';
 import TeamScoreRow from '@/src/components/ui/TeamScoreRow';
 
 interface Props {

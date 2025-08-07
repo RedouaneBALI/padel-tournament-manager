@@ -1,4 +1,4 @@
-import { PlayerPair } from '@/types/playerPair';
+import { PlayerPair } from '@/src/types/playerPair';
 
 export interface PoolRankingDetails {
   id?: number;

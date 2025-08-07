@@ -1,5 +1,5 @@
 export enum Stage {
-  GROUPS = 'Groupes',
+  GROUPS = 'GROUPS',  // Utiliser des valeurs cohérentes
   Q1 = 'Q1',
   Q2 = 'Q2',
   R64 = 'R64',
@@ -12,7 +12,7 @@ export enum Stage {
 }
 
 export const stageLabels: Record<Stage, string> = {
-  GROUPS : 'Groupes',
+  GROUPS: 'Groupes',
   Q1: 'Qualifications 1',
   Q2: 'Qualifications 2',
   R64: '1/32 de finale',

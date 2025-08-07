@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
-import io.github.redouanebali.dto.SimplePlayerPairDTO;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.TournamentRepository;
@@ -35,9 +34,9 @@ public class PlayerPairServiceTest {
     Tournament tournament = new Tournament();
     tournament.setId(1L);
 
-    SimplePlayerPairDTO       dto1    = new SimplePlayerPairDTO("Alice", "Bob", 1);
-    SimplePlayerPairDTO       dto2    = new SimplePlayerPairDTO("Charlie", "Dave", 2);
-    List<SimplePlayerPairDTO> dtoList = List.of(dto1, dto2);
+    PlayerPair       dto1    = new PlayerPair("Alice", "Bob", 1);
+    PlayerPair       dto2    = new PlayerPair("Charlie", "Dave", 2);
+    List<PlayerPair> dtoList = List.of(dto1, dto2);
 
     when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
     when(tournamentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));

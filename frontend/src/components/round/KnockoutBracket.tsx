@@ -1,4 +1,5 @@
 import MatchResultCardLight from '@/src/components/ui/MatchResultCardLight';
+import type { Round } from '@/src/types/round';
 
 interface KnockoutBracketProps {
   rounds: Round[];
@@ -66,10 +67,7 @@ export default function KnockoutBracket({ rounds, tournamentId }: KnockoutBracke
               <MatchResultCardLight
                 teamA={game.teamA}
                 teamB={game.teamB}
-                tournamentId={tournamentId}
-                gameId={game.id}
                 score={game.score}
-                editable={false}
                 winnerSide={
                   game.finished
                     ? game.winnerSide === 'TEAM_A'

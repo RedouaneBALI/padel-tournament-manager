@@ -48,32 +48,6 @@ export default function MatchFormatActions({
     (game) => !game.teamA && !game.teamB
   );
 
-  const handleDraw = () => {
-    confirmAlert({
-      title: 'Confirmer le tirage',
-      message:
-        'Êtes-vous sûr de vouloir générer le tirage ? Cette action créera tous les matchs du premier round.',
-      buttons: [
-        {
-          label: 'Oui',
-          onClick: async () => {
-            try {
-              await generateDraw(tournamentId);
-              toast.success("Tirage généré !");
-              router.push(`/admin/tournament/${tournamentId}/rounds/results`);
-            } catch {
-              toast.error("Tirage déjà effectué ou erreur serveur.");
-            }
-          },
-        },
-        {
-          label: 'Annuler',
-          onClick: () => {},
-        },
-      ],
-    });
-  };
-
   return (
     <div className="flex flex-col sm:flex-row gap-2 mt-4 sm:w-auto justify-center items-center">
       <button

@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
 import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
 import { fetchTournament } from '@/src/api/tournamentApi';
+import type { Round } from '@/src/types/round';
+import type { Tournament } from '@/src/types/tournament';
 import { toPng } from 'html-to-image';
 import KnockoutBracket from '@/src/components/round/KnockoutBracket';
 import GroupStageResults from '@/src/components/round/GroupStageResults';
+import { Stage } from '@/src/types/stage';
 
 // Fonction pour calculer la position verticale correcte de chaque match
 function calculateMatchPositions(rounds: Round[]) {
@@ -69,22 +72,52 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
   // Calculer la hauteur totale nécessaire
   const maxPosition = Math.max(...matchPositions.flat()) + 200; // +200 pour la hauteur du dernier match
 
-  const exportBracketAsImage = async () => {
-    const node = document.getElementById('bracket-container');
-    if (!node) return;
+const exportBracketAsImage = async () => {
+  const node = document.getElementById('bracket-container');
+  if (!node) return;
 
-    try {
-      const dataUrl = await toPng(node);
-      const link = document.createElement('a');
-      link.download = 'bracket.png';
-      link.href = dataUrl;
-      link.click();
-    } catch (err) {
-      console.error('Erreur lors de l’export en image :', err);
-    }
+  const originalStyle = {
+    overflow: node.style.overflow,
+    width: node.style.width,
+    height: node.style.height,
+    maxWidth: node.style.maxWidth,
   };
 
-  const isGroupStage = tournament?.rounds?.[0]?.stage === 'GROUPS';
+  try {
+    // Forcer la taille exacte du contenu scrollable
+    const scrollWidth = node.scrollWidth;
+    const scrollHeight = node.scrollHeight;
+
+    node.style.overflow = 'visible';
+    node.style.width = `${scrollWidth}px`;
+    node.style.height = `${scrollHeight}px`;
+    node.style.maxWidth = 'none';
+
+    // Attendre que le style soit bien appliqué
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    // Générer l'image PNG avec la taille complète
+    const dataUrl = await toPng(node, {
+      width: scrollWidth,
+      height: scrollHeight,
+    });
+
+    const link = document.createElement('a');
+    link.download = 'bracket.png';
+    link.href = dataUrl;
+    link.click();
+  } catch (err) {
+    console.error('Erreur lors de l’export en image :', err);
+  } finally {
+    // Restaurer les styles d'origine
+    node.style.overflow = originalStyle.overflow;
+    node.style.width = originalStyle.width;
+    node.style.height = originalStyle.height;
+    node.style.maxWidth = originalStyle.maxWidth;
+  }
+};
+
+  const isGroupStage = tournament?.rounds?.[0]?.stage === Stage.GROUPS;
   return isGroupStage ? (
     <GroupStageResults rounds={tournament.rounds} nbQualifiedByPool={tournament.nbQualifiedByPool} />
   ) : (

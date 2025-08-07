@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class Pool {
 
-  @OneToMany(cascade = CascadeType.ALL/*, orphanRemoval = true*/)
+  @OneToMany(cascade = CascadeType.ALL)
   @JoinColumn(name = "pool_id")
   private final Set<PlayerPair> pairs       = new LinkedHashSet<>();
   @Id
