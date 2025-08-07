@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -124,6 +125,31 @@ public class KnockoutRoundGeneratorTest {
 
     assertEquals(nbTeams / 2, games.size(),
                  "Le nombre de matchs doit être égal à nbTeams / 2");
+  }
+
+  @Test
+  void testGenerateManualRound() {
+
+    PlayerPair pairA = new PlayerPair(1L, new Player("A"), new Player("B"), 1);
+    PlayerPair pairB = new PlayerPair(2L, new Player("C"), new Player("D"), 2);
+    PlayerPair pairC = new PlayerPair(3L, new Player("E"), new Player("F"), 3);
+    PlayerPair pairD = new PlayerPair(4L, new Player("G"), new Player("H"), 4);
+
+    List<PlayerPair> pairs = List.of(pairA, pairB, pairC, pairD);
+
+    generator = new KnockoutRoundGenerator(0);
+    Round round = generator.generateManualRound(pairs);
+    // Vérifications
+    List<Game> games = round.getGames();
+    assertEquals(2, games.size());
+
+    Game game1 = games.get(0);
+    assertEquals(pairA, game1.getTeamA());
+    assertEquals(pairB, game1.getTeamB());
+
+    Game game2 = games.get(1);
+    assertEquals(pairC, game2.getTeamA());
+    assertEquals(pairD, game2.getTeamB());
   }
 
   private List<PlayerPair> createPairs(int count) {

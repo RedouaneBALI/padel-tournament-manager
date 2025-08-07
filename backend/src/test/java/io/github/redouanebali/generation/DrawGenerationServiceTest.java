@@ -1,4 +1,4 @@
-package io.github.redouanebali.service;
+package io.github.redouanebali.generation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.any;
@@ -6,8 +6,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.github.redouanebali.generation.GroupRoundGenerator;
-import io.github.redouanebali.generation.KnockoutRoundGenerator;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
@@ -15,6 +13,8 @@ import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.TournamentFormat;
 import io.github.redouanebali.repository.TournamentRepository;
+import io.github.redouanebali.service.DrawGenerationService;
+import io.github.redouanebali.service.TournamentProgressionService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +39,7 @@ class DrawGenerationServiceTest {
   }
 
   @Test
-  void testGenerateDraw_Knockout() {
+  void testGenerateDrawAlgorithmicKnockout() {
     Tournament tournament = new Tournament();
     tournament.setId(1L);
     tournament.setTournamentFormat(TournamentFormat.KNOCKOUT);
@@ -72,7 +72,7 @@ class DrawGenerationServiceTest {
   }
 
   @Test
-  void testGenerateDraw_GroupStage() {
+  void testGenerateDrawDrawGroupStage() {
     Tournament tournament = new Tournament();
     tournament.setId(2L);
     tournament.setTournamentFormat(TournamentFormat.GROUP_STAGE);
@@ -96,7 +96,7 @@ class DrawGenerationServiceTest {
 
     when(tournamentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-    Tournament updated = drawGenerationService.generateDraw(tournament, false);
+    Tournament updated = drawGenerationService.generateDraw(tournament, true);
 
     assertEquals(tournament, updated);
     verify(tournamentRepository).save(tournament);

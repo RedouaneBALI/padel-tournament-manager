@@ -4,7 +4,6 @@ import io.github.redouanebali.generation.AbstractRoundGenerator;
 import io.github.redouanebali.generation.GroupRoundGenerator;
 import io.github.redouanebali.generation.KnockoutRoundGenerator;
 import io.github.redouanebali.model.Game;
-import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
@@ -23,12 +22,8 @@ public class TournamentService {
 
 
   private final TournamentRepository tournamentRepository;
-
-  private final TournamentProgressionService progressionService;
-
+  
   private final DrawGenerationService drawGenerationService;
-
-  private final PlayerPairService playerPairService;
 
   public Tournament getTournamentById(Long id) {
     return tournamentRepository.findById(id)
@@ -93,27 +88,6 @@ public class TournamentService {
     return drawGenerationService.generateDraw(tournament, manual);
   }
 
-  private void updatePools(Round existingRound, Round newRound) {
-    for (Pool pool : existingRound.getPools()) {
-      for (Pool newPool : newRound.getPools()) {
-        if (pool.getName().equals(newPool.getName())) {
-          pool.initPairs(newPool.getPairs());
-        }
-      }
-    }
-  }
-
-  private void updateGames(Round existingRound, Round newRound) {
-    List<Game> existingGames = existingRound.getGames();
-    List<Game> newGames      = newRound.getGames();
-    for (int i = 0; i < existingGames.size() && i < newGames.size(); i++) {
-      Game existingGame = existingGames.get(i);
-      Game newGame      = newGames.get(i);
-      existingGame.setTeamA(newGame.getTeamA());
-      existingGame.setTeamB(newGame.getTeamB());
-    }
-  }
-
   public Set<Game> getGamesByTournamentAndStage(Long tournamentId, Stage stage) {
     Tournament tournament = getTournamentById(tournamentId);
 
@@ -123,13 +97,6 @@ public class TournamentService {
                             .orElseThrow(() -> new IllegalArgumentException("Round not found for stage: " + stage));
 
     return new LinkedHashSet<>(round.getGames());
-  }
-
-  private Round getRoundByStage(Tournament tournament, Stage stage) {
-    return tournament.getRounds().stream()
-                     .filter(r -> r.getStage() == stage)
-                     .findFirst()
-                     .orElseThrow(() -> new IllegalArgumentException("Round not found for stage: " + stage));
   }
 
 }

@@ -24,8 +24,68 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
 
   @Override
   public Round generateAlgorithmicRound(final List<PlayerPair> pairs) {
-    // @todo
-    return null;
+    Round round = new Round();
+    round.setStage(Stage.GROUPS);
+
+    // Create groups and assign names
+    for (int i = 0; i < nbPools; i++) {
+      Pool pool = new Pool();
+      pool.setName("" + (char) ('A' + i));
+      round.getPools().add(pool);
+    }
+
+    // Distribute seeds algorithmically
+    if (this.getNbSeeds() > 0) {
+      // Distribute seeds in zigzag pattern to balance pools
+      List<Pool> pools     = new ArrayList<>(round.getPools());
+      boolean    forward   = true;
+      int        poolIndex = 0;
+
+      for (int i = 0; i < this.getNbSeeds(); i++) {
+        PlayerPair pair = pairs.get(i);
+        pools.get(poolIndex).addPair(pair);
+
+        if (forward) {
+          poolIndex++;
+          if (poolIndex >= pools.size()) {
+            poolIndex = pools.size() - 1;
+            forward   = false;
+          }
+        } else {
+          poolIndex--;
+          if (poolIndex < 0) {
+            poolIndex = 0;
+            forward   = true;
+          }
+        }
+      }
+      // Assign remaining pairs to pools in block order
+      int index = this.getNbSeeds();
+      outer:
+      for (Pool pool : pools) {
+        while (pool.getPairs().size() < nbTeamPerPool) {
+          if (index >= pairs.size()) {
+            break outer;
+          }
+          pool.addPair(pairs.get(index++));
+        }
+      }
+    } else {
+      // Assign player pairs to each group in block order (not round-robin)
+      List<Pool> pools = round.getPools().stream().toList();
+      int        index = 0;
+      for (Pool pool : pools) {
+        for (int j = 0; j < nbTeamPerPool; j++) {
+          if (index < pairs.size()) {
+            pool.addPair(pairs.get(index++));
+          }
+        }
+      }
+    }
+
+    generateGroupGames(round);
+
+    return round;
   }
 
   @Override

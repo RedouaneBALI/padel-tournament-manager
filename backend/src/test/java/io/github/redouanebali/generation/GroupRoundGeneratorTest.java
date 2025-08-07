@@ -24,18 +24,59 @@ public class GroupRoundGeneratorTest {
       "20,5,4,30", // 5 groups of 4 => 6 games per group, total = 30
       "18,6,3,18"  // 6 groups of 3 => 3 games per group, total = 18
   })
-  public void checkPoolGeneration(int nbPairs, int expectedGroups, int expectedPairsPerGroup, int expectedNbGames) {
+  public void checkManualPoolGeneration(int nbPairs, int expectedGroups, int expectedPairsPerGroup, int expectedNbGames) {
     generator = new GroupRoundGenerator(0, expectedGroups, expectedPairsPerGroup);
-    Round round = generator.generateManualRound(createPairs(nbPairs));
+    List<PlayerPair> pairs = createPairs(nbPairs);
+    Round            round = generator.generateManualRound(pairs);
 
     assertEquals(expectedGroups, round.getPools().size());
+    int index = 0;
     for (Pool pool : round.getPools()) {
-      System.out.println(pool);
       assertEquals(expectedPairsPerGroup, pool.getPairs().size());
+      for (PlayerPair pair : pool.getPairs()) {
+        assertEquals(pairs.get(index++), pair, "Player pair order mismatch at index " + (index - 1));
+      }
     }
 
     assertEquals(expectedNbGames, round.getGames().size());
   }
+
+  @ParameterizedTest
+  @CsvSource({
+      "3,3,3,'1|2|3'",
+      "6,3,3,'1-6|2-5|3-4'",
+      "4,4,3,'1|2|3|4'",
+      "4,4,4,'1|2|3|4'",
+      "8,4,3,'1-8|2-7|3-6|4-5'",
+      "8,4,4,'1-8|2-7|3-6|4-5'",
+      "2,2,5,'1|2|'",
+      "4,2,5,'1-4|2-3|'",
+  })
+  public void checkAlgorithmicPoolGeneration(int nbSeeds, int nbPools, int nbTeamPerPool, String expectedSeedsStr) {
+    int totalPairs = nbPools * nbTeamPerPool;
+    generator = new GroupRoundGenerator(nbSeeds, nbPools, nbTeamPerPool);
+    List<PlayerPair> pairs = createPairs(totalPairs);
+    Round            round = generator.generateAlgorithmicRound(pairs);
+
+    assertEquals(nbPools, round.getPools().size());
+
+    List<Pool> pools         = new ArrayList<>(round.getPools());
+    String[]   expectedPools = expectedSeedsStr.split("\\|");
+    for (int i = 0; i < expectedPools.length; i++) {
+      String[]      seedStrings      = expectedPools[i].split("-");
+      List<Integer> expectedSeedList = new ArrayList<>();
+      for (String s : seedStrings) {
+        expectedSeedList.add(Integer.parseInt(s));
+      }
+      List<PlayerPair> poolPairs   = new ArrayList<>(pools.get(i).getPairs());
+      List<Integer>    actualSeeds = poolPairs.stream().map(PlayerPair::getSeed).toList();
+      for (int expectedSeed : expectedSeedList) {
+        assert actualSeeds.contains(expectedSeed) : "Expected seed " + expectedSeed + " in pool " + i + ", but found seeds " + actualSeeds;
+      }
+      assertEquals(nbTeamPerPool, poolPairs.size(), "Expected " + nbTeamPerPool + " pairs in pool " + i);
+    }
+  }
+
 
   private List<PlayerPair> createPairs(int count) {
     List<PlayerPair> pairs = new ArrayList<>();

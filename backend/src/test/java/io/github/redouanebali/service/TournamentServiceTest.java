@@ -26,15 +26,11 @@ public class TournamentServiceTest {
   @BeforeEach
   void setUp() {
     tournamentRepository  = mock(TournamentRepository.class);
-    progressionService    = mock(TournamentProgressionService.class);
     drawGenerationService = mock(DrawGenerationService.class);
-    playerPairService     = mock(PlayerPairService.class);
 
     tournamentService = new TournamentService(
         tournamentRepository,
-        progressionService,
-        drawGenerationService,
-        playerPairService
+        drawGenerationService
     );
   }
 
