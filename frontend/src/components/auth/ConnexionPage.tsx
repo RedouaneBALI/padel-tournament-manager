@@ -3,6 +3,7 @@
 import { signOut, useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 
 export default function ConnexionPage() {
   const { data: session, status } = useSession();
@@ -37,7 +38,9 @@ export default function ConnexionPage() {
         ) : (
           <div className="flex justify-center">
             <button
-              onClick={() => { window.location.href = "/api/auth/signin/google"; }}
+              onClick={() =>
+                signIn('google', { redirect: true, callbackUrl: '/admin/tournament/new' })
+              }
               className="flex items-center justify-center gap-2 px-5 py-2 text-base bg-white border border-gray-300 rounded hover:bg-gray-100 transition"
             >
               <img src="/google-logo.svg" alt="Google" className="w-5 h-5" />

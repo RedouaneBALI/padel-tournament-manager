@@ -10,3 +10,5 @@ public class PadelTournamentManagerApplication {
     SpringApplication.run(PadelTournamentManagerApplication.class, args);
   }
 }
+
+// gcloud run services logs read padel-backend --region us-central1 --limit 200

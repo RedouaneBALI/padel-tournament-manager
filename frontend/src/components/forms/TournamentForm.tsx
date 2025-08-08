@@ -66,7 +66,6 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
     try {
       const tournament = payload as Tournament;
       await onSubmit(tournament);
-      toast.success(isEditing ? "Tournoi mis à jour avec succès!" : "Tournoi créé avec succès!");
     } catch (error) {
       console.error(error);
       toast.error("Une erreur s'est produite lors de l'opération.");

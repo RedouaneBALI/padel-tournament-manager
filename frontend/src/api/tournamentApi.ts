@@ -3,8 +3,9 @@ import type { PlayerPair } from '@/src/types/playerPair';
 import type { Tournament } from '@/src/types/tournament';
 import type { MatchFormat } from '@/src/types/matchFormat';
 import type { Score } from '@/src/types/score';
+import { fetchWithAuth } from "./fetchWithAuth";
 
-const BASE_URL = 'http://localhost:8080/tournaments';
+const BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').replace(/\/$/, '');
 
 export async function fetchTournament(tournamentId : string) : Promise<Tournament> {
   const response = await fetch(`${BASE_URL}/${tournamentId}`);
@@ -62,18 +63,21 @@ export async function updateMatchFormat(tournamentId: string, stage: string, mat
   return await response.json();
 }
 
-export async function createTournament(newTournament: Tournament): Promise<Tournament> {
-  const response = await fetch(`${BASE_URL}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(newTournament),
+/**
+ * Crée un tournoi.
+ * @param newTournament payload
+ * @param idToken id_token Google (JWT) à mettre dans Authorization (Bearer)
+ */
+export async function createTournament(payload: Tournament) {
+  const res = await fetchWithAuth(`${BASE_URL}/admin/tournaments`, {
+    method: "POST",
+    body: JSON.stringify(payload),
   });
-
-  if (!response.ok) {
-    throw new Error('Erreur lors de la création du tournoi');
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Erreur création (${res.status}) ${text}`);
   }
-
-  return await response.json();
+  return res.json();
 }
 
 export async function updateTournament(tournamentId: string, updatedTournament: Tournament) {
