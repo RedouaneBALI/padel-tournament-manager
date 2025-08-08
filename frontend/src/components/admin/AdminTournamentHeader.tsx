@@ -13,7 +13,7 @@ interface Props {
 
 export default function AdminTournamentHeader({ tournament, tournamentId }: Props) {
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = usePathname() ?? '';
 
   const handleCopyLink = () => {
     const shareUrl = `http://localhost:3000/tournament/${tournamentId}`;
