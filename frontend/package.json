@@ -2,18 +2,21 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+  "engines": {
+    "node": "20"
   },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "build:functions": "NODE_ENV=production next build && rm -rf .firebase/functions/.next && cp -r .next .firebase/functions/ && cp -r public .firebase/functions/"  },
   "dependencies": {
+    "@firebase/app": "^0.14.1",
     "@heroicons/react": "^2.2.0",
     "@radix-ui/react-switch": "^1.2.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "firebase": "^12.1.0",
     "heroicons": "^2.2.0",
     "html-to-image": "^1.11.13",
     "lucide-react": "^0.525.0",
@@ -32,7 +35,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4.1.11",
-    "@types/node": "^20",
+    "@types/node": "^18",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.21",

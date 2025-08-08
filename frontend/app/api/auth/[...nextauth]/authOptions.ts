@@ -1,6 +1,19 @@
 import { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 
+// Vérification de la présence du secret
+const nextAuthSecret = process.env.NEXTAUTH_SECRET;
+console.log("authOptions.ts: NEXTAUTH_SECRET AT BUILD:", process.env.NEXTAUTH_SECRET);
+if (!nextAuthSecret) {
+  if (process.env.NODE_ENV === 'production') {
+    console.log("authOptions.ts: process:", process);
+    console.log("authOptions.ts: process.env:", process.env);
+    throw new Error('NEXTAUTH_SECRET is not defined in production!');
+  } else {
+    console.warn('NEXTAUTH_SECRET is not defined. Using fallback value for development only!');
+  }
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
@@ -8,7 +21,7 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: nextAuthSecret || 'dev-secret',
   session: {
     strategy: "jwt",
   },

@@ -11,6 +11,7 @@ frontend/yarn-debug.log*
 frontend/yarn-error.log*
 frontend/.eslintcache
 frontend/package-lock.json # facultatif selon ta stratégie de lockfile
+frontend/.firebase/functions/node_modules/
 .env.local
 # === BACKEND (Java / Maven / Spring Boot) ===
 backend/target/
