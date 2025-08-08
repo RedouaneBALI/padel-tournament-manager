@@ -43,7 +43,6 @@ export default function MatchResultCard({
   const [localCourt, setLocalCourt] = useState(court || 'Court central');
   const [localScheduledTime, setLocalScheduledTime] = useState(scheduledTime || '00:00');
   const [editing, setEditing] = useState(false);
-  console.log(pool); // always undefined
   const [scores, setScores] = useState<string[][]>(() => {
     const initialScores: string[][] = [[], []];
     for (let i = 0; i < 3; i++) {

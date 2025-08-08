@@ -4,8 +4,8 @@ import "./globals.css";
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import SessionProviderWrapper from './SessionProviderWrapper';
 import LogoutButton from '@/src/components/auth/LogoutButton';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/authOptions';
+import { getServerSession } from "next-auth";
+import { getAuthOptions } from "@/src/lib/authOptions";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,8 +23,7 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const session = await getServerSession(authOptions);
-
+  const session = await getServerSession(getAuthOptions());
   return (
     <html lang="fr">
       <body>
