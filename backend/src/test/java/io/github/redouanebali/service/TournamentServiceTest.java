@@ -16,11 +16,10 @@ import org.junit.jupiter.api.Test;
 
 public class TournamentServiceTest {
 
-  private TournamentService            tournamentService;
-  private TournamentRepository         tournamentRepository;
-  private TournamentProgressionService progressionService;
-  private DrawGenerationService        drawGenerationService;
-  private PlayerPairService            playerPairService;
+  private TournamentService     tournamentService;
+  private TournamentRepository  tournamentRepository;
+  private DrawGenerationService drawGenerationService;
+  private PlayerPairService     playerPairService;
 
   @BeforeEach
   void setUp() {

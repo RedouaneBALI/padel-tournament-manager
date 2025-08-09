@@ -182,4 +182,8 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
     }
   }
 
+  @Override
+  public void propagateWinners(final List<Round> sortedRounds) {
+    System.out.println("to implement");
+  }
 }

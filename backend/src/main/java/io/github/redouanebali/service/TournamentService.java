@@ -1,8 +1,6 @@
 package io.github.redouanebali.service;
 
 import io.github.redouanebali.generation.AbstractRoundGenerator;
-import io.github.redouanebali.generation.GroupRoundGenerator;
-import io.github.redouanebali.generation.KnockoutRoundGenerator;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
@@ -53,7 +51,7 @@ public class TournamentService {
 
     // Generate rounds before the first save to avoid replacing a Hibernate-managed collection
     if (tournament.getNbMaxPairs() > 1) {
-      AbstractRoundGenerator generator = getGenerator(tournament);
+      AbstractRoundGenerator generator = AbstractRoundGenerator.of(tournament);
       List<Round>            rounds    = generator.initRoundsAndGames(tournament);
 
       // IMPORTANT: Don't use replaceRounds() - manipulate the collection directly
@@ -72,13 +70,6 @@ public class TournamentService {
     return savedTournament;
   }
 
-  private AbstractRoundGenerator getGenerator(Tournament tournament) {
-    return switch (tournament.getTournamentFormat()) {
-      case KNOCKOUT -> new KnockoutRoundGenerator(tournament.getNbSeeds());
-      case GROUP_STAGE -> new GroupRoundGenerator(tournament.getNbSeeds(), tournament.getNbPools(), tournament.getNbPairsPerPool());
-      default -> new KnockoutRoundGenerator(tournament.getNbSeeds());
-    };
-  }
 
   @Transactional
   public Tournament updateTournament(Long tournamentId, Tournament updatedTournament) {

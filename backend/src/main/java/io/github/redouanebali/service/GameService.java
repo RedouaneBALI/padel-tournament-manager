@@ -2,6 +2,7 @@ package io.github.redouanebali.service;
 
 import io.github.redouanebali.dto.GameUpdateRequest;
 import io.github.redouanebali.dto.ScoreUpdateResponse;
+import io.github.redouanebali.generation.AbstractRoundGenerator;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.TeamSide;
@@ -14,9 +15,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class GameService {
 
-  private final TournamentRepository         tournamentRepository;
-  private final TournamentProgressionService progressionService;
-  private final TournamentService            tournamentService;
+  private final TournamentRepository tournamentRepository;
+  private final TournamentService    tournamentService;
 
   public ScoreUpdateResponse updateGameScore(Long tournamentId, Long gameId, Score score) {
     Tournament tournament = tournamentService.getTournamentById(tournamentId);
@@ -41,7 +41,7 @@ public class GameService {
 
     TeamSide winner = null;
     if (game.isFinished()) {
-      progressionService.propagateWinners(tournament);
+      AbstractRoundGenerator.of(tournament).propagateWinners(tournament.getRounds());
       winner = game.getWinner().equals(game.getTeamA()) ? TeamSide.TEAM_A : TeamSide.TEAM_B;
     }
 

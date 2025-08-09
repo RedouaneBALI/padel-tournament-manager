@@ -14,21 +14,19 @@ import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.TournamentFormat;
 import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.service.DrawGenerationService;
-import io.github.redouanebali.service.TournamentProgressionService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 class DrawGenerationServiceTest {
 
   @Mock
   private TournamentRepository tournamentRepository;
-
-  @Mock
-  private TournamentProgressionService progressionService;
 
   @InjectMocks
   private DrawGenerationService drawGenerationService;
@@ -57,20 +55,25 @@ class DrawGenerationServiceTest {
     tournament.getRounds().clear();
     tournament.getRounds().add(existingRound);
 
-    KnockoutRoundGenerator generator = new KnockoutRoundGenerator(2);
-    Round                  newRound  = generator.generateAlgorithmicRound(tournament.getPlayerPairs());
-
-    // inject the same stage to match
+    // Prepare a mock generator and stub the static factory
+    AbstractRoundGenerator generatorMock = Mockito.mock(KnockoutRoundGenerator.class);
+    Round                  newRound      = new Round();
     newRound.setStage(Stage.SEMIS);
 
-    // Mock the repository save
-    when(tournamentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+    try (MockedStatic<AbstractRoundGenerator> mocked = Mockito.mockStatic(AbstractRoundGenerator.class)) {
+      mocked.when(() -> AbstractRoundGenerator.of(tournament)).thenReturn(generatorMock);
+      when(generatorMock.generateAlgorithmicRound(any())).thenReturn(newRound);
 
-    Tournament updated = drawGenerationService.generateDraw(tournament, false);
+      // Mock the repository save
+      when(tournamentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-    assertEquals(tournament, updated);
-    verify(tournamentRepository).save(tournament);
-    verify(progressionService).propagateWinners(tournament);
+      Tournament updated = drawGenerationService.generateDraw(tournament, false);
+
+      assertEquals(tournament, updated);
+      verify(tournamentRepository).save(tournament);
+      verify(generatorMock).generateAlgorithmicRound(any());
+      verify(generatorMock).propagateWinners(tournament.getRounds());
+    }
   }
 
   @Test
@@ -88,22 +91,28 @@ class DrawGenerationServiceTest {
     tournament.getPlayerPairs().clear();
     tournament.getPlayerPairs().addAll(List.of(pair1, pair2, pair3));
 
-    GroupRoundGenerator generator = new GroupRoundGenerator(3, 1, 3);
-    Round               newRound  = generator.generateManualRound(tournament.getPlayerPairs());
-    newRound.setStage(Stage.GROUPS);
-
     Round existingRound = new Round();
     existingRound.setStage(Stage.GROUPS);
 
     tournament.getRounds().clear();
     tournament.getRounds().add(existingRound);
 
-    when(tournamentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+    AbstractRoundGenerator generatorMock = Mockito.mock(GroupRoundGenerator.class);
+    Round                  newRound      = new Round();
+    newRound.setStage(Stage.GROUPS);
 
-    Tournament updated = drawGenerationService.generateDraw(tournament, true);
+    try (MockedStatic<AbstractRoundGenerator> mocked = Mockito.mockStatic(AbstractRoundGenerator.class)) {
+      mocked.when(() -> AbstractRoundGenerator.of(tournament)).thenReturn(generatorMock);
+      when(generatorMock.generateManualRound(any())).thenReturn(newRound);
 
-    assertEquals(tournament, updated);
-    verify(tournamentRepository).save(tournament);
-    verify(progressionService, never()).propagateWinners(tournament);
+      when(tournamentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+      Tournament updated = drawGenerationService.generateDraw(tournament, true);
+
+      assertEquals(tournament, updated);
+      verify(tournamentRepository).save(tournament);
+      verify(generatorMock).generateManualRound(any());
+      verify(generatorMock, never()).propagateWinners(any());
+    }
   }
 }

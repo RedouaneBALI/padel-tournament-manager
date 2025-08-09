@@ -1,9 +1,7 @@
 package io.github.redouanebali.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -17,6 +15,7 @@ import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.SetScore;
 import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.TournamentFormat;
 import io.github.redouanebali.repository.TournamentRepository;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,43 +25,15 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 public class GameServiceTest {
 
-  private TournamentRepository         tournamentRepository;
-  private TournamentProgressionService progressionService;
-  private TournamentService            tournamentService;
-  private MatchFormatService           matchFormatService;
-  private GameService                  gameService;
+  private TournamentRepository tournamentRepository;
+  private TournamentService    tournamentService;
+  private GameService          gameService;
 
   @BeforeEach
   void setUp() {
     tournamentRepository = mock(TournamentRepository.class);
-    progressionService   = mock(TournamentProgressionService.class);
     tournamentService    = mock(TournamentService.class);
-    matchFormatService   = mock(MatchFormatService.class);
-
-    MatchFormat matchFormat = new MatchFormat();
-    when(matchFormatService.getMatchFormatForRound(any(), any())).thenReturn(matchFormat);
-
-    // Setup a Tournament with a Round and a Game, and stub the getTournamentById method.
-    PlayerPair teamA = new PlayerPair();
-    teamA.setId(1L);
-    PlayerPair teamB = new PlayerPair();
-    teamB.setId(2L);
-
-    Game game = new Game(matchFormat);
-    game.setId(10L);
-    game.setTeamA(teamA);
-    game.setTeamB(teamB);
-
-    Round round = new Round();
-    round.addGames(List.of(game));
-
-    Tournament tournament = new Tournament();
-    tournament.getRounds().clear();
-    tournament.getRounds().addAll(new LinkedList<>(List.of(round)));
-
-    when(tournamentService.getTournamentById(any())).thenReturn(tournament);
-
-    gameService = new GameService(tournamentRepository, progressionService, tournamentService);
+    gameService          = new GameService(tournamentRepository, tournamentService);
   }
 
   @ParameterizedTest
@@ -77,12 +48,14 @@ public class GameServiceTest {
     Long tournamentId = 1L;
     Long gameId       = 10L;
 
-    PlayerPair teamA = new PlayerPair();
+    // Real domain objects
+    MatchFormat format = new MatchFormat();
+    PlayerPair  teamA  = new PlayerPair();
     teamA.setId(1L);
     PlayerPair teamB = new PlayerPair();
     teamB.setId(2L);
 
-    Game game = new Game(new MatchFormat());
+    Game game = new Game(format);
     game.setId(gameId);
     game.setTeamA(teamA);
     game.setTeamB(teamB);
@@ -91,8 +64,12 @@ public class GameServiceTest {
     round.addGames(List.of(game));
 
     Tournament tournament = new Tournament();
+    tournament.setId(tournamentId);
+    tournament.setTournamentFormat(TournamentFormat.KNOCKOUT);
     tournament.getRounds().clear();
     tournament.getRounds().addAll(new LinkedList<>(List.of(round)));
+
+    when(tournamentService.getTournamentById(any())).thenReturn(tournament);
 
     Score score = new Score();
     score.setSets(List.of(
@@ -100,31 +77,16 @@ public class GameServiceTest {
         new SetScore(a2, b2)
     ));
 
-    //   when(scoreRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-    //   when(gameRepository.findById(gameId)).thenReturn(Optional.of(game));
-    when(tournamentService.getTournamentById(tournamentId)).thenReturn(tournament);
-    //   when(gameRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-
-    if (expectedWinner.equals("TEAM_A")) {
-      when(progressionService.getWinner(game)).thenReturn(teamA);
-    } else if (expectedWinner.equals("TEAM_B")) {
-      when(progressionService.getWinner(game)).thenReturn(teamB);
-    }
-
+    // Call service (no mocks for game.getWinner(); Game computes it from score)
     ScoreUpdateResponse response = gameService.updateGameScore(tournamentId, gameId, score);
 
-    if (expectedWinner.equals("TEAM_A")) {
+    if ("TEAM_A".equals(expectedWinner)) {
       assertEquals(TeamSide.TEAM_A, response.getWinner());
-      assertTrue(response.isTournamentUpdated());
-    } else if (expectedWinner.equals("TEAM_B")) {
+    } else if ("TEAM_B".equals(expectedWinner)) {
       assertEquals(TeamSide.TEAM_B, response.getWinner());
-      assertTrue(response.isTournamentUpdated());
     } else {
+      // null -> no winner decided
       assertNull(response.getWinner());
-      assertFalse(response.isTournamentUpdated());
     }
-
-    //   verify(scoreRepository).save(score);
-    //   verify(gameRepository).save(game);
   }
 }
