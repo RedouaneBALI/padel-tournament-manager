@@ -50,7 +50,7 @@ export default function KnockoutBracket({ rounds, tournamentId }: KnockoutBracke
     >
       {rounds.map((round, roundIndex) => (
         <div key={round.id} className="relative" style={{ width: ROUND_WIDTH }}>
-          <div className="absolute top-0 left-0 right-0 text-center mb-4 text-sm font-semibold text-blue-600">
+          <div className="absolute top-0 left-0 right-0 text-center mb-4 text-sm font-semibold border-b-2 border-[#1b2d5e] text-primary">
             {round.stage}
           </div>
 

@@ -9,7 +9,6 @@ import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class GroupRoundGenerator extends AbstractRoundGenerator implements RoundGenerator {
 
@@ -118,6 +117,9 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
   }
 
   public List<Round> initRoundsAndGames(final Tournament tournament) {
+    List<Round> rounds = new ArrayList<>();
+
+    // group phase
     Round round = new Round();
     round.setStage(Stage.GROUPS);
 
@@ -136,12 +138,37 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
       for (int j = 0; j < nbMatches; j++) {
         Game newGame = new Game(sharedFormat);
         newGame.setPool(pool);
-        games.add(newGame); // Partager le même MatchFormat
+        games.add(newGame);
       }
-      round.addGames(games); // Assumant que vous avez cette méthode
+      round.addGames(games);
     }
+    rounds.add(round);
 
-    return new ArrayList<>(Set.of(round));
+    // finale phase
+    int   nbTeamsInFinaleBracket = tournament.getNbPools() * tournament.getNbQualifiedByPool();
+    Stage current                = Stage.fromNbTeams(nbTeamsInFinaleBracket);
+    while (current != null && current != Stage.WINNER) {
+      round = new Round(current);
+
+      MatchFormat matchFormat = round.getMatchFormat();
+      if (matchFormat != null && matchFormat.getId() == null) {
+        round.setMatchFormat(matchFormat);
+      }
+
+      int nbMatches = current.getNbTeams() / 2;
+
+      List<Game> games = new ArrayList<>();
+      for (int i = 0; i < nbMatches; i++) {
+        Game game = new Game(matchFormat);
+        games.add(game);
+      }
+
+      round.addGames(games);
+      rounds.add(round);
+
+      current = current.next();
+    }
+    return new ArrayList<>(rounds);
   }
 
   private void generateGroupGames(Round round) {

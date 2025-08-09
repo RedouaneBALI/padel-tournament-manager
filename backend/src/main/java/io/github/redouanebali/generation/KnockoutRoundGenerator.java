@@ -214,17 +214,5 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
     return rounds;
   }
 
-  private void addMissingByePairsToReachPowerOfTwo(List<PlayerPair> pairs, int originalSize) {
-    int powerOfTwo = 1;
-    while (powerOfTwo < originalSize) {
-      powerOfTwo *= 2;
-    }
-    int missing = powerOfTwo - originalSize;
 
-    for (int i = 0; i < missing; i++) {
-      PlayerPair bye = PlayerPair.bye();
-      //    persistPairIfNeeded(bye);
-      pairs.add(bye);
-    }
-  }
 }

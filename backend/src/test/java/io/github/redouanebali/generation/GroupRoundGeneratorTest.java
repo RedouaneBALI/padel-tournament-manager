@@ -6,6 +6,7 @@ import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.Tournament;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -106,5 +107,43 @@ public class GroupRoundGeneratorTest {
     Round               round     = rounds.iterator().next();
 
     assertEquals(expectedNbGames, round.getGames().size());
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+      // nbPools, nbPairsPerPool, nbQualifiedByPool, expectedFinalRoundsCount, expectedFirstFinalRoundMatches
+      "4,4,1,2,2", // 4 pools of 4, 1 qualified -> 4 teams => Semi (2) + Final (1)
+      "4,4,2,3,4", // 4 pools of 4, 2 qualified -> 8 teams => Quarter (4) + Semi (2) + Final (1)
+      "4,4,4,4,8", // 4 pools of 4, 4 qualified -> 16 teams => R16 (8) + QF (4) + SF (2) + F (1)
+      "4,3,1,2,2", // 4 pools of 3, 1 qualified -> 4 teams => Semi (2) + Final (1)
+      "4,3,2,3,4",  // 4 pools of 3, 2 qualified -> 8 teams => Quarter (4) + Semi (2) + Final (1)
+      "2,4,1,1,1"  // 2 pools of 4, 1 qualified -> 2 teams => Final (1)
+  })
+  public void testFinalBracketCreation(int nbPools, int nbPairsPerPool, int nbQualifiedByPool,
+                                       int expectedFinalRoundsCount, int expectedFirstFinalRoundMatches) {
+    Tournament tournament = new Tournament();
+    tournament.setNbPools(nbPools);
+    tournament.setNbPairsPerPool(nbPairsPerPool);
+    tournament.setNbQualifiedByPool(nbQualifiedByPool);
+
+    GroupRoundGenerator generator = new GroupRoundGenerator(0, nbPools, nbPairsPerPool);
+    List<Round>         rounds    = generator.initRoundsAndGames(tournament);
+
+    // There must always be 1 group phase round first
+    assertEquals(1 + expectedFinalRoundsCount, rounds.size(),
+                 "Unexpected total number of rounds (group + finals)");
+
+    Round groupRound = rounds.get(0);
+    assertEquals(nbPools * (nbPairsPerPool * (nbPairsPerPool - 1) / 2), groupRound.getGames().size(),
+                 "Incorrect number of group-phase games");
+
+    // Check first finals round exists and has the expected number of matches
+    Round firstFinalsRound = rounds.get(1);
+    assertEquals(expectedFirstFinalRoundMatches, firstFinalsRound.getGames().size(),
+                 "Incorrect number of matches in the first finals round");
+
+    // The last finals round must always be the Final with exactly 1 match
+    Round lastRound = rounds.get(rounds.size() - 1);
+    assertEquals(1, lastRound.getGames().size(), "The last round should be the Final with exactly 1 match");
   }
 }

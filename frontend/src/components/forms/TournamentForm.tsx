@@ -26,8 +26,8 @@ const getInitialFormData = (initialData?: Partial<Tournament>): TournamentFormDa
     startDate: '',
     endDate: '',
     nbMaxPairs: 32,
-    nbPools: 3,
-    nbPairsPerPool: 3,
+    nbPools: 4,
+    nbPairsPerPool: 4,
     nbQualifiedByPool: 2,
   };
 

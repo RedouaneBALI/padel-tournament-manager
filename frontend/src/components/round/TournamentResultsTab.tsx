@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+ "use client";
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
 import { fetchTournament } from '@/src/api/tournamentApi';
 import type { Round } from '@/src/types/round';
@@ -7,6 +8,10 @@ import { toPng } from 'html-to-image';
 import KnockoutBracket from '@/src/components/round/KnockoutBracket';
 import GroupStageResults from '@/src/components/round/GroupStageResults';
 import { Stage } from '@/src/types/stage';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+
+const VIEW_CLASSEMENT = 'classement';
+const VIEW_PHASE_FINALE = 'phase-finale';
 
 // Fonction pour calculer la position verticale correcte de chaque match
 function calculateMatchPositions(rounds: Round[]) {
@@ -50,6 +55,10 @@ interface TournamentResultsTabProps {
 export default function TournamentResultsTab({ tournamentId}: TournamentResultsTabProps) {
   const [tournament, setTournament] = useState<Tournament | null>(null);
 
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   useEffect(() => {
     async function load() {
       try {
@@ -63,14 +72,24 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
     load();
   }, [tournamentId]);
 
-  if ((tournament?.rounds ?? []).length === 0) {
-    return <p className="text-gray-500">Aucun tirage généré pour le moment.</p>;
-  }
+  const firstRoundStage = tournament?.rounds?.[0]?.stage;
+  const defaultView = firstRoundStage === Stage.GROUPS ? VIEW_CLASSEMENT : VIEW_PHASE_FINALE;
+  const queryView = searchParams.get('view');
+  const activeView = (queryView === VIEW_CLASSEMENT || queryView === VIEW_PHASE_FINALE) ? queryView : defaultView;
 
-  const matchPositions = calculateMatchPositions(tournament?.rounds ?? []);
+  const finalsRounds = useMemo(() => {
+    const r = tournament?.rounds ?? [];
+    return r.filter((round) => round.stage !== Stage.GROUPS);
+  }, [tournament]);
 
-  // Calculer la hauteur totale nécessaire
-  const maxPosition = Math.max(...matchPositions.flat()) + 200; // +200 pour la hauteur du dernier match
+  const hasFinals = useMemo(() => finalsRounds.length > 0, [finalsRounds]);
+
+  const maxPosition = useMemo(() => {
+    if (!hasFinals) return 0;
+    const matchPositions = calculateMatchPositions(finalsRounds);
+    if (matchPositions.length === 0) return 0;
+    return Math.max(...matchPositions.flat()) + 200;
+  }, [hasFinals, finalsRounds]);
 
 const exportBracketAsImage = async () => {
   const node = document.getElementById('bracket-container');
@@ -117,25 +136,74 @@ const exportBracketAsImage = async () => {
   }
 };
 
-  const isGroupStage = tournament?.rounds?.[0]?.stage === Stage.GROUPS;
-  return isGroupStage ? (
-    <GroupStageResults rounds={tournament.rounds} nbQualifiedByPool={tournament.nbQualifiedByPool} />
-  ) : (
+  const setView = (view: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('view', view);
+    router.replace(`${pathname}?${params.toString()}`);
+  };
+
+  if ((tournament?.rounds ?? []).length === 0) {
+    return <p className="text-gray-500">Aucun tirage généré pour le moment.</p>;
+  }
+
+  return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">Arbre du tournoi</h2>
-        <button
-          onClick={exportBracketAsImage}
-          className="p-2 text-white bg-gray-500 hover:bg-blue-700 rounded-md"
-          title="Exporter en PNG"
-        >
-          <ArrowDownTrayIcon className="h-5 w-5" />
-        </button>
+      {/* Sub-tabs */}
+      <div className="mb-4 border-b border-gray-200">
+        <nav className="-mb-px flex justify-center gap-2" aria-label="Sous-onglets tableau">
+          <button
+            onClick={() => setView(VIEW_CLASSEMENT)}
+            className={`whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium ${
+              activeView === VIEW_CLASSEMENT
+                ? 'border-[#1b2d5e] text-primary'
+                : 'border-transparent text-gray-500 hover:text-primary'
+            }`}
+          >
+            Poules
+          </button>
+          <button
+            onClick={() => setView(VIEW_PHASE_FINALE)}
+            className={`whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium ${
+              activeView === VIEW_PHASE_FINALE
+                ? 'border-[#1b2d5e] text-primary'
+                : 'border-transparent text-gray-500 hover:text-primary'
+            }`}
+          >
+            Phase finale
+          </button>
+        </nav>
       </div>
 
-      <div id="bracket-container" className="relative overflow-auto border border-gray-200 rounded-lg p-8 bg-gray-50" style={{ minHeight: `${maxPosition}px` }}>
-        <KnockoutBracket rounds={tournament?.rounds ?? []} tournamentId={tournamentId} />
-      </div>
+      {activeView === VIEW_CLASSEMENT && (
+        <GroupStageResults rounds={tournament.rounds} nbQualifiedByPool={tournament.nbQualifiedByPool} />
+      )}
+
+      {activeView === VIEW_PHASE_FINALE && (
+        hasFinals ? (
+          <div className="w-full">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-gray-900">Arbre du tournoi</h2>
+              <button
+                onClick={exportBracketAsImage}
+                className="p-2 text-white bg-gray-500 hover:bg-blue-700 rounded-md"
+                title="Exporter en PNG"
+              >
+                <ArrowDownTrayIcon className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div
+              id="bracket-container"
+              className="relative overflow-auto border border-gray-200 rounded-lg p-8 bg-gray-50"
+              style={{ minHeight: maxPosition ? `${maxPosition}px` : undefined }}
+            >
+              <KnockoutBracket rounds={finalsRounds} tournamentId={tournamentId} />
+            </div>
+          </div>
+        ) : (
+          <p className="text-gray-500">La phase finale n'a pas encore été générée.</p>
+        )
+      )}
     </div>
   );
 }
