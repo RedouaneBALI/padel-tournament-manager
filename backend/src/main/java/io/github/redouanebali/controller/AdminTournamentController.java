@@ -13,6 +13,7 @@ import io.github.redouanebali.service.PlayerPairService;
 import io.github.redouanebali.service.TournamentService;
 import jakarta.validation.Valid;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RequestMapping("/admin/tournaments")
 @RestController
+@Slf4j
 public class AdminTournamentController {
 
   @Autowired
@@ -42,7 +44,15 @@ public class AdminTournamentController {
   @PreAuthorize("isAuthenticated()")
   @PostMapping
   public Tournament createTournament(@RequestBody Tournament tournament) {
-    return tournamentService.createTournament(tournament);
+    log.debug("[controller] incoming Tournament: id={} nbMaxPairs={} format={} rounds.size={} ref={}",
+              tournament.getId(), tournament.getNbMaxPairs(), tournament.getTournamentFormat(),
+              tournament.getRounds() == null ? null : tournament.getRounds().size(),
+              System.identityHashCode(tournament.getRounds()));
+    Tournament saved = tournamentService.createTournament(tournament);
+    log.debug("[controller] before return: saved id={} rounds.size={} ref={}",
+              saved.getId(), saved.getRounds() == null ? null : saved.getRounds().size(),
+              System.identityHashCode(saved.getRounds()));
+    return saved;
   }
 
   @PreAuthorize("isAuthenticated()")

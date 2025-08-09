@@ -250,7 +250,8 @@ public class TournamentProgressionServiceTest {
     List<Round> rounds = new LinkedList<>();
     rounds.add(roundCurrent);
     rounds.add(roundNext);
-    tournament.setRounds(rounds);
+    tournament.getRounds().clear();
+    tournament.getRounds().addAll(rounds);
 
     // Action
     service.propagateWinners(tournament);

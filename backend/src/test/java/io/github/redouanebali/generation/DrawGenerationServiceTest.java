@@ -49,11 +49,13 @@ class DrawGenerationServiceTest {
     PlayerPair pair2 = new PlayerPair(2L, new Player("A2"), new Player("B2"), 2);
     PlayerPair pair3 = new PlayerPair(3L, new Player("A3"), new Player("B3"), 3);
     PlayerPair pair4 = new PlayerPair(4L, new Player("A4"), new Player("B4"), 4);
-    tournament.setPlayerPairs(List.of(pair1, pair2, pair3, pair4));
+    tournament.getPlayerPairs().clear();
+    tournament.getPlayerPairs().addAll(List.of(pair1, pair2, pair3, pair4));
 
     Round existingRound = new Round();
     existingRound.setStage(Stage.SEMIS);
-    tournament.setRounds(List.of(existingRound));
+    tournament.getRounds().clear();
+    tournament.getRounds().add(existingRound);
 
     KnockoutRoundGenerator generator = new KnockoutRoundGenerator(2);
     Round                  newRound  = generator.generateAlgorithmicRound(tournament.getPlayerPairs());
@@ -83,7 +85,8 @@ class DrawGenerationServiceTest {
     PlayerPair pair1 = new PlayerPair();
     PlayerPair pair2 = new PlayerPair();
     PlayerPair pair3 = new PlayerPair();
-    tournament.setPlayerPairs(List.of(pair1, pair2, pair3));
+    tournament.getPlayerPairs().clear();
+    tournament.getPlayerPairs().addAll(List.of(pair1, pair2, pair3));
 
     GroupRoundGenerator generator = new GroupRoundGenerator(3, 1, 3);
     Round               newRound  = generator.generateManualRound(tournament.getPlayerPairs());
@@ -92,7 +95,8 @@ class DrawGenerationServiceTest {
     Round existingRound = new Round();
     existingRound.setStage(Stage.GROUPS);
 
-    tournament.setRounds(List.of(existingRound));
+    tournament.getRounds().clear();
+    tournament.getRounds().add(existingRound);
 
     when(tournamentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 

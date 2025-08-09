@@ -10,7 +10,6 @@ import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.TournamentRepository;
-import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,7 +66,8 @@ public class TournamentServiceTest {
 
     Round round = new Round(Stage.R16);
 
-    tournament.setRounds(List.of(round));
+    tournament.getRounds().clear();
+    tournament.getRounds().add(round);
 
     when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
 

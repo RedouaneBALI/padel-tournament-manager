@@ -84,7 +84,8 @@ public class GroupPoolRankingServiceTest {
 
     Tournament tournament = new Tournament();
     tournament.setId(1L);
-    tournament.setRounds(List.of(round));
+    tournament.getRounds().clear();
+    tournament.getRounds().add(round);
     List<PoolRanking> poolRankings = GroupRankingService.getGroupRankings(tournament);
     assertEquals(1, poolRankings.size());
     assertEquals(defaultPairs.size(), poolRankings.getFirst().getDetails().size());

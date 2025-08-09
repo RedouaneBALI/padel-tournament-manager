@@ -57,7 +57,8 @@ public class GameServiceTest {
     round.addGames(List.of(game));
 
     Tournament tournament = new Tournament();
-    tournament.setRounds(new LinkedList<>(List.of(round)));
+    tournament.getRounds().clear();
+    tournament.getRounds().addAll(new LinkedList<>(List.of(round)));
 
     when(tournamentService.getTournamentById(any())).thenReturn(tournament);
 
@@ -90,7 +91,8 @@ public class GameServiceTest {
     round.addGames(List.of(game));
 
     Tournament tournament = new Tournament();
-    tournament.setRounds(new LinkedList<>(List.of(round)));
+    tournament.getRounds().clear();
+    tournament.getRounds().addAll(new LinkedList<>(List.of(round)));
 
     Score score = new Score();
     score.setSets(List.of(

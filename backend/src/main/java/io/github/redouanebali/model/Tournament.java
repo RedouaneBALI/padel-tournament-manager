@@ -11,17 +11,30 @@ import jakarta.persistence.OneToMany;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Tournament {
 
+  @Setter(AccessLevel.NONE)
+  @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
+  @OneToMany(cascade = CascadeType.ALL/*, orphanRemoval = true*/)
+  @JoinColumn(name = "tournament_id")
+  private List<Round>      rounds      = new ArrayList<>();
+  @Setter(AccessLevel.NONE)
+  @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "tournament_id")
+  private List<PlayerPair> playerPairs = new ArrayList<>();
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long             id;
@@ -32,13 +45,7 @@ public class Tournament {
   private Gender           gender;
   private TournamentLevel  level;
   private TournamentFormat tournamentFormat;
-  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-  @JoinColumn(name = "tournament_id")
-  private List<Round>      rounds      = new ArrayList<>();
   private int              nbSeeds;
-  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-  @JoinColumn(name = "tournament_id")
-  private List<PlayerPair> playerPairs = new ArrayList<>();
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
   private LocalDate        startDate;
@@ -50,5 +57,6 @@ public class Tournament {
   private int              nbPools;
   private int              nbPairsPerPool;
   private int              nbQualifiedByPool;
+
 
 }

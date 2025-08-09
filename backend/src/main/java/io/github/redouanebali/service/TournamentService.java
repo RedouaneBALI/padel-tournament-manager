@@ -14,6 +14,7 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +23,7 @@ public class TournamentService {
 
 
   private final TournamentRepository tournamentRepository;
-  
+
   private final DrawGenerationService drawGenerationService;
 
   public Tournament getTournamentById(Long id) {
@@ -30,22 +31,45 @@ public class TournamentService {
                                .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
   }
 
+
+  @Transactional
   public Tournament createTournament(final Tournament tournament) {
+    try {
+      log.warn("[SMOKE] build=2025-08-09T10:42Z commit=XYZ orphanRemoval_rounds=" +
+               Tournament.class
+                   .getDeclaredField("rounds")
+                   .getAnnotation(jakarta.persistence.OneToMany.class).orphanRemoval());
+    } catch (NoSuchFieldException e) {
+      throw new RuntimeException(e);
+    }
+    log.debug("[createTournament] incoming rounds ref={}",
+              System.identityHashCode(tournament.getRounds()),
+              tournament.getRounds() == null ? -1 : tournament.getRounds().size(),
+              tournament.getRounds() == null ? "null" : tournament.getRounds().getClass().getName());
+
     if (tournament == null) {
       throw new IllegalArgumentException("Tournament cannot be null");
     }
+
+    // Generate rounds before the first save to avoid replacing a Hibernate-managed collection
+    if (tournament.getNbMaxPairs() > 1) {
+      AbstractRoundGenerator generator = getGenerator(tournament);
+      List<Round>            rounds    = generator.initRoundsAndGames(tournament);
+
+      // IMPORTANT: Don't use replaceRounds() - manipulate the collection directly
+      tournament.getRounds().clear();
+      tournament.getRounds().addAll(rounds);
+    }
+
     Tournament savedTournament = tournamentRepository.save(tournament);
     log.info("Created tournament with id {}", savedTournament.getId());
 
-    if (savedTournament.getNbMaxPairs() <= 1) {
-      return savedTournament;
-    }
+    log.debug("[createTournament] saved entity rounds ref={}",
+              System.identityHashCode(savedTournament.getRounds()),
+              savedTournament.getRounds() == null ? -1 : savedTournament.getRounds().size(),
+              savedTournament.getRounds() == null ? "null" : savedTournament.getRounds().getClass().getName());
 
-    AbstractRoundGenerator generator = getGenerator(savedTournament);
-
-    List<Round> rounds = generator.initRoundsAndGames(savedTournament);
-    savedTournament.setRounds(rounds);
-    return tournamentRepository.save(savedTournament);
+    return savedTournament;
   }
 
   private AbstractRoundGenerator getGenerator(Tournament tournament) {
@@ -56,9 +80,12 @@ public class TournamentService {
     };
   }
 
-
+  @Transactional
   public Tournament updateTournament(Long tournamentId, Tournament updatedTournament) {
     Tournament existing = getTournamentById(tournamentId);
+
+    log.debug("[updateTournament] existing rounds ref before update: {} size={} type={}",
+              System.identityHashCode(existing.getRounds()), existing.getRounds().size(), existing.getRounds().getClass().getName());
 
     existing.setName(updatedTournament.getName());
     existing.setStartDate(updatedTournament.getStartDate());
@@ -71,6 +98,9 @@ public class TournamentService {
     existing.setTournamentFormat(updatedTournament.getTournamentFormat());
     existing.setNbSeeds(updatedTournament.getNbSeeds());
     existing.setNbMaxPairs(updatedTournament.getNbMaxPairs());
+
+    log.debug("[updateTournament] before save ref: {} size={} type={}",
+              System.identityHashCode(existing.getRounds()), existing.getRounds().size(), existing.getRounds().getClass().getName());
 
     return tournamentRepository.save(existing);
   }

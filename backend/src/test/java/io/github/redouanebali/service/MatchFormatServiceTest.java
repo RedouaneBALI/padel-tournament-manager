@@ -11,7 +11,6 @@ import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.TournamentRepository;
-import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,7 +46,8 @@ public class MatchFormatServiceTest {
 
     tournament = new Tournament();
     tournament.setId(1L);
-    tournament.setRounds(List.of(round));
+    tournament.getRounds().clear();
+    tournament.getRounds().add(round);
   }
 
   @Test
