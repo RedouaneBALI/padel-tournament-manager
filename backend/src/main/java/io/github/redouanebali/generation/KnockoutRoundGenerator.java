@@ -3,7 +3,6 @@ package io.github.redouanebali.generation;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.PlayerPair;
-import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
@@ -12,7 +11,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 
 public class KnockoutRoundGenerator extends AbstractRoundGenerator {
 
@@ -104,13 +102,34 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
     );
   }
 
-  public void propagateWinners(List<Round> sortedRounds) {
-    for (int roundIndex = 0; roundIndex < sortedRounds.size() - 1; roundIndex++) {
-      Round currentRound = sortedRounds.get(roundIndex);
-      Round nextRound    = sortedRounds.get(roundIndex + 1);
+  public void propagateWinners(Tournament tournament) {
+    if (tournament == null || tournament.getRounds() == null || tournament.getRounds().size() < 2) {
+      return;
+    }
+
+    List<Round> rounds = tournament.getRounds();
+
+    // Skip GROUPS; start from the first bracket round
+    int startIndex = 0;
+    while (startIndex < rounds.size() && rounds.get(startIndex).getStage() == Stage.GROUPS) {
+      startIndex++;
+    }
+
+    for (int roundIndex = startIndex; roundIndex < rounds.size() - 1; roundIndex++) {
+      Round currentRound = rounds.get(roundIndex);
+      Round nextRound    = rounds.get(roundIndex + 1);
+
+      // Safety: skip any non-bracket rounds just in case
+      if (currentRound.getStage() == Stage.GROUPS || nextRound.getStage() == Stage.GROUPS) {
+        continue;
+      }
 
       List<Game> currentGames = currentRound.getGames();
       List<Game> nextGames    = nextRound.getGames();
+      if (currentGames == null || nextGames == null) {
+        continue;
+      }
+
       for (int i = 0; i < currentGames.size(); i++) {
         Game       currentGame = currentGames.get(i);
         PlayerPair winner      = null;
@@ -123,18 +142,20 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
           winner = currentGame.getWinner();
         }
 
-        int  targetGameIndex = i / 2;
-        Game nextGame        = nextGames.get(targetGameIndex);
+        int targetGameIndex = i / 2;
+        if (targetGameIndex >= nextGames.size()) {
+          // next round not large enough yet (shouldn't happen if rounds were initialized), skip safely
+          continue;
+        }
+        Game nextGame = nextGames.get(targetGameIndex);
 
         if (winner == null) {
-          // Match pas terminé => on ne met rien dans le match suivant
           if (i % 2 == 0) {
             nextGame.setTeamA(null);
           } else {
             nextGame.setTeamB(null);
           }
         } else {
-          // On place le vainqueur dans la bonne position
           if (i % 2 == 0) {
             nextGame.setTeamA(winner);
           } else {
@@ -142,21 +163,6 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
           }
         }
       }
-    }
-  }
-
-  private void updatePoolRankingIfNeeded(List<Round> sortedRounds) {
-    Optional<Round> round = sortedRounds.stream().filter(r -> r.getStage() == Stage.GROUPS).findFirst();
-    if (round.isEmpty()) {
-      return;
-    }
-
-    for (Pool pool : round.get().getPools()) {
-      List<Game> poolGames = round.get().getGames().stream()
-                                  .filter(g -> pool.getPairs().contains(g.getTeamA()) || pool.getPairs().contains(g.getTeamB()))
-                                  .toList();
-
-      pool.recalculateRanking(poolGames);
     }
   }
 

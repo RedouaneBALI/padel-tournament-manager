@@ -36,7 +36,7 @@ public class DrawGenerationService {
     updateGames(existingRound, newRound);
 
     if (tournament.getTournamentFormat() != TournamentFormat.GROUP_STAGE) {
-      generator.propagateWinners(tournament.getRounds());
+      generator.propagateWinners(tournament);
     }
 
     log.info("Generated draw for tournament id {}", tournament.getId());

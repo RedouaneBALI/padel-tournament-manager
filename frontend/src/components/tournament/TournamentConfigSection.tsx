@@ -118,15 +118,17 @@ export default function TournamentConfigSection({
                 <label htmlFor="nbPools" className="block text-sm font-medium text-foreground">
                   Nombre de poules
                 </label>
-                <input
+                <select
                   id="nbPools"
                   name="nbPools"
-                  type="number"
-                  min="1"
-                  value={formData.nbPools ?? 3}
+                  value={formData.nbPools ?? 4}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
-                />
+                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+                >
+                  <option value={2}>2</option>
+                  <option value={4}>4</option>
+                  <option value={8}>8</option>
+                </select>
               </div>
 
               <div className="space-y-2 max-w-xs">
@@ -148,15 +150,16 @@ export default function TournamentConfigSection({
                 <label htmlFor="nbQualifiedByPool" className="block text-sm font-medium text-foreground">
                   Équipes qualifiées par poule
                 </label>
-                <input
+                <select
                   id="nbQualifiedByPool"
                   name="nbQualifiedByPool"
-                  type="number"
-                  min="1"
                   value={formData.nbQualifiedByPool ?? 2}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
-                />
+                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+                >
+                  <option value={1}>1</option>
+                  <option value={2}>2</option>
+                </select>
               </div>
             </>
           )}

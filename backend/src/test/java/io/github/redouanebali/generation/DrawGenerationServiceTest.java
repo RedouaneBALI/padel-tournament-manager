@@ -72,7 +72,7 @@ class DrawGenerationServiceTest {
       assertEquals(tournament, updated);
       verify(tournamentRepository).save(tournament);
       verify(generatorMock).generateAlgorithmicRound(any());
-      verify(generatorMock).propagateWinners(tournament.getRounds());
+      verify(generatorMock).propagateWinners(tournament);
     }
   }
 

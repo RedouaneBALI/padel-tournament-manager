@@ -9,11 +9,15 @@ import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GroupRoundGenerator extends AbstractRoundGenerator implements RoundGenerator {
 
-  private final int nbPools;
-  private final int nbTeamPerPool;
+  private static final Logger LOG = LoggerFactory.getLogger(GroupRoundGenerator.class);
+  private final        int    nbPools;
+  private final        int    nbTeamPerPool;
 
   public GroupRoundGenerator(final int nbSeeds, int nbPools, int nbTeamPerPool) {
     super(nbSeeds);
@@ -183,7 +187,160 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
   }
 
   @Override
-  public void propagateWinners(final List<Round> sortedRounds) {
-    System.out.println("to implement");
+  public void propagateWinners(Tournament tournament) {
+    if (tournament == null) {
+      LOG.warn("propagateWinners: tournament is null");
+      return;
+    }
+
+    this.updatePoolRankingIfNeeded(tournament.getRounds());
+
+    int nbPools           = tournament.getNbPools();
+    int nbQualifiedByPool = tournament.getNbQualifiedByPool();
+
+    if (nbPools <= 0 || nbQualifiedByPool <= 0) {
+      LOG.warn("propagateWinners: invalid pools ({}), qualifiedByPool ({})", nbPools, nbQualifiedByPool);
+      return;
+    }
+
+    int totalQualified = nbPools * nbQualifiedByPool;
+
+    // check power of two
+    if ((totalQualified & (totalQualified - 1)) != 0) {
+      LOG.error("Le nombre d'équipes qualifiées ({}) n'est pas une puissance de 2. Abandon de la propagation.", totalQualified);
+      return;
+    }
+
+    if (nbQualifiedByPool > 2) {
+      LOG.error("Propagation non gérée pour {} qualifiés par poule (>2).", nbQualifiedByPool);
+      return;
+    }
+
+    // Find the GROUPS round
+    Round groupsRound = tournament.getRounds().stream()
+                                  .filter(r -> r.getStage() == Stage.GROUPS)
+                                  .findFirst()
+                                  .orElse(null);
+
+    if (groupsRound == null) {
+      LOG.warn("propagateWinners: aucun round GROUPS trouvé");
+      return;
+    }
+
+    // Determine next stage for bracket
+    Stage nextStage = Stage.fromNbTeams(totalQualified);
+    if (nextStage == null) {
+      LOG.error("Aucun stage correspondant pour {} équipes.", totalQualified);
+      return;
+    }
+
+    // Create next round (or reuse if already exists and matches nextStage)
+    Round nextRound = tournament.getRounds().stream()
+                                .filter(r -> r.getStage() == nextStage)
+                                .findFirst()
+                                .orElseGet(() -> {
+                                  Round r = new Round(nextStage);
+                                  // ensure a MatchFormat is present (reuse default in Round)
+                                  tournament.getRounds().add(r);
+                                  return r;
+                                });
+
+    // If next round already seeded (teams already assigned), don't reseed or you'll wipe scores.
+    boolean alreadySeeded = nextRound.getGames() != null && nextRound.getGames().stream()
+                                                                     .anyMatch(g -> g.getTeamA() != null || g.getTeamB() != null);
+    if (alreadySeeded) {
+      LOG.info("Round {} already seeded, skipping reseed and propagating KO winners only.", nextStage);
+      new KnockoutRoundGenerator(0).propagateWinners(tournament);
+      return;
+    }
+
+    // Clear any placeholder games in the next round before initial seeding
+    nextRound.getGames().clear();
+
+    List<Pool> pools = new ArrayList<>(groupsRound.getPools());
+
+    // Safety: ensure pools are in alphabetical order by their name (A,B,C,...) if names exist
+    pools.sort((p1, p2) -> {
+      String n1 = p1.getName() == null ? "" : p1.getName();
+      String n2 = p2.getName() == null ? "" : p2.getName();
+      return n1.compareTo(n2);
+    });
+
+    if (nbQualifiedByPool == 1) {
+      // A1 vs B1, C1 vs D1, ...
+      for (int i = 0; i + 1 < pools.size(); i += 2) {
+        PlayerPair a1 = firstQualified(pools.get(i), 0);
+        PlayerPair b1 = firstQualified(pools.get(i + 1), 0);
+        if (a1 == null || b1 == null) {
+          LOG.warn("Poule(s) incomplète(s) pour appairer {}1 vs {}1", pools.get(i).getName(), pools.get(i + 1).getName());
+          continue;
+        }
+        nextRound.addGame(a1, b1);
+      }
+    } else { // nbQualifiedByPool == 2
+      // A1 vs B2, B1 vs A2, C1 vs D2, D1 vs C2, ...
+      for (int i = 0; i + 1 < pools.size(); i += 2) {
+        Pool       pX = pools.get(i);
+        Pool       pY = pools.get(i + 1);
+        PlayerPair x1 = firstQualified(pX, 0);
+        PlayerPair x2 = firstQualified(pX, 1);
+        PlayerPair y1 = firstQualified(pY, 0);
+        PlayerPair y2 = firstQualified(pY, 1);
+
+        if (x1 == null || x2 == null || y1 == null || y2 == null) {
+          LOG.warn("Paires insuffisantes pour appairer {} et {} (besoin des deux premiers).", pX.getName(), pY.getName());
+          continue;
+        }
+
+        nextRound.addGame(x1, y2);
+        nextRound.addGame(y1, x2);
+      }
+    }
+
+    LOG.info("Propagation des qualifiés effectuée: {} matchs créés pour le stage {}.", nextRound.getGames().size(), nextStage);
+    // Propagate winners through subsequent knockout rounds as well
+    new KnockoutRoundGenerator(0).propagateWinners(tournament);
+  }
+
+  private PlayerPair firstQualified(Pool pool, int index) {
+    if (pool == null) {
+      return null;
+    }
+
+    // Prefer ranking if available
+    if (pool.getPoolRanking() != null && pool.getPoolRanking().getDetails() != null) {
+      List<io.github.redouanebali.model.PoolRankingDetails> details = pool.getPoolRanking().getDetails();
+      if (index >= 0 && index < details.size()) {
+        PlayerPair ranked = details.get(index).getPlayerPair();
+        if (ranked != null) {
+          return ranked;
+        }
+      }
+    }
+
+    // Fallback: insertion order in the set (if ranking unavailable)
+    if (pool.getPairs() == null) {
+      return null;
+    }
+    List<PlayerPair> pairs = new ArrayList<>(pool.getPairs());
+    if (index < 0 || index >= pairs.size()) {
+      return null;
+    }
+    return pairs.get(index);
+  }
+
+  private void updatePoolRankingIfNeeded(List<Round> sortedRounds) {
+    Optional<Round> round = sortedRounds.stream().filter(r -> r.getStage() == Stage.GROUPS).findFirst();
+    if (round.isEmpty()) {
+      return;
+    }
+
+    for (Pool pool : round.get().getPools()) {
+      List<Game> poolGames = round.get().getGames().stream()
+                                  .filter(g -> pool.getPairs().contains(g.getTeamA()) || pool.getPairs().contains(g.getTeamB()))
+                                  .toList();
+
+      pool.recalculateRanking(poolGames);
+    }
   }
 }

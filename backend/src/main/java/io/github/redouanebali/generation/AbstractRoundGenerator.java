@@ -1,7 +1,6 @@
 package io.github.redouanebali.generation;
 
 import io.github.redouanebali.model.PlayerPair;
-import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -48,5 +47,5 @@ public abstract class AbstractRoundGenerator implements RoundGenerator {
   /**
    * Optional propagation hook, overridden by specific generators if needed.
    */
-  public abstract void propagateWinners(List<Round> sortedRounds);
+  public abstract void propagateWinners(Tournament tournament);
 }

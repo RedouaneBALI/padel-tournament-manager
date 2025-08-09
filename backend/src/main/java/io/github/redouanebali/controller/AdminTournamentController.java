@@ -72,6 +72,7 @@ public class AdminTournamentController {
    */
   @PreAuthorize("isAuthenticated()")
   @PostMapping("/{id}/draw")
+  // @todo replace boolean manual by a enum
   public Tournament generateDraw(@PathVariable Long id, @RequestParam(defaultValue = "false") boolean manual) {
     return tournamentService.generateDraw(id, manual);
   }

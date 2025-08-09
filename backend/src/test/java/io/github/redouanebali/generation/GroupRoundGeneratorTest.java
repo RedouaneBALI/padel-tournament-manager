@@ -1,7 +1,9 @@
 package io.github.redouanebali.generation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Pool;
@@ -146,4 +148,98 @@ public class GroupRoundGeneratorTest {
     Round lastRound = rounds.get(rounds.size() - 1);
     assertEquals(1, lastRound.getGames().size(), "The last round should be the Final with exactly 1 match");
   }
+
+  @ParameterizedTest
+  @CsvSource({
+      // nbPools, nbPairsPerPool, nbQualifiedByPool, expectedTeamsInNextRound, expectedMatchesInNextRound
+      "4,4,1,4,2",  // 4 poules de 4 avec 1 qualifié -> 4 teams -> 2 matches (demi-finales)
+      "4,4,2,8,4",  // 4 poules de 4 avec 2 qualifiés -> 8 teams -> 4 matches (quarts)
+      "2,4,1,2,1",  // 2 poules de 4 avec 1 qualifié -> 2 teams -> 1 match (finale)
+      "2,4,2,4,2",  // 2 poules de 4 avec 2 qualifiés -> 4 teams -> 2 matches (demi-finales)
+      "2,3,1,2,1",  // 2 poules de 3 avec 1 qualifié -> 2 teams -> 1 match (finale)
+      "8,3,1,8,4"   // 8 poules de 3 avec 1 qualifié -> 8 teams -> 4 matches (huitièmes)
+  })
+  void testPropagateWinners_param(int nbPools, int nbPairsPerPool, int nbQualifiedByPool,
+                                  int expectedTeamsInNextRound, int expectedMatchesInNextRound) {
+    // Arrange
+    Tournament tournament = new Tournament();
+    tournament.setNbPools(nbPools);
+    tournament.setNbPairsPerPool(nbPairsPerPool);
+    tournament.setNbQualifiedByPool(nbQualifiedByPool);
+
+    Round groups = new Round();
+    groups.setStage(io.github.redouanebali.model.Stage.GROUPS);
+
+    // Pools A,B,C... ; insertion dans l'ordre = classement (1er, 2e, ...)
+    for (int p = 0; p < nbPools; p++) {
+      Pool pool = new Pool();
+      pool.setName(String.valueOf((char) ('A' + p)));
+      for (int r = 1; r <= nbPairsPerPool; r++) {
+        pool.addPair(makePair(p, r));
+      }
+      groups.getPools().add(pool);
+    }
+    tournament.getRounds().add(groups);
+
+    GroupRoundGenerator gen = new GroupRoundGenerator(0, nbPools, nbPairsPerPool);
+
+    // Act
+    gen.propagateWinners(tournament);
+
+    // Assert: stage & count
+    io.github.redouanebali.model.Stage nextStage =
+        io.github.redouanebali.model.Stage.fromNbTeams(expectedTeamsInNextRound);
+
+    Round nextRound = tournament.getRounds().stream()
+                                .filter(r -> r.getStage() == nextStage)
+                                .findFirst()
+                                .orElseThrow(() -> new AssertionError("Next finals round not found for stage: " + nextStage));
+
+    assertEquals(expectedMatchesInNextRound, nextRound.getGames().size(),
+                 "Unexpected number of matches in the next finals round");
+
+    // Assert: affiches exactes (ordre des fixtures) ; TeamA/TeamB peut être inversé
+    List<List<PlayerPair>> expected = expectedFixtures(groups, nbQualifiedByPool);
+    for (int i = 0; i < expected.size(); i++) {
+      List<PlayerPair> fx = expected.get(i);
+      Game             g  = nextRound.getGames().get(i);
+      assertTrue(gameContainsBoth(g, fx.get(0), fx.get(1)),
+                 "Mismatch at game index " + i + ": expected (" + fx.get(0) + ") vs (" + fx.get(1) + ") but got ("
+                 + g.getTeamA() + ", " + g.getTeamB() + ")");
+    }
+  }
+
+  // Expected fixtures in order: (A,B), (C,D), ...
+// If 2 qualified: A1-B2, B1-A2, C1-D2, D1-C2, ...
+// If 1 qualified: A1-B1, C1-D1, ...
+  private List<List<PlayerPair>> expectedFixtures(Round groups, int nbQualifiedByPool) {
+    List<Pool> pools = new ArrayList<>(groups.getPools());
+    pools.sort(java.util.Comparator.comparing(Pool::getName));
+    List<List<PlayerPair>> out = new ArrayList<>();
+    for (int i = 0; i + 1 < pools.size(); i += 2) {
+      List<PlayerPair> x = new ArrayList<>(pools.get(i).getPairs());
+      List<PlayerPair> y = new ArrayList<>(pools.get(i + 1).getPairs());
+      if (nbQualifiedByPool == 1) {
+        out.add(List.of(x.get(0), y.get(0)));
+      } else { // == 2
+        out.add(List.of(x.get(0), y.get(1))); // A1 vs B2
+        out.add(List.of(y.get(0), x.get(1))); // B1 vs A2
+      }
+    }
+    return out;
+  }
+
+  private boolean gameContainsBoth(Game g, PlayerPair p, PlayerPair q) {
+    return (g.getTeamA() == p && g.getTeamB() == q) || (g.getTeamA() == q && g.getTeamB() == p);
+  }
+
+  // --- helpers ---
+  private PlayerPair makePair(int poolIndex, int rankInPool) {
+    // id/seed déterministes pour debug facile
+    int    seed = (poolIndex + 1) * 100 + rankInPool;
+    Player p1   = new Player((long) seed, "P" + seed + "A", seed, 0, 1990);
+    Player p2   = new Player((long) seed + 10000, "P" + seed + "B", seed, 0, 1990);
+    return new PlayerPair(-1L, p1, p2, seed);
+  }
+
 }

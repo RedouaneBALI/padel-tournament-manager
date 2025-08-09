@@ -230,7 +230,7 @@ public class KnockoutRoundGeneratorTest {
 
     // Action
     generator = new KnockoutRoundGenerator(0);
-    generator.propagateWinners(tournament.getRounds());
+    generator.propagateWinners(tournament);
 
     // Vérification match nextGame0 (issu des matchs 0 et 1)
     // i=0 -> pair1 (vainqueur de game0) en teamA

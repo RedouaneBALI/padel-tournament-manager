@@ -41,7 +41,7 @@ public class GameService {
 
     TeamSide winner = null;
     if (game.isFinished()) {
-      AbstractRoundGenerator.of(tournament).propagateWinners(tournament.getRounds());
+      AbstractRoundGenerator.of(tournament).propagateWinners(tournament);
       winner = game.getWinner().equals(game.getTeamA()) ? TeamSide.TEAM_A : TeamSide.TEAM_B;
     }
 
