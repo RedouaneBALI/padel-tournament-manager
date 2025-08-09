@@ -24,12 +24,10 @@ export default function GroupStageResults({
                 </tr>
               </thead>
               <tbody>
-                {pool.poolRanking?.flatMap(ranking => ranking.details)?.map((entry, index) => (
+                {(pool.poolRanking?.details ?? []).map((entry, index) => (
                   <tr
                     key={index}
-                    className={
-                      index < nbQualifiedByPool ? 'border-l-4 border-green-500' : ''
-                    }
+                    className={index < nbQualifiedByPool ? 'border-l-4 border-green-500' : ''}
                   >
                     <td className="p-2 border text-center">{index + 1}</td>
                     <td className="p-2 border text-center">

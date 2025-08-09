@@ -12,7 +12,12 @@ function normalizeHeaders(init?: HeadersInit): Record<string, string> {
 
 export async function fetchWithAuth(url: string, options: RequestInit = {}) {
   const session = await getSession();
-
+  if (!session || !(session as any).idToken) {
+    console.warn(
+      "[fetchWithAuth] No idToken in session. Are you logged in? " +
+      "Check NEXTAUTH_URL/NEXTAUTH_SECRET and that <SessionProvider> wraps the app."
+    );
+  }
   const headers = normalizeHeaders(options.headers);
   if (!headers["Content-Type"]) headers["Content-Type"] = "application/json";
   if (session?.idToken) headers["Authorization"] = `Bearer ${session.idToken}`;

@@ -16,7 +16,8 @@ export default function AdminTournamentHeader({ tournament, tournamentId }: Prop
   const pathname = usePathname() ?? '';
 
   const handleCopyLink = () => {
-    const shareUrl = `http://localhost:3000/tournament/${tournamentId}`;
+    const FRONT_URL = (process.env.NEXT_PUBLIC_FRONTEND_URL ?? '').replace(/\/$/, '');
+    const shareUrl = `${FRONT_URL}/tournament/${tournamentId}`;
     navigator.clipboard
       .writeText(shareUrl)
       .then(() => toast.success('Lien copié dans le presse-papiers !'))

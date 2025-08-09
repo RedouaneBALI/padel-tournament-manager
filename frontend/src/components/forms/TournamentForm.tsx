@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Loader2, Trophy } from 'lucide-react';
@@ -10,23 +10,37 @@ import TournamentConfigSection from '@/src/components/tournament/TournamentConfi
 import { Tournament } from '@/src/types/tournament';
 import { TournamentFormData } from '@/src/types/tournamentData';
 
-const getInitialFormData = (initialData?: Partial<Tournament>): TournamentFormData => ({
-  name: '',
-  description: '',
-  city: '',
-  club: '',
-  gender: '',
-  level: '',
-  tournamentFormat: 'KNOCKOUT',
-  nbSeeds: 16,
-  startDate: '',
-  endDate: '',
-  nbMaxPairs: 32,
-  nbPools: 3,
-  nbPairsPerPool: 3,
-  nbQualifiedByPool: 2,
-  ...initialData,
-});
+const getInitialFormData = (initialData?: Partial<Tournament>): TournamentFormData => {
+  const tournamentFormat = initialData?.tournamentFormat ?? 'KNOCKOUT';
+
+  // Defaults for creation
+  const defaults: TournamentFormData = {
+    name: '',
+    description: '',
+    city: '',
+    club: '',
+    gender: '',
+    level: '',
+    tournamentFormat,
+    nbSeeds: 16,
+    startDate: '',
+    endDate: '',
+    nbMaxPairs: 32,
+    nbPools: 3,
+    nbPairsPerPool: 3,
+    nbQualifiedByPool: 2,
+  };
+
+  // If format is GROUP_STAGE at mount and nbSeeds not provided, default nbSeeds to nbPools
+  if (!initialData?.nbSeeds && tournamentFormat === 'GROUP_STAGE') {
+    defaults.nbSeeds = (initialData?.nbPools ?? defaults.nbPools);
+  }
+
+  return {
+    ...defaults,
+    ...initialData,
+  };
+};
 
 interface TournamentFormProps {
   initialData?: Partial<Tournament>;
@@ -40,9 +54,41 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
   const [formData, setFormData] = useState<TournamentFormData>(getInitialFormData(initialData));
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [nbSeedsTouched, setNbSeedsTouched] = useState(false);
+  const [groupDefaultApplied, setGroupDefaultApplied] = useState(false);
+
+  /** If a parent later passes initialData (edit page), hydrate once */
+  useEffect(() => {
+    if (initialData) {
+      setFormData(prev => ({ ...prev, ...initialData }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    if (name === 'nbSeeds') {
+      setNbSeedsTouched(true);
+    }
+
+    if (name === 'tournamentFormat') {
+      setFormData(prev => {
+        const next: TournamentFormData = { ...prev, tournamentFormat: value as any };
+        if (value === 'GROUP_STAGE' && !nbSeedsTouched && !groupDefaultApplied) {
+          next.nbSeeds = prev.nbPools ?? 3;
+          setGroupDefaultApplied(true);
+        }
+        // Always reset nbSeeds to 16 when switching to KNOCKOUT
+        if (value === 'KNOCKOUT') {
+          next.nbSeeds = 16;
+          setGroupDefaultApplied(false);
+        }
+
+        return next;
+      });
+      return;
+    }
+
     setFormData((prev: TournamentFormData) => ({ ...prev, [name]: value }));
   };
 

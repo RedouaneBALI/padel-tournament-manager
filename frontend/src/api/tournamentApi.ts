@@ -5,36 +5,35 @@ import type { MatchFormat } from '@/src/types/matchFormat';
 import type { Score } from '@/src/types/score';
 import { fetchWithAuth } from "./fetchWithAuth";
 
-const BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').replace(/\/$/, '');
+export const BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').replace(/\/$/, '');
 
 export async function fetchTournament(tournamentId : string) : Promise<Tournament> {
-  const response = await fetch(`${BASE_URL}/${tournamentId}`);
+  const response = await fetch(`${BASE_URL}/tournaments/${tournamentId}`);
   if (!response.ok) throw new Error('Erreur de récupération du tournoi');
   return await response.json();
 }
 
 export async function fetchRounds(tournamentId: string): Promise<Round[]> {
-  const response = await fetch(`${BASE_URL}/${tournamentId}/rounds`);
+  const response = await fetch(`${BASE_URL}/tournaments/${tournamentId}/rounds`);
   if (!response.ok) throw new Error('Erreur de récupération des rounds');
   return await response.json();
 }
 
 export async function fetchPairs(tournamentId: string): Promise<PlayerPair[]>{
-  const response = await fetch(`${BASE_URL}/${tournamentId}/pairs`);
+  const response = await fetch(`${BASE_URL}/tournaments/${tournamentId}/pairs`);
   if (!response.ok) throw new Error('Erreur de récupération des PlayerPair');
   return await response.json();
 }
 
 export async function fetchMatchFormat(tournamentId: string, currentStage: string): Promise<MatchFormat>{
-  const response = await fetch(`${BASE_URL}/${tournamentId}/rounds/${currentStage}/match-format`);
+  const response = await fetch(`${BASE_URL}/tournaments/${tournamentId}/rounds/${currentStage}/match-format`);
   if (!response.ok) throw new Error('Erreur de récupération du MatchFormat');
   return await response.json();
 }
 
 export async function updateGameDetails(tournamentId: string, gameId: string, scorePayload: Score, court: string, scheduledTime: string) {
-  const response = await fetch(`${BASE_URL}/${tournamentId}/games/${gameId}`, {
+  const response = await fetchWithAuth(`${BASE_URL}/admin/tournaments/${tournamentId}/games/${gameId}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       score: scorePayload,
       court,
@@ -81,9 +80,8 @@ export async function createTournament(payload: Tournament) {
 }
 
 export async function updateTournament(tournamentId: string, updatedTournament: Tournament) {
-  const response = await fetch(`${BASE_URL}/${tournamentId}`, {
+  const response = await fetchWithAuth(`${BASE_URL}/admin/tournaments/${tournamentId}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(updatedTournament),
   });
 
@@ -95,9 +93,8 @@ export async function updateTournament(tournamentId: string, updatedTournament: 
 }
 
 export async function savePlayerPairs(tournamentId: string, pairs: PlayerPair[]) {
-  const response = await fetch(`${BASE_URL}/${tournamentId}/pairs`, {
+  const response = await fetchWithAuth(`${BASE_URL}/admin/tournaments/${tournamentId}/pairs`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(pairs),
   });
 
@@ -109,9 +106,8 @@ export async function savePlayerPairs(tournamentId: string, pairs: PlayerPair[])
 }
 
 export async function generateDraw(tournamentId: string, manual: boolean) {
-  const response = await fetch(`${BASE_URL}/${tournamentId}/draw?manual=${manual}`, {
+  const response = await fetchWithAuth(`${BASE_URL}/admin/tournaments/${tournamentId}/draw?manual=${manual}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
   });
 
   if (!response.ok) {

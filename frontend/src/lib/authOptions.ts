@@ -13,8 +13,15 @@ export function getAuthOptions(): NextAuthOptions {
       GoogleProvider({
         clientId: clientId ?? "",
         clientSecret: clientSecret ?? "",
-        authorization: { params: { scope: "openid email profile" } },
-      }),
+        authorization: {
+          params: {
+            scope: "openid email profile",
+            prompt: "consent",
+            access_type: "offline",
+            response_type: "code",
+          },
+        },
+      })
     ],
     callbacks: {
       async jwt({ token, account }) {
