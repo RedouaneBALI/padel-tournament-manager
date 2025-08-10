@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, use } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import AdminTournamentHeader from '@/src/components/admin/AdminTournamentHeader';
 import type { Tournament } from '@/src/types/tournament';
 import 'react-toastify/dist/ReactToastify.css';
@@ -19,12 +19,8 @@ export default function AdminTournamentLayout({
 
   useEffect(() => {
     async function loadTournament() {
-      try {
-        const data = await fetchTournament(id);
-        setTournament(data);
-      } catch (err) {
-        toast.error('Erreur lors du chargement du tournoi : ' + err);
-      }
+    const data = await fetchTournament(id);
+    setTournament(data);
     }
 
     loadTournament();

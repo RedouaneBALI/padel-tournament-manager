@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { toast, ToastContainer } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import PlayerPairsTextarea from '@/src/components/tournament/PlayerPairsTextarea';
 import PlayerPairList from '@/src/components/tournament/PlayerPairsList';
 import { useRouter } from 'next/navigation';
@@ -33,14 +33,10 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
         {
           label: 'Oui',
           onClick: async () => {
-            try {
-              const manual = drawMode === 'order';
-              await generateDraw(tournamentId, manual);
-              toast.success("Tirage généré !");
-              router.push(`/admin/tournament/${tournamentId}/rounds/results`);
-            } catch {
-              toast.error("Tirage déjà effectué ou erreur serveur.");
-            }
+            const manual = drawMode === 'order';
+            await generateDraw(tournamentId, manual);
+            router.push(`/admin/tournament/${tournamentId}/rounds/results`);
+
           },
         },
         {
@@ -53,28 +49,21 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
 
   useEffect(() => {
     async function loadTournament() {
-      try {
-        const data = await fetchTournament(tournamentId);
-        setTournament(data);
-        const hasStarted = data.rounds?.some(round =>
-          round.games?.some(game => game.score !== null)
-        );
-        setTournamentStarted(hasStarted);
-      } catch {
-        toast.error('Erreur réseau lors de la récupération du tournoi.');
-      }
+      const data = await fetchTournament(tournamentId);
+      setTournament(data);
+      const hasStarted = data.rounds?.some(round =>
+        round.games?.some(game => game.score !== null)
+      );
+      setTournamentStarted(hasStarted);
+
     }
     loadTournament();
   }, [tournamentId]);
 
   useEffect(() => {
     async function loadPairs() {
-      try {
-        const data = await fetchPairs(tournamentId);
-        setPairs(data);
-      } catch {
-        toast.error('Erreur réseau lors de la récupération des joueurs.');
-      }
+      const data = await fetchPairs(tournamentId);
+      setPairs(data);
     }
     loadPairs();
   }, [tournamentId]);
@@ -133,7 +122,6 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
 
       </div>
 
-      <ToastContainer />
     </div>
   );
 }

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
 import MatchFormatForm from '@/src/components/round/MatchFormatForm';
 import { MatchFormat } from '@/src/types/matchFormat';
 import { Round } from '@/src/types/round';
@@ -24,12 +23,9 @@ export default function RoundFormatTab({ tournamentId, pairs }: RoundFormatTabPr
 
   useEffect(() => {
     async function loadRounds() {
-      try {
-        const data = await fetchRounds(tournamentId);
-        setRounds(data);
-      } catch {
-        toast.error('Erreur lors du chargement des rounds.');
-      }
+    const data = await fetchRounds(tournamentId);
+    setRounds(data);
+
     }
 
     loadRounds();
@@ -39,14 +35,9 @@ export default function RoundFormatTab({ tournamentId, pairs }: RoundFormatTabPr
     async function loadFormat() {
       if (!currentStage) return;
       setIsLoading(true);
-      try {
-        const format = await fetchMatchFormat(tournamentId, currentStage);
-        setMatchFormat(format);
-      } catch {
-        toast.error('Erreur lors du chargement du format.');
-      } finally {
-        setIsLoading(false);
-      }
+      const format = await fetchMatchFormat(tournamentId, currentStage);
+      setMatchFormat(format);
+      setIsLoading(false);
     }
 
     loadFormat();
@@ -54,12 +45,7 @@ export default function RoundFormatTab({ tournamentId, pairs }: RoundFormatTabPr
 
   const saveFormat = async (newFormat: MatchFormat) => {
     if (!currentStage) return;
-    try {
-      await updateMatchFormat(tournamentId, currentStage, newFormat);
-      toast.success('Format enregistré');
-    } catch {
-      toast.error("Erreur lors de l'enregistrement.");
-    }
+    await updateMatchFormat(tournamentId, currentStage, newFormat);
   };
 
   return (

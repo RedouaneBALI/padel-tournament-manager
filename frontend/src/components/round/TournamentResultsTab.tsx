@@ -74,7 +74,7 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
 
   const firstRoundStage = tournament?.rounds?.[0]?.stage;
   const defaultView = firstRoundStage === Stage.GROUPS ? VIEW_CLASSEMENT : VIEW_PHASE_FINALE;
-  const queryView = searchParams.get('view');
+  const queryView = searchParams?.get('view');
   const activeView = (queryView === VIEW_CLASSEMENT || queryView === VIEW_PHASE_FINALE) ? queryView : defaultView;
 
   const finalsRounds = useMemo(() => {
@@ -137,7 +137,7 @@ const exportBracketAsImage = async () => {
 };
 
   const setView = (view: string) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString());
     params.set('view', view);
     router.replace(`${pathname}?${params.toString()}`);
   };
@@ -175,7 +175,7 @@ const exportBracketAsImage = async () => {
       </div>
 
       {activeView === VIEW_CLASSEMENT && (
-        <GroupStageResults rounds={tournament.rounds} nbQualifiedByPool={tournament.nbQualifiedByPool} />
+        <GroupStageResults rounds={tournament?.rounds ?? []} nbQualifiedByPool={tournament?.nbQualifiedByPool ?? 1} />
       )}
 
       {activeView === VIEW_PHASE_FINALE && (

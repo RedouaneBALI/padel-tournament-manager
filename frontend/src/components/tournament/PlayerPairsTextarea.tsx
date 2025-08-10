@@ -15,13 +15,11 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
   const [text, setText] = useState('');
 
   const fetchUpdatedPairs = async () => {
-    try {
+
       const data = await fetchPairs(tournamentId);
       setText(data.map(pair => `${pair.player1.name},${pair.player2.name}`).join('\n'));
       if (onPairsChange) onPairsChange(data);
-    } catch {
-      toast.error("Erreur réseau lors du chargement des joueurs.");
-    }
+
   };
 
   useEffect(() => {
@@ -48,11 +46,9 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
     try {
       await savePlayerPairs(tournamentId, pairs);
     } catch {
-      toast.error("Erreur lors de l'enregistrement des joueurs.");
       return;
     }
 
-    toast.success('Joueurs ajoutés avec succès !');
     await fetchUpdatedPairs();
   };
 

@@ -32,41 +32,18 @@ public class TournamentService {
 
   @Transactional
   public Tournament createTournament(final Tournament tournament) {
-    try {
-      log.warn("[SMOKE] build=2025-08-09T10:42Z commit=XYZ orphanRemoval_rounds=" +
-               Tournament.class
-                   .getDeclaredField("rounds")
-                   .getAnnotation(jakarta.persistence.OneToMany.class).orphanRemoval());
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    }
-    log.debug("[createTournament] incoming rounds ref={}",
-              System.identityHashCode(tournament.getRounds()),
-              tournament.getRounds() == null ? -1 : tournament.getRounds().size(),
-              tournament.getRounds() == null ? "null" : tournament.getRounds().getClass().getName());
-
     if (tournament == null) {
       throw new IllegalArgumentException("Tournament cannot be null");
     }
-
-    // Generate rounds before the first save to avoid replacing a Hibernate-managed collection
     if (tournament.getNbMaxPairs() > 1) {
       AbstractRoundGenerator generator = AbstractRoundGenerator.of(tournament);
       List<Round>            rounds    = generator.initRoundsAndGames(tournament);
-
-      // IMPORTANT: Don't use replaceRounds() - manipulate the collection directly
       tournament.getRounds().clear();
       tournament.getRounds().addAll(rounds);
     }
 
     Tournament savedTournament = tournamentRepository.save(tournament);
     log.info("Created tournament with id {}", savedTournament.getId());
-
-    log.debug("[createTournament] saved entity rounds ref={}",
-              System.identityHashCode(savedTournament.getRounds()),
-              savedTournament.getRounds() == null ? -1 : savedTournament.getRounds().size(),
-              savedTournament.getRounds() == null ? "null" : savedTournament.getRounds().getClass().getName());
-
     return savedTournament;
   }
 
@@ -74,10 +51,6 @@ public class TournamentService {
   @Transactional
   public Tournament updateTournament(Long tournamentId, Tournament updatedTournament) {
     Tournament existing = getTournamentById(tournamentId);
-
-    log.debug("[updateTournament] existing rounds ref before update: {} size={} type={}",
-              System.identityHashCode(existing.getRounds()), existing.getRounds().size(), existing.getRounds().getClass().getName());
-
     existing.setName(updatedTournament.getName());
     existing.setStartDate(updatedTournament.getStartDate());
     existing.setEndDate(updatedTournament.getEndDate());
@@ -89,10 +62,6 @@ public class TournamentService {
     existing.setTournamentFormat(updatedTournament.getTournamentFormat());
     existing.setNbSeeds(updatedTournament.getNbSeeds());
     existing.setNbMaxPairs(updatedTournament.getNbMaxPairs());
-
-    log.debug("[updateTournament] before save ref: {} size={} type={}",
-              System.identityHashCode(existing.getRounds()), existing.getRounds().size(), existing.getRounds().getClass().getName());
-
     return tournamentRepository.save(existing);
   }
 

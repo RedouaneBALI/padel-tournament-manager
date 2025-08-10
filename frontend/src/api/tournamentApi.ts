@@ -1,3 +1,4 @@
+import { toast } from 'react-toastify';
 import type { Round } from '@/src/types/round';
 import type { PlayerPair } from '@/src/types/playerPair';
 import type { Tournament } from '@/src/types/tournament';
@@ -9,25 +10,37 @@ export const BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').replace(/\/
 
 export async function fetchTournament(tournamentId : string) : Promise<Tournament> {
   const response = await fetch(`${BASE_URL}/tournaments/${tournamentId}`);
-  if (!response.ok) throw new Error('Erreur de récupération du tournoi');
+  if (!response.ok) {
+    toast.error('Erreur réseau lors de la récupération du tournoi.');
+    throw new Error('Erreur de récupération du tournoi');
+  }
   return await response.json();
 }
 
 export async function fetchRounds(tournamentId: string): Promise<Round[]> {
   const response = await fetch(`${BASE_URL}/tournaments/${tournamentId}/rounds`);
-  if (!response.ok) throw new Error('Erreur de récupération des rounds');
+  if (!response.ok) {
+    toast.error('Erreur lors du chargement des rounds.');
+    throw new Error('Erreur de récupération des rounds');
+  }
   return await response.json();
 }
 
 export async function fetchPairs(tournamentId: string): Promise<PlayerPair[]>{
   const response = await fetch(`${BASE_URL}/tournaments/${tournamentId}/pairs`);
-  if (!response.ok) throw new Error('Erreur de récupération des PlayerPair');
+  if (!response.ok) {
+    // toast.error("Erreur réseau lors du chargement des joueurs."); // Removed as per instructions
+    throw new Error('Erreur de récupération des PlayerPair');
+  }
   return await response.json();
 }
 
 export async function fetchMatchFormat(tournamentId: string, currentStage: string): Promise<MatchFormat>{
   const response = await fetch(`${BASE_URL}/tournaments/${tournamentId}/rounds/${currentStage}/match-format`);
-  if (!response.ok) throw new Error('Erreur de récupération du MatchFormat');
+  if (!response.ok) {
+    toast.error('Erreur lors du chargement du format.');
+    throw new Error('Erreur de récupération du MatchFormat');
+  }
   return await response.json();
 }
 
@@ -49,16 +62,18 @@ export async function updateGameDetails(tournamentId: string, gameId: string, sc
 }
 
 export async function updateMatchFormat(tournamentId: string, stage: string, matchFormat: MatchFormat) {
-  const response = await fetch(`${BASE_URL}/${tournamentId}/rounds/${stage}/match-format`, {
+  const response = await fetchWithAuth(`${BASE_URL}/admin/tournaments/${tournamentId}/rounds/${stage}/match-format`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(matchFormat),
   });
 
   if (!response.ok) {
-    throw new Error('Erreur lors de la mise à jour du MatchFormat');
+    const text = await response.text().catch(() => '');
+    toast.error('Erreur lors de la mise à jour des rounds.');
+    throw new Error(`Erreur lors de la mise à jour du MatchFormat (${response.status}) ${text}`);
   }
 
+  toast.success('Format du match enregistré avec succès.');
   return await response.json();
 }
 
@@ -74,8 +89,10 @@ export async function createTournament(payload: Tournament) {
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
+    toast.error("Erreur lors de la création du tournoi : " + text);
     throw new Error(`Erreur création (${res.status}) ${text}`);
   }
+  toast.success('Tournoi créé !');
   return res.json();
 }
 
@@ -86,9 +103,11 @@ export async function updateTournament(tournamentId: string, updatedTournament: 
   });
 
   if (!response.ok) {
+    toast.error('Erreur lors de la mise à jour.');
     throw new Error('Erreur lors de la mise à jour du tournoi');
   }
 
+  toast.success('Tournoi mis à jour !');
   return await response.json();
 }
 
@@ -99,9 +118,11 @@ export async function savePlayerPairs(tournamentId: string, pairs: PlayerPair[])
   });
 
   if (!response.ok) {
+    toast.error("Erreur lors de l'enregistrement des joueurs.");
     throw new Error("Erreur lors de l'enregistrement des joueurs.");
   }
 
+  toast.success('Joueurs ajoutés avec succès !');
   return await response.json();
 }
 
@@ -111,8 +132,10 @@ export async function generateDraw(tournamentId: string, manual: boolean) {
   });
 
   if (!response.ok) {
+    toast.error("Tirage déjà effectué ou erreur serveur.");
     throw new Error('Erreur lors de la génération du tirage');
   }
 
+  toast.success('Tirage généré !');
   return await response.json();
 }

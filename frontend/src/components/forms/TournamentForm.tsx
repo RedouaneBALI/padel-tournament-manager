@@ -10,6 +10,48 @@ import TournamentConfigSection from '@/src/components/tournament/TournamentConfi
 import { Tournament } from '@/src/types/tournament';
 import { TournamentFormData } from '@/src/types/tournamentData';
 
+const getNumber = (v: unknown, fallback = 0): number => {
+  const n = typeof v === 'string' ? parseInt(v, 10) : (typeof v === 'number' ? v : NaN);
+  return Number.isFinite(n) ? n : fallback;
+};
+
+const getValidationErrors = (data: TournamentFormData): string[] => {
+  const errors: string[] = [];
+  const format = data.tournamentFormat ?? 'KNOCKOUT';
+
+  const nbSeeds = getNumber(data.nbSeeds, 0);
+  const nbMaxPairs = getNumber(data.nbMaxPairs, 0);
+  const nbPools = getNumber(data.nbPools, 0);
+  const nbPairsPerPool = getNumber(data.nbPairsPerPool, 0);
+
+  const name = (data.name ?? '').trim();
+  if (!name) {
+    errors.push('Le tournoi doit avoir un nom.');
+  }
+
+  if (format === 'KNOCKOUT') {
+    const maxSeeds = Math.floor(nbMaxPairs / 2);
+    if (nbMaxPairs < 4 || nbMaxPairs > 128) {
+      errors.push(`En élimination directe, le nombre d'équipes maximum doit être compris entre 4 et 128 (actuellement ${nbMaxPairs}).`);
+    }
+    if (nbSeeds > maxSeeds) {
+      errors.push(`En élimination directe, le nombre de têtes de série (${nbSeeds}) ne peut pas dépasser la moitié du nombre d'équipes (${nbMaxPairs} → max ${maxSeeds}).`);
+    }
+  }
+
+  if (format === 'GROUP_STAGE') {
+    if (nbPairsPerPool < 3) {
+      errors.push(`En phase de poules, il doit y avoir au moins 3 équipes par poule (actuellement ${nbPairsPerPool}).`);
+    }
+    const maxSeeds = nbPools * nbPairsPerPool;
+    if (nbSeeds > maxSeeds) {
+      errors.push(`En phase de poules, le nombre de têtes de série (${nbSeeds}) ne peut pas dépasser le total d'équipes (${nbPools}×${nbPairsPerPool} = ${maxSeeds}).`);
+    }
+  }
+
+  return errors;
+};
+
 const getInitialFormData = (initialData?: Partial<Tournament>): TournamentFormData => {
   const tournamentFormat = initialData?.tournamentFormat ?? 'KNOCKOUT';
 
@@ -96,6 +138,13 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
     e.preventDefault();
     setIsSubmitting(true);
 
+    const errors = getValidationErrors(formData);
+    if (errors.length > 0) {
+      toast.error(errors.join('\n'));
+      setIsSubmitting(false);
+      return;
+    }
+
     const payload: TournamentFormData = { ...formData };
 
     if (payload.nbSeeds) {
@@ -109,15 +158,9 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
       }
     });
 
-    try {
-      const tournament = payload as Tournament;
-      await onSubmit(tournament);
-    } catch (error) {
-      console.error(error);
-      toast.error("Une erreur s'est produite lors de l'opération.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    const tournament = payload as Tournament;
+    await onSubmit(tournament);
+    setIsSubmitting(false);
   };
 
   return (
@@ -160,7 +203,7 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
             <div className="flex justify-end p-4">
               <button
                 type="submit"
-                disabled={isSubmitting || !formData.name}
+                disabled={isSubmitting}
                 className="px-4 py-2 bg-[#1b2d5e] text-white rounded hover:bg-blue-900"
               >
                 {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}

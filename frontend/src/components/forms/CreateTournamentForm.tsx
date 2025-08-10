@@ -13,10 +13,8 @@ export default function CreateTournamentForm() {
   const handleCreate = async (data: Tournament) => {
     try {
       const tournament = await createTournament(data);
-      toast.success('Tournoi créé !');
       router.push(`/admin/tournament/${tournament.id}/players`);
     } catch (error) {
-      toast.error("Erreur lors de la création du tournoi : " + error);
     }
   };
 

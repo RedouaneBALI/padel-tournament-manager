@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { toast } from 'react-toastify';
 import TournamentForm from '@/src/components/forms/TournamentForm';
 import type { Tournament } from '@/src/types/tournament';
 import { fetchTournament, updateTournament } from '@/src/api/tournamentApi';
@@ -21,7 +20,6 @@ export default function AdminTournamentEditForm({ tournamentId }: Props) {
         const data: Tournament = await fetchTournament(tournamentId);
         setTournament(data);
       } catch (err) {
-        toast.error('Impossible de charger les infos du tournoi : ' + err);
       }
     }
 
@@ -29,13 +27,9 @@ export default function AdminTournamentEditForm({ tournamentId }: Props) {
   }, [tournamentId]);
 
   const handleUpdate = async (updatedTournament: Tournament) => {
-    try {
-      await updateTournament(tournamentId, updatedTournament);
-      toast.success('Tournoi mis à jour !');
-      router.refresh();
-    } catch {
-      toast.error('Erreur lors de la mise à jour.');
-    }
+  await updateTournament(tournamentId, updatedTournament);
+  router.refresh();
+
   };
 
   if (!tournament) return <div>Chargement...</div>;

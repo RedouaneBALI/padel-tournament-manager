@@ -18,8 +18,7 @@ export default function TournamentLayout({children,params,}: {children: ReactNod
 
   useEffect(() => {
     fetchTournament(id)
-      .then(setTournament)
-      .catch(() => toast.error('Erreur lors du chargement du tournoi.'));
+      .then(setTournament);
   }, [id]);
 
   if (!tournament) return <div>Chargement...</div>;

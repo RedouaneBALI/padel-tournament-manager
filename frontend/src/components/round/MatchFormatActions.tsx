@@ -30,18 +30,12 @@ export default function MatchFormatActions({
   const handleApplyAll = async () => {
     if (!matchFormat) return;
     setIsLoading(true);
-    try {
       await Promise.all(
         rounds.map((round) =>
           updateMatchFormat(tournamentId, round.stage, matchFormat)
         )
       );
-      toast.success('Format appliqué à tous les rounds.');
-    } catch {
-      toast.error('Erreur lors de la mise à jour des rounds.');
-    } finally {
       setIsLoading(false);
-    }
   };
 
   const isFirstRoundEmpty = rounds[0]?.games.every(
