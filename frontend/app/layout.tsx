@@ -26,7 +26,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const session = await getServerSession(getAuthOptions());
   return (
     <html lang="fr">
-      <body>
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <SessionProviderWrapper>
           {session && (
             <div className="w-full flex justify-end p-4">
