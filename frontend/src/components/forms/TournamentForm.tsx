@@ -178,7 +178,7 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
         </div>
 
         <div>
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit}>
             <TournamentInfoSection
               formData={formData}
               handleInputChange={handleInputChange}
@@ -200,12 +200,11 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
 
             <hr className="border-border" />
 
-            <div className="flex justify-end p-4">
+            <div className="p-4">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-2 bg-[#1b2d5e] text-white rounded hover:bg-blue-900"
-              >
+                className="w-full px-4 py-2 bg-primary text-on-primary rounded hover:bg-primary-hover"              >
                 {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
                 {isSubmitting
                   ? (isEditing ? 'Mise à jour...' : 'Création en cours...')

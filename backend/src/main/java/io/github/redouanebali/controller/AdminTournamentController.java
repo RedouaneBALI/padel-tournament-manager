@@ -44,14 +44,7 @@ public class AdminTournamentController {
   @PreAuthorize("isAuthenticated()")
   @PostMapping
   public Tournament createTournament(@RequestBody Tournament tournament) {
-    log.debug("[controller] incoming Tournament: id={} nbMaxPairs={} format={} rounds.size={} ref={}",
-              tournament.getId(), tournament.getNbMaxPairs(), tournament.getTournamentFormat(),
-              tournament.getRounds() == null ? null : tournament.getRounds().size(),
-              System.identityHashCode(tournament.getRounds()));
     Tournament saved = tournamentService.createTournament(tournament);
-    log.debug("[controller] before return: saved id={} rounds.size={} ref={}",
-              saved.getId(), saved.getRounds() == null ? null : saved.getRounds().size(),
-              System.identityHashCode(saved.getRounds()));
     return saved;
   }
 

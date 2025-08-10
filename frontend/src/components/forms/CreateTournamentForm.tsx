@@ -20,7 +20,7 @@ export default function CreateTournamentForm() {
 
   return (
     <TournamentForm
-      title="Créer un nouveau tournoi"
+      title="Créer un tournoi"
       isEditing={false}
       onSubmit={handleCreate}
     />

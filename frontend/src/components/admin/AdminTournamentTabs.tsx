@@ -14,13 +14,13 @@ export default function AdminTournamentTabs({ tournamentId, pathname }: Props) {
 
     return `pb-2 px-4 font-semibold ${
       active
-        ? 'border-b-2 border-[#1b2d5e] text-primary'
+        ? 'border-b-2 border-primary text-primary'
         : 'text-gray-500 hover:text-primary'
     }`;
   };
 
   return (
-    <div className="flex justify-center mb-6 space-x-4 border-b">
+    <div className="flex justify-center mb-6 border-b">
       <Link href={`/admin/tournament/${tournamentId}/players`} className={tabClass('/players', true)}>
         Joueurs
       </Link>

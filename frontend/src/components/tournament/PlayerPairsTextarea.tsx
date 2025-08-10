@@ -35,7 +35,7 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
       .filter(line => line !== '');
 
     const pairs: PlayerPair[] = lines.map((line, index) => {
-      const [p1, p2] = line.split(',').map(s => s.trim());
+      const [p1, p2] = line.split(/[,;]/).map(s => s.trim());
       return {
         player1: { name: p1 },
         player2: { name: p2 },
@@ -73,7 +73,7 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-2 bg-[#1b2d5e] text-white rounded hover:bg-blue-900"
+            className="px-4 py-2 bg-primary text-textWhite rounded hover:bg-primary-hover"
           >
             Enregistrer les joueurs
           </button>

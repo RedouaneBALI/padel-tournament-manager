@@ -30,7 +30,7 @@ export default function ConnexionPage() {
             </span>
             <button
               onClick={() => signOut()}
-              className="px-5 py-2 text-base bg-gray-800 text-white rounded hover:bg-gray-700 transition"
+              className="px-5 py-2 text-base bg-gray-800 text-textWhite rounded hover:bg-gray-700 transition"
             >
               Se déconnecter
             </button>

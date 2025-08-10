@@ -105,12 +105,12 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
                     className="px-3 py-2 border border-gray-300 rounded-md text-sm h-10 shadow-sm text-center"
                     value={drawMode}
                   >
-                    <option value="seeded">Par classement (TS)</option>
+                    <option value="seeded">{tournament?.nbSeeds === 0 ? 'Aléatoire' : 'Par classement (TS)'}</option>
                     <option value="order">Par ordre d&apos;enregistrement</option>
                   </select>
                   <button
                     onClick={handleDraw}
-                    className="px-4 py-2 bg-[#1b2d5e] text-white rounded hover:bg-blue-900 h-10"
+                    className="px-4 py-2 bg-primary text-textWhite rounded hover:bg-primary-hover h-10"
                   >
                     Générer le tirage
                   </button>

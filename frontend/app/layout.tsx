@@ -6,6 +6,7 @@ import SessionProviderWrapper from './SessionProviderWrapper';
 import LogoutButton from '@/src/components/auth/LogoutButton';
 import { getServerSession } from "next-auth";
 import { getAuthOptions } from "@/src/lib/authOptions";
+import Link from 'next/link';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,7 +30,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <SessionProviderWrapper>
           {session && (
-            <div className="w-full flex justify-end p-4">
+            <div className="w-full flex justify-between p-4">
+              <Link href="/" className="hover:underline">Home</Link>
               <LogoutButton />
             </div>
           )}

@@ -1,4 +1,4 @@
- "use client";
+"use client";
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
 import { fetchTournament } from '@/src/api/tournamentApi';
@@ -148,44 +148,79 @@ const exportBracketAsImage = async () => {
 
   return (
     <div className="w-full">
-      {/* Sub-tabs */}
-      <div className="mb-4 border-b border-gray-200">
-        <nav className="-mb-px flex justify-center gap-2" aria-label="Sous-onglets tableau">
-          <button
-            onClick={() => setView(VIEW_CLASSEMENT)}
-            className={`whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium ${
-              activeView === VIEW_CLASSEMENT
-                ? 'border-[#1b2d5e] text-primary'
-                : 'border-transparent text-gray-500 hover:text-primary'
-            }`}
-          >
-            Poules
-          </button>
-          <button
-            onClick={() => setView(VIEW_PHASE_FINALE)}
-            className={`whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium ${
-              activeView === VIEW_PHASE_FINALE
-                ? 'border-[#1b2d5e] text-primary'
-                : 'border-transparent text-gray-500 hover:text-primary'
-            }`}
-          >
-            Phase finale
-          </button>
-        </nav>
-      </div>
-
-      {activeView === VIEW_CLASSEMENT && (
-        <GroupStageResults rounds={tournament?.rounds ?? []} nbQualifiedByPool={tournament?.nbQualifiedByPool ?? 1} />
+      {/* Sub-tabs only if first round is GROUPS */}
+      {firstRoundStage === Stage.GROUPS && (
+        <div className="mb-4 border-b border-gray-200">
+          <nav className="-mb-px flex justify-center gap-2" aria-label="Sous-onglets tableau">
+            <button
+              onClick={() => setView(VIEW_CLASSEMENT)}
+              className={`whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium ${
+                activeView === VIEW_CLASSEMENT
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:text-primary'
+              }`}
+            >
+              Poules
+            </button>
+            <button
+              onClick={() => setView(VIEW_PHASE_FINALE)}
+              className={`whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium ${
+                activeView === VIEW_PHASE_FINALE
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:text-primary'
+              }`}
+            >
+              Phase finale
+            </button>
+          </nav>
+        </div>
       )}
 
-      {activeView === VIEW_PHASE_FINALE && (
+      {/* Poules view only for GROUPS */}
+      {firstRoundStage === Stage.GROUPS && activeView === VIEW_CLASSEMENT && (
+        <GroupStageResults
+          rounds={tournament?.rounds ?? []}
+          nbQualifiedByPool={tournament?.nbQualifiedByPool ?? 1}
+        />
+      )}
+
+      {/* Phase finale view */}
+      {firstRoundStage === Stage.GROUPS ? (
+        activeView === VIEW_PHASE_FINALE && (
+          hasFinals ? (
+            <div className="w-full">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-900">Arbre du tournoi</h2>
+                <button
+                  onClick={exportBracketAsImage}
+                  className="p-2 text-textWhite bg-gray-500 hover:bg-blue-700 rounded-md"
+                  title="Exporter en PNG"
+                >
+                  <ArrowDownTrayIcon className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div
+                id="bracket-container"
+                className="relative overflow-auto border border-gray-200 rounded-lg p-8 bg-gray-50"
+                style={{ minHeight: maxPosition ? `${maxPosition}px` : undefined }}
+              >
+                <KnockoutBracket rounds={finalsRounds} tournamentId={tournamentId} />
+              </div>
+            </div>
+          ) : (
+            <p className="text-gray-500">La phase finale n'a pas encore été générée.</p>
+          )
+        )
+      ) : (
+        // If not GROUPS: show knockout bracket directly, no tabs
         hasFinals ? (
           <div className="w-full">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-gray-900">Arbre du tournoi</h2>
               <button
                 onClick={exportBracketAsImage}
-                className="p-2 text-white bg-gray-500 hover:bg-blue-700 rounded-md"
+                className="p-2 text-textWhite bg-gray-500 hover:bg-blue-700 rounded-md"
                 title="Exporter en PNG"
               >
                 <ArrowDownTrayIcon className="h-5 w-5" />
