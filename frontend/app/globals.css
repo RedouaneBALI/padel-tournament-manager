@@ -15,6 +15,11 @@
   --color-foreground: #111827;
 }
 
+:root {
+  --color-muted: #d1d5db; /* gris clair */
+  --color-muted-foreground: #4b5563; /* gris foncé */
+}
+
 @layer base {
   body {
     @apply bg-background text-foreground;

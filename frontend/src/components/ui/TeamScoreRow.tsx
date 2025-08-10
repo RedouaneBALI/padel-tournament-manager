@@ -34,7 +34,7 @@ export default function TeamScoreRow({
   return (
     <div className="flex items-center px-4 h-[60px]">
       <div className={`flex flex-1 items-center ${winnerSide === teamIndex ? 'font-bold' : ''}`}>
-        <div className={`flex flex-col ${winnerSide !== undefined && winnerSide !== teamIndex ? 'text-gray-400' : ''}`}>
+        <div className={`flex flex-col ${winnerSide !== undefined && winnerSide !== teamIndex ? 'text-muted-foreground' : ''}`}>
           <span className="text-sm">{team?.player1?.name || ''}</span>
           <span className="text-sm">{team?.player2?.name || ''}</span>
         </div>
@@ -59,13 +59,13 @@ export default function TeamScoreRow({
                 }}
                 onChange={(e) => handleChange(setIndex, e.target.value)}
                 onKeyDown={(e) => handleKeyDown?.(e, teamIndex, setIndex)}
-                className="w-8 text-xs text-center border border-gray-300 rounded"
+                className="w-8 text-xs text-center border border-border rounded"
                 placeholder="-"
               />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-3 text-base font-semibold text-gray-800 dark:text-gray-100">
+          <div className="grid grid-cols-3 text-base font-semibold text-foreground">
             {scores.filter(Boolean).length > 0 ? (
               (() => {
                 const nonEmptyScores = scores.filter(s => s !== '');
@@ -75,7 +75,7 @@ export default function TeamScoreRow({
                 ));
               })()
             ) : (
-              <span className="text-gray-400 col-span-3 text-center">-</span>
+              <span className="text-muted-foreground col-span-3 text-center">-</span>
             )}
           </div>
         )}

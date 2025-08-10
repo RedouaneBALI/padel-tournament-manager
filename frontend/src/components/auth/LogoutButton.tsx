@@ -7,9 +7,9 @@ export default function LogoutButton() {
   return (
     <button
       onClick={() => signOut()}
-      className="flex items-center gap-2 text-sm text-gray-500 hover:text-red-800"
+      className="flex items-center gap-2 text-sm text-muted hover:text-error"
     >
-      <FiLogOut />
+      <FiLogOut className="w-5 h-5" />
       Déconnexion
     </button>
   );

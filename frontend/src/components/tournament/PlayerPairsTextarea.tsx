@@ -53,9 +53,9 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
   };
 
   return (
-    <div className="bg-white">
+    <div className="bg-card">
       <textarea
-        className="w-full h-60 p-2 border border-gray-300 rounded resize-none font-mono overflow-x-auto whitespace-pre"
+        className="w-full h-60 p-2 border border-border rounded resize-none font-mono overflow-x-auto whitespace-pre"
         wrap="off"
         value={text}
         onChange={e => setText(e.target.value)}
@@ -67,13 +67,13 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
         <div className="flex justify-center gap-4 mt-4">
           <button
             onClick={handleClear}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-100"
+            className="px-4 py-2 border border-border text-foreground rounded hover:bg-background"
           >
             Effacer
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-2 bg-primary text-textWhite rounded hover:bg-primary-hover"
+            className="px-4 py-2 bg-primary text-on-primary rounded hover:bg-primary-hover"
           >
             Enregistrer les joueurs
           </button>

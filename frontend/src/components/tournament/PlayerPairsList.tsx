@@ -6,13 +6,13 @@ interface PlayerPairListProps {
 
 export default function PlayerPairList({ pairs }: PlayerPairListProps) {
   if (pairs.length === 0) {
-    return <p className="text-gray-500 italic">Aucune paire inscrite pour le moment.</p>;
+    return <p className="text-muted italic">Aucune paire inscrite pour le moment.</p>;
   }
 
   return (
     <ul className="space-y-2">
       {pairs.map((pair, index) => (
-        <li key={index} className="border rounded px-4 py-2 bg-gray-50 shadow-sm text-sm">
+        <li key={index} className="border rounded px-4 py-2 bg-background shadow-sm text-sm">
           <span className="font-semibold text-primary">
             {pair.seed && pair.seed > 0 ? `#${pair.seed} ` : ''}
           </span>

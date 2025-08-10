@@ -143,21 +143,21 @@ const exportBracketAsImage = async () => {
   };
 
   if ((tournament?.rounds ?? []).length === 0) {
-    return <p className="text-gray-500">Aucun tirage généré pour le moment.</p>;
+    return <p className="text-muted-foreground">Aucun tirage généré pour le moment.</p>;
   }
 
   return (
     <div className="w-full">
       {/* Sub-tabs only if first round is GROUPS */}
       {firstRoundStage === Stage.GROUPS && (
-        <div className="mb-4 border-b border-gray-200">
+        <div className="mb-4 border-b border-border">
           <nav className="-mb-px flex justify-center gap-2" aria-label="Sous-onglets tableau">
             <button
               onClick={() => setView(VIEW_CLASSEMENT)}
               className={`whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium ${
                 activeView === VIEW_CLASSEMENT
                   ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-primary'
               }`}
             >
               Poules
@@ -167,7 +167,7 @@ const exportBracketAsImage = async () => {
               className={`whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium ${
                 activeView === VIEW_PHASE_FINALE
                   ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-primary'
               }`}
             >
               Phase finale
@@ -190,10 +190,10 @@ const exportBracketAsImage = async () => {
           hasFinals ? (
             <div className="w-full">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-gray-900">Arbre du tournoi</h2>
+                <h2 className="text-xl font-semibold text-foreground">Arbre du tournoi</h2>
                 <button
                   onClick={exportBracketAsImage}
-                  className="p-2 text-textWhite bg-gray-500 hover:bg-blue-700 rounded-md"
+                  className="p-2 text-on-primary bg-primary hover:bg-primary-hover rounded-md"
                   title="Exporter en PNG"
                 >
                   <ArrowDownTrayIcon className="h-5 w-5" />
@@ -202,14 +202,14 @@ const exportBracketAsImage = async () => {
 
               <div
                 id="bracket-container"
-                className="relative overflow-auto border border-gray-200 rounded-lg p-8 bg-gray-50"
+                className="relative overflow-auto border border-border rounded-lg p-8 bg-background"
                 style={{ minHeight: maxPosition ? `${maxPosition}px` : undefined }}
               >
                 <KnockoutBracket rounds={finalsRounds} tournamentId={tournamentId} />
               </div>
             </div>
           ) : (
-            <p className="text-gray-500">La phase finale n'a pas encore été générée.</p>
+            <p className="text-muted-foreground">La phase finale n'a pas encore été générée.</p>
           )
         )
       ) : (
@@ -217,10 +217,10 @@ const exportBracketAsImage = async () => {
         hasFinals ? (
           <div className="w-full">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">Arbre du tournoi</h2>
+              <h2 className="text-xl font-semibold text-foreground">Arbre du tournoi</h2>
               <button
                 onClick={exportBracketAsImage}
-                className="p-2 text-textWhite bg-gray-500 hover:bg-blue-700 rounded-md"
+                className="p-2 text-on-primary bg-primary hover:bg-primary-hover rounded-md"
                 title="Exporter en PNG"
               >
                 <ArrowDownTrayIcon className="h-5 w-5" />
@@ -229,14 +229,14 @@ const exportBracketAsImage = async () => {
 
             <div
               id="bracket-container"
-              className="relative overflow-auto border border-gray-200 rounded-lg p-8 bg-gray-50"
+              className="relative overflow-auto border border-border rounded-lg p-8 bg-background"
               style={{ minHeight: maxPosition ? `${maxPosition}px` : undefined }}
             >
               <KnockoutBracket rounds={finalsRounds} tournamentId={tournamentId} />
             </div>
           </div>
         ) : (
-          <p className="text-gray-500">La phase finale n'a pas encore été générée.</p>
+          <p className="text-muted-foreground">La phase finale n'a pas encore été générée.</p>
         )
       )}
     </div>

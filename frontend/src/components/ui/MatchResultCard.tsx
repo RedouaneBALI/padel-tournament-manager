@@ -135,7 +135,7 @@ export default function MatchResultCard({
     >
       <div className="flex justify-between items-start px-2 pt-2">
         {(pool?.name || stage) && (
-          <div className="inline-block bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 text-xs rounded mt-1 mx-1 px-3 py-0.5">
+          <div className="inline-block bg-muted dark:hover:bg-primary-hover text-foreground dark:text-on-primary text-xs rounded mt-1 mx-1 px-3 py-0.5">
             {pool?.name ? `Groupe ${pool.name}` : stage}
           </div>
         )}
@@ -161,7 +161,7 @@ export default function MatchResultCard({
                     setInitialScores([...scores]);
                     setEditing(false);
                   }}
-                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-textWhite hover:bg-green-700 h-9 rounded-md px-3 shadow-md"
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-on-primary hover:bg-green-700 h-9 rounded-md px-3 shadow-md"
                 >
                   <Save className="h-3 w-3 mr-1" />
                   Sauver
@@ -205,8 +205,8 @@ export default function MatchResultCard({
       <div
         className={`border-t border-border px-4 py-2 text-sm ${
           editing
-            ? 'bg-white text-gray-900'
-            : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'
+            ? 'bg-card text-foreground'
+            : 'bg-background text-foreground dark:bg-primary dark:text-on-primary'
         }`}
       >
         {editing ? (
@@ -215,7 +215,7 @@ export default function MatchResultCard({
               type="text"
               value={localCourt}
               onChange={(e) => setLocalCourt(e.target.value)}
-              className="px-2 py-1 rounded border text-sm text-gray-900 bg-white"
+              className="px-2 py-1 rounded border text-sm text-foreground bg-card"
               placeholder="Court"
             />
             <input
@@ -223,7 +223,7 @@ export default function MatchResultCard({
               step="300"
               value={localScheduledTime}
               onChange={(e) => setLocalScheduledTime(e.target.value)}
-              className="px-2 py-1 rounded border text-sm text-gray-900 bg-white"
+              className="px-2 py-1 rounded border text-sm text-foreground bg-card"
             />
           </div>
         ) : (

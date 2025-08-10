@@ -58,7 +58,7 @@ export default function RoundFormatTab({ tournamentId, pairs }: RoundFormatTabPr
         />
 
         {isLoading ? (
-          <div className="text-center text-sm text-gray-500 mt-4">
+          <div className="text-center text-sm text-muted mt-4">
             Chargement du format...
           </div>
         ) : (

@@ -26,28 +26,28 @@ export default function TournamentLayout({children,params,}: {children: ReactNod
   return (
     <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
       <h1 className="text-2xl font-bold mb-4">Tournoi #{id} – {tournament.name}</h1>
-      <div className="flex justify-center mb-6 border-b">
+      <div className="flex justify-center mb-6 border-b border-border">
         <Link
           href={`/tournament/${id}`}
-          className={`pb-2 px-4 font-semibold ${pathname === `/tournament/${id}` ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
+          className={`pb-2 px-4 font-semibold ${pathname === `/tournament/${id}` ? 'border-b-2 border-primary text-primary' : 'text-muted hover:text-primary'}`}
         >
           Aperçu
         </Link>
         <Link
           href={`/tournament/${id}/players`}
-          className={`pb-2 px-4 font-semibold ${pathname === `/tournament/${id}/players` ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
+          className={`pb-2 px-4 font-semibold ${pathname === `/tournament/${id}/players` ? 'border-b-2 border-primary text-primary' : 'text-muted hover:text-primary'}`}
         >
           Joueurs
         </Link>
         <Link
           href={`/tournament/${id}/games`}
-          className={`pb-2 px-4 font-semibold ${pathname === `/tournament/${id}/games` ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
+          className={`pb-2 px-4 font-semibold ${pathname === `/tournament/${id}/games` ? 'border-b-2 border-primary text-primary' : 'text-muted hover:text-primary'}`}
         >
         Matchs
         </Link>
         <Link
           href={`/tournament/${id}/results`}
-          className={`pb-2 px-4 font-semibold ${pathname === `/tournament/${id}/results` ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-primary'}`}
+          className={`pb-2 px-4 font-semibold ${pathname === `/tournament/${id}/results` ? 'border-b-2 border-primary text-primary' : 'text-muted hover:text-primary'}`}
         >
           Tableau
         </Link>

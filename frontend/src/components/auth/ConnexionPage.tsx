@@ -16,21 +16,21 @@ export default function ConnexionPage() {
   }, [session, status, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white shadow-md rounded-lg px-10 py-8 text-center">
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="bg-card shadow-md rounded-lg px-10 py-8 text-center">
         <h1 className="text-3xl font-bold mb-5">Bienvenue</h1>
-        <p className="mb-8 text-gray-600 text-base">Connectez-vous pour accéder à l'administration</p>
+        <p className="mb-8 text-muted text-base">Connectez-vous pour accéder à l'administration</p>
 
         {status === 'loading' ? (
-          <p className="text-base text-gray-500 mb-2">Chargement...</p>
+          <p className="text-base text-muted mb-2">Chargement...</p>
         ) : session ? (
           <div className="flex flex-col items-center gap-4">
-            <span className="text-base text-gray-700">
+            <span className="text-base text-foreground">
               Connecté en tant que <span className="font-medium">{session.user?.email}</span>
             </span>
             <button
               onClick={() => signOut()}
-              className="px-5 py-2 text-base bg-gray-800 text-textWhite rounded hover:bg-gray-700 transition"
+              className="px-5 py-2 text-base bg-primary text-on-primary rounded hover:hover:bg-primary-hover transition"
             >
               Se déconnecter
             </button>
@@ -41,10 +41,10 @@ export default function ConnexionPage() {
               onClick={() =>
                 signIn('google', { redirect: true, callbackUrl: '/admin/tournament/new' })
               }
-              className="flex items-center justify-center gap-2 px-5 py-2 text-base bg-white border border-gray-300 rounded hover:bg-gray-100 transition"
+              className="flex items-center justify-center gap-2 px-5 py-2 text-base bg-card border border-border rounded hover:bg-background transition"
             >
               <img src="/google-logo.svg" alt="Google" className="w-5 h-5" />
-              <span className="text-gray-800">Se connecter avec Google</span>
+              <span className="text-foreground">Se connecter avec Google</span>
             </button>
           </div>
         )}

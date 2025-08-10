@@ -7,6 +7,7 @@ import LogoutButton from '@/src/components/auth/LogoutButton';
 import { getServerSession } from "next-auth";
 import { getAuthOptions } from "@/src/lib/authOptions";
 import Link from 'next/link';
+import { FiHome } from 'react-icons/fi';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,7 +32,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <SessionProviderWrapper>
           {session && (
             <div className="w-full flex justify-between p-4">
-              <Link href="/" className="hover:underline">Home</Link>
+              <Link
+                href="/"
+                className="flex items-center text-muted hover:text-primary"
+              >
+                <FiHome className="w-6 h-6" />
+              </Link>
               <LogoutButton />
             </div>
           )}

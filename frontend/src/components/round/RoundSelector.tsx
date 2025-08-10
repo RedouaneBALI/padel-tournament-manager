@@ -18,7 +18,7 @@ export default function RoundSelector({ rounds, currentIndex, onChange }: Props)
       <button
         onClick={() => onChange(Math.max(currentIndex - 1, 0))}
         disabled={currentIndex === 0}
-        className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-30"
+        className="px-2 py-1 rounded bg-muted hover:bg-muted-foreground disabled:opacity-30"
       >
         ←
       </button>
@@ -29,7 +29,7 @@ export default function RoundSelector({ rounds, currentIndex, onChange }: Props)
           const index = rounds.findIndex((r) => r.stage === e.target.value);
           if (index !== -1) onChange(index);
         }}
-        className="text-center text-sm px-3 py-1 border border-gray-300 rounded"
+        className="text-center text-sm px-3 py-1 border border-border rounded text-foreground"
       >
         {rounds.map((round) => (
           <option key={round.id} value={round.stage}>
@@ -41,7 +41,7 @@ export default function RoundSelector({ rounds, currentIndex, onChange }: Props)
       <button
         onClick={() => onChange(Math.min(currentIndex + 1, rounds.length - 1))}
         disabled={currentIndex === rounds.length - 1}
-        className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-30"
+        className="px-2 py-1 rounded bg-muted hover:bg-muted-foreground disabled:opacity-30"
       >
         →
       </button>

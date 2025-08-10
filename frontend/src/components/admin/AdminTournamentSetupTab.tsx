@@ -72,7 +72,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
   return (
     <div className="container mx-auto max-w-3xl">
       <div className="bg-card shadow-sm">
-        <div className="flex items-center gap-2 border-b border-border pb-3">
+        <div className="flex items-center gap-2 border-b border-border p-2">
           <FileText className="h-5 w-5 text-muted-foreground" />
           <h1 className="text-xl font-semibold text-foreground">
             {pairs.length} paires
@@ -84,7 +84,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
             <PlayerPairList pairs={pairs} />
           ) : (
             <>
-              <h2 className="mb-3 text-base font-semibold text-foreground">
+              <h2 className="text-base font-semibold text-foreground p-2">
                 Lister les joueurs ci-dessous (par ordre de classement ou du tirage)
               </h2>
               <PlayerPairsTextarea
@@ -96,13 +96,13 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
           )}
           {pairs.length > 0 && !tournamentStarted && (
             <>
-              <hr className="my-6 border-t border-gray-300" />
+              <hr className="my-6 border-t border-border" />
               <div className="flex flex-col sm:flex-row sm:justify-center sm:items-end gap-4 mt-6">
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 pb-4">
                   <label className="text-xl font-semibold text-foreground text-center">Tirage</label>
                   <select
                     onChange={(e) => setDrawMode(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md text-sm h-10 shadow-sm text-center"
+                    className="px-3 py-2 border border-border rounded-md text-sm h-10 shadow-sm text-center"
                     value={drawMode}
                   >
                     <option value="seeded">{tournament?.nbSeeds === 0 ? 'Aléatoire' : 'Par classement (TS)'}</option>
@@ -110,7 +110,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
                   </select>
                   <button
                     onClick={handleDraw}
-                    className="px-4 py-2 bg-primary text-textWhite rounded hover:bg-primary-hover h-10"
+                    className="px-4 py-2 bg-primary text-on-primary rounded hover:bg-primary-hover h-10"
                   >
                     Générer le tirage
                   </button>

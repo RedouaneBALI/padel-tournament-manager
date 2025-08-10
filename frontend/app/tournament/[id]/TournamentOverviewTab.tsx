@@ -6,7 +6,7 @@ interface TournamentOverviewTabProps {
 
 export default function TournamentOverviewTab({ tournament }: TournamentOverviewTabProps) {
   return (
-    <section className="bg-white p-6 rounded-md shadow-md">
+    <section className="bg-card p-6 rounded-md shadow-md">
       <h2 className="text-xl font-semibold mb-4">Informations générales</h2>
       <p><strong>Nom :</strong> {tournament.name}</p>
       <p><strong>Description :</strong> {tournament.description || '—'}</p>

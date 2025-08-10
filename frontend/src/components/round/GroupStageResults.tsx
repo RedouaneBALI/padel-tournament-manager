@@ -11,12 +11,12 @@ export default function GroupStageResults({
     <div className="space-y-4">
       {rounds.map(round =>
         round.pools?.map(pool => (
-          <div key={pool.name} className="bg-white rounded shadow">
+          <div key={pool.name} className="bg-card rounded shadow">
             <h3 className="text-lg font-semibold mb-2">Groupe {pool.name}</h3>
 
-            <table className="w-full text-sm text-left text-gray-700 border border-gray-300">
+            <table className="w-full text-sm text-left text-foreground border border-border">
               <thead>
-                <tr className="bg-gray-100 text-gray-900">
+                <tr className="bg-background text-foreground">
                   <th className="p-2 border text-center">#</th>
                   <th className="p-2 border text-center">Équipe</th>
                   <th className="p-2 border text-center">Victoires</th>

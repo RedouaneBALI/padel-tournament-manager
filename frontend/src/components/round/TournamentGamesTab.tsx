@@ -82,11 +82,11 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
   }, [tournamentId]);
 
   if (isLoading) {
-    return <p className="text-gray-500">Chargement des matchs...</p>;
+    return <p className="text-muted">Chargement des matchs...</p>;
   }
 
   if (rounds.length === 0) {
-    return <p className="text-gray-500">Aucun round défini pour le moment.</p>;
+    return <p className="text-muted">Aucun round défini pour le moment.</p>;
   }
 
   const currentRound = rounds[currentRoundIndex];
@@ -101,7 +101,7 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
       />
 
       {sortedGames.length === 0 ? (
-        <p className="text-gray-500">Aucun match trouvé pour ce round.</p>
+        <p className="text-muted">Aucun match trouvé pour ce round.</p>
       ) : (
         <div className="flex flex-col items-center space-y-4 w-full">
           {sortedGames.map(game => (
