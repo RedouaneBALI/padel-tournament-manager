@@ -37,7 +37,7 @@ export default function AdminTournamentLayout({
           return;
         }
         if (e?.message === 'UNAUTHORIZED') {
-          router.replace('/login');
+          router.replace('/connexion');
           return;
         }
         // fallback erreur générique

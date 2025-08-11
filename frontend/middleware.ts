@@ -1,12 +1,20 @@
-// frontend/middleware.ts
 import { withAuth } from 'next-auth/middleware';
+import { NextResponse } from 'next/server';
 
-export default withAuth({
-  pages: {
-    signIn: '/', // redirige vers la page d'accueil si non connecté
+export default withAuth(
+  function middleware() {
+    return NextResponse.next();
   },
-});
+  {
+    callbacks: {
+      authorized: ({ token }) => !!token,
+    },
+    pages: {
+      signIn: '/',
+    },
+  }
+);
 
 export const config = {
-  matcher: ['/admin/:path*'], // protègera TOUTES les routes commençant par /admin
+  matcher: ['/admin/:path*'],
 };

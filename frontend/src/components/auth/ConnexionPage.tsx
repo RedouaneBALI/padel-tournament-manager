@@ -29,8 +29,8 @@ export default function ConnexionPage() {
               Connecté en tant que <span className="font-medium">{session.user?.email}</span>
             </span>
             <button
-              onClick={() => signOut()}
-              className="px-5 py-2 text-base bg-primary text-on-primary rounded hover:hover:bg-primary-hover transition"
+              onClick={() => signOut({ callbackUrl: '/connexion' })}
+              className="px-5 py-2 text-base bg-primary text-on-primary rounded hover:bg-primary-hover transition"
             >
               Se déconnecter
             </button>
