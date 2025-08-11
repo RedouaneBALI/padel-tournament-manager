@@ -112,7 +112,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
                   <label className="text-xl font-semibold text-foreground text-center">Tirage</label>
                   <select
                     onChange={(e) => setDrawMode(e.target.value)}
-                    className="px-3 py-2 border border-border rounded-md text-sm h-10 shadow-sm text-center"
+                    className="px-3 py-2 h-12 border border-border rounded-md text-sm h-10 shadow-sm text-center"
                     value={drawMode}
                   >
                     <option value="seeded">{tournament?.nbSeeds === 0 ? 'Aléatoire' : 'Par classement (TS)'}</option>
@@ -120,7 +120,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
                   </select>
                   <button
                     onClick={handleDraw}
-                    className="px-4 py-2 bg-primary text-on-primary rounded hover:bg-primary-hover h-10"
+                    className="px-4 py-2 h-12 bg-primary text-on-primary rounded hover:bg-primary-hover"
                   >
                     Générer le tirage
                   </button>

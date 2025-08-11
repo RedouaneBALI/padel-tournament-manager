@@ -38,7 +38,7 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource(
       // Liste CSV des origins autorisées (modifiable via application.properties)
-      @Value("${app.cors.allowed-origins:https://nextapp-tcepdy5iwa-uc.a.run.app,http://localhost:3000}")
+      @Value("${app.cors.allowed-origins:https://nextapp-tcepdy5iwa-uc.a.run.app,http://localhost:3000,192.168.1.9:3000}")
       String originsCsv
   ) {
     List<String> origins = Arrays.stream(originsCsv.split(","))

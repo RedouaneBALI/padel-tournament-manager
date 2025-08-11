@@ -3,6 +3,14 @@
 import React from 'react';
 import { PlayerPair } from '@/src/types/playerPair';
 
+function focusByTabIndex(nextIndex: number) {
+  const el = document.querySelector<HTMLInputElement>(`input[tabindex="${nextIndex}"]`);
+  if (el) {
+    el.focus();
+    el.select?.();
+  }
+}
+
 interface Props {
   team: PlayerPair | null;
   teamIndex: number;
@@ -13,6 +21,7 @@ interface Props {
   handleKeyDown?: (e: React.KeyboardEvent, teamIndex: number, setIndex: number) => void;
   winnerSide?: number;
   visibleSets?: number;
+  computeTabIndex?: (teamIndex: number, setIndex: number) => number;
 }
 
 export default function TeamScoreRow({
@@ -25,13 +34,27 @@ export default function TeamScoreRow({
   handleKeyDown,
   winnerSide,
   visibleSets,
+  computeTabIndex,
 }: Props) {
   const handleChange = (setIndex: number, value: string) => {
+    const sanitized = value.replace(/[^0-9]/g, '');
     const updated = [...scores];
-    updated[setIndex] = value;
+    updated[setIndex] = sanitized;
     setScores?.(updated);
   };
 
+  const onKeyDownLocal = (e: React.KeyboardEvent, tIdx: number, sIdx: number) => {
+    // Mobile "Next" often emits Enter/NumpadEnter
+    if (e.key === 'Enter' || e.key === 'NumpadEnter') {
+      if (computeTabIndex) {
+        e.preventDefault();
+        const current = computeTabIndex(tIdx, sIdx);
+        focusByTabIndex(current + 1);
+        return;
+      }
+    }
+    handleKeyDown?.(e, tIdx, sIdx);
+  };
 
   return (
     <div className="flex items-center px-4 h-[60px]">
@@ -54,15 +77,19 @@ export default function TeamScoreRow({
             {scores.slice(0, visibleSets ?? 3).map((setScore, setIndex) => (
               <input
                 key={setIndex}
-                type="text"
+                type="tel"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={setScore}
                 ref={(el) => {
                   if (inputRefs) inputRefs.current[setIndex] = el;
                 }}
                 onChange={(e) => handleChange(setIndex, e.target.value)}
-                onKeyDown={(e) => handleKeyDown?.(e, teamIndex, setIndex)}
+                onKeyDown={(e) => onKeyDownLocal(e, teamIndex, setIndex)}
                 className="w-8 text-xs text-center border border-border rounded"
                 placeholder="-"
+                tabIndex={computeTabIndex ? computeTabIndex(teamIndex, setIndex) : undefined}
+                enterKeyHint="next"
               />
             ))}
           </div>

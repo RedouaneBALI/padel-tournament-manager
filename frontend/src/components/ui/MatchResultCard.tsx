@@ -229,6 +229,7 @@ export default function MatchResultCard({
           handleKeyDown={handleKeyDown}
           winnerSide={winnerSide}
           visibleSets={visibleSets}
+          computeTabIndex={(tIdx, sIdx) => sIdx * 2 + (tIdx + 1)}
         />
         <TeamScoreRow
           team={teamB}
@@ -240,6 +241,7 @@ export default function MatchResultCard({
           handleKeyDown={handleKeyDown}
           winnerSide={winnerSide}
           visibleSets={visibleSets}
+          computeTabIndex={(tIdx, sIdx) => sIdx * 2 + (tIdx + 1)}
         />
       </div>
       <div
