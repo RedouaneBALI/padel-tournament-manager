@@ -23,14 +23,11 @@ public class SecurityConfig {
     http
         // API stateless => pas de CSRF
         .csrf(csrf -> csrf.disable())
-        // Active CORS (utilise le bean corsConfigurationSource ci-dessous)
         .cors(Customizer.withDefaults())
-        // Tes règles d'accès
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/admin/**", "/api/admin/**").authenticated()
             .anyRequest().permitAll()
         )
-        // Resource Server JWT (Google JWKs)
         .oauth2ResourceServer(oauth2 -> oauth2
             .jwt(jwt -> jwt.jwkSetUri("https://www.googleapis.com/oauth2/v3/certs"))
         );

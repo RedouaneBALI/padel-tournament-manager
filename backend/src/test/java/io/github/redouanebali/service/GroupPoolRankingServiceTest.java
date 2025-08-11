@@ -78,8 +78,6 @@ public class GroupPoolRankingServiceTest {
       expectedRanking.add(new PlayerPair(null, new Player(names[0]), new Player(names[1]), 0));
     });
     List<PoolRankingDetails> ranking = GroupRankingService.computeRanking(pool, round.getGames());
-    ranking.forEach(System.out::println);
-    System.out.println();
     assertEquals(expectedRanking, ranking.stream().map(PoolRankingDetails::getPlayerPair).collect(Collectors.toList()));
 
     Tournament tournament = new Tournament();

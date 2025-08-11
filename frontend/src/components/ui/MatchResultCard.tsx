@@ -23,6 +23,7 @@ interface Props {
   court?: string;
   scheduledTime?: string;
   pool?: { name?: string };
+  setsToWin?: number;
 }
 
 export default function MatchResultCard({
@@ -38,7 +39,8 @@ export default function MatchResultCard({
   stage,
   court,
   scheduledTime,
-  pool
+  pool,
+  setsToWin
 }: Props) {
   const [localCourt, setLocalCourt] = useState(court || 'Court central');
   const [localScheduledTime, setLocalScheduledTime] = useState(scheduledTime || '00:00');
@@ -64,6 +66,42 @@ export default function MatchResultCard({
   const inputRefs = useRef<(HTMLInputElement | null)[][]>(
     Array.from({ length: 2 }, () => Array(3).fill(null))
   );
+
+  // Helper to compute visibleSets based on setsToWin and first two sets
+  const stw = setsToWin ?? 2;
+  let visibleSets: number;
+  if (stw === 1) {
+    visibleSets = 1;
+  } else if (stw === 2) {
+    // Compute wins for first two sets if both scores are numeric
+    const firstSetA = parseInt(scores[0][0], 10);
+    const firstSetB = parseInt(scores[1][0], 10);
+    const secondSetA = parseInt(scores[0][1], 10);
+    const secondSetB = parseInt(scores[1][1], 10);
+
+    const firstSetValid = !isNaN(firstSetA) && !isNaN(firstSetB);
+    const secondSetValid = !isNaN(secondSetA) && !isNaN(secondSetB);
+
+    let winsA = 0;
+    let winsB = 0;
+
+    if (firstSetValid) {
+      if (firstSetA > firstSetB) winsA++;
+      else if (firstSetB > firstSetA) winsB++;
+    }
+    if (secondSetValid) {
+      if (secondSetA > secondSetB) winsA++;
+      else if (secondSetB > secondSetA) winsB++;
+    }
+
+    if (winsA === 1 && winsB === 1) {
+      visibleSets = 3;
+    } else {
+      visibleSets = 2;
+    }
+  } else {
+    visibleSets = 3;
+  }
 
   function convertToScoreObject(scores: string[][]) {
     const sets = scores[0].map((_, i) => {
@@ -96,7 +134,7 @@ export default function MatchResultCard({
       } else {
         nextTeamIndex = 0;
         nextSetIndex = setIndex + 1;
-        if (nextSetIndex >= scores[0].length) {
+        if (nextSetIndex >= visibleSets) {
           nextSetIndex = 0;
         }
       }
@@ -190,6 +228,7 @@ export default function MatchResultCard({
           inputRefs={{ current: inputRefs.current[0] }}
           handleKeyDown={handleKeyDown}
           winnerSide={winnerSide}
+          visibleSets={visibleSets}
         />
         <TeamScoreRow
           team={teamB}
@@ -200,6 +239,7 @@ export default function MatchResultCard({
           inputRefs={{ current: inputRefs.current[1] }}
           handleKeyDown={handleKeyDown}
           winnerSide={winnerSide}
+          visibleSets={visibleSets}
         />
       </div>
       <div

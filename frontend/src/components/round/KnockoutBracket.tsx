@@ -1,5 +1,6 @@
 import MatchResultCardLight from '@/src/components/ui/MatchResultCardLight';
 import type { Round } from '@/src/types/round';
+import { calculateMatchPositions } from '@/src/utils/bracket';
 
 interface KnockoutBracketProps {
   rounds: Round[];
@@ -8,34 +9,6 @@ interface KnockoutBracketProps {
 
 export default function KnockoutBracket({ rounds, tournamentId }: KnockoutBracketProps) {
   const ROUND_WIDTH = 320;
-  const calculateMatchPositions = (rounds: Round[]) => {
-    if (rounds.length === 0) return [];
-
-    const positions: number[][] = [];
-
-    rounds.forEach((round, roundIndex) => {
-      const roundPositions: number[] = [];
-      const nbMatches = round.games.length;
-
-      if (roundIndex === 0) {
-        const baseSpacing = 160;
-        for (let i = 0; i < nbMatches; i++) {
-          roundPositions.push(i * baseSpacing);
-        }
-      } else {
-        const previousPositions = positions[roundIndex - 1];
-        for (let i = 0; i < nbMatches; i++) {
-          const pos1 = previousPositions[i * 2] || 0;
-          const pos2 = previousPositions[i * 2 + 1] || 0;
-          roundPositions.push((pos1 + pos2) / 2);
-        }
-      }
-
-      positions.push(roundPositions);
-    });
-
-    return positions;
-  };
 
   const matchPositions = calculateMatchPositions(rounds);
   const maxPosition = Math.max(...matchPositions.flat()) + 200;

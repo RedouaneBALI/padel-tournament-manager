@@ -81,23 +81,24 @@ export default function TournamentConfigSection({
           </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <div className="space-y-2 max-w-xs">
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 md:max-w-3xl">
+          <div className="space-y-2">
             <label htmlFor="nbSeeds" className="block text-sm font-medium text-foreground">
-              Nombre de têtes de série
+              Nombre de têtes de série (0 si tirage aléatoire)
             </label>
             <input
               id="nbSeeds"
               name="nbSeeds"
               type="number"
               min="0"
+              max="64"
               value={formData.nbSeeds ?? 16}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             />
           </div>
           {formData.tournamentFormat !== 'GROUP_STAGE' && (
-            <div className="space-y-2 max-w-xs">
+            <div className="space-y-2">
               <label htmlFor="nbMaxPairs" className="block text-sm font-medium text-foreground">
                 Nombre d&apos;équipes maximum
               </label>
@@ -106,6 +107,7 @@ export default function TournamentConfigSection({
                 name="nbMaxPairs"
                 type="number"
                 min="0"
+                max="128"
                 value={formData.nbMaxPairs ?? 48}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
@@ -114,7 +116,7 @@ export default function TournamentConfigSection({
           )}
           {formData.tournamentFormat === 'GROUP_STAGE' && (
             <>
-              <div className="space-y-2 max-w-xs">
+              <div className="space-y-2">
                 <label htmlFor="nbPools" className="block text-sm font-medium text-foreground">
                   Nombre de poules
                 </label>
@@ -123,7 +125,7 @@ export default function TournamentConfigSection({
                   name="nbPools"
                   value={formData.nbPools ?? 4}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10"
                 >
                   <option value={2}>2</option>
                   <option value={4}>4</option>
@@ -131,7 +133,7 @@ export default function TournamentConfigSection({
                 </select>
               </div>
 
-              <div className="space-y-2 max-w-xs">
+              <div className="space-y-2">
                 <label htmlFor="nbPairsPerPool" className="block text-sm font-medium text-foreground">
                   Équipes par poule
                 </label>
@@ -139,14 +141,15 @@ export default function TournamentConfigSection({
                   id="nbPairsPerPool"
                   name="nbPairsPerPool"
                   type="number"
-                  min="1"
+                  min="3"
+                  max="8"
                   value={formData.nbPairsPerPool ?? 4}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10"
                 />
               </div>
 
-              <div className="space-y-2 max-w-xs">
+              <div className="space-y-2">
                 <label htmlFor="nbQualifiedByPool" className="block text-sm font-medium text-foreground">
                   Équipes qualifiées par poule
                 </label>
@@ -155,7 +158,7 @@ export default function TournamentConfigSection({
                   name="nbQualifiedByPool"
                   value={formData.nbQualifiedByPool ?? 2}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10"
                 >
                   <option value={1}>1</option>
                   <option value={2}>2</option>

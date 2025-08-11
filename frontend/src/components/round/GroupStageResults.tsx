@@ -11,7 +11,7 @@ export default function GroupStageResults({
     <div className="space-y-4">
       {rounds.map(round =>
         round.pools?.map(pool => (
-          <div key={pool.name} className="bg-card rounded shadow">
+          <div key={pool.name} className="bg-card rounded shadow md:max-w-4xl md:mx-auto">
             <h3 className="text-lg font-semibold mb-2">Groupe {pool.name}</h3>
 
             <table className="w-full text-sm text-left text-foreground border border-border">

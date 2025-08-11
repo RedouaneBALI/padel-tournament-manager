@@ -7,7 +7,7 @@ import PlayerPairList from '@/src/components/tournament/PlayerPairsList';
 import { useRouter } from 'next/navigation';
 import { confirmAlert } from 'react-confirm-alert';
 import { generateDraw } from '@/src/api/tournamentApi';
-import { FileText } from 'lucide-react';
+import { FileText, Loader2 } from 'lucide-react';
 import { PlayerPair } from '@/src/types/playerPair';
 import { Tournament } from '@/src/types/tournament';
 import { fetchTournament, fetchPairs } from '@/src/api/tournamentApi';
@@ -22,6 +22,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
   const [tournamentStarted, setTournamentStarted] = useState(false);
 
   const [drawMode, setDrawMode] = useState('seeded');
+  const [isGenerating, setIsGenerating] = useState(false);
   const router = useRouter();
 
   const handleDraw = () => {
@@ -33,10 +34,14 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
         {
           label: 'Oui',
           onClick: async () => {
-            const manual = drawMode === 'order';
-            await generateDraw(tournamentId, manual);
-            router.push(`/admin/tournament/${tournamentId}/rounds/results`);
-
+            setIsGenerating(true);
+            try {
+              const manual = drawMode === 'order';
+              await generateDraw(tournamentId, manual);
+              router.push(`/admin/tournament/${tournamentId}/rounds/results`);
+            } finally {
+              setIsGenerating(false);
+            }
           },
         },
         {
@@ -71,6 +76,11 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
 
   return (
     <div className="container mx-auto max-w-3xl">
+      {isGenerating && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/20 backdrop-blur-sm">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </div>
+      )}
       <div className="bg-card shadow-sm">
         <div className="flex items-center gap-2 border-b border-border p-2">
           <FileText className="h-5 w-5 text-muted-foreground" />
@@ -96,8 +106,8 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
           )}
           {pairs.length > 0 && !tournamentStarted && (
             <>
-              <hr className="my-6 border-t border-border" />
-              <div className="flex flex-col sm:flex-row sm:justify-center sm:items-end gap-4 mt-6">
+              <hr className="my-2 border-t border-border" />
+              <div className="flex flex-col sm:flex-row sm:justify-center sm:items-end gap-4 mt-4">
                 <div className="flex flex-col gap-2 pb-4">
                   <label className="text-xl font-semibold text-foreground text-center">Tirage</label>
                   <select

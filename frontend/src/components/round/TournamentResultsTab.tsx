@@ -9,45 +9,14 @@ import KnockoutBracket from '@/src/components/round/KnockoutBracket';
 import GroupStageResults from '@/src/components/round/GroupStageResults';
 import { Stage } from '@/src/types/stage';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import BracketHeader from '@/src/components/tournament/BracketHeader';
+import SubTabs from '@/src/components/tournament/SubTabs';
+import { calculateMatchPositions } from '@/src/utils/bracket';
+import { exportBracketAsImage } from '@/src/utils/imageExport';
 
 const VIEW_CLASSEMENT = 'classement';
 const VIEW_PHASE_FINALE = 'phase-finale';
 
-// Fonction pour calculer la position verticale correcte de chaque match
-function calculateMatchPositions(rounds: Round[]) {
-  if (rounds.length === 0) return [];
-
-  const positions: number[][] = [];
-
-  // Calculer les positions pour chaque round
-  rounds.forEach((round, roundIndex) => {
-    const roundPositions: number[] = [];
-    const nbMatches = round.games.length;
-
-    if (roundIndex === 0) {
-      // Premier round : positions équidistantes
-      const baseSpacing = 160; // Espacement de base entre les matchs
-      for (let i = 0; i < nbMatches; i++) {
-        roundPositions.push(i * baseSpacing);
-      }
-    } else {
-      // Rounds suivants : chaque match se positionne entre deux matchs précédents
-      const previousPositions = positions[roundIndex - 1];
-      for (let i = 0; i < nbMatches; i++) {
-        // Position au milieu des deux matchs précédents
-        const pos1 = previousPositions[i * 2] || 0;
-        const pos2 = previousPositions[i * 2 + 1] || 0;
-        roundPositions.push((pos1 + pos2) / 2);
-      }
-    }
-
-    positions.push(roundPositions);
-  });
-
-  return positions;
-}
-
-// Composant principal
 interface TournamentResultsTabProps {
   tournamentId: string;
 }
@@ -90,51 +59,6 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
     if (matchPositions.length === 0) return 0;
     return Math.max(...matchPositions.flat()) + 200;
   }, [hasFinals, finalsRounds]);
-
-const exportBracketAsImage = async () => {
-  const node = document.getElementById('bracket-container');
-  if (!node) return;
-
-  const originalStyle = {
-    overflow: node.style.overflow,
-    width: node.style.width,
-    height: node.style.height,
-    maxWidth: node.style.maxWidth,
-  };
-
-  try {
-    // Forcer la taille exacte du contenu scrollable
-    const scrollWidth = node.scrollWidth;
-    const scrollHeight = node.scrollHeight;
-
-    node.style.overflow = 'visible';
-    node.style.width = `${scrollWidth}px`;
-    node.style.height = `${scrollHeight}px`;
-    node.style.maxWidth = 'none';
-
-    // Attendre que le style soit bien appliqué
-    await new Promise((resolve) => setTimeout(resolve, 50));
-
-    // Générer l'image PNG avec la taille complète
-    const dataUrl = await toPng(node, {
-      width: scrollWidth,
-      height: scrollHeight,
-    });
-
-    const link = document.createElement('a');
-    link.download = 'bracket.png';
-    link.href = dataUrl;
-    link.click();
-  } catch (err) {
-    console.error('Erreur lors de l’export en image :', err);
-  } finally {
-    // Restaurer les styles d'origine
-    node.style.overflow = originalStyle.overflow;
-    node.style.width = originalStyle.width;
-    node.style.height = originalStyle.height;
-    node.style.maxWidth = originalStyle.maxWidth;
-  }
-};
 
   const setView = (view: string) => {
     const params = new URLSearchParams(searchParams?.toString());
@@ -189,23 +113,15 @@ const exportBracketAsImage = async () => {
         activeView === VIEW_PHASE_FINALE && (
           hasFinals ? (
             <div className="w-full">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-foreground">Arbre du tournoi</h2>
-                <button
-                  onClick={exportBracketAsImage}
-                  className="p-2 text-on-primary bg-primary hover:bg-primary-hover rounded-md"
-                  title="Exporter en PNG"
-                >
-                  <ArrowDownTrayIcon className="h-5 w-5" />
-                </button>
-              </div>
-
+              <BracketHeader onExport={() => exportBracketAsImage('bracket-container')} />
               <div
                 id="bracket-container"
                 className="relative overflow-auto border border-border rounded-lg p-8 bg-background"
                 style={{ minHeight: maxPosition ? `${maxPosition}px` : undefined }}
               >
-                <KnockoutBracket rounds={finalsRounds} tournamentId={tournamentId} />
+                <div className="w-max mx-0 md:mx-auto">
+                  <KnockoutBracket rounds={finalsRounds} tournamentId={tournamentId} />
+                </div>
               </div>
             </div>
           ) : (
@@ -216,16 +132,7 @@ const exportBracketAsImage = async () => {
         // If not GROUPS: show knockout bracket directly, no tabs
         hasFinals ? (
           <div className="w-full">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-foreground">Arbre du tournoi</h2>
-              <button
-                onClick={exportBracketAsImage}
-                className="p-2 text-on-primary bg-primary hover:bg-primary-hover rounded-md"
-                title="Exporter en PNG"
-              >
-                <ArrowDownTrayIcon className="h-5 w-5" />
-              </button>
-            </div>
+            <BracketHeader onExport={() => exportBracketAsImage('bracket-container')} />
 
             <div
               id="bracket-container"

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { PlayerPair } from '@/src/types/playerPair';
 import { toast } from 'react-toastify';
 import { fetchPairs, savePlayerPairs } from '@/src/api/tournamentApi';
+import { Loader2 } from 'lucide-react';
 
 interface Props {
   tournamentId: string;
@@ -13,6 +14,7 @@ interface Props {
 
 export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasStarted }: Props) {
   const [text, setText] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const fetchUpdatedPairs = async () => {
 
@@ -29,56 +31,66 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
   const handleClear = () => setText('');
 
   const handleSave = async () => {
-    const lines = text
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line !== '');
-
-    const pairs: PlayerPair[] = lines.map((line, index) => {
-      const [p1, p2] = line.split(/[,;]/).map(s => s.trim());
-      return {
-        player1: { name: p1 },
-        player2: { name: p2 },
-        seed: index + 1,
-      };
-    });
-
+    setIsSaving(true);
     try {
+      const lines = text
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line !== '');
+
+      const pairs: PlayerPair[] = lines.map((line, index) => {
+        const [p1, p2] = line.split(/[,;]/).map(s => s.trim());
+        return {
+          player1: { name: p1 },
+          player2: { name: p2 },
+          seed: index + 1,
+        };
+      });
+
       await savePlayerPairs(tournamentId, pairs);
     } catch {
       return;
+    } finally {
+      setIsSaving(false);
     }
 
     await fetchUpdatedPairs();
   };
 
   return (
-    <div className="bg-card">
-      <textarea
-        className="w-full h-60 p-2 border border-border rounded resize-none font-mono overflow-x-auto whitespace-pre"
-        wrap="off"
-        value={text}
-        onChange={e => setText(e.target.value)}
-        placeholder={`Ghali Berrada,Selim Mekouar\nRedouane Bali,Ali Khobzaoui`}
-        disabled={hasStarted}
-      />
-
-      {!hasStarted && (
-        <div className="flex justify-center gap-4 mt-4">
-          <button
-            onClick={handleClear}
-            className="px-4 py-2 border border-border text-foreground rounded hover:bg-background"
-          >
-            Effacer
-          </button>
-          <button
-            onClick={handleSave}
-            className="px-4 py-2 bg-primary text-on-primary rounded hover:bg-primary-hover"
-          >
-            Enregistrer les joueurs
-          </button>
+    <>
+      {isSaving && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/20 backdrop-blur-sm">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
       )}
-    </div>
+      <div className="bg-card">
+        <textarea
+          className="w-full h-60 p-2 border border-border rounded resize-none font-mono overflow-x-auto whitespace-pre"
+          wrap="off"
+          value={text}
+          onChange={e => setText(e.target.value)}
+          placeholder={`Ghali Berrada,Selim Mekouar\nRedouane Bali,Ali Khobzaoui`}
+          disabled={hasStarted}
+        />
+
+        {!hasStarted && (
+          <div className="flex justify-center gap-4 py-2">
+            <button
+              onClick={handleClear}
+              className="px-4 py-2 border border-border text-foreground rounded hover:bg-background"
+            >
+              Effacer
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-4 py-2 bg-primary text-on-primary rounded hover:bg-primary-hover"
+            >
+              Enregistrer les joueurs
+            </button>
+          </div>
+        )}
+      </div>
+    </>
   );
 }

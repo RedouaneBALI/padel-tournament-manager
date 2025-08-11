@@ -227,6 +227,13 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
       return;
     }
 
+    // Seed KO bracket only when all group matches are finished
+    boolean groupsDone = groupsRound.getGames() != null && groupsRound.getGames().stream().allMatch(Game::isFinished);
+    if (!groupsDone) {
+      LOG.info("Group stage not finished yet; postponing KO seeding.");
+      return;
+    }
+
     // Determine next stage for bracket
     Stage nextStage = Stage.fromNbTeams(totalQualified);
     if (nextStage == null) {
@@ -245,11 +252,10 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
                                   return r;
                                 });
 
-    // If next round already seeded (teams already assigned), don't reseed or you'll wipe scores.
-    boolean alreadySeeded = nextRound.getGames() != null && nextRound.getGames().stream()
-                                                                     .anyMatch(g -> g.getTeamA() != null || g.getTeamB() != null);
-    if (alreadySeeded) {
-      LOG.info("Round {} already seeded, skipping reseed and propagating KO winners only.", nextStage);
+    // If next round already started (any game finished), don't reseed; only propagate winners.
+    boolean nextRoundStarted = nextRound.getGames() != null && nextRound.getGames().stream().anyMatch(Game::isFinished);
+    if (nextRoundStarted) {
+      LOG.info("Next round {} already started, skipping reseed and only propagating winners.", nextStage);
       new KnockoutRoundGenerator(0).propagateWinners(tournament);
       return;
     }

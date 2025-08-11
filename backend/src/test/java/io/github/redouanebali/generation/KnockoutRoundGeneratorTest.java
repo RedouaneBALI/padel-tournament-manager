@@ -40,9 +40,7 @@ public class KnockoutRoundGeneratorTest {
         Arguments.of(16, 8, new int[]{0, 15, 8, 7, 4, 11, 12, 3}, Stage.R16),
         // Pour 16 équipes et 4 têtes de série
         Arguments.of(16, 4, new int[]{0, 15, 8, 7}, Stage.R16),
-        // Pour 32 équipes et 16 têtes de série
         Arguments.of(32, 16, new int[]{0, 31, 16, 15, 8, 23, 24, 7, 4, 27, 20, 11, 12, 19, 28, 3}, Stage.R32),
-        // Pour 32 équipes et 8 têtes de série
         Arguments.of(32, 8, new int[]{0, 31, 16, 15, 8, 23, 24, 7}, Stage.R32)
     );
   }
@@ -55,11 +53,9 @@ public class KnockoutRoundGeneratorTest {
       int[] expectedSeedIndices
   ) {
     List<PlayerPair> pairs = createPairs(nbTeams);
-    // On trie les équipes par seed croissant pour que seed 1 soit à l'indice 0, seed 2 à 1, etc.
     pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
     generator = new KnockoutRoundGenerator(nbSeeds);
     List<Integer> seedPositions = generator.getSeedsPositions(nbTeams, nbSeeds);
-    // Vérification pour tous les seeds concernés
     for (int i = 0; i < expectedSeedIndices.length; i++) {
       int expectedIdx = expectedSeedIndices[i];
       int actualIdx   = seedPositions.get(i);
@@ -83,7 +79,6 @@ public class KnockoutRoundGeneratorTest {
     assertEquals(expectedStage, round.getStage());
     List<Game> games = round.getGames();
 
-    // Vérification du placement des têtes de série
     for (int i = 0; i < expectedSeedIndices.length; i++) {
       int        expectedPosition = expectedSeedIndices[i];
       int        gameIndex        = expectedPosition / 2;
@@ -95,7 +90,6 @@ public class KnockoutRoundGeneratorTest {
                                  seedTeam.getSeed(), expectedPosition, gameIndex));
     }
 
-    // Vérification que toutes les équipes jouent dans un match
     Set<PlayerPair> allTeamsInGames = new HashSet<>();
     for (Game game : games) {
       if (game.getTeamA() != null) {
@@ -115,7 +109,6 @@ public class KnockoutRoundGeneratorTest {
                  String.format("L'équipe avec seed %d doit jouer dans un match", pair.getSeed()));
     }
 
-    // Vérification supplémentaire : aucune équipe ne joue deux fois
     Set<PlayerPair> duplicateCheck = new HashSet<>();
     for (Game game : games) {
       if (game.getTeamA() != null) {
@@ -145,8 +138,7 @@ public class KnockoutRoundGeneratorTest {
     List<PlayerPair> pairs = List.of(pairA, pairB, pairC, pairD);
 
     generator = new KnockoutRoundGenerator(0);
-    Round round = generator.generateManualRound(pairs);
-    // Vérifications
+    Round      round = generator.generateManualRound(pairs);
     List<Game> games = round.getGames();
     assertEquals(2, games.size());
 
@@ -167,27 +159,21 @@ public class KnockoutRoundGeneratorTest {
     List<Game> gamesCurrent = new
         ArrayList<>();
 
-    // Joueurs / paires
     PlayerPair byePair = PlayerPair.bye();
     byePair.setId(99L);
 
     List<PlayerPair> pairs = createPairs(6);
 
-    // Création de 4 matchs dans roundCurrent
-    // Match 0 : pair1 vs pair2 (terminé, pair1 gagne)
     Game game0 = new Game(createSimpleFormat());
     game0.setTeamA(pairs.get(0));
     game0.setTeamB(pairs.get(1));
     game0.setScore(createScoreWithWinner(pairs.get(0)));
     game0.setFormat(createSimpleFormat());
 
-    // Match 1 : pair3 vs BYE (pair3 passe automatiquement)
     Game game1 = new Game(createSimpleFormat());
     game1.setTeamA(pairs.get(2));
     game1.setTeamB(byePair);
-    game1.setScore(null); // pas joué, mais BYE présent
-
-    // Match 2 : pair4 vs pair5 (pas terminé)
+    game1.setScore(null);
     Game game2 = new Game(createSimpleFormat());
     game2.setTeamA(pairs.get(3));
     game2.setTeamB(pairs.get(4));

@@ -164,7 +164,13 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
   };
 
   return (
-    <div className="container mx-auto max-w-4xl">
+    <>
+      {isSubmitting && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/20 backdrop-blur-sm">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+      )}
+      <div className="container mx-auto max-w-4xl" aria-busy={isSubmitting}>
       <div className="bg-card shadow-lg border border-border">
         <div className="p-6">
           {title && (
@@ -204,8 +210,8 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full px-4 py-2 bg-primary text-on-primary rounded hover:bg-primary-hover"              >
-                {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                className="w-full px-4 py-2 bg-primary text-on-primary rounded hover:bg-primary-hover"
+              >
                 {isSubmitting
                   ? (isEditing ? 'Mise à jour...' : 'Création en cours...')
                   : (isEditing ? 'Mettre à jour' : 'Créer le tournoi')
@@ -227,5 +233,6 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
         pauseOnHover
       />
     </div>
+    </>
   );
 }

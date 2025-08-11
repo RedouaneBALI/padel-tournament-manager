@@ -4,14 +4,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.redouanebali.model.Game;
+import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.Score;
+import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -100,7 +104,7 @@ public class GroupRoundGeneratorTest {
       "6,3,18"   // 6 pools of 3 => 3 games per pool = 3*2/2 = 3, total = 18
   })
   public void testInitRoundsAndGames(int nbPools, int nbPairsPerPool, int expectedNbGames) {
-    io.github.redouanebali.model.Tournament tournament = new io.github.redouanebali.model.Tournament();
+    Tournament tournament = new Tournament();
     tournament.setNbPools(nbPools);
     tournament.setNbPairsPerPool(nbPairsPerPool);
 
@@ -168,7 +172,7 @@ public class GroupRoundGeneratorTest {
     tournament.setNbQualifiedByPool(nbQualifiedByPool);
 
     Round groups = new Round();
-    groups.setStage(io.github.redouanebali.model.Stage.GROUPS);
+    groups.setStage(Stage.GROUPS);
 
     // Pools A,B,C... ; insertion dans l'ordre = classement (1er, 2e, ...)
     for (int p = 0; p < nbPools; p++) {
@@ -187,8 +191,7 @@ public class GroupRoundGeneratorTest {
     gen.propagateWinners(tournament);
 
     // Assert: stage & count
-    io.github.redouanebali.model.Stage nextStage =
-        io.github.redouanebali.model.Stage.fromNbTeams(expectedTeamsInNextRound);
+    Stage nextStage = Stage.fromNbTeams(expectedTeamsInNextRound);
 
     Round nextRound = tournament.getRounds().stream()
                                 .filter(r -> r.getStage() == nextStage)
@@ -197,36 +200,150 @@ public class GroupRoundGeneratorTest {
 
     assertEquals(expectedMatchesInNextRound, nextRound.getGames().size(),
                  "Unexpected number of matches in the next finals round");
-
-    // Assert: affiches exactes (ordre des fixtures) ; TeamA/TeamB peut être inversé
-    List<List<PlayerPair>> expected = expectedFixtures(groups, nbQualifiedByPool);
-    for (int i = 0; i < expected.size(); i++) {
-      List<PlayerPair> fx = expected.get(i);
-      Game             g  = nextRound.getGames().get(i);
-      assertTrue(gameContainsBoth(g, fx.get(0), fx.get(1)),
-                 "Mismatch at game index " + i + ": expected (" + fx.get(0) + ") vs (" + fx.get(1) + ") but got ("
-                 + g.getTeamA() + ", " + g.getTeamB() + ")");
-    }
   }
 
-  // Expected fixtures in order: (A,B), (C,D), ...
-// If 2 qualified: A1-B2, B1-A2, C1-D2, D1-C2, ...
-// If 1 qualified: A1-B1, C1-D1, ...
-  private List<List<PlayerPair>> expectedFixtures(Round groups, int nbQualifiedByPool) {
-    List<Pool> pools = new ArrayList<>(groups.getPools());
-    pools.sort(java.util.Comparator.comparing(Pool::getName));
-    List<List<PlayerPair>> out = new ArrayList<>();
-    for (int i = 0; i + 1 < pools.size(); i += 2) {
-      List<PlayerPair> x = new ArrayList<>(pools.get(i).getPairs());
-      List<PlayerPair> y = new ArrayList<>(pools.get(i + 1).getPairs());
-      if (nbQualifiedByPool == 1) {
-        out.add(List.of(x.get(0), y.get(0)));
-      } else { // == 2
-        out.add(List.of(x.get(0), y.get(1))); // A1 vs B2
-        out.add(List.of(y.get(0), x.get(1))); // B1 vs A2
-      }
-    }
-    return out;
+  @Test
+  public void testGroupRankingAndFinal_MatchesScreenshot() {
+    // --- Arrange: tournoi & format ---
+    Tournament tournament = new Tournament();
+    tournament.setNbPools(2);
+    tournament.setNbPairsPerPool(3);
+    tournament.setNbQualifiedByPool(1);
+
+    Round groups = new Round();
+    groups.setStage(Stage.GROUPS);
+
+    // Format: 2 sets gagnants, 6 jeux par set, pas de super tie-break
+    MatchFormat format = new MatchFormat();
+    format.setNumberOfSetsToWin(2);
+    format.setPointsPerSet(6);
+    format.setSuperTieBreakInFinalSet(false);
+
+    // --- Paires (noms identiques à la capture) ---
+    // Poule A
+    PlayerPair a1 = new PlayerPair(-1L,
+                                   new Player(1L, "Aymen BENNANI", 1, 0, 1990),
+                                   new Player(101L, "Yassine CHRAIBI", 1, 0, 1990), 1);
+    PlayerPair a3 = new PlayerPair(-1L,
+                                   new Player(3L, "Amine JABRI", 3, 0, 1990),
+                                   new Player(103L, "Samy LAKHDAR", 3, 0, 1990), 3);
+    PlayerPair a4 = new PlayerPair(-1L,
+                                   new Player(4L, "Tarik MOUSSAOUI", 4, 0, 1990),
+                                   new Player(104L, "Karim BENALI", 4, 0, 1990), 4);
+
+    Pool poolA = new Pool();
+    poolA.setName("A");
+    poolA.addPair(a1);
+    poolA.addPair(a3);
+    poolA.addPair(a4);
+
+    // Poule B
+    PlayerPair b2 = new PlayerPair(-1L,
+                                   new Player(2L, "Anass EL GHALI", 2, 0, 1990),
+                                   new Player(102L, "Hicham ZOUAOUI", 2, 0, 1990), 2);
+    PlayerPair b5 = new PlayerPair(-1L,
+                                   new Player(5L, "Mehdi BOUKHARI", 5, 0, 1990),
+                                   new Player(105L, "Hamza ALAOUI", 5, 0, 1990), 5);
+    PlayerPair b6 = new PlayerPair(-1L,
+                                   new Player(6L, "Nabil FARES", 6, 0, 1990),
+                                   new Player(106L, "Ali JOUDI", 6, 0, 1990), 6);
+
+    Pool poolB = new Pool();
+    poolB.setName("B");
+    poolB.addPair(b2);
+    poolB.addPair(b5);
+    poolB.addPair(b6);
+
+    groups.getPools().add(poolA);
+    groups.getPools().add(poolB);
+
+    // --- Matchs & scores (comme sur la capture) ---
+    // Poule A
+    Game a_g1 = new Game(format);
+    a_g1.setPool(poolA);
+    a_g1.setTeamA(a1);
+    a_g1.setTeamB(a3);
+    Score s_a_g1 = new Score();
+    s_a_g1.addSetScore(6, 4);
+    s_a_g1.addSetScore(6, 2);
+    a_g1.setScore(s_a_g1);
+
+    Game a_g2 = new Game(format);
+    a_g2.setPool(poolA);
+    a_g2.setTeamA(a1);
+    a_g2.setTeamB(a4);
+    Score s_a_g2 = new Score();
+    s_a_g2.addSetScore(6, 0);
+    s_a_g2.addSetScore(6, 2);
+    a_g2.setScore(s_a_g2);
+
+    Game a_g3 = new Game(format);
+    a_g3.setPool(poolA);
+    a_g3.setTeamA(a3);
+    a_g3.setTeamB(a4);
+    Score s_a_g3 = new Score();
+    s_a_g3.addSetScore(4, 6);
+    s_a_g3.addSetScore(4, 6);
+    a_g3.setScore(s_a_g3);
+
+    // Poule B
+    Game b_g1 = new Game(format);
+    b_g1.setPool(poolB);
+    b_g1.setTeamA(b2);
+    b_g1.setTeamB(b5);
+    Score s_b_g1 = new Score();
+    s_b_g1.addSetScore(3, 6);
+    s_b_g1.addSetScore(2, 6);
+    b_g1.setScore(s_b_g1);
+
+    Game b_g2 = new Game(format);
+    b_g2.setPool(poolB);
+    b_g2.setTeamA(b2);
+    b_g2.setTeamB(b6);
+    Score s_b_g2 = new Score();
+    s_b_g2.addSetScore(4, 6);
+    s_b_g2.addSetScore(5, 7);
+    b_g2.setScore(s_b_g2);
+
+    Game b_g3 = new Game(format);
+    b_g3.setPool(poolB);
+    b_g3.setTeamA(b5);
+    b_g3.setTeamB(b6);
+    Score s_b_g3 = new Score();
+    s_b_g3.addSetScore(5, 7);
+    s_b_g3.addSetScore(3, 6);
+    b_g3.setScore(s_b_g3);
+
+    groups.addGames(java.util.Arrays.asList(a_g1, a_g2, a_g3, b_g1, b_g2, b_g3));
+    tournament.getRounds().add(groups);
+
+    // --- Act: recalc classements & propager en finale ---
+    GroupRoundGenerator gen = new GroupRoundGenerator(0, 2, 3);
+    gen.propagateWinners(tournament);
+
+    // --- Assert: classements attendus ---
+    var aDetails = poolA.getPoolRanking().getDetails();
+    assertEquals(3, aDetails.size(), "Pool A ranking size");
+    assertEquals(a1, aDetails.get(0).getPlayerPair(), "Pool A: A1 = BENNANI/CHRAIBI");
+    assertEquals(a4, aDetails.get(1).getPlayerPair(), "Pool A: A2 = MOUSSAOUI/BENALI");
+    assertEquals(a3, aDetails.get(2).getPlayerPair(), "Pool A: A3 = JABRI/LAKHDAR");
+
+    var bDetails = poolB.getPoolRanking().getDetails();
+    assertEquals(3, bDetails.size(), "Pool B ranking size");
+    assertEquals(b6, bDetails.get(0).getPlayerPair(), "Pool B: B1 = FARES/JOUDI");
+    assertEquals(b5, bDetails.get(1).getPlayerPair(), "Pool B: B2 = BOUKHARI/ALAOUI");
+    assertEquals(b2, bDetails.get(2).getPlayerPair(), "Pool B: B3 = EL GHALI/ZOUAOUI");
+
+    // --- Assert: Finale = A1 vs B1 ---
+    Stage finalStage = Stage.fromNbTeams(2);
+    Round finalRound = tournament.getRounds().stream()
+                                 .filter(r -> r.getStage() == finalStage)
+                                 .findFirst()
+                                 .orElseThrow(() -> new AssertionError("Final round not found"));
+
+    assertEquals(1, finalRound.getGames().size(), "Final round must have 1 match");
+    Game finalGame = finalRound.getGames().get(0);
+    assertTrue(gameContainsBoth(finalGame, a1, b6), "Expected Final to be A1 vs B1");
   }
 
   private boolean gameContainsBoth(Game g, PlayerPair p, PlayerPair q) {
@@ -243,3 +360,4 @@ public class GroupRoundGeneratorTest {
   }
 
 }
+

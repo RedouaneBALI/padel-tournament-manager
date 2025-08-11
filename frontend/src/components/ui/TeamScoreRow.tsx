@@ -12,6 +12,7 @@ interface Props {
   inputRefs?: React.MutableRefObject<(HTMLInputElement | null)[]>;
   handleKeyDown?: (e: React.KeyboardEvent, teamIndex: number, setIndex: number) => void;
   winnerSide?: number;
+  visibleSets?: number;
 }
 
 export default function TeamScoreRow({
@@ -23,6 +24,7 @@ export default function TeamScoreRow({
   inputRefs,
   handleKeyDown,
   winnerSide,
+  visibleSets,
 }: Props) {
   const handleChange = (setIndex: number, value: string) => {
     const updated = [...scores];
@@ -49,7 +51,7 @@ export default function TeamScoreRow({
       <div className="text-center ml-4">
         {editing ? (
           <div className="flex space-x-1">
-            {scores.map((setScore, setIndex) => (
+            {scores.slice(0, visibleSets ?? 3).map((setScore, setIndex) => (
               <input
                 key={setIndex}
                 type="text"

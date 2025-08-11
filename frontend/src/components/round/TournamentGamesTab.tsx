@@ -1,6 +1,11 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+// Helper to get setsToWin for a round
+function getSetsToWin(round: any) {
+  const n = Number(round?.matchFormat?.numberOfSetsToWin);
+  return Number.isFinite(n) && n > 0 ? n : 2;
+}
 import MatchResultCard from '@/src/components/ui/MatchResultCard';
 import RoundSelector from '@/src/components/round/RoundSelector';
 import type { Round } from '@/src/types/round';
@@ -128,6 +133,7 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
                 }
                 stage={currentRound.stage}
                 pool={game.pool}
+                setsToWin={getSetsToWin(currentRound)}
               />
             </div>
           ))}

@@ -94,7 +94,6 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
       }
     }
 
-    // On retourne une nouvelle liste : uniquement les paires restantes à placer
     return new ArrayList<>(
         pairs.stream()
              .filter(p -> !seeds.contains(p) && !byeTeams.contains(p))
@@ -180,10 +179,8 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
       }
 
       if (game.getTeamA() != null && game.getTeamB() == null) {
-        // Compléter un match qui a déjà une seed
         game.setTeamB(remainingTeams.get(teamIndex++));
       } else if (game.getTeamA() == null) {
-        // Remplir un match complètement vide
         game.setTeamA(remainingTeams.get(teamIndex++));
         if (teamIndex < remainingTeams.size()) {
           game.setTeamB(remainingTeams.get(teamIndex++));
