@@ -6,6 +6,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.github.redouanebali.config.SecurityProps;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
@@ -14,26 +15,43 @@ import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.TournamentFormat;
 import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.service.DrawGenerationService;
+import java.util.Collections;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
+@ExtendWith(MockitoExtension.class)
 class DrawGenerationServiceTest {
 
   @Mock
   private TournamentRepository tournamentRepository;
+
+  @Mock
+  private SecurityProps securityProps;
 
   @InjectMocks
   private DrawGenerationService drawGenerationService;
 
   @BeforeEach
   void setUp() {
-    MockitoAnnotations.openMocks(this);
+    Jwt jwt = Jwt.withTokenValue("fake")
+                 .header("alg", "none")
+                 .claim("email", "bali.redouane@gmail.com")
+                 .build();
+    JwtAuthenticationToken auth = new JwtAuthenticationToken(jwt, Collections.emptyList(), "bali.redouane@gmail.com");
+    SecurityContextHolder.getContext().setAuthentication(auth);
+
+    org.mockito.Mockito.lenient().when(securityProps.getSuperAdmins()).thenReturn(Collections.emptySet());
   }
 
   @Test
@@ -42,6 +60,7 @@ class DrawGenerationServiceTest {
     tournament.setId(1L);
     tournament.setTournamentFormat(TournamentFormat.KNOCKOUT);
     tournament.setNbSeeds(2);
+    tournament.setOwnerId("bali.redouane@gmail.com");
 
     PlayerPair pair1 = new PlayerPair(1L, new Player("A1"), new Player("B1"), 1);
     PlayerPair pair2 = new PlayerPair(2L, new Player("A2"), new Player("B2"), 2);
@@ -84,6 +103,7 @@ class DrawGenerationServiceTest {
     tournament.setNbSeeds(3);
     tournament.setNbPools(1);
     tournament.setNbPairsPerPool(3);
+    tournament.setOwnerId("bali.redouane@gmail.com");
 
     PlayerPair pair1 = new PlayerPair();
     PlayerPair pair2 = new PlayerPair();
@@ -114,5 +134,10 @@ class DrawGenerationServiceTest {
       verify(generatorMock).generateManualRound(any());
       verify(generatorMock, never()).propagateWinners(any());
     }
+  }
+
+  @AfterEach
+  void tearDown() {
+    SecurityContextHolder.clearContext();
   }
 }

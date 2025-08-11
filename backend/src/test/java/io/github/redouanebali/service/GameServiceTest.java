@@ -22,6 +22,9 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.MockitoAnnotations;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 public class GameServiceTest {
 
@@ -31,10 +34,15 @@ public class GameServiceTest {
 
   @BeforeEach
   void setUp() {
+    MockitoAnnotations.openMocks(this);
+    SecurityContextHolder.getContext().setAuthentication(
+        new UsernamePasswordAuthenticationToken("bali.redouane@gmail.com", null, List.of())
+    );
     tournamentRepository = mock(TournamentRepository.class);
     tournamentService    = mock(TournamentService.class);
     gameService          = new GameService(tournamentRepository, tournamentService);
   }
+
 
   @ParameterizedTest
   @CsvSource({

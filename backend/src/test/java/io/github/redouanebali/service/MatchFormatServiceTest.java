@@ -4,24 +4,33 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.TournamentRepository;
+import java.util.Collections;
 import java.util.Optional;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
+@ExtendWith(MockitoExtension.class)
 public class MatchFormatServiceTest {
 
   @Mock
   private TournamentRepository tournamentRepository;
+
+  @Mock
+  private io.github.redouanebali.config.SecurityProps securityProps;
 
   @InjectMocks
   private MatchFormatService matchFormatService;
@@ -30,9 +39,17 @@ public class MatchFormatServiceTest {
   private Round       round;
   private MatchFormat existingFormat;
 
+
   @BeforeEach
   void setUp() {
-    MockitoAnnotations.openMocks(this);
+    Jwt jwt = Jwt.withTokenValue("fake")
+                 .header("alg", "none")
+                 .claim("email", "bali.redouane@gmail.com")
+                 .build();
+    JwtAuthenticationToken auth = new JwtAuthenticationToken(jwt, Collections.emptyList(), "bali.redouane@gmail.com");
+    SecurityContextHolder.getContext().setAuthentication(auth);
+
+    org.mockito.Mockito.lenient().when(securityProps.getSuperAdmins()).thenReturn(Collections.emptySet());
 
     existingFormat = new MatchFormat();
     existingFormat.setNumberOfSetsToWin(2);
@@ -46,14 +63,15 @@ public class MatchFormatServiceTest {
 
     tournament = new Tournament();
     tournament.setId(1L);
+    tournament.setOwnerId("bali.redouane@gmail.com");
     tournament.getRounds().clear();
     tournament.getRounds().add(round);
+
+    org.mockito.Mockito.lenient().when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
   }
 
   @Test
   void testGetMatchFormatForRound() {
-    when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
-
     MatchFormat result = matchFormatService.getMatchFormatForRound(1L, Stage.R32);
 
     assertEquals(existingFormat, result);
@@ -62,8 +80,6 @@ public class MatchFormatServiceTest {
 
   @Test
   void testUpdateMatchFormatForRound() {
-    when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
-
     MatchFormat newFormat = new MatchFormat();
     newFormat.setNumberOfSetsToWin(3);
     newFormat.setPointsPerSet(7);
@@ -79,5 +95,10 @@ public class MatchFormatServiceTest {
     assertEquals(newFormat, updated);
 
     verify(tournamentRepository).save(tournament);
+  }
+
+  @AfterEach
+  void tearDown() {
+    SecurityContextHolder.clearContext();
   }
 }

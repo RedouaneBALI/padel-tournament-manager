@@ -1,5 +1,7 @@
 package io.github.redouanebali.controller;
 
+import io.github.redouanebali.dto.TournamentDTO;
+import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.PlayerPair;
@@ -39,9 +41,13 @@ public class PublicTournamentController {
   @Autowired
   private MatchFormatService matchFormatService;
 
+  @Autowired
+  private TournamentMapper tournamentMapper;
+
   @GetMapping("/{id}")
-  public Tournament getTournament(@PathVariable Long id) {
-    return tournamentService.getTournamentById(id);
+  public TournamentDTO getTournament(@PathVariable Long id) {
+    Tournament tournament = tournamentService.getTournamentById(id);
+    return tournamentMapper.toDTO(tournament);
   }
 
   @GetMapping("/{id}/pairs")

@@ -1,5 +1,7 @@
 package io.github.redouanebali.service;
 
+import io.github.redouanebali.config.SecurityProps;
+import io.github.redouanebali.config.SecurityUtil;
 import io.github.redouanebali.generation.AbstractRoundGenerator;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Round;
@@ -11,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +24,7 @@ public class TournamentService {
 
 
   private final TournamentRepository tournamentRepository;
+  private final SecurityProps        securityProps;
 
   private final DrawGenerationService drawGenerationService;
 
@@ -41,16 +45,22 @@ public class TournamentService {
       tournament.getRounds().clear();
       tournament.getRounds().addAll(rounds);
     }
+    tournament.setOwnerId(SecurityUtil.currentUserId());
 
     Tournament savedTournament = tournamentRepository.save(tournament);
     log.info("Created tournament with id {}", savedTournament.getId());
-    return savedTournament;
+    return applyEditable(savedTournament);
   }
 
 
   @Transactional
   public Tournament updateTournament(Long tournamentId, Tournament updatedTournament) {
-    Tournament existing = getTournamentById(tournamentId);
+    Tournament  existing    = getTournamentById(tournamentId);
+    String      me          = SecurityUtil.currentUserId();
+    Set<String> superAdmins = securityProps.getSuperAdmins();
+    if (!superAdmins.contains(me) && !me.equals(existing.getOwnerId())) {
+      throw new AccessDeniedException("You are not allowed to edit this tournament");
+    }
     existing.setName(updatedTournament.getName());
     existing.setStartDate(updatedTournament.getStartDate());
     existing.setEndDate(updatedTournament.getEndDate());
@@ -62,7 +72,7 @@ public class TournamentService {
     existing.setTournamentFormat(updatedTournament.getTournamentFormat());
     existing.setNbSeeds(updatedTournament.getNbSeeds());
     existing.setNbMaxPairs(updatedTournament.getNbMaxPairs());
-    return tournamentRepository.save(existing);
+    return applyEditable(tournamentRepository.save(existing));
   }
 
 
@@ -74,8 +84,13 @@ public class TournamentService {
    * @return the new Tournament
    */
   public Tournament generateDraw(Long tournamentId, boolean manual) {
-    Tournament tournament = getTournamentById(tournamentId);
-    return drawGenerationService.generateDraw(tournament, manual);
+    Tournament  tournament  = getTournamentById(tournamentId);
+    String      me          = SecurityUtil.currentUserId();
+    Set<String> superAdmins = securityProps.getSuperAdmins();
+    if (!superAdmins.contains(me) && !me.equals(tournament.getOwnerId())) {
+      throw new AccessDeniedException("You are not allowed to generate the draw for this tournament");
+    }
+    return applyEditable(drawGenerationService.generateDraw(tournament, manual));
   }
 
   public Set<Game> getGamesByTournamentAndStage(Long tournamentId, Stage stage) {
@@ -87,6 +102,17 @@ public class TournamentService {
                             .orElseThrow(() -> new IllegalArgumentException("Round not found for stage: " + stage));
 
     return new LinkedHashSet<>(round.getGames());
+  }
+
+  public Tournament getTournamentForCurrentUser(Long id) {
+    return applyEditable(getTournamentById(id));
+  }
+
+  private Tournament applyEditable(Tournament t) {
+    String      me          = SecurityUtil.currentUserId();
+    Set<String> superAdmins = securityProps.getSuperAdmins();
+    t.setEditable(superAdmins.contains(me) || me.equals(t.getOwnerId()));
+    return t;
   }
 
 }

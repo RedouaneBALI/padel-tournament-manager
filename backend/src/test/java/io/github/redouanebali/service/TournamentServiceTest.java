@@ -6,28 +6,45 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.github.redouanebali.config.SecurityProps;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.TournamentRepository;
+import java.util.Collections;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockitoAnnotations;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 public class TournamentServiceTest {
 
   private TournamentService     tournamentService;
+  private SecurityProps         securityProps;
   private TournamentRepository  tournamentRepository;
   private DrawGenerationService drawGenerationService;
-  private PlayerPairService     playerPairService;
 
   @BeforeEach
   void setUp() {
-    tournamentRepository  = mock(TournamentRepository.class);
+    MockitoAnnotations.openMocks(this);
+    Jwt jwt = Jwt.withTokenValue("fake")
+                 .header("alg", "none")
+                 .claim("email", "bali.redouane@gmail.com")
+                 .build();
+    JwtAuthenticationToken auth = new JwtAuthenticationToken(jwt, Collections.emptyList(), "bali.redouane@gmail.com");
+    SecurityContextHolder.getContext().setAuthentication(auth);
+
+    tournamentRepository = mock(TournamentRepository.class);
+    securityProps        = mock(SecurityProps.class);
+    org.mockito.Mockito.lenient().when(securityProps.getSuperAdmins()).thenReturn(Collections.emptySet());
     drawGenerationService = mock(DrawGenerationService.class);
 
     tournamentService = new TournamentService(
         tournamentRepository,
+        securityProps,
         drawGenerationService
     );
   }
@@ -36,6 +53,7 @@ public class TournamentServiceTest {
   void testGenerateDraw_shouldDelegateToDrawGenerationService() {
     Tournament tournament = new Tournament();
     tournament.setId(1L);
+    tournament.setOwnerId("bali.redouane@gmail.com");
 
     when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
     when(drawGenerationService.generateDraw(tournament, false)).thenReturn(tournament);

@@ -8,13 +8,35 @@ import { fetchWithAuth } from "./fetchWithAuth";
 
 export const BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').replace(/\/$/, '');
 
-export async function fetchTournament(tournamentId : string) : Promise<Tournament> {
-  const response = await fetch(`${BASE_URL}/tournaments/${tournamentId}`);
-  if (!response.ok) {
-    toast.error('Erreur réseau lors de la récupération du tournoi.');
-    throw new Error('Erreur de récupération du tournoi');
+export async function fetchTournament(tournamentId: string): Promise<Tournament> {
+  const res = await fetchWithAuth(`${BASE_URL}/tournaments/${tournamentId}`, { method: 'GET' });
+  if (res.status === 401) {
+    throw new Error('UNAUTHORIZED');
   }
-  return await response.json();
+  if (res.status === 403) {
+    throw new Error('FORBIDDEN');
+  }
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    toast.error(`Erreur lors de la récupération du tournoi (${res.status})`);
+    throw new Error(`HTTP_${res.status} ${text}`);
+  }
+  return res.json();
+}
+
+export async function fetchTournamentAdmin(tournamentId: string): Promise<Tournament> {
+  const res = await fetchWithAuth(`${BASE_URL}/tournaments/${tournamentId}`, { method: 'GET' });
+  if (res.status === 401) {
+    throw new Error('UNAUTHORIZED');
+  }
+  if (res.status === 403) {
+    throw new Error('FORBIDDEN');
+  }
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`HTTP_${res.status} ${text}`);
+  }
+  return res.json();
 }
 
 export async function fetchRounds(tournamentId: string): Promise<Round[]> {

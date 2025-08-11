@@ -15,13 +15,26 @@ import io.github.redouanebali.model.Tournament;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.MockitoAnnotations;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 public class GroupRoundGeneratorTest {
 
   private GroupRoundGenerator generator;
+
+  @BeforeEach
+  void setUp() {
+    MockitoAnnotations.openMocks(this);
+
+    SecurityContextHolder.getContext().setAuthentication(
+        new UsernamePasswordAuthenticationToken("bali.redouane@gmail.com", null, List.of())
+    );
+  }
 
   @ParameterizedTest
   @CsvSource({

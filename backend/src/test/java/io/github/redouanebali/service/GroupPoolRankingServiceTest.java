@@ -20,13 +20,22 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.MockitoAnnotations;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithMockUser;
 
+@WithMockUser(username = "bali.redouane@gmail.com")
 public class GroupPoolRankingServiceTest {
 
   private List<PlayerPair> defaultPairs;
 
   @BeforeEach
   void setUp() {
+    MockitoAnnotations.openMocks(this);
+    SecurityContextHolder.getContext().setAuthentication(
+        new UsernamePasswordAuthenticationToken("bali.redouane@gmail.com", null, List.of())
+    );
     defaultPairs = getDefaultPlayerPairs();
   }
 

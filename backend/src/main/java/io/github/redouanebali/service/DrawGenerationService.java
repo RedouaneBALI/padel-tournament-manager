@@ -1,5 +1,7 @@
 package io.github.redouanebali.service;
 
+import io.github.redouanebali.config.SecurityProps;
+import io.github.redouanebali.config.SecurityUtil;
 import io.github.redouanebali.generation.AbstractRoundGenerator;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Pool;
@@ -8,8 +10,10 @@ import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.TournamentFormat;
 import io.github.redouanebali.repository.TournamentRepository;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,8 +22,15 @@ import org.springframework.stereotype.Service;
 public class DrawGenerationService {
 
   private final TournamentRepository tournamentRepository;
+  private final SecurityProps        securityProps;
 
   public Tournament generateDraw(Tournament tournament, boolean manual) {
+    String      me          = SecurityUtil.currentUserId();
+    Set<String> superAdmins = securityProps.getSuperAdmins();
+    if (!superAdmins.contains(me) && !me.equals(tournament.getOwnerId())) {
+      throw new AccessDeniedException("You are not allowed to generate draw for this tournament");
+    }
+
     AbstractRoundGenerator generator = AbstractRoundGenerator.of(tournament);
     Round                  newRound;
     if (manual) {

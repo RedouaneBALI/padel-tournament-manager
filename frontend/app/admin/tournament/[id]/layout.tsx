@@ -5,7 +5,8 @@ import { ToastContainer } from 'react-toastify';
 import AdminTournamentHeader from '@/src/components/admin/AdminTournamentHeader';
 import type { Tournament } from '@/src/types/tournament';
 import 'react-toastify/dist/ReactToastify.css';
-import { fetchTournament } from '@/src/api/tournamentApi';
+import { fetchTournamentAdmin } from '@/src/api/tournamentApi';
+import { useRouter } from 'next/navigation';
 
 export default function AdminTournamentLayout({
   children,
@@ -16,15 +17,51 @@ export default function AdminTournamentLayout({
 }) {
   const { id } = use(params);
   const [tournament, setTournament] = useState<Tournament | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
+    let mounted = true;
     async function loadTournament() {
-    const data = await fetchTournament(id);
-    setTournament(data);
+      try {
+        const data = await fetchTournamentAdmin(id);
+        if (!mounted) return;
+        if (data && data.isEditable === false) {
+          router.replace('/403');
+          return;
+        }
+        setTournament(data);
+      } catch (e: any) {
+        if (e?.message === 'FORBIDDEN') {
+          router.replace('/403');
+          return;
+        }
+        if (e?.message === 'UNAUTHORIZED') {
+          router.replace('/login');
+          return;
+        }
+        // fallback erreur générique
+        router.replace('/500');
+      } finally {
+        if (mounted) setLoading(false);
+      }
     }
-
     loadTournament();
-  }, [id]);
+    return () => { mounted = false; };
+  }, [id, router]);
+
+  if (loading) {
+    return (
+      <div className="w-full max-w-screen-2xl px-1 sm:px-4 mx-auto">
+        <div className="flex items-center justify-center h-64">Chargement…</div>
+        <ToastContainer />
+      </div>
+    );
+  }
+
+  if (!tournament) {
+    return null;
+  }
 
   return (
     <div className="w-full max-w-screen-2xl px-1 sm:px-4 mx-auto">

@@ -68,7 +68,11 @@
       <scope>test</scope>
       <version>5.10.2</version>
     </dependency>
-
+    <dependency>
+      <artifactId>spring-security-test</artifactId>
+      <groupId>org.springframework.security</groupId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <artifactId>mockito-core</artifactId>
       <groupId>org.mockito</groupId>

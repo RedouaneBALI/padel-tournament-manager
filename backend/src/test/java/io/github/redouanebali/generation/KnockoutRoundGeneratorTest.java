@@ -23,10 +23,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.MockitoAnnotations;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 public class KnockoutRoundGeneratorTest {
 
@@ -42,6 +46,15 @@ public class KnockoutRoundGeneratorTest {
         Arguments.of(16, 4, new int[]{0, 15, 8, 7}, Stage.R16),
         Arguments.of(32, 16, new int[]{0, 31, 16, 15, 8, 23, 24, 7, 4, 27, 20, 11, 12, 19, 28, 3}, Stage.R32),
         Arguments.of(32, 8, new int[]{0, 31, 16, 15, 8, 23, 24, 7}, Stage.R32)
+    );
+  }
+
+  @BeforeEach
+  void setUp() {
+    MockitoAnnotations.openMocks(this);
+
+    SecurityContextHolder.getContext().setAuthentication(
+        new UsernamePasswordAuthenticationToken("bali.redouane@gmail.com", null, List.of())
     );
   }
 
