@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
@@ -50,11 +51,13 @@ public class Tournament {
   @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
   @OneToMany(cascade = CascadeType.ALL/*, orphanRemoval = true*/)
   @JoinColumn(name = "tournament_id")
+  @OrderColumn(name = "order_index") // persists list order
   private List<Round>      rounds      = new ArrayList<>();
   @Setter(AccessLevel.NONE)
   @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "tournament_id")
+  @OrderColumn(name = "order_index") // persists list order
   private List<PlayerPair> playerPairs = new ArrayList<>();
   private String           description;
   private String           city;

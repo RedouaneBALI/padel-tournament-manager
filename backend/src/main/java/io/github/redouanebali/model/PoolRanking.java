@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderColumn;
 import java.util.LinkedList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -24,6 +25,7 @@ public class PoolRanking {
 
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "pool_ranking_id")
+  @OrderColumn(name = "order_index") // persists list order
   private List<PoolRankingDetails> details = new LinkedList<>();
 
   public void addDetails(PoolRankingDetails rankingDetails) {

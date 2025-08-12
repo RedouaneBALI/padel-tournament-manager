@@ -16,12 +16,17 @@ import io.github.redouanebali.service.MatchFormatService;
 import io.github.redouanebali.service.PlayerPairService;
 import io.github.redouanebali.service.TournamentService;
 import jakarta.validation.Valid;
+import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,32 +36,31 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@RequestMapping("/admin/tournaments")
 @RestController
+@RequestMapping(
+    value = "/admin/tournaments",
+    produces = MediaType.APPLICATION_JSON_VALUE
+)
 @Slf4j
 @RequiredArgsConstructor
+@PreAuthorize("isAuthenticated()")
 public class AdminTournamentController {
 
-  private final TournamentService tournamentService;
-
-  private final PlayerPairService playerPairService;
-
-  private final GameService gameService;
-
+  private final TournamentService  tournamentService;
+  private final PlayerPairService  playerPairService;
+  private final GameService        gameService;
   private final MatchFormatService matchFormatService;
+  private final SecurityProps      securityProps;
+  private final TournamentMapper   tournamentMapper;
 
-  private final SecurityProps securityProps;
-
-  private final TournamentMapper tournamentMapper;
-
-  @PreAuthorize("isAuthenticated()")
-  @PostMapping
-  public TournamentDTO createTournament(@RequestBody Tournament tournament) {
+  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<TournamentDTO> createTournament(@RequestBody @Valid Tournament tournament) {
     Tournament saved = tournamentService.createTournament(tournament);
-    return tournamentMapper.toDTO(saved);
+    return ResponseEntity
+        .created(URI.create("/admin/tournaments/" + saved.getId()))
+        .body(tournamentMapper.toDTO(saved));
   }
 
-  @PreAuthorize("isAuthenticated()")
   @GetMapping
   public List<TournamentDTO> listMyTournaments(@RequestParam(defaultValue = "mine") String scope) {
     String  me      = SecurityUtil.currentUserId();
@@ -69,52 +73,60 @@ public class AdminTournamentController {
     return list.stream().map(tournamentMapper::toDTO).toList();
   }
 
-  @PreAuthorize("isAuthenticated()")
-  @PutMapping("/{id}")
-  public TournamentDTO updateTournament(@PathVariable Long id, @RequestBody Tournament updated) {
+  @PutMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public TournamentDTO updateTournament(@PathVariable Long id, @RequestBody @Valid Tournament updated) {
     checkOwnership(id);
     return tournamentMapper.toDTO(tournamentService.updateTournament(id, updated));
   }
 
-  @PreAuthorize("isAuthenticated()")
-  @PostMapping("/{id}/pairs")
+  @PostMapping(path = "/{id}/pairs", consumes = MediaType.APPLICATION_JSON_VALUE)
   public TournamentDTO addPairs(@PathVariable Long id, @RequestBody @Valid List<PlayerPair> players) {
     checkOwnership(id);
     return tournamentMapper.toDTO(playerPairService.addPairs(id, players));
   }
 
   /**
-   * @param manual if true, the rounds will be generated using the players in the same order otherwise, the algorithm will be used
+   * @param manual if true players order is preserved, otherwise algorithm shuffles
    */
-  @PreAuthorize("isAuthenticated()")
-  @PostMapping("/{id}/draw")
-  // @todo replace boolean manual by a enum
-  public TournamentDTO generateDraw(@PathVariable Long id, @RequestParam(defaultValue = "false") boolean manual) {
+  @PostMapping(path = "/{id}/draw")
+  public TournamentDTO generateDraw(@PathVariable Long id,
+                                    @RequestParam(defaultValue = "false") boolean manual) {
     checkOwnership(id);
     return tournamentMapper.toDTO(tournamentService.generateDraw(id, manual));
   }
 
-  @PreAuthorize("isAuthenticated()")
-  @PutMapping("/{id}/rounds/{stage}/match-format")
-  public MatchFormat updateMatchFormat(@PathVariable Long id, @PathVariable Stage stage, @RequestBody MatchFormat newFormat) {
+  @PutMapping(path = "/{id}/rounds/{stage}/match-format", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public MatchFormat updateMatchFormat(@PathVariable Long id,
+                                       @PathVariable Stage stage,
+                                       @RequestBody @Valid MatchFormat newFormat) {
     checkOwnership(id);
     return matchFormatService.updateMatchFormatForRound(id, stage, newFormat);
   }
 
-  @PreAuthorize("isAuthenticated()")
-  @PutMapping("/{tournamentId}/games/{gameId}/score")
-  public ScoreUpdateResponse updateScore(@PathVariable Long tournamentId, @PathVariable Long gameId, @RequestBody Score score) {
+  @PutMapping(path = "/{tournamentId}/games/{gameId}/score", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ScoreUpdateResponse updateScore(@PathVariable Long tournamentId,
+                                         @PathVariable Long gameId,
+                                         @RequestBody @Valid Score score) {
     checkOwnership(tournamentId);
     return gameService.updateGameScore(tournamentId, gameId, score);
   }
 
-  @PreAuthorize("isAuthenticated()")
-  @PutMapping("/{tournamentId}/games/{gameId}")
+  @PutMapping(path = "/{tournamentId}/games/{gameId}", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ScoreUpdateResponse updateGame(@PathVariable Long tournamentId,
                                         @PathVariable Long gameId,
-                                        @RequestBody GameUpdateRequest request) {
+                                        @RequestBody @Valid GameUpdateRequest request) {
     checkOwnership(tournamentId);
     return gameService.updateGame(tournamentId, gameId, request);
+  }
+
+  @GetMapping("/admin/debug/auth")
+  public Map<String, Object> auth(Authentication a) {
+    return Map.of(
+        "name", a == null ? null : a.getName(),
+        "authenticated", a != null && a.isAuthenticated(),
+        "authorities", a == null ? null : a.getAuthorities(),
+        "details", a
+    );
   }
 
   private void checkOwnership(Long tournamentId) {
@@ -125,5 +137,4 @@ public class AdminTournamentController {
       throw new AccessDeniedException("You are not allowed to modify this tournament");
     }
   }
-
 }

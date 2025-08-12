@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation';
+import { use } from 'react';
 
-export default function Page({ params }: { params: { id: string }}) {
-  redirect(`/admin/tournament/${params.id}/players`);
+export default function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  redirect(`/admin/tournament/${id}/players`);
 }
