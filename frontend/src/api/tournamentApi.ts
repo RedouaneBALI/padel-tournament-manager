@@ -70,7 +70,7 @@ export async function fetchRounds(tournamentId: string): Promise<Round[]> {
 export async function fetchPairs(tournamentId: string): Promise<PlayerPair[]>{
   const response = await fetch(`${BASE_URL}/tournaments/${tournamentId}/pairs`);
   if (!response.ok) {
-    // toast.error("Erreur réseau lors du chargement des joueurs."); // Removed as per instructions
+    toast.error("Erreur réseau lors du chargement des joueurs."); // Removed as per instructions
     throw new Error('Erreur de récupération des PlayerPair');
   }
   return await response.json();

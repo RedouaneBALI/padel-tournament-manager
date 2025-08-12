@@ -17,3 +17,7 @@ public class PadelTournamentManagerApplication {
 
 //  cloud-sql-proxy --port 5433 --address 127.0.0.1 --debug-logs --auto-ip
 // # export $(grep -v '^#' .env.local | xargs) && mvn spring-boot:run -Dspring-boot.run.profiles=cloudsql-local
+
+// H2 Local: mvn spring-boot:run -Dspring-boot.run.profiles=h2
+// Cloud SQL local : export $(grep -v '^#' .env.local | xargs) mvn spring-boot:run -Dspring-boot.run.profiles=cloudsql-local
+//

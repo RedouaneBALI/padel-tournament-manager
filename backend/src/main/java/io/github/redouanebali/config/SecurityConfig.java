@@ -11,23 +11,23 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableMethodSecurity(prePostEnabled = true) // ⬅️ active @PreAuthorize
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
   @Bean
   SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
-        .cors(Customizer.withDefaults())          // utilise CorsConfig
-        .csrf(csrf -> csrf.disable())             // API
+        .cors(Customizer.withDefaults())
+        .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // préflight
+            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()     // préflight
+            .requestMatchers(HttpMethod.GET, "/tournaments/**").permitAll() // ⬅️ public GET
             .anyRequest().authenticated()
         )
-        .oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults())); // ⬅️ IMPORTANT
+        .oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()));
     return http.build();
   }
 
-  // Garde le decoder Google (issuer = accounts.google.com)
   @Bean
   public JwtDecoder jwtDecoder() {
     return NimbusJwtDecoder

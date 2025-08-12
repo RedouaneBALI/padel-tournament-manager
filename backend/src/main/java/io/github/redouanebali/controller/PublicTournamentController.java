@@ -13,6 +13,7 @@ import io.github.redouanebali.service.GroupRankingService;
 import io.github.redouanebali.service.MatchFormatService;
 import io.github.redouanebali.service.PlayerPairService;
 import io.github.redouanebali.service.TournamentService;
+import jakarta.annotation.security.PermitAll;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -50,6 +51,7 @@ public class PublicTournamentController {
     return tournamentMapper.toDTO(tournament);
   }
 
+  @PermitAll
   @GetMapping("/{id}/pairs")
   public List<PlayerPair> getPairs(@PathVariable Long id) {
     return playerPairService.getPairsByTournamentId(id);
