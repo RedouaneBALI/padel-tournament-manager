@@ -7,6 +7,23 @@ import { signIn } from 'next-auth/react';
 export default function Home() {
   const { status } = useSession();
 
+    const features = [
+      {
+        title: "Création rapide",
+        description: "Renseigne quelques infos et démarre en moins d'une minute.",
+        emoji: "⚡"
+      },
+      {
+        title: "Paires & tirages",
+        description: "Ajoute les équipes, configure les formats, génère le tirage automatiquement.",
+        emoji: "👥"
+      },
+      {
+        title: "Gestion en direct",
+        description: "Mets à jour les résultats et suis l'avancement du tournoi en temps réel.",
+        emoji: "⏱️"
+      }
+    ];
   // Authenticated: show the main hero with action buttons
   return (
     <main className="min-h-screen bg-background">
@@ -33,7 +50,7 @@ export default function Home() {
                   </Link>
 
                   <Link
-                    href="/"
+                    href="/admin/tournaments"
                     className="px-5 py-3 rounded-lg border border-border bg-background text-foreground hover:bg-card transition"
                   >
                     Mes tournois
@@ -54,28 +71,44 @@ export default function Home() {
               )}
             </div>
 
-            <div className="grid sm:grid-cols-3 gap-4 mt-10 text-left">
-              <div className="rounded-xl border border-border bg-background p-5">
-                <h3 className="font-semibold text-foreground mb-1">Création rapide</h3>
-                <p className="text-sm text-muted-foreground">
-                  Renseigne quelques infos et démarre en moins d’une minute.
-                </p>
-              </div>
+            {/* Features Section */}
+                  <section>
+                    <div className="max-w-6xl mx-auto px-4">
+                      <div className="text-center mb-8">
+                        <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+                          Tout ce dont tu as besoin
+                        </h2>
+                        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                          Des outils puissants et intuitifs pour organiser des tournois mémorables
+                        </p>
+                      </div>
 
-              <div className="rounded-xl border border-border bg-background p-5">
-                <h3 className="font-semibold text-foreground mb-1">Paires & tirages</h3>
-                <p className="text-sm text-muted-foreground">
-                  Ajoute les équipes, configure les formats, génère le tirage automatiquement.
-                </p>
-              </div>
+                      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                        {features.map((feature, index) => (
+                          <div
+                            key={index}
+                            className="group hover:shadow-card transition-all duration-300 hover:scale-105 hover:-translate-y-2 border border-border bg-card/80 backdrop-blur-sm rounded-lg"
+                          >
+                            <div className="p-4 text-center">
+                              <div>
+                                <div className="w-16 h-16 mx-auto bg-gradient-primary rounded-2xl flex items-center justify-center group-hover:animate-pulse transition-all duration-300">
+                                  <span className="text-3xl">{feature.emoji}</span>
+                                </div>
+                              </div>
 
-              <div className="rounded-xl border border-border bg-background p-5">
-                <h3 className="font-semibold text-foreground mb-1">Gestion en direct</h3>
-                <p className="text-sm text-muted-foreground">
-                  Mets à jour les résultats et suis l’avancement du tournoi en temps réel.
-                </p>
-              </div>
-            </div>
+                              <h3 className="text-xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors duration-300">
+                                {feature.title}
+                              </h3>
+
+                              <p className="text-muted-foreground leading-relaxed">
+                                {feature.description}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </section>
 
           </div>
         </div>
@@ -83,3 +116,5 @@ export default function Home() {
     </main>
   );
 }
+
+// rm -rf .firebase/functions/.next .next && npm run build:functions && firebase deploy --only functions

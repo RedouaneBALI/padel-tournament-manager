@@ -39,6 +39,25 @@ export async function fetchTournamentAdmin(tournamentId: string): Promise<Tourna
   return res.json();
 }
 
+export async function fetchMyTournaments(scope: 'mine' | 'all' = 'mine'): Promise<Tournament[]> {
+  const qs = scope && scope !== 'mine' ? `?scope=${encodeURIComponent(scope)}` : '';
+  const res = await fetchWithAuth(`${BASE_URL}/admin/tournaments${qs}`, { method: 'GET' });
+
+  if (res.status === 401) {
+    throw new Error('UNAUTHORIZED');
+  }
+  if (res.status === 403) {
+    throw new Error('FORBIDDEN');
+  }
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    toast.error('Erreur lors du chargement de vos tournois.');
+    throw new Error(`HTTP_${res.status} ${text}`);
+  }
+
+  return res.json();
+}
+
 export async function fetchRounds(tournamentId: string): Promise<Round[]> {
   const response = await fetch(`${BASE_URL}/tournaments/${tournamentId}/rounds`);
   if (!response.ok) {

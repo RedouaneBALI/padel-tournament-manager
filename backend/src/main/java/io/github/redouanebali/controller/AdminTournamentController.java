@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -53,6 +54,19 @@ public class AdminTournamentController {
   public TournamentDTO createTournament(@RequestBody Tournament tournament) {
     Tournament saved = tournamentService.createTournament(tournament);
     return tournamentMapper.toDTO(saved);
+  }
+
+  @PreAuthorize("isAuthenticated()")
+  @GetMapping
+  public List<TournamentDTO> listMyTournaments(@RequestParam(defaultValue = "mine") String scope) {
+    String  me      = SecurityUtil.currentUserId();
+    boolean isSuper = securityProps.getSuperAdmins().contains(me);
+
+    List<Tournament> list = ("all".equalsIgnoreCase(scope) && isSuper)
+                            ? tournamentService.listAll()
+                            : tournamentService.listByOwner(me);
+
+    return list.stream().map(tournamentMapper::toDTO).toList();
   }
 
   @PreAuthorize("isAuthenticated()")

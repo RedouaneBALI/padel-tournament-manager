@@ -19,5 +19,6 @@ export interface Tournament {
   nbPools: number;
   nbPairsPerPool: number;
   nbQualifiedByPool: number;
+  isEditable: boolean;
 }
 

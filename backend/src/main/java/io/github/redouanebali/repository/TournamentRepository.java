@@ -1,6 +1,7 @@
 package io.github.redouanebali.repository;
 
 import io.github.redouanebali.model.Tournament;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Repository;
 public interface TournamentRepository extends JpaRepository<Tournament, Long> {
 
   Optional<Tournament> findByIdAndOwnerId(Long id, String ownerId);
+
+  List<Tournament> findAllByOwnerId(String ownerId);
 
   Page<Tournament> findAllByOwnerId(String ownerId, Pageable pageable);
 }

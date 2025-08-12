@@ -115,4 +115,11 @@ public class TournamentService {
     return t;
   }
 
+  public List<Tournament> listByOwner(String ownerId) {
+    return tournamentRepository.findAllByOwnerId(ownerId);
+  }
+
+  public List<Tournament> listAll() {
+    return tournamentRepository.findAll();
+  }
 }
