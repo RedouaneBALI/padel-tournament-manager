@@ -42,12 +42,11 @@ export function GET() {
       <section class="card" role="alert" aria-live="polite">
         <div class="code">403</div>
         <h1 class="title">Accès refusé</h1>
-        <p class="desc">Vous n'êtes pas autorisé à consulter cette page. Si vous pensez que c'est une erreur, contactez l'organisateur.</p>
+        <p class="desc">Vous n'êtes pas autorisé à consulter cette page.</p>
         <div class="actions">
           <a class="btn btn-primary" href="/">Retour à l’accueil</a>
           <a class="btn btn-ghost" href="/">Mes tournois</a>
         </div>
-        <p class="small">Code d’erreur : 403 • Authentifié mais non autorisé</p>
       </section>
     </main>
   </body>
