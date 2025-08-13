@@ -137,6 +137,22 @@ export async function createTournament(payload: Tournament) {
   return res.json();
 }
 
+export async function deleteTournament(tournamentId: string | number): Promise<void> {
+  const res = await fetchWithAuth(`${BASE_URL}/admin/tournaments/${tournamentId}`, {
+    method: 'DELETE',
+  });
+
+  if (res.status === 401) throw new Error('UNAUTHORIZED');
+  if (res.status === 403) throw new Error('FORBIDDEN');
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    toast.error("Erreur lors de la suppression du tournoi.");
+    throw new Error(`HTTP_${res.status} ${text}`);
+  }
+  // 204 No Content attendu — rien à retourner
+}
+
 export async function updateTournament(tournamentId: string, updatedTournament: Tournament) {
   const response = await fetchWithAuth(`${BASE_URL}/admin/tournaments/${tournamentId}`, {
     method: 'PUT',

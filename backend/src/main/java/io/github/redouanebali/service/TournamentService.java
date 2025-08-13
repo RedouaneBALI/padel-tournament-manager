@@ -52,6 +52,18 @@ public class TournamentService {
     return applyEditable(savedTournament);
   }
 
+  @Transactional
+  public void deleteTournament(Long tournamentId) {
+    Tournament  existing    = getTournamentById(tournamentId);
+    String      me          = SecurityUtil.currentUserId();
+    Set<String> superAdmins = securityProps.getSuperAdmins();
+    if (!superAdmins.contains(me) && !me.equals(existing.getOwnerId())) {
+      throw new AccessDeniedException("You are not allowed to delete this tournament");
+    }
+    tournamentRepository.delete(existing);
+    log.info("Deleted tournament with id {}", tournamentId);
+  }
+
 
   @Transactional
   public Tournament updateTournament(Long tournamentId, Tournament updatedTournament) {

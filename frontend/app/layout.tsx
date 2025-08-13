@@ -7,7 +7,7 @@ import LogoutButton from '@/src/components/auth/LogoutButton';
 import { getServerSession } from "next-auth";
 import { getAuthOptions } from "@/src/lib/authOptions";
 import Link from 'next/link';
-import { FiHome } from 'react-icons/fi';
+import { FiHome, FiPlusCircle, FiList } from 'react-icons/fi';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,15 +31,48 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <SessionProviderWrapper>
           {session && (
-            <div className="w-full flex justify-between p-4">
-              <Link
-                href="/"
-                className="flex items-center text-muted hover:text-primary"
-              >
-                <FiHome className="w-6 h-6" />
-              </Link>
-              <LogoutButton />
-            </div>
+            <header className="sticky top-0 z-40 bg-background/80 backdrop-blur border-b border-border">
+              <div className="max-w-5xl mx-auto px-4">
+                {/* Tout au centre, espacement homogène */}
+                <nav className="h-14 flex items-center justify-center">
+                  <div className="flex items-center gap-6 sm:gap-8">
+                    <Link
+                      href="/"
+                      className="flex items-center text-muted hover:text-primary"
+                      aria-label="Accueil"
+                      title="Accueil"
+                    >
+                      <FiHome className="w-6 h-6" />
+                    </Link>
+
+                    <Link
+                      href="/admin/tournament/new"
+                      className="flex items-center gap-2 text-muted hover:text-primary"
+                      aria-label="Créer un tournoi"
+                      title="Créer un tournoi"
+                    >
+                      <FiPlusCircle className="w-5 h-5" />
+                      <span className="hidden md:inline">Créer un tournoi</span>
+                    </Link>
+
+                    <Link
+                      href="/admin/tournaments"   // ✅ URL corrigée
+                      className="flex items-center gap-2 text-muted hover:text-primary"
+                      aria-label="Mes tournois"
+                      title="Mes tournois"
+                    >
+                      <FiList className="w-5 h-5" />
+                      <span className="hidden md:inline">Mes tournois</span>
+                    </Link>
+
+                    {/* On garde le composant logout mais on le place dans le groupe centré */}
+                    <div className="flex items-center">
+                      <LogoutButton />
+                    </div>
+                  </div>
+                </nav>
+              </div>
+            </header>
           )}
           {children}
         </SessionProviderWrapper>

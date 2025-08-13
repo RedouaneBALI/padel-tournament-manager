@@ -34,7 +34,7 @@ export default function TournamentConfigSection({
               <option value="">Sélectionnez un genre</option>
               <option value="MEN">Homme</option>
               <option value="WOMEN">Femme</option>
-              <option value="MIXED">Mixte</option>
+              <option value="MIX">Mixte</option>
             </select>
           </div>
 

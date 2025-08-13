@@ -3,14 +3,16 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { fetchMyTournaments } from '@/src/api/tournamentApi';
+import { fetchMyTournaments, deleteTournament } from '@/src/api/tournamentApi';
 import type { Tournament } from '@/src/types/tournament';
+import { toast } from 'react-toastify';
 
 export default function TournamentsPage() {
   const { status } = useSession();
   const [items, setItems] = useState<Tournament[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -34,7 +36,23 @@ export default function TournamentsPage() {
     };
   }, [status]);
 
-  // Not authenticated: show a simple CTA to sign in with Google
+  async function onDelete(id: string | number) {
+    if (!confirm('Supprimer ce tournoi ? Cette action est irréversible.')) return;
+    try {
+      setDeletingId(id);
+      await deleteTournament(id);
+      setItems((prev) =>
+        prev ? prev.filter((t) => String(t.id) !== String(id)) : prev
+      );
+      toast.success('Tournoi supprimé.');
+    } catch (e: any) {
+      toast.error(e?.message || 'Suppression impossible.');
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  // Not authenticated: CTA login
   if (status !== 'authenticated') {
     return (
       <main className="min-h-screen bg-background">
@@ -83,6 +101,23 @@ export default function TournamentsPage() {
                         >
                           Gérer
                         </Link>
+
+                        {/* Bouton supprimer */}
+                        <button
+                          type="button"
+                          onClick={() => onDelete(t.id!)}
+                          disabled={String(deletingId) === String(t.id)}
+                          aria-label="Supprimer le tournoi"
+                          className="px-3 py-2 rounded-md border border-red-600 text-red-600 hover:bg-red-600/10 transition text-sm flex items-center gap-2 disabled:opacity-60"
+                          title="Supprimer"
+                        >
+                          {/* icône poubelle inline (SVG) */}
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                               fill="currentColor" className="w-4 h-4">
+                            <path d="M9 3h6a1 1 0 0 1 1 1v1h4v2h-1v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7H4V5h4V4a1 1 0 0 1 1-1Zm1 2v0h4V5h-4Zm-1 6h2v7H9v-7Zm6 0h-2v7h2v-7Z"/>
+                          </svg>
+                          {String(deletingId) === String(t.id) ? 'Suppression…' : 'Supprimer'}
+                        </button>
                       </div>
                     </li>
                   ))}
@@ -102,5 +137,3 @@ export default function TournamentsPage() {
     </main>
   );
 }
-
-// rm -rf .firebase/functions/.next .next && npm run build:functions && firebase deploy --only functions

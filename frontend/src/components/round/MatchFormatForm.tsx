@@ -44,6 +44,8 @@ export default function MatchFormatForm({ format, onChange }: MatchFormatFormPro
             <option value={4}>4 jeux</option>
             <option value={6}>6 jeux</option>
             <option value={9}>9 jeux</option>
+            <option value={10}>10 jeux</option>
+            <option value={15}>15 jeux</option>
           </select>
         </label>
 

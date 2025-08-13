@@ -27,6 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -59,6 +60,13 @@ public class AdminTournamentController {
     return ResponseEntity
         .created(URI.create("/admin/tournaments/" + saved.getId()))
         .body(tournamentMapper.toDTO(saved));
+  }
+
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> deleteTournament(@PathVariable Long id) {
+    checkOwnership(id);                 // même règle que pour update/draw/etc.
+    tournamentService.deleteTournament(id);
+    return ResponseEntity.noContent().build(); // 204 No Content
   }
 
   @GetMapping
