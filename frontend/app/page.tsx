@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
-import { signIn } from 'next-auth/react';
+import Image from 'next/image';
+import { FiPlusCircle, FiList } from 'react-icons/fi';
+import { signIn, signOut, useSession } from 'next-auth/react';
 
 export default function Home() {
   const { status } = useSession();
@@ -30,9 +31,16 @@ export default function Home() {
       <section className="max-w-5xl mx-auto px-4 py-16 sm:py-24">
         <div className="bg-card border border-border rounded-2xl p-8 sm:p-12 shadow-sm">
           <div className="text-center space-y-6">
-            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground">
-              Padel Tournament Manager
-            </h1>
+            <div className="flex justify-center">
+              <Image
+                src="/ptm-logo-cropped.png"
+                alt="Padel Tournament Manager"
+                className="h-40 w-auto"
+                width={1300}
+                height={1300}
+                priority
+              />
+            </div>
 
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
               Crée, organise et gère tes tournois de padel en quelques clics.
@@ -118,3 +126,4 @@ export default function Home() {
 }
 
 // rm -rf .firebase/functions/.next .next && npm run build:functions && firebase deploy --only functions
+// npm run deploy:functions

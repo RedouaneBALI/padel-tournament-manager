@@ -1,4 +1,3 @@
-// src/components/forms/CreateTournamentForm.tsx
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -11,11 +10,8 @@ export default function CreateTournamentForm() {
   const router = useRouter();
 
   const handleCreate = async (data: Tournament) => {
-    try {
-      const tournament = await createTournament(data);
-      router.push(`/admin/tournament/${tournament.id}/players`);
-    } catch (error) {
-    }
+    const tournament = await createTournament(data);
+    router.push(`/admin/tournament/${tournament.id}/players`);
   };
 
   return (

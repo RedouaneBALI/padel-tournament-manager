@@ -10,6 +10,7 @@ import { Tournament } from '@/src/types/tournament';
 import React from 'react';
 import { ReactNode } from 'react';
 import { fetchTournament } from '@/src/api/tournamentApi';
+import { Loader2 } from 'lucide-react';
 
 export default function TournamentLayout({children,params,}: {children: ReactNode;params: Promise<{ id: string }>;}){
   const { id } = React.use(params);
@@ -21,11 +22,18 @@ export default function TournamentLayout({children,params,}: {children: ReactNod
       .then(setTournament);
   }, [id]);
 
-  if (!tournament) return <div>Chargement...</div>;
+  if (!tournament) {
+    return (
+      <div className="flex items-center justify-center py-8 text-muted-foreground">
+        <Loader2 className="h-6 w-6 animate-spin mr-2" />
+        //Chargement...
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Tournoi #{id} – {tournament.name}</h1>
+      <h1 className="text-2xl font-bold mb-4">{tournament.name}</h1>
       <div className="flex justify-center mb-6 border-b border-border">
         <Link
           href={`/tournament/${id}`}

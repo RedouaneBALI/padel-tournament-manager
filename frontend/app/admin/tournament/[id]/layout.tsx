@@ -7,6 +7,7 @@ import type { Tournament } from '@/src/types/tournament';
 import 'react-toastify/dist/ReactToastify.css';
 import { fetchTournamentAdmin } from '@/src/api/tournamentApi';
 import { useRouter } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 
 export default function AdminTournamentLayout({
   children,
@@ -53,7 +54,9 @@ export default function AdminTournamentLayout({
   if (loading) {
     return (
       <div className="w-full max-w-screen-2xl px-1 sm:px-4 mx-auto">
-        <div className="flex items-center justify-center h-64">Chargement…</div>
+        <div className="flex items-center justify-center h-64 text-muted-foreground">
+          <Loader2 className="h-6 w-6 animate-spin" />
+        </div>
         <ToastContainer />
       </div>
     );

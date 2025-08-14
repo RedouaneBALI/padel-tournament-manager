@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, usePathname } from 'next/navigation';
-import { Settings, Share2 } from 'lucide-react';
+import { Settings, Share2, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import AdminTournamentTabs from './AdminTournamentTabs';
 import type { Tournament } from '@/src/types/tournament';
@@ -27,7 +27,16 @@ export default function AdminTournamentHeader({ tournament, tournamentId }: Prop
   return (
     <>
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">{tournament?.name ?? 'Chargement...'}</h1>
+        <h1 className="text-2xl font-bold">
+          {tournament ? (
+            tournament.name
+          ) : (
+            <span className="flex items-center text-muted-foreground">
+              <Loader2 className="h-5 w-5 animate-spin mr-2" />
+              //Chargement...
+            </span>
+          )}
+        </h1>
         <div className="flex items-center gap-2">
           <button
             onClick={handleCopyLink}

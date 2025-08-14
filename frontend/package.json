@@ -6,12 +6,17 @@
     "node": "20"
   },
   "scripts": {
+    "test": "jest",
     "dev": "next dev",
     "build": "next build",
-    "build:functions": "NODE_ENV=production next build && rm -rf .firebase/functions && mkdir -p .firebase/functions && cp -r .next public .firebase/functions && if [ -f functions/index.js ]; then cp functions/index.js .firebase/functions/index.js; elif [ -f index.js ]; then cp index.js .firebase/functions/index.js; else echo '❌ Missing index.js (functions entrypoint) - put it at functions/index.js or index.js'; exit 1; fi && cp functions.package.json .firebase/functions/package.json && npm --prefix .firebase/functions install --omit=dev"
+    "clean:functions": "rm -rf .firebase/functions && mkdir -p .firebase/functions",
+    "copy:functions": "cp -r .next public .firebase/functions && cp functions.package.json .firebase/functions/package.json",
+    "copy:index": "if [ -f functions/index.js ]; then cp functions/index.js .firebase/functions/index.js; elif [ -f index.js ]; then cp index.js .firebase/functions/index.js; else echo '❌ Missing index.js (functions entrypoint)'; exit 1; fi",
+    "install:functions": "npm --prefix .firebase/functions install --omit=dev",
+    "build:functions": "NODE_ENV=production next build && npm run clean:functions && npm run copy:functions && npm run copy:index && npm run install:functions",
+    "deploy:functions": "npm run build:functions && firebase deploy --only functions"
   },
   "dependencies": {
-    "@firebase/app": "^0.14.1",
     "@heroicons/react": "^2.2.0",
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-switch": "^1.2.5",
@@ -32,22 +37,26 @@
     "react-icons": "^5.5.0",
     "react-time-picker": "^8.0.2",
     "react-toastify": "^11.0.5",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "zod": "^4.0.17"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/cli": "^4.1.11",
     "@tailwindcss/postcss": "^4.1.11",
+    "@types/jest": "^30.0.0",
     "@types/node": "^18",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "autoprefixer": "^10.4.21",
     "eslint": "^8.57.1",
     "eslint-config-next": "^15.4.6",
+    "jest": "^30.0.5",
     "postcss": "^8.5.6",
     "postcss-cli": "^11.0.1",
     "prettier": "^3.6.2",
     "tailwindcss": "^4.1.11",
+    "ts-jest": "^29.4.1",
     "typescript": "^5"
   },
   "overrides": {

@@ -1,5 +1,5 @@
 import { MapPin, Building, FileText } from 'lucide-react';
-import { TournamentFormData } from '@/src/types/tournamentData';
+import type { TournamentFormData } from '@/src/validation/tournament';
 
 interface TournamentInfoSectionProps {
   formData: TournamentFormData;

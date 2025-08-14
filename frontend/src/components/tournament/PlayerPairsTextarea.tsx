@@ -39,7 +39,7 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
         .filter(line => line !== '');
 
       const pairs: PlayerPair[] = lines.map((line, index) => {
-        const [p1, p2] = line.split(/[,;]/).map(s => s.trim());
+        const [p1, p2] = line.split(/[,;&/]/).map(s => s.trim());
         return {
           player1: { name: p1 },
           player2: { name: p2 },

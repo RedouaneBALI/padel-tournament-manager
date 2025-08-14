@@ -1,5 +1,5 @@
 import { Settings, Users, Trophy, Zap } from 'lucide-react';
-import { TournamentFormData } from '@/src/types/tournamentData';
+import type { TournamentFormData } from '@/src/validation/tournament';
 
 interface TournamentConfigSectionProps {
   formData: TournamentFormData;
@@ -162,6 +162,7 @@ export default function TournamentConfigSection({
                 >
                   <option value={1}>1</option>
                   <option value={2}>2</option>
+                  <option value={4}>4</option>
                 </select>
               </div>
             </>

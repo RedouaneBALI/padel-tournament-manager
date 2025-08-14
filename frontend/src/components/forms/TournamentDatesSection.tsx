@@ -1,5 +1,5 @@
 import { Calendar } from 'lucide-react';
-import { TournamentFormData } from '@/src/types/tournamentData';
+import type { TournamentFormData } from '@/src/validation/tournament';
 
 interface TournamentDatesSectionProps {
   formData: TournamentFormData;

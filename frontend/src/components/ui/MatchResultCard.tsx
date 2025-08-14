@@ -8,6 +8,7 @@ import { Score } from '@/src/types/score';
 import TeamScoreRow from '@/src/components/ui/TeamScoreRow';
 import { Edit3, Save, X } from 'lucide-react';
 import { updateGameDetails } from '@/src/api/tournamentApi';
+import { normalizeGroup, groupBadgeClasses, formatGroupLabel } from '@/src/utils/groupBadge';
 
 interface Props {
   teamA: PlayerPair | null;
@@ -42,6 +43,8 @@ export default function MatchResultCard({
   pool,
   setsToWin
 }: Props) {
+  const group = normalizeGroup(pool?.name);
+
   const [localCourt, setLocalCourt] = useState(court || 'Court central');
   const [localScheduledTime, setLocalScheduledTime] = useState(scheduledTime || '00:00');
   const [editing, setEditing] = useState(false);
@@ -173,8 +176,13 @@ export default function MatchResultCard({
     >
       <div className="flex justify-between items-start px-2 pt-2">
         {(pool?.name || stage) && (
-          <div className="inline-block bg-muted dark:hover:bg-primary-hover text-foreground dark:text-on-primary text-xs rounded mt-1 mx-1 px-3 py-0.5">
-            {pool?.name ? `Groupe ${pool.name}` : stage}
+          <div
+            className={[
+              'inline-block text-xs font-medium rounded mt-1 mx-1 px-3 py-0.5',
+              pool?.name ? groupBadgeClasses(group) : 'bg-muted text-foreground'
+            ].join(' ')}
+          >
+            {pool?.name ? formatGroupLabel(pool.name) : stage}
           </div>
         )}
         {editable && (
@@ -245,11 +253,14 @@ export default function MatchResultCard({
         />
       </div>
       <div
-        className={`border-t border-border px-4 py-2 text-sm ${
-          editing
-            ? 'bg-card text-foreground'
-            : 'bg-background text-foreground dark:bg-primary dark:text-on-primary'
-        }`}
+        className={[
+          'border-t border-border px-4 py-2 text-sm',
+          pool?.name
+            ? groupBadgeClasses(group)
+            : (editing
+                ? 'bg-card text-foreground'
+                : 'bg-background text-foreground dark:bg-primary dark:text-on-primary')
+        ].join(' ')}
       >
         {editing ? (
           <div className="flex gap-4 items-center">

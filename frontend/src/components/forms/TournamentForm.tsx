@@ -1,88 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { FormEvent } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Loader2, Trophy } from 'lucide-react';
-import TournamentInfoSection from '@/src/components/tournament/TournamentInfoSection';
-import TournamentDatesSection from '@/src/components/tournament/TournamentDatesSection';
-import TournamentConfigSection from '@/src/components/tournament/TournamentConfigSection';
-import { Tournament } from '@/src/types/tournament';
-import { TournamentFormData } from '@/src/types/tournamentData';
-
-const getNumber = (v: unknown, fallback = 0): number => {
-  const n = typeof v === 'string' ? parseInt(v, 10) : (typeof v === 'number' ? v : NaN);
-  return Number.isFinite(n) ? n : fallback;
-};
-
-const getValidationErrors = (data: TournamentFormData): string[] => {
-  const errors: string[] = [];
-  const format = data.tournamentFormat ?? 'KNOCKOUT';
-
-  const nbSeeds = getNumber(data.nbSeeds, 0);
-  const nbMaxPairs = getNumber(data.nbMaxPairs, 0);
-  const nbPools = getNumber(data.nbPools, 0);
-  const nbPairsPerPool = getNumber(data.nbPairsPerPool, 0);
-
-  const name = (data.name ?? '').trim();
-  if (!name) {
-    errors.push('Le tournoi doit avoir un nom.');
-  }
-
-  if (format === 'KNOCKOUT') {
-    const maxSeeds = Math.floor(nbMaxPairs / 2);
-    if (nbMaxPairs < 4 || nbMaxPairs > 128) {
-      errors.push(`En élimination directe, le nombre d'équipes maximum doit être compris entre 4 et 128 (actuellement ${nbMaxPairs}).`);
-    }
-    if (nbSeeds > maxSeeds) {
-      errors.push(`En élimination directe, le nombre de têtes de série (${nbSeeds}) ne peut pas dépasser la moitié du nombre d'équipes (${nbMaxPairs} → max ${maxSeeds}).`);
-    }
-  }
-
-  if (format === 'GROUP_STAGE') {
-    if (nbPairsPerPool < 3) {
-      errors.push(`En phase de poules, il doit y avoir au moins 3 équipes par poule (actuellement ${nbPairsPerPool}).`);
-    }
-    const maxSeeds = nbPools * nbPairsPerPool;
-    if (nbSeeds > maxSeeds) {
-      errors.push(`En phase de poules, le nombre de têtes de série (${nbSeeds}) ne peut pas dépasser le total d'équipes (${nbPools}×${nbPairsPerPool} = ${maxSeeds}).`);
-    }
-  }
-
-  return errors;
-};
-
-const getInitialFormData = (initialData?: Partial<Tournament>): TournamentFormData => {
-  const tournamentFormat = initialData?.tournamentFormat ?? 'KNOCKOUT';
-
-  // Defaults for creation
-  const defaults: TournamentFormData = {
-    name: '',
-    description: '',
-    city: '',
-    club: '',
-    gender: '',
-    level: '',
-    tournamentFormat,
-    nbSeeds: 16,
-    startDate: '',
-    endDate: '',
-    nbMaxPairs: 32,
-    nbPools: 4,
-    nbPairsPerPool: 4,
-    nbQualifiedByPool: 2,
-  };
-
-  // If format is GROUP_STAGE at mount and nbSeeds not provided, default nbSeeds to nbPools
-  if (!initialData?.nbSeeds && tournamentFormat === 'GROUP_STAGE') {
-    defaults.nbSeeds = (initialData?.nbPools ?? defaults.nbPools);
-  }
-
-  return {
-    ...defaults,
-    ...initialData,
-  };
-};
+import TournamentInfoSection from '@/src/components/forms/TournamentInfoSection';
+import TournamentDatesSection from '@/src/components/forms/TournamentDatesSection';
+import TournamentConfigSection from '@/src/components/forms/TournamentConfigSection';
+import type { Tournament } from '@/src/types/tournament';
+import { useTournamentForm } from '@/src/hooks/useTournamentForm';
 
 interface TournamentFormProps {
   initialData?: Partial<Tournament>;
@@ -91,76 +17,27 @@ interface TournamentFormProps {
   title?: string;
 }
 
-
 export default function TournamentForm({ initialData, onSubmit, isEditing = false, title }: TournamentFormProps) {
-  const [formData, setFormData] = useState<TournamentFormData>(getInitialFormData(initialData));
+  const { formData, isSubmitting, setIsSubmitting, handleInputChange, validate } = useTournamentForm(initialData);
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [nbSeedsTouched, setNbSeedsTouched] = useState(false);
-  const [groupDefaultApplied, setGroupDefaultApplied] = useState(false);
-
-  /** If a parent later passes initialData (edit page), hydrate once */
-  useEffect(() => {
-    if (initialData) {
-      setFormData(prev => ({ ...prev, ...initialData }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialData]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    if (name === 'nbSeeds') {
-      setNbSeedsTouched(true);
-    }
-
-    if (name === 'tournamentFormat') {
-      setFormData(prev => {
-        const next: TournamentFormData = { ...prev, tournamentFormat: value as any };
-        if (value === 'GROUP_STAGE' && !nbSeedsTouched && !groupDefaultApplied) {
-          next.nbSeeds = prev.nbPools ?? 3;
-          setGroupDefaultApplied(true);
-        }
-        // Always reset nbSeeds to 16 when switching to KNOCKOUT
-        if (value === 'KNOCKOUT') {
-          next.nbSeeds = 16;
-          setGroupDefaultApplied(false);
-        }
-
-        return next;
-      });
-      return;
-    }
-
-    setFormData((prev: TournamentFormData) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-
-    const errors = getValidationErrors(formData);
-    if (errors.length > 0) {
-      toast.error(errors.join('\n'));
-      setIsSubmitting(false);
-      return;
-    }
-
-    const payload: TournamentFormData = { ...formData };
-
-    if (payload.nbSeeds) {
-      payload.nbSeeds = parseInt(String(payload.nbSeeds), 10);
-    }
-
-    Object.keys(payload).forEach(key => {
-      const typedKey = key as keyof TournamentFormData;
-      if (payload[typedKey] === '') {
-        payload[typedKey] = null;
+    try {
+      const parsed = validate();
+      if (!parsed.success) {
+        const messages = parsed.error.issues.map((i) => i.message);
+        toast.error(messages.join('\n'));
+        return;
       }
-    });
-
-    const tournament = payload as Tournament;
-    await onSubmit(tournament);
-    setIsSubmitting(false);
+      const validData = parsed.data as unknown as Tournament;
+      await onSubmit(validData);
+    } catch (err: any) {
+      const msg = err?.message ?? 'Erreur inconnue lors de la création du tournoi.';
+      toast.error(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -171,68 +48,62 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
         </div>
       )}
       <div className="container mx-auto max-w-4xl" aria-busy={isSubmitting}>
-      <div className="bg-card shadow-lg border border-border">
-        <div className="p-6">
-          {title && (
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10">
-                <Trophy className="h-6 w-6 text-primary" />
+        <div className="bg-card shadow-lg border border-border">
+          <div className="p-6">
+            {title && (
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10">
+                  <Trophy className="h-6 w-6 text-primary" />
+                </div>
+                <h1 className="text-2xl font-semibold text-card-foreground">{title}</h1>
               </div>
-              <h1 className="text-2xl font-semibold text-card-foreground">{title}</h1>
-            </div>
-          )}
+            )}
+          </div>
+
+          <div>
+            <form onSubmit={handleSubmit}>
+              <TournamentInfoSection formData={formData} handleInputChange={handleInputChange} />
+
+              <hr className="border-border" />
+
+              <TournamentDatesSection formData={formData} handleInputChange={handleInputChange} />
+
+              <hr className="border-border" />
+
+              <TournamentConfigSection formData={formData} handleInputChange={handleInputChange} />
+
+              <hr className="border-border" />
+
+              <div className="p-4">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full px-4 py-2 bg-primary text-on-primary rounded hover:bg-primary-hover"
+                >
+                  {isSubmitting
+                    ? isEditing
+                      ? 'Mise à jour...'
+                      : 'Création en cours...'
+                    : isEditing
+                    ? 'Mettre à jour'
+                    : 'Créer le tournoi'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-
-        <div>
-          <form onSubmit={handleSubmit}>
-            <TournamentInfoSection
-              formData={formData}
-              handleInputChange={handleInputChange}
-            />
-
-            <hr className="border-border" />
-
-            <TournamentDatesSection
-              formData={formData}
-              handleInputChange={handleInputChange}
-            />
-
-            <hr className="border-border" />
-
-            <TournamentConfigSection
-              formData={formData}
-              handleInputChange={handleInputChange}
-            />
-
-            <hr className="border-border" />
-
-            <div className="p-4">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full px-4 py-2 bg-primary text-on-primary rounded hover:bg-primary-hover"
-              >
-                {isSubmitting
-                  ? (isEditing ? 'Mise à jour...' : 'Création en cours...')
-                  : (isEditing ? 'Mettre à jour' : 'Créer le tournoi')
-                }
-              </button>
-            </div>
-          </form>
-        </div>
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
       </div>
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
-    </div>
     </>
   );
 }

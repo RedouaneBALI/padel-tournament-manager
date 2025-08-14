@@ -8,6 +8,7 @@ import RoundSelector from '@/src/components/round/RoundSelector';
 import MatchFormatActions from '@/src/components/round/MatchFormatActions';
 import { PlayerPair } from '@/src/types/playerPair';
 import { fetchRounds, fetchMatchFormat, updateMatchFormat } from '@/src/api/tournamentApi';
+import { Loader2 } from 'lucide-react';
 
 interface RoundFormatTabProps {
   tournamentId: string;
@@ -58,8 +59,8 @@ export default function RoundFormatTab({ tournamentId, pairs }: RoundFormatTabPr
         />
 
         {isLoading ? (
-          <div className="text-center text-sm text-muted mt-4">
-            Chargement du format...
+          <div className="flex items-center justify-center py-8 text-muted-foreground">
+            <Loader2 className="h-6 w-6 animate-spin" />
           </div>
         ) : (
           matchFormat && (

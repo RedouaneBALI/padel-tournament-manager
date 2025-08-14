@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 // Helper to get setsToWin for a round
 function getSetsToWin(round: any) {
   const n = Number(round?.matchFormat?.numberOfSetsToWin);
@@ -21,6 +23,11 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
   const [rounds, setRounds] = useState<Round[]>([]);
   const [currentRoundIndex, setCurrentRoundIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const stageParam = searchParams?.get('stage') ?? null;
 
   // Fonction pour filtrer et trier les matchs d'un round par heure
   const getValidGamesSortedByTime = useCallback((games: Game[]) => {
@@ -75,7 +82,18 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
         setIsLoading(true);
         const initialRounds = await fetchRounds(tournamentId);
         setRounds(initialRounds);
-        setCurrentRoundIndex(0);
+        if (initialRounds.length > 0) {
+          const desiredStage = stageParam || initialRounds[0].stage;
+          const idx = initialRounds.findIndex(r => r.stage === desiredStage);
+          setCurrentRoundIndex(idx >= 0 ? idx : 0);
+          if (!stageParam) {
+            const sp = new URLSearchParams(searchParams?.toString?.() ?? '');
+            sp.set('stage', desiredStage);
+            router.replace(`${pathname}?${sp.toString()}`);
+          }
+        } else {
+          setCurrentRoundIndex(0);
+        }
       } catch (err) {
         console.error('Erreur lors du chargement des matchs :', err);
       } finally {
@@ -84,10 +102,33 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
     }
 
     loadRounds();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tournamentId]);
 
+  useEffect(() => {
+    if (!rounds.length || !stageParam) return;
+    const idx = rounds.findIndex(r => r.stage === stageParam);
+    if (idx !== -1 && idx !== currentRoundIndex) {
+      setCurrentRoundIndex(idx);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stageParam, rounds]);
+
+  const handleStageChangeInUrl = useCallback((newStage: string) => {
+    if (!newStage) return;
+    const sp = new URLSearchParams(searchParams?.toString?.() ?? '');
+    sp.set('stage', newStage);
+    router.replace(`${pathname}?${sp.toString()}`);
+    const idx = rounds.findIndex(r => r.stage === newStage);
+    if (idx !== -1) setCurrentRoundIndex(idx);
+  }, [router, pathname, searchParams, rounds]);
+
   if (isLoading) {
-    return <p className="text-muted">Chargement des matchs...</p>;
+    return (
+      <div className="flex items-center justify-center py-8 text-muted-foreground">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
   }
 
   if (rounds.length === 0) {
@@ -102,7 +143,12 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
       <RoundSelector
         rounds={rounds}
         currentIndex={currentRoundIndex}
-        onChange={setCurrentRoundIndex}
+        onChange={(idx) => {
+          setCurrentRoundIndex(idx);
+          const stage = rounds[idx]?.stage;
+          if (stage) handleStageChangeInUrl(stage);
+        }}
+        onStageChange={handleStageChangeInUrl}
       />
 
       {sortedGames.length === 0 ? (
