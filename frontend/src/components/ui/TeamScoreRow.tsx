@@ -44,15 +44,6 @@ export default function TeamScoreRow({
   };
 
   const onKeyDownLocal = (e: React.KeyboardEvent, tIdx: number, sIdx: number) => {
-    // Mobile "Next" often emits Enter/NumpadEnter
-    if (e.key === 'Enter' || e.key === 'NumpadEnter') {
-      if (computeTabIndex) {
-        e.preventDefault();
-        const current = computeTabIndex(tIdx, sIdx);
-        focusByTabIndex(current + 1);
-        return;
-      }
-    }
     handleKeyDown?.(e, tIdx, sIdx);
   };
 

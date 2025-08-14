@@ -7,20 +7,11 @@ import { fetchMyTournaments, deleteTournament } from '@/src/api/tournamentApi';
 import type { Tournament } from '@/src/types/tournament';
 import { toast } from 'react-toastify';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
+import TournamentCard from '@/src/components/tournament/TournamentCard';
 
 export default function TournamentList() {
   const { status } = useSession();
-  if (status === 'loading') {
-    return (
-      <main className="min-h-screen bg-background">
-        <section className="max-w-5xl mx-auto px-4 py-16">
-          <div className="bg-card border border-border rounded-2xl p-6 sm:p-8">
-            <CenteredLoader />
-          </div>
-        </section>
-      </main>
-    );
-  }
+
   const [items, setItems] = useState<Tournament[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +40,19 @@ export default function TournamentList() {
     };
   }, [status]);
 
+  // Loading session: show loader
+  if (status === 'loading') {
+    return (
+      <main className="min-h-screen bg-background">
+        <section className="max-w-5xl mx-auto px-4 py-16">
+          <div className="bg-card border border-border rounded-2xl p-6 sm:p-8">
+            <CenteredLoader />
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   async function onDelete(id: string | number) {
     if (!confirm('Supprimer ce tournoi ? Cette action est irréversible.')) return;
     try {
@@ -67,7 +71,7 @@ export default function TournamentList() {
   if (status !== 'authenticated') {
     return (
       <main className="min-h-screen bg-background">
-        <section className="max-w-3xl mx-auto px-4 py-16">
+        <section className="max-w-3xl mx-auto px-4 py-8">
           <div className="bg-card border border-border rounded-2xl p-8 text-center">
             <h1 className="text-2xl font-bold text-foreground mb-2">Mes tournois</h1>
             <p className="text-muted-foreground mb-6">Connecte-toi pour voir tes tournois.</p>
@@ -87,7 +91,7 @@ export default function TournamentList() {
 
   return (
     <main className="min-h-screen bg-background">
-      <section className="max-w-5xl mx-auto px-4 py-16">
+      <section className="max-w-5xl mx-auto px-4 py-8">
         <div className="bg-card border border-border rounded-2xl p-6 sm:p-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">Mes tournois</h1>
 
@@ -100,37 +104,11 @@ export default function TournamentList() {
           {!loading && !error && (
             <>
               {(items?.length ?? 0) > 0 ? (
-                <ul className="divide-y divide-border">
-                  {items.map((t) => (
-                    <li key={t.id} className="py-3 flex items-center justify-between">
-                      <div>
-                        <div className="font-semibold text-foreground">{t.name || 'Sans nom'}</div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Link
-                          href={`/admin/tournament/${t.id}`}
-                          className="px-3 py-2 rounded-md bg-primary text-on-primary hover:bg-primary-hover transition text-sm"
-                        >
-                          Gérer
-                        </Link>
-
-                        <button
-                          type="button"
-                          onClick={() => onDelete(t.id!)}
-                          disabled={String(deletingId) === String(t.id)}
-                          aria-label="Supprimer le tournoi"
-                          className="px-3 py-2 rounded-md border border-red-600 text-red-600 hover:bg-red-600/10 transition text-sm flex items-center gap-2 disabled:opacity-60"
-                          title="Supprimer"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                            <path d="M9 3h6a1 1 0 0 1 1 1v1h4v2h-1v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7H4V5h4V4a1 1 0 0 1 1-1Zm1 2v0h4V5h-4Zm-1 6h2v7H9v-7Zm6 0h-2v7h2v-7Z"/>
-                          </svg>
-                          {String(deletingId) === String(t.id) ? 'Suppression…' : 'Supprimer'}
-                        </button>
-                      </div>
-                    </li>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {(items ?? []).map((t) => (
+                    <TournamentCard key={t.id} tournament={t} onDelete={onDelete} deletingId={deletingId} />
                   ))}
-                </ul>
+                </div>
               ) : (
                 <div className="text-muted-foreground">
                   Aucun tournoi pour le moment.

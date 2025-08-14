@@ -127,7 +127,7 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
               <BracketHeader onExport={() => exportBracketAsImage('bracket-container')} />
               <div
                 id="bracket-container"
-                className="relative overflow-auto border border-border rounded-lg p-8 bg-background"
+                className="relative overflow-auto border border-border rounded-lg px-2 py-6 md:p-8 bg-background"
                 style={{ minHeight: maxPosition ? `${maxPosition}px` : undefined }}
               >
                 <div className="w-max mx-0 md:mx-auto">
@@ -147,7 +147,7 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
 
             <div
               id="bracket-container"
-              className="relative overflow-auto border border-border rounded-lg p-8 bg-background"
+              className="relative overflow-auto border border-border rounded-lg px-2 py-6 md:p-8 bg-background"
               style={{ minHeight: maxPosition ? `${maxPosition}px` : undefined }}
             >
               <KnockoutBracket rounds={finalsRounds} tournamentId={tournamentId} />

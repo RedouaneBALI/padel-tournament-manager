@@ -9,6 +9,7 @@ import TeamScoreRow from '@/src/components/ui/TeamScoreRow';
 import { Edit3, Save, X } from 'lucide-react';
 import { updateGameDetails } from '@/src/api/tournamentApi';
 import { normalizeGroup, groupBadgeClasses, formatGroupLabel } from '@/src/utils/groupBadge';
+import CenteredLoader from '@/src/components/ui/CenteredLoader';
 
 interface Props {
   teamA: PlayerPair | null;
@@ -48,6 +49,7 @@ export default function MatchResultCard({
   const [localCourt, setLocalCourt] = useState(court || 'Court central');
   const [localScheduledTime, setLocalScheduledTime] = useState(scheduledTime || '00:00');
   const [editing, setEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [scores, setScores] = useState<string[][]>(() => {
     const initialScores: string[][] = [[], []];
     for (let i = 0; i < 3; i++) {
@@ -168,12 +170,42 @@ export default function MatchResultCard({
     }
   };
 
+  const handleSave = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      await saveGameDetails();
+      setInitialScores([...scores]);
+      setEditing(false);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div
-      className={`relative bg-card border border-border rounded-lg shadow-sm overflow-hidden w-full sm:max-w-[400px] transition-all duration-200 ${
-        editing ? 'ring-2 ring-edit-border bg-edit-bg/30' : ''
-      }`}
+      aria-busy={isSaving}
+      onKeyDownCapture={(e) => {
+        if (!editing || isSaving) return;
+        if (e.key !== 'Enter' && e.key !== 'NumpadEnter') return;
+        const target = e.target as HTMLElement;
+        const tag = target.tagName.toLowerCase();
+        if (tag === 'input' || tag === 'select' || tag === 'textarea') {
+          e.preventDefault();
+          void handleSave();
+        }
+      }}
+      className={`relative rounded-lg overflow-hidden w-full sm:max-w-[400px] transition-all duration-200
+        ${editing
+          ? 'shadow-2xl bg-edit-bg/30'
+          : 'shadow-sm bg-card'
+        }`}
     >
+      {isSaving && (
+        <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px] z-20 flex items-center justify-center" aria-hidden>
+          <CenteredLoader />
+        </div>
+      )}
       <div className="flex justify-between items-start px-2 pt-2">
         {(pool?.name || stage) && (
           <div
@@ -190,24 +222,22 @@ export default function MatchResultCard({
             {editing ? (
               <div className="flex gap-2">
                 <button
+                  disabled={isSaving}
                   onClick={() => {
                     setScores([...initialScores]);
                     setLocalCourt(court || 'Court central');
                     setLocalScheduledTime(scheduledTime || '00:00');
                     setEditing(false);
                   }}
-                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 rounded-md px-3"
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 disabled:cursor-not-allowed border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 rounded-md px-3"
                 >
                   <X className="h-3 w-3 mr-1" />
                   Annuler
                 </button>
                 <button
-                  onClick={async () => {
-                    await saveGameDetails();
-                    setInitialScores([...scores]);
-                    setEditing(false);
-                  }}
-                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-on-primary hover:bg-green-700 h-9 rounded-md px-3 shadow-md"
+                  disabled={isSaving}
+                  onClick={handleSave}
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 disabled:cursor-not-allowed bg-green-600 text-on-primary hover:bg-green-700 h-9 rounded-md px-3 shadow-md"
                 >
                   <Save className="h-3 w-3 mr-1" />
                   Sauver
@@ -268,6 +298,13 @@ export default function MatchResultCard({
               type="text"
               value={localCourt}
               onChange={(e) => setLocalCourt(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === 'NumpadEnter') {
+                  e.preventDefault();
+                  void handleSave();
+                }
+              }}
+              enterKeyHint="done"
               className="px-2 py-1 rounded border text-sm text-foreground bg-card"
               placeholder="Court"
             />
@@ -276,6 +313,13 @@ export default function MatchResultCard({
               step="300"
               value={localScheduledTime}
               onChange={(e) => setLocalScheduledTime(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === 'NumpadEnter') {
+                  e.preventDefault();
+                  void handleSave();
+                }
+              }}
+              enterKeyHint="done"
               className="px-2 py-1 rounded border text-sm text-foreground bg-card"
             />
           </div>

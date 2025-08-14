@@ -8,7 +8,7 @@ import { getServerSession } from "next-auth";
 import { getAuthOptions } from "@/src/lib/authOptions";
 import Link from 'next/link';
 import Image from 'next/image';
-import { FiPlusCircle, FiList } from 'react-icons/fi';
+import { FiPlusCircle, FiList, FiMail } from 'react-icons/fi';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,35 +21,83 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Padel Tournament Manager",
-  description: "By Redouane Bali",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  title: {
+    default: 'Padel Tournament Manager',
+    template: '%s · Padel Tournament Manager',
+  },
+  description: 'Crée, organise et gère des tournois de padel : tirages automatiques, tableaux knockout, suivi des scores en direct.',
+  keywords: [
+    'tournoi padel',
+    'gestion tournoi padel',
+    'tirage padel',
+    'tableau knockout',
+    'organisation tournoi',
+    'padel manager',
+  ],
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    url: '/',
+    title: 'Padel Tournament Manager',
+    description:
+      'Crée, organise et gère des tournois de padel : tirages automatiques, tableaux knockout, suivi des scores en direct.',
+    siteName: 'Padel Tournament Manager',
+    images: [
+      {
+        url: '/og-cover.png',
+        width: 1200,
+        height: 630,
+        alt: 'Padel Tournament Manager – Crée et gère tes tournois',
+      },
+    ],
+    locale: 'fr_FR',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Padel Tournament Manager',
+    description:
+      'Crée, organise et gère des tournois de padel : tirages automatiques, tableaux knockout, suivi des scores en direct.',
+    images: ['/og-cover.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(getAuthOptions());
   return (
-    <html lang="fr">
+    <html lang="fr" dir="ltr">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <SessionProviderWrapper>
           {session && (
             <header className="sticky top-0 z-40 bg-background/80 backdrop-blur border-b border-border">
               <div className="max-w-5xl mx-auto px-4">
-                <nav className="h-14 flex items-center justify-between">
-                  {/* Logo en haut à gauche, lien vers l'accueil */}
-                  <Link href="/" className="flex items-center gap-2" aria-label="Accueil" title="Accueil">
-                    <Image
-                      src="/ptm-logo-cropped.png"
-                      alt="Padel Tournament Manager"
-                      width={32}
-                      height={32}
-                      priority
-                      className="h-12 w-auto"
-                    />
-                    <span className="sr-only">Accueil</span>
-                  </Link>
+                <nav className="h-14 flex items-center justify-center w-full">
+                  <div className="flex items-center gap-10">
+                    <Link href="/" className="flex items-center gap-2" aria-label="Accueil" title="Accueil">
+                      <Image
+                        src="/ptm-logo-cropped.png"
+                        alt="Padel Tournament Manager"
+                        width={32}
+                        height={32}
+                        priority
+                        className="h-12 w-auto"
+                      />
+                      <span className="sr-only">Accueil</span>
+                    </Link>
 
-                  {/* Liens centraux */}
-                  <div className="flex items-center gap-6 sm:gap-8">
                     <Link
                       href="/admin/tournament/new"
                       className="flex items-center gap-2 text-muted hover:text-primary"
@@ -69,11 +117,20 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                       <FiList className="w-5 h-5" />
                       <span className="hidden md:inline">Mes tournois</span>
                     </Link>
-                  </div>
 
-                  {/* Bouton logout à droite */}
-                  <div className="flex items-center">
-                    <LogoutButton />
+                    <Link
+                      href="/contact"
+                      className="flex items-center gap-2 text-muted hover:text-primary"
+                      aria-label="Contact"
+                      title="Contact"
+                    >
+                      <FiMail className="w-5 h-5" />
+                      <span className="hidden md:inline">Contact</span>
+                    </Link>
+
+                    <LogoutButton>
+                      <span className="hidden md:inline">Déconnexion</span>
+                    </LogoutButton>
                   </div>
                 </nav>
               </div>

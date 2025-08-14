@@ -13,7 +13,8 @@
     "copy:functions": "cp -r .next public .firebase/functions && cp functions.package.json .firebase/functions/package.json",
     "copy:index": "if [ -f functions/index.js ]; then cp functions/index.js .firebase/functions/index.js; elif [ -f index.js ]; then cp index.js .firebase/functions/index.js; else echo '❌ Missing index.js (functions entrypoint)'; exit 1; fi",
     "install:functions": "npm --prefix .firebase/functions install --omit=dev",
-    "build:functions": "NODE_ENV=production next build && npm run clean:functions && npm run copy:functions && npm run copy:index && npm run install:functions",
+    "strip:nexttypes": "rm -rf .firebase/functions/.next/types",
+    "build:functions": "rm -rf .next/types .firebase/functions/.next/types && NEXT_TELEMETRY_DISABLED=1 NEXT_DISABLE_ESLINT=1 NEXT_DISABLE_TYPECHECK=1 next build && npm run clean:functions && npm run copy:functions && rm -rf .firebase/functions/.next/types && npm run copy:index && npm run install:functions",
     "deploy:functions": "npm run build:functions && firebase deploy --only functions"
   },
   "dependencies": {

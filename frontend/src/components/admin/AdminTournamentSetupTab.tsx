@@ -22,6 +22,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
   const [loadingPairs, setLoadingPairs] = useState(true);
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [tournamentStarted, setTournamentStarted] = useState(false);
+  const [loadingTournament, setLoadingTournament] = useState(true);
 
   const [drawMode, setDrawMode] = useState('seeded');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -56,13 +57,17 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
 
   useEffect(() => {
     async function loadTournament() {
-      const data = await fetchTournament(tournamentId);
-      setTournament(data);
-      const hasStarted = data.rounds?.some(round =>
-        round.games?.some(game => game.score !== null)
-      );
-      setTournamentStarted(hasStarted);
-
+      setLoadingTournament(true);
+      try {
+        const data = await fetchTournament(tournamentId);
+        setTournament(data);
+        const hasStarted = !!data.rounds?.some(round =>
+          round.games?.some(game => game.score !== null)
+        );
+        setTournamentStarted(hasStarted);
+      } finally {
+        setLoadingTournament(false);
+      }
     }
     loadTournament();
   }, [tournamentId]);
@@ -94,12 +99,14 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
         <div className="flex items-center gap-2 border-b border-border p-2">
           <FileText className="h-5 w-5 text-muted-foreground" />
           <h1 className="text-xl font-semibold text-foreground">
-            {pairs.length} paires
+            {!loadingTournament && !loadingPairs ? `${pairs.length} équipes` : ''}
           </h1>
         </div>
 
         <section>
-          {tournamentStarted ? (
+          {loadingTournament ? (
+            <CenteredLoader />
+          ) : tournamentStarted ? (
             <PlayerPairList pairs={pairs} loading={loadingPairs} />
           ) : (
             <>
@@ -113,7 +120,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
               />
             </>
           )}
-          {pairs.length > 0 && !tournamentStarted && (
+          {pairs.length > 0 && !tournamentStarted && !loadingTournament && !loadingPairs && (
             <>
               <hr className="my-2 border-t border-border" />
               <div className="flex flex-col sm:flex-row sm:justify-center sm:items-end gap-4 mt-4">
