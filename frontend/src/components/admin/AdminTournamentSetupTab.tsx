@@ -19,6 +19,7 @@ interface Props {
 
 export default function AdminTournamentSetupTab({ tournamentId }: Props) {
   const [pairs, setPairs] = useState<PlayerPair[]>([]);
+  const [loadingPairs, setLoadingPairs] = useState(true);
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [tournamentStarted, setTournamentStarted] = useState(false);
 
@@ -67,11 +68,20 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
   }, [tournamentId]);
 
   useEffect(() => {
+    let cancelled = false;
     async function loadPairs() {
-      const data = await fetchPairs(tournamentId);
-      setPairs(data);
+      setLoadingPairs(true);
+      try {
+        const data = await fetchPairs(tournamentId);
+        if (!cancelled) setPairs(data);
+      } finally {
+        if (!cancelled) setLoadingPairs(false);
+      }
     }
     loadPairs();
+    return () => {
+      cancelled = true;
+    };
   }, [tournamentId]);
 
 
@@ -90,7 +100,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
 
         <section>
           {tournamentStarted ? (
-            <PlayerPairList pairs={pairs} />
+            <PlayerPairList pairs={pairs} loading={loadingPairs} />
           ) : (
             <>
               <h2 className="text-base font-semibold text-foreground p-2">

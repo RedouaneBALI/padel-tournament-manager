@@ -1,13 +1,20 @@
 import { PlayerPair } from '@/src/types/playerPair';
+import CenteredLoader from '@/src/components/ui/CenteredLoader';
 
 interface PlayerPairListProps {
   pairs: PlayerPair[];
+  loading?: boolean;
 }
 
-export default function PlayerPairList({ pairs }: PlayerPairListProps) {
-  if (pairs.length === 0) {
-    return <p className="text-muted italic">Aucune paire inscrite pour le moment.</p>;
-  }
+export default function PlayerPairList({ pairs, loading = false }: PlayerPairListProps) {
+    const hasPairs = (pairs?.length ?? 0) > 0;
+
+    if (!hasPairs) {
+      if (loading) {
+        return <CenteredLoader />;
+      }
+      return <p className="text-muted italic">Aucune paire inscrite pour le moment.</p>;
+    }
 
   return (
     <ul className="space-y-2">
