@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { TournamentFormData } from '@/src/validation/tournament';
-import { TournamentFormSchema } from '@/src/validation/tournament';
+import type { Tournament } from '@/src/types/tournament';
+import { TournamentFormSchema, type TournamentFormData } from '@/src/validation/tournament';
 
 export function getInitialFormData(initialData?: Partial<Tournament>): TournamentFormData {
   const tournamentFormat = initialData?.tournamentFormat ?? 'KNOCKOUT';
@@ -27,7 +27,7 @@ export function useTournamentForm(initialData?: Partial<Tournament>) {
 
   useEffect(() => {
     if (initialData) {
-      setFormData((prev) => ({ ...prev, ...initialData }));
+      setFormData((prev) => ({ ...prev, ...initialData } as TournamentFormData));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialData]);
@@ -41,7 +41,7 @@ export function useTournamentForm(initialData?: Partial<Tournament>) {
 
     if (name === 'tournamentFormat') {
       setFormData((prev) => {
-        const next: TournamentFormData = { ...prev, tournamentFormat: value as any };
+        const next: TournamentFormData = { ...prev, tournamentFormat: value as 'KNOCKOUT' | 'GROUP_STAGE' };
         if (value === 'GROUP_STAGE' && !nbSeedsTouched && !groupDefaultApplied) {
           next.nbSeeds = prev.nbPools ?? 3;
           setGroupDefaultApplied(true);

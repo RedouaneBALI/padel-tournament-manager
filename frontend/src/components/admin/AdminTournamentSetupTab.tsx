@@ -7,10 +7,11 @@ import PlayerPairList from '@/src/components/tournament/PlayerPairsList';
 import { useRouter } from 'next/navigation';
 import { confirmAlert } from 'react-confirm-alert';
 import { generateDraw } from '@/src/api/tournamentApi';
-import { FileText, Loader2 } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { PlayerPair } from '@/src/types/playerPair';
 import { Tournament } from '@/src/types/tournament';
 import { fetchTournament, fetchPairs } from '@/src/api/tournamentApi';
+import CenteredLoader from '@/src/components/ui/CenteredLoader';
 
 interface Props {
   tournamentId: string;
@@ -77,9 +78,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
   return (
     <div className="container mx-auto max-w-3xl">
       {isGenerating && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/20 backdrop-blur-sm">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        </div>
+        <CenteredLoader />
       )}
       <div className="bg-card shadow-sm">
         <div className="flex items-center gap-2 border-b border-border p-2">

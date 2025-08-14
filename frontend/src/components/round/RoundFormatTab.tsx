@@ -8,7 +8,7 @@ import RoundSelector from '@/src/components/round/RoundSelector';
 import MatchFormatActions from '@/src/components/round/MatchFormatActions';
 import { PlayerPair } from '@/src/types/playerPair';
 import { fetchRounds, fetchMatchFormat, updateMatchFormat } from '@/src/api/tournamentApi';
-import { Loader2 } from 'lucide-react';
+import CenteredLoader from '@/src/components/ui/CenteredLoader';
 
 interface RoundFormatTabProps {
   tournamentId: string;
@@ -20,13 +20,15 @@ export default function RoundFormatTab({ tournamentId, pairs }: RoundFormatTabPr
   const [currentStageIndex, setCurrentStageIndex] = useState<number>(0);
   const [matchFormat, setMatchFormat] = useState<MatchFormat | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRoundsLoading, setIsRoundsLoading] = useState(true);
   const currentStage = rounds[currentStageIndex]?.stage;
 
   useEffect(() => {
     async function loadRounds() {
-    const data = await fetchRounds(tournamentId);
-    setRounds(data);
-
+      setIsRoundsLoading(true);
+      const data = await fetchRounds(tournamentId);
+      setRounds(data);
+      setIsRoundsLoading(false);
     }
 
     loadRounds();
@@ -51,39 +53,41 @@ export default function RoundFormatTab({ tournamentId, pairs }: RoundFormatTabPr
 
   return (
     <div className="space-y-4">
-      <>
-        <RoundSelector
-          rounds={rounds}
-          currentIndex={currentStageIndex}
-          onChange={setCurrentStageIndex}
-        />
+      {isRoundsLoading ? (
+        <CenteredLoader />
+      ) : (
+        <>
+          <RoundSelector
+            rounds={rounds}
+            currentIndex={currentStageIndex}
+            onChange={setCurrentStageIndex}
+          />
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-8 text-muted-foreground">
-            <Loader2 className="h-6 w-6 animate-spin" />
-          </div>
-        ) : (
-          matchFormat && (
-            <>
-              <MatchFormatForm
-                format={matchFormat}
-                onChange={(newFormat) => {
-                  setMatchFormat(newFormat);
-                  saveFormat(newFormat);
-                }}
-              />
-              <MatchFormatActions
-                tournamentId={tournamentId}
-                rounds={rounds}
-                currentStageIndex={currentStageIndex}
-                matchFormat={matchFormat}
-                isLoading={isLoading}
-                setIsLoading={setIsLoading}
-              />
-            </>
-          )
-        )}
-      </>
+          {isLoading ? (
+            <CenteredLoader />
+          ) : (
+            matchFormat && (
+              <>
+                <MatchFormatForm
+                  format={matchFormat}
+                  onChange={(newFormat) => {
+                    setMatchFormat(newFormat);
+                    saveFormat(newFormat);
+                  }}
+                />
+                <MatchFormatActions
+                  tournamentId={tournamentId}
+                  rounds={rounds}
+                  currentStageIndex={currentStageIndex}
+                  matchFormat={matchFormat}
+                  isLoading={isLoading}
+                  setIsLoading={setIsLoading}
+                />
+              </>
+            )
+          )}
+        </>
+      )}
     </div>
   );
 }

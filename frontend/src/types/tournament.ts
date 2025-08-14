@@ -9,7 +9,7 @@ export interface Tournament {
   club: string;
   gender: string;
   level: string;
-  tournamentFormat: string; // 'KNOCKOUT' | 'GROUP_STAGE'
+  tournamentFormat: 'KNOCKOUT' | 'GROUP_STAGE';
   rounds: Round[];
   nbSeeds: number;
   playerPairs: PlayerPair[];

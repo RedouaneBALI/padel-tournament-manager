@@ -26,13 +26,13 @@ export default function TournamentInfoSection({ formData, handleInputChange }: T
               name="name"
               type="text"
               placeholder="Ex: Open de Padel 2025"
-              value={formData.name ?? ''}
+              value={String(formData.name ?? '')}
               onChange={handleInputChange}
               required
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             />
           </div>
-          
+
           <div className="space-y-2">
             <label htmlFor="club" className="block text-sm font-medium text-foreground flex items-center gap-2">
               <Building className="h-4 w-4" />
@@ -43,12 +43,12 @@ export default function TournamentInfoSection({ formData, handleInputChange }: T
               name="club"
               type="text"
               placeholder="Nom du club"
-              value={formData.club ?? ''}
+              value={String(formData.club ?? '')}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             />
           </div>
-          
+
           <div className="space-y-2">
             <label htmlFor="city" className="block text-sm font-medium text-foreground flex items-center gap-2">
               <MapPin className="h-4 w-4" />
@@ -59,13 +59,13 @@ export default function TournamentInfoSection({ formData, handleInputChange }: T
               name="city"
               type="text"
               placeholder="Ville du tournoi"
-              value={formData.city ?? ''}
+              value={String(formData.city ?? '')}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             />
           </div>
         </div>
-        
+
         <div className="space-y-2">
           <label htmlFor="description" className="block text-sm font-medium text-foreground">
             Description
@@ -74,7 +74,7 @@ export default function TournamentInfoSection({ formData, handleInputChange }: T
             id="description"
             name="description"
             placeholder="Décrivez votre tournoi..."
-            value={formData.description ?? ''}
+            value={String(formData.description ?? '')}
             onChange={handleInputChange}
             rows={3}
             className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors min-h-[100px] resize-none"

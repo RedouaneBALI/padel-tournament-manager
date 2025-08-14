@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Switch } from '@/src/components/ui/switch';
-import { MatchFormat }  from '@/src/types/matchFormat';
+import { MatchFormat } from '@/src/types/matchFormat';
 
 interface MatchFormatFormProps {
   format: MatchFormat;

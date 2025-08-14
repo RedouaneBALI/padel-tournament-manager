@@ -1,6 +1,8 @@
 import { Calendar } from 'lucide-react';
 import type { TournamentFormData } from '@/src/validation/tournament';
 
+const toStr = (v: unknown) => (v == null ? '' : String(v));
+
 interface TournamentDatesSectionProps {
   formData: TournamentFormData;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -25,7 +27,7 @@ export default function TournamentDatesSection({ formData, handleInputChange }: 
               id="startDate"
               name="startDate"
               type="date"
-              value={formData.startDate ?? ''}
+              value={toStr(formData.startDate)}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             />
@@ -39,7 +41,7 @@ export default function TournamentDatesSection({ formData, handleInputChange }: 
               id="endDate"
               name="endDate"
               type="date"
-              value={formData.endDate ?? ''}
+              value={toStr(formData.endDate)}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             />

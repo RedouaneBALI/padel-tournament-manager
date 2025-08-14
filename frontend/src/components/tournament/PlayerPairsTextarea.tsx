@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { PlayerPair } from '@/src/types/playerPair';
 import { toast } from 'react-toastify';
 import { fetchPairs, savePlayerPairs } from '@/src/api/tournamentApi';
-import { Loader2 } from 'lucide-react';
+import CenteredLoader from '@/src/components/ui/CenteredLoader';
 
 interface Props {
   tournamentId: string;
@@ -15,13 +15,19 @@ interface Props {
 export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasStarted }: Props) {
   const [text, setText] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchUpdatedPairs = async () => {
-
+    setIsLoading(true);
+    try {
       const data = await fetchPairs(tournamentId);
       setText(data.map(pair => `${pair.player1.name},${pair.player2.name}`).join('\n'));
       if (onPairsChange) onPairsChange(data);
-
+    } catch (e: any) {
+      toast.error(e?.message ?? 'Impossible de charger les paires.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -60,35 +66,39 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
   return (
     <>
       {isSaving && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/20 backdrop-blur-sm">
-          <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        </div>
+        <CenteredLoader />
       )}
       <div className="bg-card">
-        <textarea
-          className="w-full h-60 p-2 border border-border rounded resize-none font-mono overflow-x-auto whitespace-pre"
-          wrap="off"
-          value={text}
-          onChange={e => setText(e.target.value)}
-          placeholder={`Ghali Berrada,Selim Mekouar\nRedouane Bali,Ali Khobzaoui`}
-          disabled={hasStarted}
-        />
+        {isLoading ? (
+        <CenteredLoader />
+        ) : (
+          <>
+            <textarea
+              className="w-full h-60 p-2 border border-border rounded resize-none font-mono overflow-x-auto whitespace-pre"
+              wrap="off"
+              value={text}
+              onChange={e => setText(e.target.value)}
+              placeholder={`Ghali Berrada,Selim Mekouar\nRedouane Bali,Ali Khobzaoui`}
+              disabled={hasStarted}
+            />
 
-        {!hasStarted && (
-          <div className="flex justify-center gap-4 py-2">
-            <button
-              onClick={handleClear}
-              className="px-4 py-2 border border-border text-foreground rounded hover:bg-background"
-            >
-              Effacer
-            </button>
-            <button
-              onClick={handleSave}
-              className="px-4 py-2 bg-primary text-on-primary rounded hover:bg-primary-hover"
-            >
-              Enregistrer les joueurs
-            </button>
-          </div>
+            {!hasStarted && (
+              <div className="flex justify-center gap-4 py-2">
+                <button
+                  onClick={handleClear}
+                  className="px-4 py-2 border border-border text-foreground rounded hover:bg-background"
+                >
+                  Effacer
+                </button>
+                <button
+                  onClick={handleSave}
+                  className="px-4 py-2 bg-primary text-on-primary rounded hover:bg-primary-hover"
+                >
+                  Enregistrer les joueurs
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </>

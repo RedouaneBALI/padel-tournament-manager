@@ -1,13 +1,15 @@
 import { Settings, Users, Trophy, Zap } from 'lucide-react';
 import type { TournamentFormData } from '@/src/validation/tournament';
 
+const toStr = (v: unknown) => (v == null ? '' : String(v));
+
 interface TournamentConfigSectionProps {
   formData: TournamentFormData;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
 }
 
-export default function TournamentConfigSection({ 
-  formData, 
+export default function TournamentConfigSection({
+  formData,
   handleInputChange
 }: TournamentConfigSectionProps) {
   return (
@@ -27,7 +29,7 @@ export default function TournamentConfigSection({
             </label>
             <select
               name="gender"
-              value={formData.gender ?? ''}
+              value={toStr(formData.gender)}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             >
@@ -45,7 +47,7 @@ export default function TournamentConfigSection({
             </label>
             <select
               name="level"
-              value={formData.level ?? ''}
+              value={toStr(formData.level)}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             >
@@ -68,7 +70,7 @@ export default function TournamentConfigSection({
             </label>
         <select
           name="tournamentFormat"
-          value={formData.tournamentFormat ?? ''}
+          value={toStr(formData.tournamentFormat)}
           onChange={handleInputChange}
           className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
         >
@@ -92,7 +94,7 @@ export default function TournamentConfigSection({
               type="number"
               min="0"
               max="64"
-              value={formData.nbSeeds ?? 16}
+              value={Number(formData.nbSeeds ?? 16)}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             />
@@ -108,7 +110,7 @@ export default function TournamentConfigSection({
                 type="number"
                 min="0"
                 max="128"
-                value={formData.nbMaxPairs ?? 48}
+                value={Number(formData.nbMaxPairs ?? 48)}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
               />
@@ -123,7 +125,7 @@ export default function TournamentConfigSection({
                 <select
                   id="nbPools"
                   name="nbPools"
-                  value={formData.nbPools ?? 4}
+                  value={toStr(formData.nbPools ?? 4)}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10"
                 >
@@ -143,7 +145,7 @@ export default function TournamentConfigSection({
                   type="number"
                   min="3"
                   max="8"
-                  value={formData.nbPairsPerPool ?? 4}
+                  value={Number(formData.nbPairsPerPool ?? 4)}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10"
                 />
@@ -156,7 +158,7 @@ export default function TournamentConfigSection({
                 <select
                   id="nbQualifiedByPool"
                   name="nbQualifiedByPool"
-                  value={formData.nbQualifiedByPool ?? 2}
+                  value={toStr(formData.nbQualifiedByPool ?? 2)}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10"
                 >

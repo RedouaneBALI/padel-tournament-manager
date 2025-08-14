@@ -3,12 +3,13 @@
 import { FormEvent } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Loader2, Trophy } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 import TournamentInfoSection from '@/src/components/forms/TournamentInfoSection';
 import TournamentDatesSection from '@/src/components/forms/TournamentDatesSection';
 import TournamentConfigSection from '@/src/components/forms/TournamentConfigSection';
 import type { Tournament } from '@/src/types/tournament';
 import { useTournamentForm } from '@/src/hooks/useTournamentForm';
+import CenteredLoader from '@/src/components/ui/CenteredLoader';
 
 interface TournamentFormProps {
   initialData?: Partial<Tournament>;
@@ -43,9 +44,7 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
   return (
     <>
       {isSubmitting && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/20 backdrop-blur-sm">
-          <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        </div>
+<CenteredLoader />
       )}
       <div className="container mx-auto max-w-4xl" aria-busy={isSubmitting}>
         <div className="bg-card shadow-lg border border-border">

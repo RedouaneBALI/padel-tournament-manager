@@ -6,12 +6,25 @@ import { useSession } from 'next-auth/react';
 import { fetchMyTournaments, deleteTournament } from '@/src/api/tournamentApi';
 import type { Tournament } from '@/src/types/tournament';
 import { toast } from 'react-toastify';
-import { Loader2 } from 'lucide-react';
+import CenteredLoader from '@/src/components/ui/CenteredLoader';
 
 export default function TournamentList() {
   const { status } = useSession();
+  if (status === 'loading') {
+    return (
+      <main className="min-h-screen bg-background">
+        <section className="max-w-5xl mx-auto px-4 py-16">
+          <div className="bg-card border border-border rounded-2xl p-6 sm:p-8">
+            <div className="flex items-center justify-center py-8 text-muted-foreground">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
+          </div>
+        </section>
+      </main>
+    );
+  }
   const [items, setItems] = useState<Tournament[] | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | number | null>(null);
 
@@ -19,9 +32,10 @@ export default function TournamentList() {
     let cancelled = false;
     async function load() {
       if (status !== 'authenticated') {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
         return;
       }
+      if (!cancelled) setLoading(true);
       try {
         const data = await fetchMyTournaments('mine');
         if (!cancelled) setItems(data);
@@ -60,7 +74,7 @@ export default function TournamentList() {
             <h1 className="text-2xl font-bold text-foreground mb-2">Mes tournois</h1>
             <p className="text-muted-foreground mb-6">Connecte-toi pour voir tes tournois.</p>
             <Link
-              href="/api/auth/signin/google?callbackUrl=/tournaments"
+              href="/api/auth/signin/google?callbackUrl=/admin/tournaments"
               className="flex items-center justify-center gap-2 border border-border bg-card hover:bg-background transition px-5 py-3 rounded-lg font-medium mx-auto w-fit"
             >
               <img src="/google-logo.svg" alt="" className="w-5 h-5" />
@@ -72,17 +86,14 @@ export default function TournamentList() {
     );
   }
 
+
   return (
     <main className="min-h-screen bg-background">
       <section className="max-w-5xl mx-auto px-4 py-16">
         <div className="bg-card border border-border rounded-2xl p-6 sm:p-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">Mes tournois</h1>
 
-          {loading && (
-              <div className="flex items-center justify-center py-8 text-muted-foreground">
-                <Loader2 className="h-6 w-6 animate-spin" />
-              </div>
-          )}
+          {loading && <CenteredLoader size={24} />}
 
           {!loading && error && (
             <div className="text-red-600">Une erreur est survenue : {error}</div>
@@ -90,7 +101,7 @@ export default function TournamentList() {
 
           {!loading && !error && (
             <>
-              {items && items.length > 0 ? (
+              {(items?.length ?? 0) > 0 ? (
                 <ul className="divide-y divide-border">
                   {items.map((t) => (
                     <li key={t.id} className="py-3 flex items-center justify-between">
@@ -105,7 +116,6 @@ export default function TournamentList() {
                           Gérer
                         </Link>
 
-                        {/* Bouton supprimer */}
                         <button
                           type="button"
                           onClick={() => onDelete(t.id!)}
@@ -114,7 +124,6 @@ export default function TournamentList() {
                           className="px-3 py-2 rounded-md border border-red-600 text-red-600 hover:bg-red-600/10 transition text-sm flex items-center gap-2 disabled:opacity-60"
                           title="Supprimer"
                         >
-                          {/* icône poubelle inline (SVG) */}
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                             <path d="M9 3h6a1 1 0 0 1 1 1v1h4v2h-1v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7H4V5h4V4a1 1 0 0 1 1-1Zm1 2v0h4V5h-4Zm-1 6h2v7H9v-7Zm6 0h-2v7h2v-7Z"/>
                           </svg>

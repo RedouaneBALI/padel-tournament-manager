@@ -1,10 +1,11 @@
 'use client';
 
 import { useRouter, usePathname } from 'next/navigation';
-import { Settings, Share2, Loader2 } from 'lucide-react';
+import { Settings, Share2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import AdminTournamentTabs from './AdminTournamentTabs';
 import type { Tournament } from '@/src/types/tournament';
+import CenteredLoader from '@/src/components/ui/CenteredLoader';
 
 interface Props {
   tournament: Tournament | null;
@@ -31,10 +32,7 @@ export default function AdminTournamentHeader({ tournament, tournamentId }: Prop
           {tournament ? (
             tournament.name
           ) : (
-            <span className="flex items-center text-muted-foreground">
-              <Loader2 className="h-5 w-5 animate-spin mr-2" />
-              //Chargement...
-            </span>
+            <CenteredLoader />
           )}
         </h1>
         <div className="flex items-center gap-2">

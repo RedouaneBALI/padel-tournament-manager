@@ -13,6 +13,7 @@ import BracketHeader from '@/src/components/tournament/BracketHeader';
 import SubTabs from '@/src/components/tournament/SubTabs';
 import { calculateMatchPositions } from '@/src/utils/bracket';
 import { exportBracketAsImage } from '@/src/utils/imageExport';
+import CenteredLoader from '@/src/components/ui/CenteredLoader';
 
 const VIEW_CLASSEMENT = 'classement';
 const VIEW_PHASE_FINALE = 'phase-finale';
@@ -23,6 +24,7 @@ interface TournamentResultsTabProps {
 
 export default function TournamentResultsTab({ tournamentId}: TournamentResultsTabProps) {
   const [tournament, setTournament] = useState<Tournament | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -30,11 +32,14 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
 
   useEffect(() => {
     async function load() {
+      setIsLoading(true);
       try {
         const data = await fetchTournament(tournamentId);
         setTournament(data);
       } catch (err) {
         console.error("Erreur lors du chargement des rounds : " + err);
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -66,7 +71,13 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
     router.replace(`${pathname}?${params.toString()}`);
   };
 
-  if ((tournament?.rounds ?? []).length === 0) {
+  if (isLoading) {
+    return <CenteredLoader />;
+  }
+  if (!tournament) {
+    return <CenteredLoader />;
+  }
+  if (!isLoading && (tournament?.rounds ?? []).length === 0) {
     return <p className="text-muted-foreground">Aucun tirage généré pour le moment.</p>;
   }
 

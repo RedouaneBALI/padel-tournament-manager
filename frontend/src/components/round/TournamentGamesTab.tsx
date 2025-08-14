@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
-// Helper to get setsToWin for a round
+import CenteredLoader from '@/src/components/ui/CenteredLoader';
+
 function getSetsToWin(round: any) {
   const n = Number(round?.matchFormat?.numberOfSetsToWin);
   return Number.isFinite(n) && n > 0 ? n : 2;
@@ -125,9 +125,7 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8 text-muted-foreground">
-        <Loader2 className="h-6 w-6 animate-spin" />
-      </div>
+  <CenteredLoader />
     );
   }
 
