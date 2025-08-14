@@ -17,7 +17,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
     headers["Content-Type"] = "application/json";
   }
 
-  const bearer = (session as any)?.accessToken ?? (session as any)?.idToken;
+  const bearer = (session as any)?.idToken ?? (session as any)?.accessToken;
   if (!bearer) {
     console.warn("[fetchWithAuth] No token in session. Are you logged in?");
   } else {
@@ -28,7 +28,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
 
   if (res.status === 401) {
     session = await getSession();
-    const fresh = (session as any)?.accessToken ?? (session as any)?.idToken;
+    const fresh = (session as any)?.idToken ?? (session as any)?.accessToken;
     if (fresh) {
       headers["Authorization"] = `Bearer ${fresh}`;
       res = await fetch(url, { ...options, headers });

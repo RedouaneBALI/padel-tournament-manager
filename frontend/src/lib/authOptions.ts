@@ -43,7 +43,7 @@ export function getAuthOptions(): NextAuthOptions {
         }
 
         // Return previous token if the access token has not expired yet
-        if (Date.now() < (token as any).accessTokenExpires) {
+        if ((token as any).accessToken && (token as any).accessTokenExpires && Date.now() < (token as any).accessTokenExpires - 60_000) {
           return token;
         }
 
@@ -88,8 +88,10 @@ async function refreshAccessToken(token: any) {
     return {
       ...token,
       accessToken: refreshedTokens.access_token,
-      accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
-      refreshToken: refreshedTokens.refresh_token ?? token.refreshToken, // Fall back to old refresh token
+      idToken: refreshedTokens.id_token ?? token.idToken,
+      accessTokenExpires: Date.now() + (refreshedTokens.expires_in ?? 3600) * 1000,
+      refreshToken: refreshedTokens.refresh_token ?? token.refreshToken,
+      error: undefined,
     };
   } catch (error) {
     console.error("Error refreshing access token", error);
