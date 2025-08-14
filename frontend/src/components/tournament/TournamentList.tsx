@@ -106,7 +106,12 @@ export default function TournamentList() {
               {(items?.length ?? 0) > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {(items ?? []).map((t) => (
-                    <TournamentCard key={t.id} tournament={t} onDelete={onDelete} deletingId={deletingId} />
+                    <TournamentCard
+                      key={t.id}
+                      tournament={t}
+                      onDelete={onDelete}
+                      isDeleting={String(deletingId) === String(t.id)}
+                    />
                   ))}
                 </div>
               ) : (

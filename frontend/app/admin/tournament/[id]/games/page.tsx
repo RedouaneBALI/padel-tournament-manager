@@ -1,6 +1,6 @@
 'use client';
 
-import TournamentGamesTab from '@/src/components/round/TournamentGamesTab';
+import TournamentGamesTab from '@/src/components/tournament/games/TournamentGamesTab';
 import React from 'react';
 import { use } from 'react';
 

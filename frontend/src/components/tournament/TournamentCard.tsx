@@ -1,5 +1,5 @@
 import React from "react";
-import { Tournament } from "../types";
+import { Tournament } from "@/src/types/tournament";
 import Link from "next/link";
 import { Trophy, Settings, Trash2 } from "lucide-react";
 
@@ -40,7 +40,7 @@ const TournamentCard: React.FC<TournamentCardProps> = ({
         </Link>
 
         <button
-          onClick={() => onDelete(tournament.id)}
+          onClick={() => onDelete(String(tournament.id))}
           disabled={isDeleting}
           aria-label="Supprimer le tournoi"
           title="Supprimer le tournoi"
