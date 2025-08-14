@@ -1,5 +1,4 @@
-// src/api/fetchWithAuth.ts
-import { getSession } from "next-auth/react";
+import { getSession, signOut } from "next-auth/react";
 
 function normalizeHeaders(init?: HeadersInit): Record<string, string> {
   const h: Record<string, string> = {};
@@ -11,16 +10,33 @@ function normalizeHeaders(init?: HeadersInit): Record<string, string> {
 }
 
 export async function fetchWithAuth(url: string, options: RequestInit = {}) {
-  const session = await getSession();
-  if (!session || !(session as any).idToken) {
-    console.warn(
-      "[fetchWithAuth] No idToken in session. Are you logged in? " +
-      "Check NEXTAUTH_URL/NEXTAUTH_SECRET and that <SessionProvider> wraps the app."
-    );
-  }
-  const headers = normalizeHeaders(options.headers);
-  if (!headers["Content-Type"]) headers["Content-Type"] = "application/json";
-  if (session?.idToken) headers["Authorization"] = `Bearer ${session.idToken}`;
+  let session = await getSession();
 
-  return fetch(url, { ...options, headers });
+  const headers = normalizeHeaders(options.headers);
+  if (!headers["Content-Type"] && (options.method && options.method !== 'GET')) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  const bearer = (session as any)?.accessToken ?? (session as any)?.idToken;
+  if (!bearer) {
+    console.warn("[fetchWithAuth] No token in session. Are you logged in?");
+  } else {
+    headers["Authorization"] = `Bearer ${bearer}`;
+  }
+
+  let res = await fetch(url, { ...options, headers });
+
+  if (res.status === 401) {
+    session = await getSession();
+    const fresh = (session as any)?.accessToken ?? (session as any)?.idToken;
+    if (fresh) {
+      headers["Authorization"] = `Bearer ${fresh}`;
+      res = await fetch(url, { ...options, headers });
+    }
+    if (res.status === 401) {
+      try { await signOut({ callbackUrl: "/" }); } catch {}
+    }
+  }
+
+  return res;
 }

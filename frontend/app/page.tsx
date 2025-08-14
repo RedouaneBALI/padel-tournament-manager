@@ -50,7 +50,7 @@ export default function Home() {
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground mb-2">
               Gère tes tournois de padel facilement
             </h1>
-            <p className="text-muted-foreground">Tirages automatiques · Tableaux knockout · Suivi des scores</p>
+            <p className="text-muted-foreground">Tirages automatiques · Tableaux knockout · Suivi des scores en direct</p>
             <div className="flex justify-center">
               <Image
                 src="/ptm-logo-cropped.png"
