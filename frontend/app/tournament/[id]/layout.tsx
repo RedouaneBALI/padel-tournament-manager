@@ -38,14 +38,19 @@ export default function TournamentLayout({
     { href: `/tournament/${id}`, label: 'Aperçu', Icon: Home },
     { href: `/tournament/${id}/players`, label: 'Joueurs', Icon: Users },
     { href: `/tournament/${id}/games`, label: 'Matchs', Icon: LuSwords },
-    { href: `/tournament/${id}/results`, label: 'Tableau', Icon: TbTournament },
+    { href: `/tournament/${id}/bracket`, label: 'Tableau', Icon: TbTournament },
   ];
 
   return (
     <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
       {/* Header simple avec nom du tournoi */}
       <header className="pt-4 pb-2">
-        <h1 className="text-2xl font-bold truncate">{tournament.name}</h1>
+        <div className="flex items-center gap-3">
+          <div className="w-1 h-10 bg-primary rounded"></div>
+           <span className="text-2xl font-bold tracking-tight text-primary">
+              {tournament.name}
+           </span>
+        </div>
       </header>
 
       {/* Contenu avec padding bas pour ne pas passer sous la bottom bar */}

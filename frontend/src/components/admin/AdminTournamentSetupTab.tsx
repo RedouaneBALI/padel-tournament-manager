@@ -41,7 +41,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
             try {
               const manual = drawMode === 'order';
               await generateDraw(tournamentId, manual);
-              router.push(`/admin/tournament/${tournamentId}/rounds/results`);
+              router.push(`/admin/tournament/${tournamentId}/bracket`);
             } finally {
               setIsGenerating(false);
             }

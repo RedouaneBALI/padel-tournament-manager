@@ -28,9 +28,14 @@ export default function AdminTournamentHeader({ tournament, tournamentId }: Prop
   return (
     <>
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">
+        <h1 className="flex flex-col">
           {tournament ? (
-            tournament.name
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-10 bg-primary rounded"></div>
+              <span className="text-2xl font-bold tracking-tight text-primary">
+                {tournament.name}
+              </span>
+            </div>
           ) : (
             <CenteredLoader />
           )}

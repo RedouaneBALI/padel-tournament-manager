@@ -1,16 +1,17 @@
 'use client';
 import React from 'react';
+import { VIEW_CLASSEMENT, VIEW_PHASE_FINALE } from './TournamentResultsTab';
 
 type Props = {
-  active: 'classement' | 'phase-finale';
-  onChange: (view: 'classement' | 'phase-finale') => void;
+  active: typeof VIEW_CLASSEMENT | typeof VIEW_PHASE_FINALE;
+  onChange: (view: typeof VIEW_CLASSEMENT | typeof VIEW_PHASE_FINALE) => void;
 };
 
 export default function SubTabs({ active, onChange }: Props) {
   return (
     <div className="mb-4 border-b border-border">
       <nav className="-mb-px flex justify-center gap-2" aria-label="Sous-onglets tableau">
-        {(['classement', 'phase-finale'] as const).map((view) => (
+        {[VIEW_CLASSEMENT, VIEW_PHASE_FINALE].map((view) => (
           <button
             key={view}
             onClick={() => onChange(view)}
@@ -20,7 +21,7 @@ export default function SubTabs({ active, onChange }: Props) {
                 : 'border-transparent text-muted-foreground hover:text-primary'
             }`}
           >
-            {view === 'classement' ? 'Poules' : 'Phase finale'}
+            {view === VIEW_CLASSEMENT ? 'Pools' : 'Final phase'}
           </button>
         ))}
       </nav>

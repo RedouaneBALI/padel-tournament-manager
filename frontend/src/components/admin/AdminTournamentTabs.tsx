@@ -34,10 +34,10 @@ export default function AdminTournamentTabs({ tournamentId, pathname }: Props) {
       isActive: (p) => p.includes('/games'),
     },
     {
-      href: `${base}/rounds/results`,
+      href: `${base}/bracket`,
       label: 'Tableau',
       Icon: TbTournament,
-      isActive: (p) => p.includes('/rounds/results'),
+      isActive: (p) => p.includes('/bracket'),
     },
   ];
 

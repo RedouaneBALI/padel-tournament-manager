@@ -15,8 +15,8 @@ import { calculateMatchPositions } from '@/src/utils/bracket';
 import { exportBracketAsImage } from '@/src/utils/imageExport';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
 
-const VIEW_CLASSEMENT = 'classement';
-const VIEW_PHASE_FINALE = 'phase-finale';
+export const VIEW_CLASSEMENT = 'pools';
+export const VIEW_PHASE_FINALE = 'final-phase';
 
 interface TournamentResultsTabProps {
   tournamentId: string;
@@ -82,7 +82,7 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full pb-10">
       {/* Sub-tabs only if first round is GROUPS */}
       {firstRoundStage === Stage.GROUPS && (
         <div className="mb-4 border-b border-border">
@@ -113,10 +113,12 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
 
       {/* Poules view only for GROUPS */}
       {firstRoundStage === Stage.GROUPS && activeView === VIEW_CLASSEMENT && (
-        <GroupStageResults
-          rounds={tournament?.rounds ?? []}
-          nbQualifiedByPool={tournament?.nbQualifiedByPool ?? 1}
-        />
+        <div className="relative overflow-auto border border-border rounded-lg px-2 py-6 md:p-8 bg-background">
+          <GroupStageResults
+            rounds={tournament?.rounds ?? []}
+            nbQualifiedByPool={tournament?.nbQualifiedByPool ?? 1}
+          />
+        </div>
       )}
 
       {/* Phase finale view */}
