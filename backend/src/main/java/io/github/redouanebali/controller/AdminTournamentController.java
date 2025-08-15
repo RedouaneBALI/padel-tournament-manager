@@ -5,6 +5,7 @@ import io.github.redouanebali.config.SecurityUtil;
 import io.github.redouanebali.dto.GameUpdateRequest;
 import io.github.redouanebali.dto.ScoreUpdateResponse;
 import io.github.redouanebali.dto.TournamentDTO;
+import io.github.redouanebali.dto.UpdatePlayerPairRequest;
 import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.PlayerPair;
@@ -29,6 +30,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -93,6 +95,16 @@ public class AdminTournamentController {
     return tournamentMapper.toDTO(playerPairService.addPairs(id, players));
   }
 
+  @PatchMapping(path = "/{id}/pairs/{pairId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Void> updatePlayerPair(@PathVariable Long id,
+                                               @PathVariable Long pairId,
+                                               @RequestBody @Valid UpdatePlayerPairRequest req) {
+    checkOwnership(id);
+
+    playerPairService.updatePlayerPair(id, pairId, req.getPlayer1Name(), req.getPlayer2Name(), req.getSeed());
+    return ResponseEntity.ok().build();
+  }
+
   /**
    * @param manual if true players order is preserved, otherwise algorithm shuffles
    */
@@ -145,4 +157,6 @@ public class AdminTournamentController {
       throw new AccessDeniedException("You are not allowed to modify this tournament");
     }
   }
+
+
 }

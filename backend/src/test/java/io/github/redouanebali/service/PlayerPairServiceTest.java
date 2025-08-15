@@ -93,6 +93,43 @@ public class PlayerPairServiceTest {
                  () -> playerPairService.getPairsByTournamentId(1L));
   }
 
+  @Test
+  void testUpdatePlayerPair_shouldUpdateNamesAndSeed() {
+    Tournament tournament = new Tournament();
+    tournament.setId(1L);
+    tournament.setOwnerId("bali.redouane@gmail.com");
+
+    PlayerPair pair = new PlayerPair("Old1", "Old2", 1);
+    pair.setId(10L);
+    tournament.getPlayerPairs().add(pair);
+
+    when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
+    when(tournamentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+    playerPairService.updatePlayerPair(1L, 10L, "New1", "New2", 5);
+
+    PlayerPair updated = tournament.getPlayerPairs().get(0);
+    assertEquals("New1", updated.getPlayer1().getName());
+    assertEquals("New2", updated.getPlayer2().getName());
+    assertEquals(5, updated.getSeed());
+  }
+
+  @Test
+  void testUpdatePlayerPair_shouldThrowOnByePair() {
+    Tournament tournament = new Tournament();
+    tournament.setId(1L);
+    tournament.setOwnerId("bali.redouane@gmail.com");
+
+    PlayerPair byePair = PlayerPair.bye();
+    byePair.setId(11L);
+    tournament.getPlayerPairs().add(byePair);
+
+    when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
+
+    assertThrows(IllegalStateException.class,
+                 () -> playerPairService.updatePlayerPair(1L, 11L, "Someone", null, null));
+  }
+
   @AfterEach
   void tearDown() {
     SecurityContextHolder.clearContext();

@@ -18,8 +18,7 @@ export default function ConnexionPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="bg-card shadow-md rounded-lg px-10 py-8 text-center">
-        <h1 className="text-3xl font-bold mb-5">Bienvenue</h1>
-        <p className="mb-8 text-muted text-base">Connectez-vous pour accéder à l'administration</p>
+        <p className="mb-8 text-muted text-base">Veuillez vous reconnecter</p>
 
         {status === 'loading' ? (
           <p className="text-base text-muted mb-2">Chargement...</p>

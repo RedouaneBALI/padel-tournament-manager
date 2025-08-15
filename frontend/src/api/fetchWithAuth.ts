@@ -34,7 +34,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
       res = await fetch(url, { ...options, headers });
     }
     if (res.status === 401) {
-      try { await signOut({ callbackUrl: "/" }); } catch {}
+      try { await signOut({ callbackUrl: "/connexion" }); } catch {}
     }
   }
 
