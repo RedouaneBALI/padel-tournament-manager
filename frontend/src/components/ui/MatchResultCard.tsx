@@ -6,7 +6,8 @@ import { setHours, setMinutes } from 'date-fns';
 import { PlayerPair } from '@/src/types/playerPair';
 import { Score } from '@/src/types/score';
 import TeamScoreRow from '@/src/components/ui/TeamScoreRow';
-import { Edit3, Save, X } from 'lucide-react';
+import { Edit3 } from 'lucide-react';
+import SaveAndCancelButtons from '@/src/components/ui/SaveAndCancelButtons';
 import { updateGameDetails } from '@/src/api/tournamentApi';
 import { normalizeGroup, groupBadgeClasses, formatGroupLabel } from '@/src/utils/groupBadge';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
@@ -185,16 +186,6 @@ export default function MatchResultCard({
   return (
     <div
       aria-busy={isSaving}
-      onKeyDownCapture={(e) => {
-        if (!editing || isSaving) return;
-        if (e.key !== 'Enter' && e.key !== 'NumpadEnter') return;
-        const target = e.target as HTMLElement;
-        const tag = target.tagName.toLowerCase();
-        if (tag === 'input' || tag === 'select' || tag === 'textarea') {
-          e.preventDefault();
-          void handleSave();
-        }
-      }}
       className={`relative rounded-lg overflow-hidden w-full sm:max-w-[400px] transition-all duration-200
         ${editing
           ? 'shadow-2xl bg-edit-bg/30'
@@ -220,29 +211,17 @@ export default function MatchResultCard({
         {editable && (
           <div className="z-10">
             {editing ? (
-              <div className="flex gap-2">
-                <button
-                  disabled={isSaving}
-                  onClick={() => {
-                    setScores([...initialScores]);
-                    setLocalCourt(court || 'Court central');
-                    setLocalScheduledTime(scheduledTime || '00:00');
-                    setEditing(false);
-                  }}
-                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 disabled:cursor-not-allowed border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 rounded-md px-3"
-                >
-                  <X className="h-3 w-3 mr-1" />
-                  Annuler
-                </button>
-                <button
-                  disabled={isSaving}
-                  onClick={handleSave}
-                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 disabled:cursor-not-allowed bg-green-600 text-on-primary hover:bg-green-700 h-9 rounded-md px-3 shadow-md"
-                >
-                  <Save className="h-3 w-3 mr-1" />
-                  Sauver
-                </button>
-              </div>
+              <SaveAndCancelButtons
+                isSaving={isSaving}
+                onCancel={() => {
+                  setScores([...initialScores]);
+                  setLocalCourt(court || 'Court central');
+                  setLocalScheduledTime(scheduledTime || '00:00');
+                  setEditing(false);
+                }}
+                bindEnter={editing}
+                onSave={handleSave}
+              />
             ) : (
               <button
                 onClick={() => setEditing(true)}

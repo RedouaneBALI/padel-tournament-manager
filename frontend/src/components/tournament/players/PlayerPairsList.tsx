@@ -1,0 +1,74 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { PlayerPair } from '@/src/types/playerPair';
+import CenteredLoader from '@/src/components/ui/CenteredLoader';
+import PlayerPairLine from './PlayerPairLine';
+
+interface PlayerPairListProps {
+  pairs: PlayerPair[];
+  tournamentId: string | number;
+  loading?: boolean;
+  editable?: boolean;
+}
+
+export default function PlayerPairList({ pairs, tournamentId, loading = false, editable = false }: PlayerPairListProps) {
+  const [editingPairId, setEditingPairId] = useState<number | null>(null);
+  const [localPairs, setLocalPairs] = useState<PlayerPair[]>(pairs ?? []);
+
+  // Keep local snapshot in sync when parent updates its list
+  useEffect(() => {
+    setLocalPairs(pairs ?? []);
+  }, [pairs]);
+
+  const hasPairs = (localPairs?.length ?? 0) > 0;
+  if (!hasPairs) {
+    if (loading) return <CenteredLoader />;
+    return <p className="text-muted italic">Aucune paire inscrite pour le moment.</p>;
+  }
+
+  const startEdit = (pairId?: number) => {
+    if (!editable || tournamentId === undefined || tournamentId === null) return;
+    if (!pairId) return;
+    setEditingPairId(pairId);
+  };
+
+  const cancelEdit = () => setEditingPairId(null);
+
+  const applySavedChanges = (pairId: number, update: { player1Name?: string; player2Name?: string; seed?: number }) => {
+    setLocalPairs(prev => prev.map(p => {
+      if ((p.id ?? -1) !== pairId) return p;
+      return {
+        ...p,
+        seed: update.seed !== undefined ? update.seed : p.seed,
+        player1: update.player1Name ? { ...p.player1, name: update.player1Name } : p.player1,
+        player2: update.player2Name ? { ...p.player2, name: update.player2Name } : p.player2,
+      };
+    }));
+    setEditingPairId(null);
+  };
+
+  return (
+    <ul className="space-y-2">
+      {localPairs.map((pair) => {
+        const id = pair.id ?? -1;
+        const isEditing = editingPairId === id;
+        const canEdit = editable && (editingPairId === null || isEditing);
+        return (
+          <li key={id} className="border rounded px-4 py-2 bg-background shadow-sm text-sm flex items-center justify-between gap-3">
+            <PlayerPairLine
+              pair={pair}
+              tournamentId={tournamentId}
+              editable={editable}
+              isEditing={isEditing}
+              canEdit={canEdit}
+              onStartEdit={() => startEdit(id)}
+              onCancelEdit={cancelEdit}
+              onSaved={(update) => applySavedChanges(id, update)}
+            />
+          </li>
+        );
+      })}
+    </ul>
+  );
+}

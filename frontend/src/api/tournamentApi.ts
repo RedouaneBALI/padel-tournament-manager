@@ -195,3 +195,22 @@ export async function generateDraw(tournamentId: string, manual: boolean) {
   toast.success('Tirage généré !');
   return await response.json();
 }
+
+export async function updatePlayerPair(
+  tournamentId: string | number,
+  pairId: string | number,
+  payload: { player1Name?: string; player2Name?: string; seed?: number }
+): Promise<void> {
+  const res = await fetchWithAuth(`${BASE_URL}/admin/tournaments/${tournamentId}/pairs/${pairId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+
+  if (res.status === 401) throw new Error('UNAUTHORIZED');
+  if (res.status === 403) throw new Error('FORBIDDEN');
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`HTTP_${res.status} ${text}`);
+  }
+  // 200 OK with no body expected
+}
