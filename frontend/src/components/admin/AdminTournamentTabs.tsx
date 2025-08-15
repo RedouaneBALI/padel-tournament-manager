@@ -1,6 +1,10 @@
+// src/components/admin.AdminTournamentTabs
 'use client';
 
-import Link from 'next/link';
+import { Users, Settings } from 'lucide-react';
+import { LuSwords } from 'react-icons/lu';
+import { TbTournament } from 'react-icons/tb';
+import BottomNav, { BottomNavItem } from '@/src/components/ui/BottomNav';
 
 interface Props {
   tournamentId: string;
@@ -8,31 +12,34 @@ interface Props {
 }
 
 export default function AdminTournamentTabs({ tournamentId, pathname }: Props) {
-  const tabClass = (segment: string, exact = false) => {
-    const active =
-      exact ? pathname.endsWith(segment) : pathname.includes(segment);
+  const base = `/admin/tournament/${tournamentId}`;
 
-    return `pb-2 px-4 font-semibold ${
-      active
-        ? 'border-b-2 border-primary text-primary'
-        : 'text-muted hover:text-primary'
-    }`;
-  };
+  const items: BottomNavItem[] = [
+    {
+      href: `${base}/players`,
+      label: 'Joueurs',
+      Icon: Users,
+      isActive: (p) => p.endsWith('/players'),
+    },
+    {
+      href: `${base}/rounds/config`,
+      label: 'Format',
+      Icon: Settings,
+      isActive: (p) => p.includes('/rounds/config'),
+    },
+    {
+      href: `${base}/games`,
+      label: 'Matchs',
+      Icon: LuSwords,
+      isActive: (p) => p.includes('/games'),
+    },
+    {
+      href: `${base}/rounds/results`,
+      label: 'Tableau',
+      Icon: TbTournament,
+      isActive: (p) => p.includes('/rounds/results'),
+    },
+  ];
 
-  return (
-    <div className="flex justify-center mb-6 border-b border-border">
-      <Link href={`/admin/tournament/${tournamentId}/players`} className={tabClass('/players', true)}>
-        Joueurs
-      </Link>
-      <Link href={`/admin/tournament/${tournamentId}/rounds/config`} className={tabClass('/rounds/config')}>
-        Format
-      </Link>
-      <Link href={`/admin/tournament/${tournamentId}/games`} className={tabClass('/games')}>
-        Matchs
-      </Link>
-      <Link href={`/admin/tournament/${tournamentId}/rounds/results`} className={tabClass('/rounds/results')}>
-        Tableau
-      </Link>
-    </div>
-  );
+  return <BottomNav items={items} pathname={pathname} />;
 }

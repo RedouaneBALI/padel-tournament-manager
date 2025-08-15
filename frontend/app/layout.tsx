@@ -1,3 +1,5 @@
+// app/layout.tsx
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -82,22 +84,102 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <SessionProviderWrapper>
           {session && (
-            <header className="sticky top-0 z-40 bg-background/80 backdrop-blur border-b border-border">
+            <header className="sticky top-0 z-[80] bg-background/80 border-b border-border">
+              <style>{`summary::-webkit-details-marker, summary::marker{display:none;}`}</style>
               <div className="max-w-5xl mx-auto px-4">
-                <nav className="h-14 flex items-center justify-center w-full">
-                  <div className="flex items-center gap-10">
-                    <Link href="/" className="flex items-center gap-2" aria-label="Accueil" title="Accueil">
-                      <Image
-                        src="/ptm-logo-cropped.png"
-                        alt="Padel Tournament Manager"
-                        width={32}
-                        height={32}
-                        priority
-                        className="h-12 w-auto"
-                      />
-                      <span className="sr-only">Accueil</span>
-                    </Link>
+                <nav className="h-14 flex items-center justify-between w-full">
+                  {/* Left: burger (mobile) */}
+                  <details className="md:hidden relative group">
+                    <summary
+                      className="list-none cursor-pointer select-none inline-flex items-center justify-center h-10 w-10 rounded hover:bg-muted bg-background group-open:fixed group-open:top-3 group-open:left-4 group-open:z-[80] leading-none"
+                      aria-label="Ouvrir ou fermer le menu"
+                    >
+                      {/* Burger icon when closed (horizontal) */}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        className="h-5 w-5 group-open:hidden"
+                      >
+                        <path d="M3 6h18" />
+                        <path d="M3 12h18" />
+                        <path d="M3 18h18" />
+                      </svg>
+                      {/* Burger icon when open (vertical) */}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        className="h-5 w-5 hidden group-open:block rotate-90"
+                      >
+                        <path d="M3 6h18" />
+                        <path d="M3 12h18" />
+                        <path d="M3 18h18" />
+                      </svg>
+                    </summary>
+                    <div className="fixed inset-y-0 left-0 w-72 max-w-[80vw] bg-background border-r border-border shadow-2xl p-4 z-[70] overflow-y-auto">
+                      <div className="flex items-center gap-2 mb-4 pl-12 h-8">
+                      </div>
+                      <nav className="flex flex-col gap-2">
+                        <Link
+                          href="/admin/tournament/new"
+                          className="flex h-12 items-center gap-3 px-2 rounded hover:bg-accent hover:text-accent-foreground"
+                          aria-label="Créer un tournoi"
+                          title="Créer un tournoi"
+                        >
+                          <FiPlusCircle className="w-6 h-6 flex-none" />
+                          Créer un tournoi
+                        </Link>
+                        <Link
+                          href="/admin/tournaments"
+                          className="flex h-12 items-center gap-3 px-2 rounded hover:bg-accent hover:text-accent-foreground"
+                          aria-label="Mes tournois"
+                          title="Mes tournois"
+                        >
+                          <FiList className="w-6 h-6 flex-none" />
+                          Mes tournois
+                        </Link>
+                        <Link
+                          href="/contact"
+                          className="flex h-12 items-center gap-3 px-2 rounded hover:bg-accent hover:text-accent-foreground"
+                          aria-label="Contact"
+                          title="Contact"
+                        >
+                          <FiMail className="w-6 h-6 flex-none" />
+                          Contact
+                        </Link>
+                        <div className="mt-2">
+                          <LogoutButton className="flex h-12 items-center gap-3 px-2 rounded hover:bg-accent hover:text-accent-foreground" iconClassName="w-6 h-6 flex-none">
+                            Déconnexion
+                          </LogoutButton>
+                        </div>
+                      </nav>
+                    </div>
+                    {/* backdrop */}
+                    <div className="fixed inset-0 bg-black/50 z-[60]"></div>
+                  </details>
 
+                  {/* Center: logo */}
+                  <Link href="/" className="flex items-center gap-2" aria-label="Accueil" title="Accueil">
+                    <Image
+                      src="/ptm-logo-cropped.png"
+                      alt="Padel Tournament Manager"
+                      width={32}
+                      height={32}
+                      priority
+                      className="h-12 w-auto"
+                    />
+                    <span className="sr-only">Accueil</span>
+                  </Link>
+
+                  {/* Right: desktop links */}
+                  <div className="hidden md:flex items-center gap-10">
                     <Link
                       href="/admin/tournament/new"
                       className="flex items-center gap-2 text-muted hover:text-primary"

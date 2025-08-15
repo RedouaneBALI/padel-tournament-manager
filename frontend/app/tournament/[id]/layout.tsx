@@ -1,65 +1,62 @@
 // app/tournament/[id]/layout.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Tournament } from '@/src/types/tournament';
-import React from 'react';
-import { ReactNode } from 'react';
+import type { Tournament } from '@/src/types/tournament';
 import { fetchTournament } from '@/src/api/tournamentApi';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
+import type { ReactNode } from 'react';
+import { Home, Users } from 'lucide-react';
+import { LuSwords } from 'react-icons/lu';
+import { TbTournament } from 'react-icons/tb';
+import BottomNav from '@/src/components/ui/BottomNav';
 
-export default function TournamentLayout({children,params,}: {children: ReactNode;params: Promise<{ id: string }>;}){
+export default function TournamentLayout({
+  children,
+  params,
+}: {
+  children: ReactNode;
+  params: Promise<{ id: string }>;
+}) {
   const { id } = React.use(params);
   const pathname = usePathname();
   const [tournament, setTournament] = useState<Tournament | null>(null);
 
   useEffect(() => {
-    fetchTournament(id)
-      .then(setTournament);
+    fetchTournament(id).then(setTournament);
   }, [id]);
 
   if (!tournament) {
-    return (
-      <CenteredLoader />
-    );
+    return <CenteredLoader />;
   }
+
+  const items = [
+    { href: `/tournament/${id}`, label: 'Aperçu', Icon: Home },
+    { href: `/tournament/${id}/players`, label: 'Joueurs', Icon: Users },
+    { href: `/tournament/${id}/games`, label: 'Matchs', Icon: LuSwords },
+    { href: `/tournament/${id}/results`, label: 'Tableau', Icon: TbTournament },
+  ];
 
   return (
     <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
-      <h1 className="text-2xl font-bold mb-4">{tournament.name}</h1>
-      <div className="flex justify-center mb-6 border-b border-border">
-        <Link
-          href={`/tournament/${id}`}
-          className={`pb-2 px-4 font-semibold ${pathname === `/tournament/${id}` ? 'border-b-2 border-primary text-primary' : 'text-muted hover:text-primary'}`}
-        >
-          Aperçu
-        </Link>
-        <Link
-          href={`/tournament/${id}/players`}
-          className={`pb-2 px-4 font-semibold ${pathname === `/tournament/${id}/players` ? 'border-b-2 border-primary text-primary' : 'text-muted hover:text-primary'}`}
-        >
-          Joueurs
-        </Link>
-        <Link
-          href={`/tournament/${id}/games`}
-          className={`pb-2 px-4 font-semibold ${pathname === `/tournament/${id}/games` ? 'border-b-2 border-primary text-primary' : 'text-muted hover:text-primary'}`}
-        >
-        Matchs
-        </Link>
-        <Link
-          href={`/tournament/${id}/results`}
-          className={`pb-2 px-4 font-semibold ${pathname === `/tournament/${id}/results` ? 'border-b-2 border-primary text-primary' : 'text-muted hover:text-primary'}`}
-        >
-          Tableau
-        </Link>
-      </div>
+      {/* Header simple avec nom du tournoi */}
+      <header className="pt-4 pb-2">
+        <h1 className="text-2xl font-bold truncate">{tournament.name}</h1>
+      </header>
 
-      {/* Affichage du contenu spécifique de chaque onglet */}
-      <div>{children}</div>
+      {/* Contenu avec padding bas pour ne pas passer sous la bottom bar */}
+      <main className="pb-20">{children}</main>
+
+      {/* Bottom navigation – remplace les onglets du haut */}
+      <nav className="fixed bottom-0 inset-x-0 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
+        <div className="max-w-screen-2xl mx-auto px-2 sm:px-4">
+          <BottomNav items={items} pathname={pathname} />
+        </div>
+      </nav>
 
       <ToastContainer />
     </div>
