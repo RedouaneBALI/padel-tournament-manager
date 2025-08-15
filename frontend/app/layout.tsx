@@ -11,6 +11,7 @@ import { getAuthOptions } from "@/src/lib/authOptions";
 import Link from 'next/link';
 import Image from 'next/image';
 import { FiPlusCircle, FiList, FiMail } from 'react-icons/fi';
+import MobileDrawerLinks from '@/src/components/layout/MobileDrawerLinks';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -126,40 +127,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                     <div className="fixed inset-y-0 left-0 w-72 max-w-[80vw] bg-background border-r border-border shadow-2xl p-4 z-[70] overflow-y-auto">
                       <div className="flex items-center gap-2 mb-4 pl-12 h-8">
                       </div>
-                      <nav className="flex flex-col gap-2">
-                        <Link
-                          href="/admin/tournament/new"
-                          className="flex h-12 items-center gap-3 px-2 rounded hover:bg-accent hover:text-accent-foreground"
-                          aria-label="Créer un tournoi"
-                          title="Créer un tournoi"
-                        >
-                          <FiPlusCircle className="w-6 h-6 flex-none" />
-                          Créer un tournoi
-                        </Link>
-                        <Link
-                          href="/admin/tournaments"
-                          className="flex h-12 items-center gap-3 px-2 rounded hover:bg-accent hover:text-accent-foreground"
-                          aria-label="Mes tournois"
-                          title="Mes tournois"
-                        >
-                          <FiList className="w-6 h-6 flex-none" />
-                          Mes tournois
-                        </Link>
-                        <Link
-                          href="/contact"
-                          className="flex h-12 items-center gap-3 px-2 rounded hover:bg-accent hover:text-accent-foreground"
-                          aria-label="Contact"
-                          title="Contact"
-                        >
-                          <FiMail className="w-6 h-6 flex-none" />
-                          Contact
-                        </Link>
-                        <div className="mt-2">
-                          <LogoutButton className="flex h-12 items-center gap-3 px-2 rounded hover:bg-accent hover:text-accent-foreground" iconClassName="w-6 h-6 flex-none">
-                            Déconnexion
-                          </LogoutButton>
-                        </div>
-                      </nav>
+                      <MobileDrawerLinks />
                     </div>
                     {/* backdrop */}
                     <div className="fixed inset-0 bg-black/50 z-[60]"></div>

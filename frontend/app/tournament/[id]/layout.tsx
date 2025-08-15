@@ -23,7 +23,7 @@ export default function TournamentLayout({
   params: Promise<{ id: string }>;
 }) {
   const { id } = React.use(params);
-  const pathname = usePathname();
+  const pathname = usePathname() ?? '';
   const [tournament, setTournament] = useState<Tournament | null>(null);
 
   useEffect(() => {

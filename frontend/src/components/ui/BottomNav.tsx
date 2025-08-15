@@ -23,12 +23,23 @@ export default function BottomNav({ items, pathname, className, fixed = true }: 
     return `grid-cols-${n}` as const;
   }, [items.length]);
 
+  const computeActive = (href: string, isActive?: (p: string) => boolean) => {
+    if (isActive) return isActive(pathname);
+    if (pathname === href) return true;
+    // Only treat prefix as active if no more specific item also matches
+    if (pathname.startsWith(href + '/')) {
+      const moreSpecific = items.some(it => it.href !== href && (pathname === it.href || pathname.startsWith(it.href + '/')));
+      return !moreSpecific;
+    }
+    return false;
+  };
+
   return (
     <nav
       className={[
         fixed ? 'fixed bottom-0 inset-x-0' : '',
         'border-t border-border bg-background z-50',
-        'grid',
+        'grid grid-flow-col',
         colsClass,
         className ?? '',
       ].join(' ').trim()}
@@ -36,7 +47,7 @@ export default function BottomNav({ items, pathname, className, fixed = true }: 
       aria-label="Navigation principale"
     >
       {items.map(({ href, label, Icon, isActive }, idx) => {
-        const active = isActive ? isActive(pathname) : pathname === href || pathname.startsWith(href + '/');
+        const active = computeActive(href, isActive);
         return (
           <Link
             key={idx}

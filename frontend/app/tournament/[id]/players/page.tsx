@@ -33,7 +33,7 @@ export default function TournamentPlayersTab({ params }: {   params: Promise<{ i
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4">Equipes inscrites</h2>
-      <PlayerPairList pairs={playerPairs} loading={loading} />
+      <PlayerPairList pairs={playerPairs} loading={loading} tournamentId={id} />
     </div>
   );
 }
