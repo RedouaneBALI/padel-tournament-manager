@@ -17,6 +17,7 @@ import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.service.DrawGenerationService;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -134,6 +135,44 @@ class DrawGenerationServiceTest {
       verify(generatorMock).generateManualRound(any());
       verify(generatorMock, never()).propagateWinners(any());
     }
+  }
+
+  @Test
+  void capPairsToMax_shouldTruncateToNbMaxPairs() {
+    Tournament t = new Tournament();
+    t.setId(42L);
+    t.setNbMaxPairs(32);
+
+    // Build 36 pairs
+    IntStream.range(0, 36).forEach(i -> {
+      PlayerPair pp = new PlayerPair("P1_" + i, "P2_" + i, i + 1);
+      t.getPlayerPairs().add(pp);
+    });
+
+    var result = DrawGenerationService.capPairsToMax(t);
+
+    assertEquals(32, result.size(), "Should keep only the first 32 pairs");
+    assertEquals("P1_0", result.get(0).getPlayer1().getName(), "Order must be preserved (first)");
+    assertEquals("P1_31", result.get(31).getPlayer1().getName(), "Order must be preserved (last kept)");
+  }
+
+  @Test
+  void capPairsToMax_shouldNotTruncateWhenUnderLimitOrNoLimit() {
+    Tournament t1 = new Tournament();
+    t1.setId(43L);
+    t1.setNbMaxPairs(40); // greater than actual size
+    IntStream.range(0, 36).forEach(i -> t1.getPlayerPairs().add(new PlayerPair("P1_" + i, "P2_" + i, i + 1)));
+
+    var result1 = DrawGenerationService.capPairsToMax(t1);
+    assertEquals(36, result1.size(), "No truncation when size <= max");
+
+    Tournament t2 = new Tournament();
+    t2.setId(44L);
+    t2.setNbMaxPairs(0); // no limit defined
+    IntStream.range(0, 5).forEach(i -> t2.getPlayerPairs().add(new PlayerPair("A" + i, "B" + i, i + 1)));
+
+    var result2 = DrawGenerationService.capPairsToMax(t2);
+    assertEquals(5, result2.size(), "No truncation when max is null");
   }
 
   @AfterEach

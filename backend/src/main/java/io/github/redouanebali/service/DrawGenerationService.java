@@ -4,11 +4,13 @@ import io.github.redouanebali.config.SecurityProps;
 import io.github.redouanebali.config.SecurityUtil;
 import io.github.redouanebali.generation.AbstractRoundGenerator;
 import io.github.redouanebali.model.Game;
+import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.TournamentFormat;
 import io.github.redouanebali.repository.TournamentRepository;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,26 @@ public class DrawGenerationService {
   private final TournamentRepository tournamentRepository;
   private final SecurityProps        securityProps;
 
+  public static List<PlayerPair> capPairsToMax(Tournament tournament) {
+    List<PlayerPair> pairs = tournament.getPlayerPairs();
+    int              max   = tournament.getNbMaxPairs();
+
+    if (pairs == null || pairs.isEmpty()) {
+      return pairs == null ? List.of() : pairs;
+    }
+    if (max <= 0) {
+      return pairs;
+    }
+
+    if (pairs.size() <= max) {
+      return pairs;
+    }
+
+    log.warn("Tournament id {} has {} pairs; max is {} — using first {} only for draw generation.",
+             tournament.getId(), pairs.size(), max, max);
+    return new ArrayList<>(pairs.subList(0, max));
+  }
+
   public Tournament generateDraw(Tournament tournament, boolean manual) {
     String      me          = SecurityUtil.currentUserId();
     Set<String> superAdmins = securityProps.getSuperAdmins();
@@ -31,12 +53,13 @@ public class DrawGenerationService {
       throw new AccessDeniedException("You are not allowed to generate draw for this tournament");
     }
 
-    AbstractRoundGenerator generator = AbstractRoundGenerator.of(tournament);
+    AbstractRoundGenerator generator    = AbstractRoundGenerator.of(tournament);
+    List<PlayerPair>       pairsForDraw = capPairsToMax(tournament);
     Round                  newRound;
     if (manual) {
-      newRound = generator.generateManualRound(tournament.getPlayerPairs());
+      newRound = generator.generateManualRound(pairsForDraw);
     } else {
-      newRound = generator.generateAlgorithmicRound(tournament.getPlayerPairs());
+      newRound = generator.generateAlgorithmicRound(pairsForDraw);
     }
 
     Round existingRound = tournament.getRounds().stream()
@@ -53,7 +76,6 @@ public class DrawGenerationService {
     log.info("Generated draw for tournament id {}", tournament.getId());
     return tournamentRepository.save(tournament);
   }
-
 
   private void updatePools(Round existingRound, Round newRound) {
     for (Pool pool : existingRound.getPools()) {

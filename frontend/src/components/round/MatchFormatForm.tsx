@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Switch } from '@/src/components/ui/switch';
+import { Switch } from '@/src/components/ui/Switch';
 import { MatchFormat } from '@/src/types/matchFormat';
 
 interface MatchFormatFormProps {
