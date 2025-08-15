@@ -110,9 +110,10 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
             <PlayerPairList tournamentId={tournamentId} pairs={pairs} loading={loadingPairs} editable={true} />
           ) : (
             <>
-              <h2 className="text-base font-semibold text-foreground p-2">
+              <h2 className="text-base text-foreground px-2">
                 Lister les joueurs ci-dessous (par ordre de classement ou du tirage)
               </h2>
+              <p className="p-1 text-tab-inactive"><i>Joueur1,Joueur2,Seed (optionnel)</i></p>
               <PlayerPairsTextarea
                 onPairsChange={setPairs}
                 tournamentId={tournamentId}

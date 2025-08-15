@@ -21,7 +21,7 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
     setIsLoading(true);
     try {
       const data = await fetchPairs(tournamentId);
-      setText(data.map(pair => `${pair.player1.name},${pair.player2.name}`).join('\n'));
+      setText(data.map(pair => `${pair.player1.name},${pair.player2.name},${pair.seed}`).join('\n'));
       if (onPairsChange) onPairsChange(data);
     } catch (e: any) {
       toast.error(e?.message ?? 'Impossible de charger les paires.');
@@ -45,11 +45,20 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
         .filter(line => line !== '');
 
       const pairs: PlayerPair[] = lines.map((line, index) => {
-        const [p1, p2] = line.split(/[,;&/]/).map(s => s.trim());
+        // Split by common separators, but only take up to 3 tokens: p1, p2, seed
+        const tokens = line.split(/[,;&/]/, 3).map(s => s.trim());
+        const p1 = tokens[0] ?? '';
+        const p2 = tokens[1] ?? '';
+        const seedRaw = tokens[2];
+
+        // If a 3rd token exists and is a valid number, use it as seed; otherwise fallback to index+1
+        const parsedSeed = seedRaw !== undefined && seedRaw !== '' ? Number(seedRaw) : NaN;
+        const seed = Number.isFinite(parsedSeed) ? (parsedSeed as number) : (index + 1);
+
         return {
           player1: { name: p1 },
           player2: { name: p2 },
-          seed: index + 1,
+          seed,
         };
       });
 
@@ -78,7 +87,7 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
               wrap="off"
               value={text}
               onChange={e => setText(e.target.value)}
-              placeholder={`Ghali Berrada,Selim Mekouar\nRedouane Bali,Ali Khobzaoui`}
+              placeholder={`Ghali Berrada,Selim Mekouar,1\nRedouane Bali,Ali Khobzaoui,2`}
               disabled={hasStarted}
             />
 
