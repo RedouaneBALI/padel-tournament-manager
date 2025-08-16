@@ -82,7 +82,7 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
   }
 
   return (
-    <div className="w-full pb-10">
+    <div className="w-full">
       {/* Sub-tabs only if first round is GROUPS */}
       {firstRoundStage === Stage.GROUPS && (
         <div className="mb-4 border-b border-border">
@@ -149,7 +149,7 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
 
             <div
               id="bracket-container"
-              className="relative overflow-auto border border-border rounded-lg px-2 py-6 md:p-8 bg-background"
+              className="relative overflow-auto border border-border rounded-lg px-2 md:p-8 bg-background"
               style={{ minHeight: maxPosition ? `${maxPosition}px` : undefined }}
             >
               <KnockoutBracket rounds={finalsRounds} tournamentId={tournamentId} />

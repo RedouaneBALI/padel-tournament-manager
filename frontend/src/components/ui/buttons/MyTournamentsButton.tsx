@@ -3,10 +3,10 @@ import Link from 'next/link';
 import type { MouseEventHandler } from 'react';
 import { TbTrophy } from 'react-icons/tb';
 
-export default function MyTournamentsButton({ onClick }: { onClick?: MouseEventHandler<HTMLAnchorElement> | (() => void) }) {
+export default function MyTournamentsButton({ href, onClick }: { href: string; onClick?: MouseEventHandler<HTMLAnchorElement> | (() => void) }) {
   return (
     <Link
-      href="/admin/tournaments"
+      href={href}
       className="flex h-12 items-center gap-3 px-2 rounded hover:bg-accent hover:text-accent-foreground"
       onClick={onClick as any}
     >

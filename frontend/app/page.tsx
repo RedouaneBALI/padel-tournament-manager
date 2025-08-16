@@ -2,16 +2,22 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { FiPlusCircle, FiList } from 'react-icons/fi';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
-import { Home } from 'lucide-react';
+import { Home as HomeIcon } from 'lucide-react';
 import { FiMoreHorizontal } from 'react-icons/fi';
+import ContactButton from '@/src/components/ui/buttons/ContactButton';
+import BottomNav, { BottomNavItem } from '@/src/components/ui/BottomNav';
 
 export default function Home() {
   const { status } = useSession();
 
   const pathname = usePathname() ?? '';
+
+  const bottomItems: BottomNavItem[] = [
+    { href: '/', label: 'Accueil', Icon: HomeIcon, isActive: (p) => p === '/' },
+    { href: '#more', label: 'Plus', Icon: FiMoreHorizontal },
+  ];
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -41,16 +47,16 @@ export default function Home() {
     },
     {
       title: "Gestion en direct",
-      description: "Mets à jour les résultats et suis l'avancement du tournoi en temps réel.",
+      description: "Mets à jour les résultats et partage l'avancement du tournoi en temps réel.",
       emoji: "⏱️"
     }
   ];
   // Authenticated: show the main hero with action buttons
   return (
-    <main className="min-h-screen bg-background pb-24">
-      <section className="max-w-5xl mx-auto px-4 py-6 sm:py-8">
+    <main className="min-h-screen bg-background">
+      <section className="max-w-5xl mx-auto px-4 py-4 sm:py-8">
         <div className="bg-card border border-border rounded-2xl p-8 sm:p-12 shadow-sm">
-          <div className="text-center space-y-6">
+          <div className="text-center space-y-6 mb-6">
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground mb-2">
               Gère tes tournois de padel facilement
@@ -69,7 +75,7 @@ export default function Home() {
 
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
               Crée, organise et gère tes tournois de padel en quelques clics.
-              Une interface simple pour préparer les tableaux, gérer les équipes et suivre les scores.
+              Une interface simple pour préparer les tableaux, gérer les équipes et partager les scores.
             </p>
 
             <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
@@ -93,7 +99,7 @@ export default function Home() {
                 <div className="flex justify-center">
                   <button
                     onClick={() =>
-                      signIn('google', { redirect: true, callbackUrl: '/admin/tournament/new' })
+                      signIn('google', { redirect: true, callbackUrl: '/admin/tournaments' })
                     }
                     className="flex items-center justify-center gap-2 px-5 py-2 text-base bg-card border border-border rounded hover:bg-background transition"
                   >
@@ -142,10 +148,14 @@ export default function Home() {
                 </div>
               </div>
             </section>
-
+            <div className="flex justify-center">
+              <ContactButton/>
+            </div>
           </div>
         </div>
       </section>
+      {/* Bottom Navigation */}
+      <BottomNav items={bottomItems} pathname={pathname} />
     </main>
   );
 }

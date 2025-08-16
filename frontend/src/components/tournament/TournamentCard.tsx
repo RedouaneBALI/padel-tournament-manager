@@ -21,10 +21,10 @@ const TournamentCard: React.FC<TournamentCardProps> = ({
         <div className="flex items-center gap-2">
           <Trophy className="h-5 w-5 text-primary" />
           <h3 className="text-lg font-semibold text-card-foreground truncate">
-            {tournament.name || 'Sans nom'}
+            {tournament.name || 'Tournoi sans nom'}
           </h3>
         </div>
-        <p className="text-sm text-text-secondary mt-1">{tournament.playerPairs.length} équipes</p>
+        <p className="text-sm text-text-secondary mt-1">{tournament.playerPairs.length} équipes - {tournament.rounds.length} rounds</p>
       </div>
 
       {/* Footer */}

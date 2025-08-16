@@ -82,7 +82,7 @@ export default function TournamentLayout({
       </header>
 
       {/* Contenu avec padding bas pour ne pas passer sous la bottom bar */}
-      <main className="mt-6">{children}</main>
+      <main className="mt-6 mb-15">{children}</main>
 
       {/* Bottom navigation – remplace les onglets du haut */}
       <nav className="fixed bottom-0 inset-x-0 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
@@ -116,7 +116,6 @@ export default function TournamentLayout({
                   </Link>
                 ))}
               </nav>
-              <div className="pb-6" />
             </div>
           </div>
         </>

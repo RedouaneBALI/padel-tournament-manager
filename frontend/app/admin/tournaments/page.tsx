@@ -18,11 +18,8 @@ export default function TournamentsPage() {
   return (
     <>
       <main className="min-h-screen bg-background">
-        <section className="max-w-5xl mx-auto mb-8">
-          <div className="bg-card border border-border rounded-2xl sm:p-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">Mes tournois</h1>
-            <TournamentList />
-          </div>
+        <section className="max-w-5xl mx-auto mb-4">
+          <TournamentList />
         </section>
       </main>
       <BottomNav items={items} pathname={pathname} />

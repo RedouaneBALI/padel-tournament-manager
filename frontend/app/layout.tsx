@@ -37,6 +37,19 @@ export const metadata: Metadata = {
     'organisation tournoi',
     'padel manager',
   ],
+  icons: {
+      icon: [
+        { url: '/favicon.ico' },            // fallback
+        { url: '/favicon.svg', type: 'image/svg+xml' },
+      ],
+      apple: [
+        { url: '/apple-touch-icon.png', sizes: '180x180' },
+      ],
+      shortcut: ['/favicon.ico'],
+      other: [
+        { rel: 'mask-icon', url: '/mask-icon.svg', color: '#0ea5e9' }, // couleur du pin Safari
+      ],
+    },
   alternates: {
     canonical: '/',
   },

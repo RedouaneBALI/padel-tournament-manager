@@ -91,7 +91,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
 
 
   return (
-    <div className="container mx-auto max-w-3xl pb-15">
+    <div className="container mx-auto max-w-3xl">
       {isGenerating && (
         <CenteredLoader />
       )}

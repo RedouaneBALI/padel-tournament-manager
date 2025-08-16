@@ -71,7 +71,7 @@ export default function TournamentList() {
   if (status !== 'authenticated') {
     return (
       <main className="min-h-screen bg-background">
-        <section className="max-w-3xl mx-auto px-4 py-8">
+        <section className="max-w-3xl mx-auto">
           <div className="bg-card border border-border rounded-2xl p-8 text-center">
             <h1 className="text-2xl font-bold text-foreground mb-2">Mes tournois</h1>
             <p className="text-muted-foreground mb-6">Connecte-toi pour voir tes tournois.</p>
@@ -88,10 +88,9 @@ export default function TournamentList() {
     );
   }
 
-
   return (
-    <main className="min-h-screen bg-background">
-      <section className="max-w-5xl mx-auto px-4 py-8">
+    <main className="min-h-screen bg-background mb-15">
+      <section className="max-w-5xl mx-auto">
         <div className="bg-card border border-border rounded-2xl p-6 sm:p-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">Mes tournois</h1>
 
@@ -104,7 +103,7 @@ export default function TournamentList() {
           {!loading && !error && (
             <>
               {(items?.length ?? 0) > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {(items ?? []).map((t) => (
                     <TournamentCard
                       key={t.id}

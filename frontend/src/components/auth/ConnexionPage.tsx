@@ -3,7 +3,7 @@
 import { signOut, useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import GoogleLoginButton from '@/src/components/ui/buttons/GoogleLoginButton';
 
 export default function ConnexionPage() {
   const { data: session, status } = useSession();
@@ -11,14 +11,14 @@ export default function ConnexionPage() {
 
   useEffect(() => {
     if (session && status === 'authenticated') {
-      router.push('/admin/tournament/new');
+      router.push('/admin/tournaments');
     }
   }, [session, status, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="bg-card shadow-md rounded-lg px-10 py-8 text-center">
-        <p className="mb-8 text-muted text-base">Veuillez vous reconnecter</p>
+        <p className="mb-8 text-muted text-base">Veuillez vous connecter</p>
 
         {status === 'loading' ? (
           <p className="text-base text-muted mb-2">Chargement...</p>
@@ -36,15 +36,7 @@ export default function ConnexionPage() {
           </div>
         ) : (
           <div className="flex justify-center">
-            <button
-              onClick={() =>
-                signIn('google', { redirect: true, callbackUrl: '/admin/tournament/new' })
-              }
-              className="flex items-center justify-center gap-2 px-5 py-2 text-base bg-card border border-border rounded hover:bg-background transition"
-            >
-              <img src="/google-logo.svg" alt="Google" className="w-5 h-5" />
-              <span className="text-foreground">Se connecter avec Google</span>
-            </button>
+            <GoogleLoginButton callbackUrl="/admin/tournaments" />
           </div>
         )}
       </div>

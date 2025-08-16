@@ -2,10 +2,13 @@
 
 import Link from 'next/link';
 import { useMemo, useState, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
+import { FiLogIn } from 'react-icons/fi';
 import LogoutButton from '@/src/components/auth/LogoutButton';
 import CreateTournamentButton from '@/src/components/ui/buttons/CreateTournamentButton';
 import MyTournamentsButton from '@/src/components/ui/buttons/MyTournamentsButton';
 import ContactButton from '@/src/components/ui/buttons/ContactButton';
+import GoogleLoginButton from '@/src/components/ui/buttons/GoogleLoginButton';
 
 export type BottomNavItem = {
   href: string;
@@ -29,6 +32,11 @@ export default function BottomNav({ items, pathname, className, fixed = true }: 
 
   const [moreOpen, setMoreOpen] = useState(false);
   const closeMore = useCallback(() => setMoreOpen(false), []);
+
+  const { status } = useSession();
+
+  const hrefCreate = status === 'authenticated' ? '/admin/tournament/new' : '/connexion';
+  const hrefMy = status === 'authenticated' ? '/admin/tournaments' : '/connexion';
 
   const computeActive = (href: string, isActive?: (p: string) => boolean) => {
     if (href === '#more') return false;
@@ -93,13 +101,19 @@ export default function BottomNav({ items, pathname, className, fixed = true }: 
             <div className="max-w-screen-sm mx-auto p-4">
               <div className="h-1.5 w-10 bg-muted-foreground/40 rounded-full mx-auto mb-4" />
               <div className="flex flex-col gap-2">
-                <CreateTournamentButton onClick={closeMore} />
-                <MyTournamentsButton onClick={closeMore} />
+                <CreateTournamentButton href={hrefCreate} onClick={closeMore} />
+                <MyTournamentsButton href={hrefMy} onClick={closeMore} />
                 <ContactButton onClick={closeMore} />
-                <div className="mt-2" onClick={closeMore} role="none">
-                  <LogoutButton className="flex h-12 items-center gap-3 px-2 rounded hover:bg-accent hover:text-accent-foreground" iconClassName="w-6 h-6 flex-none">
-                    Déconnexion
-                  </LogoutButton>
+                <div className="mt-2" role="none">
+                  {status === 'authenticated' ? (
+                    <div onClick={closeMore}>
+                      <LogoutButton className="flex h-12 items-center gap-3 px-2 rounded hover:bg-accent hover:text-accent-foreground" iconClassName="w-6 h-6 flex-none">
+                        Déconnexion
+                      </LogoutButton>
+                    </div>
+                  ) : (
+                    <GoogleLoginButton onBeforeSignIn={closeMore} />
+                  )}
                 </div>
               </div>
               <div className="pb-6" />

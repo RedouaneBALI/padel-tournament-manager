@@ -16,28 +16,52 @@ export default function ContactPage() {
 
   return (
     <>
-      <BottomNav items={items} pathname={pathname} />
-      <main className="p-6 flex flex-col items-center pb-24">
-        <div className="w-full flex justify-start mb-2">
-          <BackButton />
-        </div>
-        <h1 className="text-3xl font-bold mb-8">Contact</h1>
-        <section className="flex items-center justify-center gap-4 mb-6">
-          <a href="mailto:bali.redouane@gmail.com" className="text-xl text-[#EA4335] hover:text-[#C53929]">
-            <FiMail size={48} />
-          </a>
-        </section>
-        <section className="flex items-center justify-center gap-4">
-          <a
-            href="https://www.linkedin.com/in/redouane-bali/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xl text-[#0A66C2] hover:text-[#084B8A]"
-          >
-            <FiLinkedin size={48} />
-          </a>
+      <main className="px-4 sm:px-6 py-4 pb-24">
+        {/* Header: 3-column grid keeps title visually centered with a back button on the left */}
+        <header className="grid grid-cols-3 items-center mb-6">
+          <div className="justify-self-start">
+            <BackButton />
+          </div>
+          <h1 className="justify-self-center text-2xl sm:text-3xl font-bold">Contact</h1>
+          <div className="justify-self-end" aria-hidden />
+        </header>
+
+        {/* Content */}
+        <section className="max-w-md mx-auto">
+          <div className="grid grid-cols-1 gap-6">
+            <a
+              href="mailto:bali.redouane@gmail.com"
+              className="group flex items-center gap-4 rounded-xl border border-border bg-card hover:bg-accent hover:text-accent-foreground transition-colors p-4"
+            >
+              <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-white/70 group-hover:bg-background">
+                <FiMail size={28} className="text-[#EA4335]" />
+              </span>
+              <div>
+                <div className="font-medium">Email</div>
+                <div className="text-sm text-muted-foreground">bali.redouane@gmail.com</div>
+              </div>
+            </a>
+
+            <a
+              href="https://www.linkedin.com/in/redouane-bali/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-4 rounded-xl border border-border bg-card hover:bg-accent hover:text-accent-foreground transition-colors p-4"
+            >
+              <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-white/70 group-hover:bg-background">
+                <FiLinkedin size={28} className="text-[#0A66C2]" />
+              </span>
+              <div>
+                <div className="font-medium">LinkedIn</div>
+                <div className="text-sm text-muted-foreground">/in/redouane-bali</div>
+              </div>
+            </a>
+          </div>
         </section>
       </main>
+
+      {/* Bottom navigation stays fixed at the bottom */}
+      <BottomNav items={items} pathname={pathname} />
     </>
   );
 }

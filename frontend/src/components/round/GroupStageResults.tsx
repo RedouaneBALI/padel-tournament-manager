@@ -8,19 +8,19 @@ export default function GroupStageResults({
   nbQualifiedByPool: number;
 }) {
   return (
-    <div className="space-y-4">
+    <div>
       {rounds.map(round =>
         round.pools?.map(pool => (
-          <div key={pool.name} className="rounded bg-background md:max-w-4xl md:mx-auto">
-            <h3 className="text-lg font-semibold mb-2">Groupe {pool.name}</h3>
+          <div key={pool.name} className="rounded-lg bg-background md:max-w-4xl md:mx-auto">
+            <h3 className="text-lg font-semibold mt-3">Groupe {pool.name}</h3>
 
-            <table className="w-full text-sm text-left text-foreground border border-border">
+            <table className="w-full text-sm text-left text-foreground">
               <thead>
                 <tr className="text-foreground">
-                  <th className="p-2 border text-center">#</th>
-                  <th className="p-2 border text-center">Équipe</th>
-                  <th className="p-2 border text-center">Victoires</th>
-                  <th className="p-2 border text-center">Diff. jeux</th>
+                  <th className="p-2 text-center border border-border">#</th>
+                  <th className="p-2 text-center border border-border">Équipe</th>
+                  <th className="p-2 text-center border border-border">Victoires</th>
+                  <th className="p-2 text-center border border-border">Diff. jeux</th>
                 </tr>
               </thead>
               <tbody>
@@ -29,15 +29,15 @@ export default function GroupStageResults({
                     key={index}
                     className={index < nbQualifiedByPool ? 'border-l-4 border-green-500' : ''}
                   >
-                    <td className="p-2 border text-center">{index + 1}</td>
-                    <td className="p-2 border text-center">
+                    <td className="p-2 text-center border border-border">{index + 1}</td>
+                    <td className="p-2 text-center border border-border">
                       <div className="flex flex-col items-center">
                         <span>{entry.playerPair?.player1?.name}</span>
                         <span>{entry.playerPair?.player2?.name}</span>
                       </div>
                     </td>
-                    <td className="p-2 border text-center">{entry.points}</td>
-                    <td className="p-2 border text-center">{entry.setAverage}</td>
+                    <td className="p-2 text-center border border-border">{entry.points}</td>
+                    <td className="p-2 text-center border border-border">{entry.setAverage}</td>
                   </tr>
                 ))}
               </tbody>
