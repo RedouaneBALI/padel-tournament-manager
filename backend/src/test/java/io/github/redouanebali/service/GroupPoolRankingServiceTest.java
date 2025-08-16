@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.MatchFormat;
-import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.PoolRanking;
@@ -13,8 +12,8 @@ import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.util.TestFixtures;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,15 +35,7 @@ public class GroupPoolRankingServiceTest {
     SecurityContextHolder.getContext().setAuthentication(
         new UsernamePasswordAuthenticationToken("bali.redouane@gmail.com", null, List.of())
     );
-    defaultPairs = getDefaultPlayerPairs();
-  }
-
-  private List<PlayerPair> getDefaultPlayerPairs() {
-    return List.of(
-        new PlayerPair(null, new Player("A"), new Player("B"), 0),
-        new PlayerPair(null, new Player("C"), new Player("D"), 0),
-        new PlayerPair(null, new Player("E"), new Player("F"), 0)
-    );
+    defaultPairs = TestFixtures.createPairs(3); // three pairs: [0],[1],[2]
   }
 
   private Game buildGame(String scoreStr, PlayerPair teamA, PlayerPair teamB) {
@@ -82,10 +73,14 @@ public class GroupPoolRankingServiceTest {
     round.addPool(pool);
 
     List<PlayerPair> expectedRanking = new ArrayList<>();
-    Arrays.stream(expectedRankingStr.split("\\|")).forEach(p -> {
-      String[] names = p.split(":");
-      expectedRanking.add(new PlayerPair(null, new Player(names[0]), new Player(names[1]), 0));
-    });
+    for (String token : expectedRankingStr.split("\\|")) {
+      switch (token) {
+        case "A:B" -> expectedRanking.add(defaultPairs.get(0));
+        case "C:D" -> expectedRanking.add(defaultPairs.get(1));
+        case "E:F" -> expectedRanking.add(defaultPairs.get(2));
+        default -> throw new IllegalArgumentException("Unexpected token in expectedRankingStr: " + token);
+      }
+    }
     List<PoolRankingDetails> ranking = GroupRankingService.computeRanking(pool, round.getGames());
     assertEquals(expectedRanking, ranking.stream().map(PoolRankingDetails::getPlayerPair).collect(Collectors.toList()));
 

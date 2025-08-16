@@ -1,20 +1,18 @@
 package io.github.redouanebali.generation;
 
+import static org.hibernate.validator.internal.util.Contracts.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.MatchFormat;
-import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Round;
-import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.util.TestFixtures;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -46,7 +44,7 @@ public class GroupRoundGeneratorTest {
   })
   public void checkManualPoolGeneration(int nbPairs, int expectedGroups, int expectedPairsPerGroup, int expectedNbGames) {
     generator = new GroupRoundGenerator(0, expectedGroups, expectedPairsPerGroup);
-    List<PlayerPair> pairs = createPairs(nbPairs);
+    List<PlayerPair> pairs = TestFixtures.createPairs(nbPairs);
     Round            round = generator.generateManualRound(pairs);
 
     assertEquals(expectedGroups, round.getPools().size());
@@ -75,7 +73,7 @@ public class GroupRoundGeneratorTest {
   public void checkAlgorithmicPoolGeneration(int nbSeeds, int nbPools, int nbTeamPerPool, String expectedSeedsStr) {
     int totalPairs = nbPools * nbTeamPerPool;
     generator = new GroupRoundGenerator(nbSeeds, nbPools, nbTeamPerPool);
-    List<PlayerPair> pairs = createPairs(totalPairs);
+    List<PlayerPair> pairs = TestFixtures.createPairs(totalPairs);
     Round            round = generator.generateAlgorithmicRound(pairs);
 
     assertEquals(nbPools, round.getPools().size());
@@ -97,16 +95,6 @@ public class GroupRoundGeneratorTest {
     }
   }
 
-
-  private List<PlayerPair> createPairs(int count) {
-    List<PlayerPair> pairs = new ArrayList<>();
-    IntStream.rangeClosed(1, count).forEach(seed -> {
-      Player player1 = new Player((long) seed, "Player" + seed + "A", seed, 0, 1990);
-      Player player2 = new Player((long) seed + 100, "Player" + seed + "B", seed, 0, 1990);
-      pairs.add(new PlayerPair(-1L, player1, player2, seed));
-    });
-    return pairs;
-  }
 
   @ParameterizedTest
   @CsvSource({
@@ -192,7 +180,7 @@ public class GroupRoundGeneratorTest {
       Pool pool = new Pool();
       pool.setName(String.valueOf((char) ('A' + p)));
       for (int r = 1; r <= nbPairsPerPool; r++) {
-        pool.addPair(makePair(p, r));
+        pool.addPair(TestFixtures.makePairFromPoolRank(p, r));
       }
       groups.getPools().add(pool);
     }
@@ -232,17 +220,11 @@ public class GroupRoundGeneratorTest {
     format.setPointsPerSet(6);
     format.setSuperTieBreakInFinalSet(false);
 
-    // --- Paires (noms identiques à la capture) ---
-    // Poule A
-    PlayerPair a1 = new PlayerPair(-1L,
-                                   new Player(1L, "Aymen BENNANI", 1, 0, 1990),
-                                   new Player(101L, "Yassine CHRAIBI", 1, 0, 1990), 1);
-    PlayerPair a3 = new PlayerPair(-1L,
-                                   new Player(3L, "Amine JABRI", 3, 0, 1990),
-                                   new Player(103L, "Samy LAKHDAR", 3, 0, 1990), 3);
-    PlayerPair a4 = new PlayerPair(-1L,
-                                   new Player(4L, "Tarik MOUSSAOUI", 4, 0, 1990),
-                                   new Player(104L, "Karim BENALI", 4, 0, 1990), 4);
+    // --- Paires (fixtures) ---
+    List<PlayerPair> pairs = TestFixtures.createPairs(6);
+    PlayerPair       a1    = pairs.get(0); // seed 1
+    PlayerPair       a3    = pairs.get(2); // seed 3
+    PlayerPair       a4    = pairs.get(3); // seed 4
 
     Pool poolA = new Pool();
     poolA.setName("A");
@@ -250,16 +232,9 @@ public class GroupRoundGeneratorTest {
     poolA.addPair(a3);
     poolA.addPair(a4);
 
-    // Poule B
-    PlayerPair b2 = new PlayerPair(-1L,
-                                   new Player(2L, "Anass EL GHALI", 2, 0, 1990),
-                                   new Player(102L, "Hicham ZOUAOUI", 2, 0, 1990), 2);
-    PlayerPair b5 = new PlayerPair(-1L,
-                                   new Player(5L, "Mehdi BOUKHARI", 5, 0, 1990),
-                                   new Player(105L, "Hamza ALAOUI", 5, 0, 1990), 5);
-    PlayerPair b6 = new PlayerPair(-1L,
-                                   new Player(6L, "Nabil FARES", 6, 0, 1990),
-                                   new Player(106L, "Ali JOUDI", 6, 0, 1990), 6);
+    PlayerPair b2 = pairs.get(1); // seed 2
+    PlayerPair b5 = pairs.get(4); // seed 5
+    PlayerPair b6 = pairs.get(5); // seed 6
 
     Pool poolB = new Pool();
     poolB.setName("B");
@@ -276,56 +251,38 @@ public class GroupRoundGeneratorTest {
     a_g1.setPool(poolA);
     a_g1.setTeamA(a1);
     a_g1.setTeamB(a3);
-    Score s_a_g1 = new Score();
-    s_a_g1.addSetScore(6, 4);
-    s_a_g1.addSetScore(6, 2);
-    a_g1.setScore(s_a_g1);
+    a_g1.setScore(TestFixtures.createScoreWithWinner(a_g1, a1));
 
     Game a_g2 = new Game(format);
     a_g2.setPool(poolA);
     a_g2.setTeamA(a1);
     a_g2.setTeamB(a4);
-    Score s_a_g2 = new Score();
-    s_a_g2.addSetScore(6, 0);
-    s_a_g2.addSetScore(6, 2);
-    a_g2.setScore(s_a_g2);
+    a_g2.setScore(TestFixtures.createScoreWithWinner(a_g2, a1));
 
     Game a_g3 = new Game(format);
     a_g3.setPool(poolA);
     a_g3.setTeamA(a3);
     a_g3.setTeamB(a4);
-    Score s_a_g3 = new Score();
-    s_a_g3.addSetScore(4, 6);
-    s_a_g3.addSetScore(4, 6);
-    a_g3.setScore(s_a_g3);
+    a_g3.setScore(TestFixtures.createScoreWithWinner(a_g3, a4));
 
     // Poule B
     Game b_g1 = new Game(format);
     b_g1.setPool(poolB);
     b_g1.setTeamA(b2);
     b_g1.setTeamB(b5);
-    Score s_b_g1 = new Score();
-    s_b_g1.addSetScore(3, 6);
-    s_b_g1.addSetScore(2, 6);
-    b_g1.setScore(s_b_g1);
+    b_g1.setScore(TestFixtures.createScoreWithWinner(b_g1, b5));
 
     Game b_g2 = new Game(format);
     b_g2.setPool(poolB);
     b_g2.setTeamA(b2);
     b_g2.setTeamB(b6);
-    Score s_b_g2 = new Score();
-    s_b_g2.addSetScore(4, 6);
-    s_b_g2.addSetScore(5, 7);
-    b_g2.setScore(s_b_g2);
+    b_g2.setScore(TestFixtures.createScoreWithWinner(b_g2, b6));
 
     Game b_g3 = new Game(format);
     b_g3.setPool(poolB);
     b_g3.setTeamA(b5);
     b_g3.setTeamB(b6);
-    Score s_b_g3 = new Score();
-    s_b_g3.addSetScore(5, 7);
-    s_b_g3.addSetScore(3, 6);
-    b_g3.setScore(s_b_g3);
+    b_g3.setScore(TestFixtures.createScoreWithWinner(b_g3, b6));
 
     groups.addGames(java.util.Arrays.asList(a_g1, a_g2, a_g3, b_g1, b_g2, b_g3));
     tournament.getRounds().add(groups);
@@ -356,21 +313,8 @@ public class GroupRoundGeneratorTest {
 
     assertEquals(1, finalRound.getGames().size(), "Final round must have 1 match");
     Game finalGame = finalRound.getGames().get(0);
-    assertTrue(gameContainsBoth(finalGame, a1, b6), "Expected Final to be A1 vs B1");
+    assertTrue(TestFixtures.gameContainsBoth(finalGame, a1, b6), "Expected Final to be A1 vs B1");
   }
 
-  private boolean gameContainsBoth(Game g, PlayerPair p, PlayerPair q) {
-    return (g.getTeamA() == p && g.getTeamB() == q) || (g.getTeamA() == q && g.getTeamB() == p);
-  }
-
-  // --- helpers ---
-  private PlayerPair makePair(int poolIndex, int rankInPool) {
-    // id/seed déterministes pour debug facile
-    int    seed = (poolIndex + 1) * 100 + rankInPool;
-    Player p1   = new Player((long) seed, "P" + seed + "A", seed, 0, 1990);
-    Player p2   = new Player((long) seed + 10000, "P" + seed + "B", seed, 0, 1990);
-    return new PlayerPair(-1L, p1, p2, seed);
-  }
 
 }
-

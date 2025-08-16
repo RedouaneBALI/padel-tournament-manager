@@ -10,18 +10,16 @@ import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
-import io.github.redouanebali.model.Score;
-import io.github.redouanebali.model.SetScore;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.TournamentFormat;
+import io.github.redouanebali.util.TestFixtures;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,7 +63,7 @@ public class KnockoutRoundGeneratorTest {
       int nbSeeds,
       int[] expectedSeedIndices
   ) {
-    List<PlayerPair> pairs = createPairs(nbTeams);
+    List<PlayerPair> pairs = TestFixtures.createPairs(nbTeams);
     pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
     generator = new KnockoutRoundGenerator(nbSeeds);
     List<Integer> seedPositions = generator.getSeedsPositions(nbTeams, nbSeeds);
@@ -85,7 +83,7 @@ public class KnockoutRoundGeneratorTest {
       int[] expectedSeedIndices,
       Stage expectedStage
   ) {
-    List<PlayerPair> pairs = createPairs(nbTeams);
+    List<PlayerPair> pairs = TestFixtures.createPairs(nbTeams);
     pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
     generator = new KnockoutRoundGenerator(nbSeeds);
     Round round = generator.generateAlgorithmicRound(pairs);
@@ -165,9 +163,68 @@ public class KnockoutRoundGeneratorTest {
   }
 
   @Test
+  void testPropagateWinners_UpdatesFinalWhenScoresChange() {
+    // Pairs A,B,C,D with deterministic ids for createScoreWithWinner
+    PlayerPair pairA = new PlayerPair(1L, new Player("A"), new Player("B"), 1);
+    PlayerPair pairB = new PlayerPair(2L, new Player("C"), new Player("D"), 2);
+    PlayerPair pairC = new PlayerPair(3L, new Player("E"), new Player("F"), 3);
+    PlayerPair pairD = new PlayerPair(4L, new Player("G"), new Player("H"), 4);
+
+    List<PlayerPair> pairs = List.of(pairA, pairB, pairC, pairD);
+
+    // Generate manual round: A vs B, C vs D
+    generator = new KnockoutRoundGenerator(0);
+    Round semiFinals = generator.generateManualRound(pairs);
+
+    // Ensure we have two games
+    List<Game> semiGames = semiFinals.getGames();
+    assertEquals(2, semiGames.size());
+    MatchFormat matchFormat = TestFixtures.createSimpleFormat(1);
+    // Set formats and initial winners: A beats B, C beats D
+    Game semi0 = semiGames.get(0);
+    semi0.setFormat(matchFormat);
+    semi0.setScore(TestFixtures.createScoreWithWinner(semi0, pairA));
+
+    Game semi1 = semiGames.get(1);
+    semi1.setFormat(matchFormat);
+    semi1.setScore(TestFixtures.createScoreWithWinner(semi1, pairC));
+
+    // Prepare final round with one game
+    Round finals = new Round();
+    finals.setStage(Stage.FINAL);
+    Game finalGame = new Game(matchFormat);
+    finals.addGames(List.of(finalGame));
+
+    // Tournament with both rounds in order
+    Tournament tournament = new Tournament();
+    tournament.setTournamentFormat(TournamentFormat.KNOCKOUT);
+    List<Round> rounds = new LinkedList<>();
+    rounds.add(semiFinals);
+    rounds.add(finals);
+    tournament.getRounds().clear();
+    tournament.getRounds().addAll(rounds);
+
+    // First propagation: finalists should be A vs C
+    generator.propagateWinners(tournament);
+    assertEquals(pairA, finalGame.getTeamA());
+    assertEquals(pairC, finalGame.getTeamB());
+
+    // Change winners: set B and D as winners of their semis
+    semi0.setScore(TestFixtures.createScoreWithWinner(semi0, pairB));
+    semi1.setScore(TestFixtures.createScoreWithWinner(semi1, pairD));
+
+    // Re-propagate and verify final updates to B vs D
+    generator.propagateWinners(tournament);
+    assertEquals(pairB, finalGame.getTeamA());
+    assertEquals(pairD, finalGame.getTeamB());
+  }
+
+  @Test
   void testPropagateWinners() {
     Round roundCurrent = new Round();
     roundCurrent.setStage(Stage.R32);
+
+    MatchFormat matchFormat = TestFixtures.createSimpleFormat(1);
 
     List<Game> gamesCurrent = new
         ArrayList<>();
@@ -175,25 +232,24 @@ public class KnockoutRoundGeneratorTest {
     PlayerPair byePair = PlayerPair.bye();
     byePair.setId(99L);
 
-    List<PlayerPair> pairs = createPairs(6);
+    List<PlayerPair> pairs = TestFixtures.createPairs(6);
 
-    Game game0 = new Game(createSimpleFormat());
+    Game game0 = new Game(matchFormat);
     game0.setTeamA(pairs.get(0));
     game0.setTeamB(pairs.get(1));
-    game0.setScore(createScoreWithWinner(pairs.get(0)));
-    game0.setFormat(createSimpleFormat());
+    game0.setScore(TestFixtures.createScoreWithWinner(game0, pairs.get(0)));
 
-    Game game1 = new Game(createSimpleFormat());
+    Game game1 = new Game(matchFormat);
     game1.setTeamA(pairs.get(2));
     game1.setTeamB(byePair);
     game1.setScore(null);
-    Game game2 = new Game(createSimpleFormat());
+    Game game2 = new Game(matchFormat);
     game2.setTeamA(pairs.get(3));
     game2.setTeamB(pairs.get(4));
     game2.setScore(null);
 
     // Match 3 : pair6 vs BYE (pair6 passe automatiquement)
-    Game game3 = new Game(createSimpleFormat());
+    Game game3 = new Game(matchFormat);
     game3.setTeamA(pairs.get(5));
     game3.setTeamB(byePair);
     game3.setScore(null);
@@ -210,8 +266,8 @@ public class KnockoutRoundGeneratorTest {
     roundNext.setStage(Stage.R16);
     List<Game> gamesNext = new ArrayList<>();
 
-    Game nextGame0 = new Game(createSimpleFormat()); // Correspond aux matchs 0 et 1 du round actuel
-    Game nextGame1 = new Game(createSimpleFormat()); // Correspond aux matchs 2 et 3 du round actuel
+    Game nextGame0 = new Game(matchFormat); // Correspond aux matchs 0 et 1 du round actuel
+    Game nextGame1 = new Game(matchFormat); // Correspond aux matchs 2 et 3 du round actuel
 
     gamesNext.add(nextGame0);
     gamesNext.add(nextGame1);
@@ -244,37 +300,5 @@ public class KnockoutRoundGeneratorTest {
     assertEquals(pairs.get(5), nextGame1.getTeamB());
   }
 
-  private List<PlayerPair> createPairs(int count) {
-    List<PlayerPair> pairs = new ArrayList<>();
-    IntStream.rangeClosed(1, count).forEach(seed -> {
-      Player player1 = new Player((long) seed, "Player" + seed + "A", seed, 0, 1990);
-      Player player2 = new Player((long) seed + 100, "Player" + seed + "B", seed, 0, 1990);
-      pairs.add(new PlayerPair(-1L, player1, player2, seed));
-    });
-    return pairs;
-  }
 
-  private MatchFormat createSimpleFormat() {
-    MatchFormat format = new MatchFormat();
-    format.setNumberOfSetsToWin(1);
-    format.setPointsPerSet(6);
-    format.setSuperTieBreakInFinalSet(false);
-    return format;
-  }
-
-  private Score createScoreWithWinner(PlayerPair winner) {
-    Score score = new Score();
-    // Simple score pour indiquer que le match est terminé et que "winner" a gagné
-    // Exemple : 6-0
-    SetScore setScore = new SetScore();
-    if (winner.getId() % 2 == 0) { // arbitraire juste pour varier
-      setScore.setTeamAScore(0);
-      setScore.setTeamBScore(6);
-    } else {
-      setScore.setTeamAScore(6);
-      setScore.setTeamBScore(0);
-    }
-    score.setSets(List.of(setScore));
-    return score;
-  }
 }

@@ -17,6 +17,7 @@ import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.TournamentFormat;
 import io.github.redouanebali.repository.TournamentRepository;
+import io.github.redouanebali.util.TestFixtures;
 import java.util.LinkedList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,11 +58,10 @@ public class GameServiceTest {
     Long gameId       = 10L;
 
     // Real domain objects
-    MatchFormat format = new MatchFormat();
-    PlayerPair  teamA  = new PlayerPair();
-    teamA.setId(1L);
-    PlayerPair teamB = new PlayerPair();
-    teamB.setId(2L);
+    MatchFormat      format = new MatchFormat();
+    List<PlayerPair> pairs  = TestFixtures.createPairs(2);
+    PlayerPair       teamA  = pairs.get(0);
+    PlayerPair       teamB  = pairs.get(1);
 
     Game game = new Game(format);
     game.setId(gameId);
