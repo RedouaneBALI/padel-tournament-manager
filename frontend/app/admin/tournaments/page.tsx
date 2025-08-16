@@ -1,5 +1,32 @@
+// app/admin/tournaments/page.tsx
+'use client';
+
 import TournamentList from '@/src/components/tournament/TournamentList';
+import BottomNav, { BottomNavItem } from '@/src/components/ui/BottomNav';
+import { usePathname } from 'next/navigation';
+import { Home } from 'lucide-react';
+import { FiMoreHorizontal } from 'react-icons/fi';
+import { ToastContainer } from 'react-toastify';
 
 export default function TournamentsPage() {
-  return <TournamentList />;
+  const pathname = usePathname() ?? '';
+  const items: BottomNavItem[] = [
+    { href: '/', label: 'Accueil', Icon: Home, isActive: (p) => p === '/' },
+    { href: '#more', label: 'Plus', Icon: FiMoreHorizontal },
+  ];
+
+  return (
+    <>
+      <main className="min-h-screen bg-background">
+        <section className="max-w-5xl mx-auto mb-8">
+          <div className="bg-card border border-border rounded-2xl sm:p-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">Mes tournois</h1>
+            <TournamentList />
+          </div>
+        </section>
+      </main>
+      <BottomNav items={items} pathname={pathname} />
+      <ToastContainer />
+    </>
+  );
 }

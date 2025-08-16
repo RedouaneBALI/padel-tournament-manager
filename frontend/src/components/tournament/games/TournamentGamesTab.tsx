@@ -185,7 +185,7 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
   const setsToWin = getSetsToWin(currentRound);
 
   return (
-    <div className="flex flex-col items-center space-y-6">
+    <div className="flex flex-col items-center space-y-6 mb-15">
       <RoundSelector
         rounds={rounds}
         currentIndex={currentRoundIndex}

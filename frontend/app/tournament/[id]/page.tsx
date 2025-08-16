@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import TournamentOverviewTab from './TournamentOverviewTab';
+import TournamentOverviewTab from '@/src/components/tournament/TournamentOverviewTab';
 import { fetchTournament } from '@/src/api/tournamentApi';
 import type { Tournament } from '@/src/types/tournament';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';

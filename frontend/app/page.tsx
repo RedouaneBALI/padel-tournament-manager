@@ -4,9 +4,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FiPlusCircle, FiList } from 'react-icons/fi';
 import { signIn, signOut, useSession } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
+import { Home } from 'lucide-react';
+import { FiMoreHorizontal } from 'react-icons/fi';
 
 export default function Home() {
   const { status } = useSession();
+
+  const pathname = usePathname() ?? '';
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -42,7 +47,7 @@ export default function Home() {
   ];
   // Authenticated: show the main hero with action buttons
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background pb-24">
       <section className="max-w-5xl mx-auto px-4 py-6 sm:py-8">
         <div className="bg-card border border-border rounded-2xl p-8 sm:p-12 shadow-sm">
           <div className="text-center space-y-6">

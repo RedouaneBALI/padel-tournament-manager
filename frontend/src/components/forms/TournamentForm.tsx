@@ -46,7 +46,7 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
       {isSubmitting && (
 <CenteredLoader />
       )}
-      <div className="container mx-auto max-w-4xl" aria-busy={isSubmitting}>
+      <div className="container mx-auto max-w-4xl pb-14" aria-busy={isSubmitting}>
         <div className="bg-card shadow-lg border border-border">
           <div className="p-6">
             {title && (
@@ -60,7 +60,7 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
           </div>
 
           <div>
-            <form onSubmit={handleSubmit}>
+            <form id="tournament-form" onSubmit={handleSubmit}>
               <TournamentInfoSection formData={formData} handleInputChange={handleInputChange} />
 
               <hr className="border-border" />
@@ -72,22 +72,6 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
               <TournamentConfigSection formData={formData} handleInputChange={handleInputChange} />
 
               <hr className="border-border" />
-
-              <div className="p-4">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full px-4 py-2 bg-primary text-on-primary rounded hover:bg-primary-hover"
-                >
-                  {isSubmitting
-                    ? isEditing
-                      ? 'Mise à jour...'
-                      : 'Création en cours...'
-                    : isEditing
-                    ? 'Mettre à jour'
-                    : 'Créer le tournoi'}
-                </button>
-              </div>
             </form>
           </div>
         </div>
@@ -103,6 +87,26 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
           pauseOnHover
         />
       </div>
+      {/* Floating submit button (always visible) */}
+      <button
+        type="submit"
+        form="tournament-form"
+        disabled={isSubmitting}
+        className="fixed bottom-0 inset-x-0 z-50 flex items-center justify-center gap-2 px-5 py-4 shadow-lg bg-primary text-on-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/40"
+        aria-busy={isSubmitting}
+        aria-label={isEditing ? (isSubmitting ? 'Mise à jour…' : 'Mettre à jour') : (isSubmitting ? 'Création en cours…' : 'Créer le tournoi')}
+      >
+        <Trophy className="h-5 w-5" />
+        <span className="text-base font-medium">
+          {isSubmitting
+            ? isEditing
+              ? 'Mise à jour...'
+              : 'Création en cours...'
+            : isEditing
+            ? 'Mettre à jour'
+            : 'Créer le tournoi'}
+        </span>
+      </button>
     </>
   );
 }

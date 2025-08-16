@@ -11,7 +11,6 @@ import { getAuthOptions } from "@/src/lib/authOptions";
 import Link from 'next/link';
 import Image from 'next/image';
 import { FiPlusCircle, FiList, FiMail } from 'react-icons/fi';
-import MobileDrawerLinks from '@/src/components/layout/MobileDrawerLinks';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -89,50 +88,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <style>{`summary::-webkit-details-marker, summary::marker{display:none;}`}</style>
               <div className="max-w-5xl mx-auto px-4">
                 <nav className="h-14 flex items-center justify-between w-full">
-                  {/* Left: burger (mobile) */}
-                  <details className="md:hidden relative group">
-                    <summary
-                      className="list-none cursor-pointer select-none inline-flex items-center justify-center h-10 w-10 rounded hover:bg-muted bg-background group-open:fixed group-open:top-3 group-open:left-4 group-open:z-[80] leading-none"
-                      aria-label="Ouvrir ou fermer le menu"
-                    >
-                      {/* Burger icon when closed (horizontal) */}
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        className="h-5 w-5 group-open:hidden"
-                      >
-                        <path d="M3 6h18" />
-                        <path d="M3 12h18" />
-                        <path d="M3 18h18" />
-                      </svg>
-                      {/* Burger icon when open (vertical) */}
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        className="h-5 w-5 hidden group-open:block rotate-90"
-                      >
-                        <path d="M3 6h18" />
-                        <path d="M3 12h18" />
-                        <path d="M3 18h18" />
-                      </svg>
-                    </summary>
-                    <div className="fixed inset-y-0 left-0 w-72 max-w-[80vw] bg-background border-r border-border shadow-2xl p-4 z-[70] overflow-y-auto">
-                      <div className="flex items-center gap-2 mb-4 pl-12 h-8">
-                      </div>
-                      <MobileDrawerLinks />
-                    </div>
-                    {/* backdrop */}
-                    <div className="fixed inset-0 bg-black/50 z-[60]"></div>
-                  </details>
-
                   {/* Center: logo */}
                   <Link href="/" className="flex items-center gap-2" aria-label="Accueil" title="Accueil">
                     <Image
@@ -145,43 +100,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                     />
                     <span className="sr-only">Accueil</span>
                   </Link>
-
-                  {/* Right: desktop links */}
-                  <div className="hidden md:flex items-center gap-10">
-                    <Link
-                      href="/admin/tournament/new"
-                      className="flex items-center gap-2 text-muted hover:text-primary"
-                      aria-label="Créer un tournoi"
-                      title="Créer un tournoi"
-                    >
-                      <FiPlusCircle className="w-5 h-5" />
-                      <span className="hidden md:inline">Créer un tournoi</span>
-                    </Link>
-
-                    <Link
-                      href="/admin/tournaments"
-                      className="flex items-center gap-2 text-muted hover:text-primary"
-                      aria-label="Mes tournois"
-                      title="Mes tournois"
-                    >
-                      <FiList className="w-5 h-5" />
-                      <span className="hidden md:inline">Mes tournois</span>
-                    </Link>
-
-                    <Link
-                      href="/contact"
-                      className="flex items-center gap-2 text-muted hover:text-primary"
-                      aria-label="Contact"
-                      title="Contact"
-                    >
-                      <FiMail className="w-5 h-5" />
-                      <span className="hidden md:inline">Contact</span>
-                    </Link>
-
-                    <LogoutButton>
-                      <span className="hidden md:inline">Déconnexion</span>
-                    </LogoutButton>
-                  </div>
                 </nav>
               </div>
             </header>

@@ -1,3 +1,4 @@
+// app/tournament/[id]/bracket/page.tsx
 'use client';
 
 import React from 'react';
