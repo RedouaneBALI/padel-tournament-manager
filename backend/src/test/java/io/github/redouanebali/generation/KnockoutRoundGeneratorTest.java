@@ -300,5 +300,4 @@ public class KnockoutRoundGeneratorTest {
     assertEquals(pairs.get(5), nextGame1.getTeamB());
   }
 
-
 }

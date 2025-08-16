@@ -118,6 +118,14 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
       Round currentRound = rounds.get(roundIndex);
       Round nextRound    = rounds.get(roundIndex + 1);
 
+      // Skip propagation if currentRound is entirely empty (all games have null teamA and null teamB)
+      boolean currentRoundEmpty = currentRound.getGames()
+                                              .stream()
+                                              .allMatch(g -> g.getTeamA() == null && g.getTeamB() == null);
+      if (currentRoundEmpty) {
+        continue;
+      }
+
       // Safety: skip any non-bracket rounds just in case
       if (currentRound.getStage() == Stage.GROUPS || nextRound.getStage() == Stage.GROUPS) {
         continue;
@@ -125,7 +133,7 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
 
       List<Game> currentGames = currentRound.getGames();
       List<Game> nextGames    = nextRound.getGames();
-      if (currentGames == null || nextGames == null) {
+      if (nextGames == null) {
         continue;
       }
 

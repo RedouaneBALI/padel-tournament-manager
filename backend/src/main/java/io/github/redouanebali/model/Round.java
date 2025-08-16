@@ -1,5 +1,6 @@
 package io.github.redouanebali.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -35,6 +36,7 @@ public class Round {
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "round_id")
   @OrderBy("name ASC")
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private final Set<Pool>   pools       = new LinkedHashSet<>();
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
