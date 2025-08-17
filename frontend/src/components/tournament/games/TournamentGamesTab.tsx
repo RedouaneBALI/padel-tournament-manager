@@ -130,12 +130,13 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
   }, [stageParam, rounds]);
 
   const handleStageChangeInUrl = useCallback(
-    (newStage: Stage) => {
+    (newStage: string | Stage) => {
       if (!newStage) return;
+      const stageValue = isStage(newStage) ? newStage : (String(newStage) as string);
       const sp = new URLSearchParams(searchParams?.toString?.() ?? '');
-      sp.set('stage', newStage);
+      sp.set('stage', stageValue);
       router.replace(`${pathname}?${sp.toString()}`);
-      const idx = rounds.findIndex((r) => r.stage === newStage);
+      const idx = rounds.findIndex((r) => r.stage === stageValue);
       if (idx !== -1) setCurrentRoundIndex(idx);
     },
     [router, pathname, searchParams, rounds]

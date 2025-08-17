@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { Tournament } from '@/src/types/tournament';
 import MatchFormatForm from '@/src/components/round/MatchFormatForm';
 import RoundSelector from '@/src/components/round/RoundSelector';
+import { MapPin, Building2, Users2, Gauge, Layers, Hash, CalendarDays, CalendarRange, Info } from 'lucide-react';
 
 interface TournamentOverviewTabProps {
   tournament: Tournament;
@@ -25,20 +26,89 @@ export default function TournamentOverviewTab({ tournament }: TournamentOverview
         </h3>
         <div className="h-px flex-1 bg-border" />
       </div>
-      <p><strong>Description :</strong> {tournament.description || '—'}</p>
-      <p><strong>Ville :</strong> {tournament.city || '—'}</p>
-      <p><strong>Club :</strong> {tournament.club || '—'}</p>
-      <p><strong>Genre :</strong> {tournament.gender || '—'}</p>
-      <p><strong>Niveau :</strong> {tournament.level || '—'}</p>
-      <p><strong>Format :</strong> {tournament.tournamentFormat || '—'}</p>
-      <p><strong>Nombre de têtes de série :</strong> {tournament.nbSeeds}</p>
-      <p><strong>Date de début :</strong> {tournament.startDate || '—'}</p>
-      <p><strong>Date de fin :</strong> {tournament.endDate || '—'}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Description (full width) */}
+        <div className="sm:col-span-2 rounded-lg border bg-card/50 p-4 relative">
+          <div className="absolute -top-2 left-3 bg-card px-1 text-xs uppercase tracking-wide text-muted-foreground">
+            Description
+          </div>
+          <div className="flex items-center gap-3">
+            <Info className="h-5 w-5 text-muted-foreground" aria-hidden />
+            <div className="min-w-0">
+              <div className="text-sm leading-relaxed break-words">
+                {tournament.description || '—'}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Localisation (Club + Ville) */}
+        <div className="rounded-lg border bg-card/50 p-4 relative">
+          <div className="absolute -top-2 left-3 bg-card px-1 text-xs uppercase tracking-wide text-muted-foreground">
+            Localisation
+          </div>
+          <div className="flex items-center gap-3">
+            <MapPin className="h-5 w-5 text-muted-foreground" aria-hidden />
+            <div className="min-w-0 w-full">
+              <div className="text-sm font-medium truncate">
+                {(tournament.club || '—') + (tournament.city ? ` (${tournament.city})` : '')}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Catégorie (Genre - Niveau) */}
+        <div className="rounded-lg border bg-card/50 p-4 relative">
+          <div className="absolute -top-2 left-3 bg-card px-1 text-xs uppercase tracking-wide text-muted-foreground">
+            Catégorie
+          </div>
+          <div className="flex items-center gap-3">
+            <Users2 className="h-5 w-5 text-muted-foreground" aria-hidden />
+            <div className="min-w-0 w-full">
+              <div className="text-sm font-medium">
+                {(tournament.gender || '—') + ' - ' + (tournament.level || '—')}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Format + Têtes de série */}
+        <div className="rounded-lg border bg-card/50 p-4 relative">
+          <div className="absolute -top-2 left-3 bg-card px-1 text-xs uppercase tracking-wide text-muted-foreground">
+            FORMAT DU TOURNOI
+          </div>
+          <div className="flex items-center gap-3">
+            <Layers className="h-5 w-5 text-muted-foreground" aria-hidden />
+            <div className="min-w-0 w-full">
+              <div className="text-sm font-medium">
+                {(tournament.tournamentFormat || '—') + (tournament.nbSeeds ? ' - ' + tournament.nbSeeds + ' têtes de série' : '')}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Date (Début — Fin) */}
+        <div className="rounded-lg border bg-card/50 p-4 relative">
+          <div className="absolute -top-2 left-3 bg-card px-1 text-xs uppercase tracking-wide text-muted-foreground">
+            Date
+          </div>
+          <div className="flex items-center gap-3">
+            <CalendarDays className="h-5 w-5 text-muted-foreground" aria-hidden />
+            <div className="min-w-0 w-full">
+              <div className="text-sm font-medium">
+                {tournament.startDate && tournament.endDate
+                  ? `${new Date(tournament.startDate).toLocaleDateString('fr-FR')} — ${new Date(tournament.endDate).toLocaleDateString('fr-FR')}`
+                  : '—'}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Divider & section header */}
       <div className="mt-8 mb-4 flex items-center gap-3">
         <div className="h-px flex-1 bg-border" />
-        <h3 className="text-s sm:text-sm uppercase tracking-wider text-muted-foreground select-none">Formats des rounds</h3>
+        <h3 className="text-s sm:text-sm uppercase tracking-wider text-muted-foreground select-none">Formats des matchs</h3>
         <div className="h-px flex-1 bg-border" />
       </div>
 
