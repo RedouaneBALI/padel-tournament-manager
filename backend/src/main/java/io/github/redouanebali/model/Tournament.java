@@ -85,4 +85,5 @@ public class Tournament {
   public void onUpdate() {
     this.updatedAt = Instant.now();
   }
+
 }

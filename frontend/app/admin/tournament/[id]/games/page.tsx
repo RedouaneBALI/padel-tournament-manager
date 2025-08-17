@@ -1,3 +1,4 @@
+// app/admin/tournament/[id]/games/page.tsx
 'use client';
 
 import TournamentGamesTab from '@/src/components/tournament/games/TournamentGamesTab';

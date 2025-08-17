@@ -1,23 +1,19 @@
+// app/page.tsx
 'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
-import { Home as HomeIcon } from 'lucide-react';
-import { FiMoreHorizontal } from 'react-icons/fi';
 import ContactButton from '@/src/components/ui/buttons/ContactButton';
-import BottomNav, { BottomNavItem } from '@/src/components/ui/BottomNav';
+import BottomNav from '@/src/components/ui/BottomNav';
+import { getDefaultBottomItems } from '@/src/components/ui/bottomNavPresets';
 
 export default function Home() {
   const { status } = useSession();
 
   const pathname = usePathname() ?? '';
-
-  const bottomItems: BottomNavItem[] = [
-    { href: '/', label: 'Accueil', Icon: HomeIcon, isActive: (p) => p === '/' },
-    { href: '#more', label: 'Plus', Icon: FiMoreHorizontal },
-  ];
+  const bottomItems = getDefaultBottomItems();
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -80,21 +76,21 @@ export default function Home() {
 
             <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
               {status === 'authenticated' ? (
-                <>
+                <div className="flex w-full max-w-md mx-auto gap-3">
                   <Link
                     href="/admin/tournament/new"
-                    className="px-5 py-3 rounded-lg bg-primary text-on-primary font-semibold hover:bg-primary-hover transition"
+                    className="flex-1 text-center px-5 py-3 rounded-lg bg-primary text-on-primary font-semibold hover:bg-primary-hover transition"
                   >
-                    Créer un tournoi
+                    Créer un tournoi 🎾
                   </Link>
 
                   <Link
-                    href="/admin/tournaments"
-                    className="px-5 py-3 rounded-lg border border-border bg-background text-foreground hover:bg-card transition"
+                    href="/tournament/7"
+                    className="flex-1 text-center px-5 py-3 rounded-lg border border-border bg-background text-foreground hover:bg-card transition"
                   >
-                    Mes tournois
+                    Voir l'exemple 🔎
                   </Link>
-                </>
+                </div>
               ) : (
                 <div className="flex justify-center">
                   <button

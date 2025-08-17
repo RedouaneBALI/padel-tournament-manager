@@ -61,7 +61,7 @@ export default function PlayerPairList({ pairs, tournamentId, loading = false, e
           const isEditing = editingPairId === id;
           const canEdit = editable && (editingPairId === null || isEditing);
           return (
-            <li key={id} className="border rounded px-4 py-2 bg-background shadow-sm text-sm flex items-center justify-between gap-3">
+              <li key={id} className="border border-primary/10 rounded px-4 py-2 bg-primary/5 shadow-sm text-sm flex items-center justify-between gap-3">
               <PlayerPairLine
                 pair={pair}
                 tournamentId={tournamentId}

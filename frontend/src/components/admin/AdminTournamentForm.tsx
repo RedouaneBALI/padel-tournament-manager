@@ -7,10 +7,9 @@ import TournamentForm from '@/src/components/forms/TournamentForm';
 import type { Tournament } from '@/src/types/tournament';
 import { createTournament, fetchTournament, updateTournament } from '@/src/api/tournamentApi';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
-import BottomNav, { BottomNavItem } from '@/src/components/ui/BottomNav';
-import { FiMoreHorizontal } from 'react-icons/fi';
+import BottomNav from '@/src/components/ui/BottomNav';
+import { getDefaultBottomItems } from '@/src/components/ui/bottomNavPresets';
 import { usePathname } from 'next/navigation';
-import { Home as HomeIcon } from 'lucide-react';
 
 interface Props {
   /** If provided, the form is in edit mode; otherwise, creation mode */
@@ -23,10 +22,7 @@ export default function AdminTournamentForm({ tournamentId }: Props) {
   const [loading, setLoading] = useState<boolean>(!!tournamentId);
 
   const pathname = usePathname() ?? '';
-  const items: BottomNavItem[] = [
-    { href: '/', label: 'Accueil', Icon: HomeIcon, isActive: (p) => p === '/' },
-    { href: '#more', label: 'Plus', Icon: FiMoreHorizontal },
-  ];
+  const items = getDefaultBottomItems();
 
   // If editing, load tournament once
   useEffect(() => {

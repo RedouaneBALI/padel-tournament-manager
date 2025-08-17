@@ -95,7 +95,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
       {isGenerating && (
         <CenteredLoader />
       )}
-      <div className="bg-card shadow-sm">
+      <div className="shadow-sm">
         <section>
           {loadingTournament ? (
             <CenteredLoader />

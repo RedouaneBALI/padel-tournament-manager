@@ -1,3 +1,4 @@
+// TournamentGamesTab.tsx
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
@@ -6,7 +7,8 @@ import CenteredLoader from '@/src/components/ui/CenteredLoader';
 import RoundSelector from '@/src/components/round/RoundSelector';
 import type { Round } from '@/src/types/round';
 import type { Game } from '@/src/types/game';
-import { fetchRounds } from '@/src/api/tournamentApi';
+import { Stage } from '@/src/types/stage';
+import { fetchTournament } from '@/src/api/tournamentApi';
 import GroupSelector from '@/src/components/tournament/games/GroupSelector';
 import GamesList from '@/src/components/tournament/games/GamesList';
 
@@ -33,6 +35,11 @@ function normalizeGroup(v: unknown): string | null {
 function pickGroupValue(obj: any): string | null {
   const candidate = obj?.name ?? obj?.label ?? obj?.code ?? obj?.id ?? obj?.letter ?? obj;
   return normalizeGroup(candidate);
+}
+
+const STAGE_VALUES = Object.values(Stage) as string[];
+function isStage(value: unknown): value is Stage {
+  return typeof value === 'string' && STAGE_VALUES.includes(value);
 }
 
 export default function TournamentGamesTab({ tournamentId, editable }: TournamentGamesTabProps) {
@@ -72,9 +79,9 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
 
   const handleInfoSaved = useCallback((result: { tournamentUpdated: boolean; winner: string | null }) => {
     if (result.tournamentUpdated) {
-      fetchRounds(tournamentId)
-        .then((newRounds) => setRounds(newRounds))
-        .catch((error) => console.error('Erreur lors du rafraîchissement des rounds :', error));
+      fetchTournament(tournamentId)
+        .then((t) => setRounds((t as any)?.rounds ?? []))
+        .catch((error) => console.error('Erreur lors du rafraîchissement du tournoi :', error));
     }
   }, [tournamentId]);
 
@@ -82,15 +89,19 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
     async function loadRounds() {
       try {
         setIsLoading(true);
-        const initialRounds = await fetchRounds(tournamentId);
+        const t = await fetchTournament(tournamentId);
+        const initialRounds: Round[] = (t as any)?.rounds ?? [];
         setRounds(initialRounds);
         if (initialRounds.length > 0) {
-          const desiredStage = stageParam || initialRounds[0].stage;
-          const idx = initialRounds.findIndex((r) => r.stage === desiredStage);
-          setCurrentRoundIndex(idx >= 0 ? idx : 0);
+          const currentStageFromApi = (t as any)?.currentRoundStage as Stage | null;
+          const desiredStage: Stage = (isStage(stageParam) ? stageParam : undefined)
+            || currentStageFromApi
+            || (initialRounds[0].stage as Stage);
+          const finalIdx = Math.max(0, initialRounds.findIndex((r) => r.stage === desiredStage));
+          setCurrentRoundIndex(finalIdx);
           if (!stageParam) {
             const sp = new URLSearchParams(searchParams?.toString?.() ?? '');
-            sp.set('stage', desiredStage);
+            sp.set('stage', initialRounds[finalIdx].stage as any);
             router.replace(`${pathname}?${sp.toString()}`);
           }
         } else {
@@ -108,7 +119,9 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
 
   useEffect(() => {
     if (!rounds.length || !stageParam) return;
-    const idx = rounds.findIndex((r) => r.stage === stageParam);
+    const desired = isStage(stageParam) ? (stageParam as Stage) : undefined;
+    if (!desired) return;
+    const idx = rounds.findIndex((r) => r.stage === desired);
     if (idx !== -1 && idx !== currentRoundIndex) {
       setCurrentRoundIndex(idx);
       setSelectedGroup('ALL');
@@ -117,7 +130,7 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
   }, [stageParam, rounds]);
 
   const handleStageChangeInUrl = useCallback(
-    (newStage: string) => {
+    (newStage: Stage) => {
       if (!newStage) return;
       const sp = new URLSearchParams(searchParams?.toString?.() ?? '');
       sp.set('stage', newStage);
@@ -134,10 +147,7 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
     currentRound ? getValidGamesSortedByTime(currentRound.games) : []
   ), [currentRound, getValidGamesSortedByTime]);
 
-  const isGroupStage = useMemo(() => (
-    currentRound?.stage?.toString?.().toUpperCase?.() === 'GROUPS' ||
-    currentRound?.stage?.toString?.().toUpperCase?.() === 'GROUP_STAGE'
-  ), [currentRound]);
+  const isGroupStage = useMemo(() => currentRound?.stage === Stage.GROUPS, [currentRound]);
 
   const availableGroups = useMemo(() => {
     const poolsAny: any[] = Array.isArray((currentRound as any)?.pools)

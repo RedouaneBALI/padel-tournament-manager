@@ -25,7 +25,6 @@ export default function TournamentOverviewTab({ tournament }: TournamentOverview
         </h3>
         <div className="h-px flex-1 bg-border" />
       </div>
-      <p><strong>Nom :</strong> {tournament.name}</p>
       <p><strong>Description :</strong> {tournament.description || '—'}</p>
       <p><strong>Ville :</strong> {tournament.city || '—'}</p>
       <p><strong>Club :</strong> {tournament.club || '—'}</p>

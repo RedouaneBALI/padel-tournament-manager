@@ -20,7 +20,7 @@ export default function AdminTournamentTabs({ tournamentId, pathname }: Props) {
 
   const [isMoreOpen, setIsMoreOpen] = useState(false);
 
-  const items: BottomNavItem[] = [
+  const moreItems: BottomNavItem[] = [
     {
       href: `${base}/players`,
       label: 'Joueurs',
@@ -50,7 +50,6 @@ export default function AdminTournamentTabs({ tournamentId, pathname }: Props) {
       label: 'Plus',
       Icon: FiMoreHorizontal,
       isActive: () => false,
-      onClick: () => setIsMoreOpen(true),
     },
   ];
 
@@ -72,12 +71,7 @@ export default function AdminTournamentTabs({ tournamentId, pathname }: Props) {
                     key={href}
                     href={href}
                     className="flex items-center gap-3 px-4 py-3 hover:bg-accent/80"
-                    onClick={() => setIsMoreOpen(false)}
                   >
-                    <span className="inline-flex w-5 h-5 items-center justify-center">
-                      <Icon size={20} className="text-foreground" aria-hidden />
-                    </span>
-                    <span>{label}</span>
                   </Link>
                 ))}
               </nav>

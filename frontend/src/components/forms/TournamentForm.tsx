@@ -10,6 +10,7 @@ import TournamentConfigSection from '@/src/components/forms/TournamentConfigSect
 import type { Tournament } from '@/src/types/tournament';
 import { useTournamentForm } from '@/src/hooks/useTournamentForm';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
+import { useRouter } from 'next/navigation';
 
 interface TournamentFormProps {
   initialData?: Partial<Tournament>;
@@ -20,6 +21,7 @@ interface TournamentFormProps {
 
 export default function TournamentForm({ initialData, onSubmit, isEditing = false, title }: TournamentFormProps) {
   const { formData, isSubmitting, setIsSubmitting, handleInputChange, validate } = useTournamentForm(initialData);
+  const router = useRouter();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -33,6 +35,10 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
       }
       const validData = parsed.data as unknown as Tournament;
       await onSubmit(validData);
+
+      if (validData.id) {
+        router.push(`/admin/tournament/${validData.id}/players`);
+      }
     } catch (err: any) {
       const msg = err?.message ?? 'Erreur inconnue lors de la création du tournoi.';
       toast.error(msg);
@@ -44,7 +50,9 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
   return (
     <>
       {isSubmitting && (
-<CenteredLoader />
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-background/60">
+          <CenteredLoader size={48} />
+        </div>
       )}
       <div className="container mx-auto max-w-4xl pb-[calc(var(--bottom-nav-height,64px)+96px)]" aria-busy={isSubmitting}>
         <div className="bg-card shadow-lg border border-border">
@@ -99,13 +107,7 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
       >
         <Trophy className="h-5 w-5" />
         <span className="text-base font-medium">
-          {isSubmitting
-            ? isEditing
-              ? 'Mise à jour...'
-              : 'Création en cours...'
-            : isEditing
-            ? 'Mettre à jour'
-            : 'Créer le tournoi'}
+          {isEditing ? 'Mettre à jour' : 'Créer le tournoi'}
         </span>
       </button>
     </>

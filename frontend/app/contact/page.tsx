@@ -1,4 +1,4 @@
-// contact.page.tsx
+// app/contact/page.tsx
 'use client';
 
 import { FiMail, FiLinkedin, FiMoreHorizontal } from 'react-icons/fi';

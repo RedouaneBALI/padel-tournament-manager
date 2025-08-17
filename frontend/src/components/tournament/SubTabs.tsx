@@ -1,6 +1,6 @@
-'use client';
+//src/constants/views.ts
 import React from 'react';
-import { VIEW_CLASSEMENT, VIEW_PHASE_FINALE } from './TournamentResultsTab';
+import { VIEW_CLASSEMENT, VIEW_PHASE_FINALE } from '@/src/constants/views';
 
 type Props = {
   active: typeof VIEW_CLASSEMENT | typeof VIEW_PHASE_FINALE;
@@ -8,10 +8,12 @@ type Props = {
 };
 
 export default function SubTabs({ active, onChange }: Props) {
+  const views: Array<typeof VIEW_CLASSEMENT | typeof VIEW_PHASE_FINALE> = [VIEW_CLASSEMENT, VIEW_PHASE_FINALE];
+
   return (
     <div className="mb-4 border-b border-border">
       <nav className="-mb-px flex justify-center gap-2" aria-label="Sous-onglets tableau">
-        {[VIEW_CLASSEMENT, VIEW_PHASE_FINALE].map((view) => (
+        {views.map((view) => (
           <button
             key={view}
             onClick={() => onChange(view)}

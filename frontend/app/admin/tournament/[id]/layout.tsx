@@ -8,11 +8,10 @@ import type { Tournament } from '@/src/types/tournament';
 import 'react-toastify/dist/ReactToastify.css';
 import { fetchTournamentAdmin } from '@/src/api/tournamentApi';
 import { useRouter, usePathname } from 'next/navigation';
-import { FiMoreHorizontal, FiUsers, FiSettings, FiList } from 'react-icons/fi';
+import { FiList } from 'react-icons/fi';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
-import BottomNav, { BottomNavItem } from '@/src/components/ui/BottomNav';
-import { LuSwords } from 'react-icons/lu';
-import { TbTournament } from 'react-icons/tb';
+import BottomNav from '@/src/components/ui/BottomNav';
+import { getAdminTournamentItems } from '@/src/components/ui/bottomNavPresets';
 
 export default function AdminTournamentLayout({
   children,
@@ -27,35 +26,7 @@ export default function AdminTournamentLayout({
   const router = useRouter();
 
   const pathname = usePathname() ?? '';
-  const items = [
-    {
-      href: `/admin/tournament/${id}/players`,
-      label: 'Joueurs',
-      Icon: FiUsers,
-    },
-    {
-      href: `/admin/tournament/${id}/rounds/config`,
-      label: 'Formats',
-      Icon: FiSettings,
-      isActive: (p) => p.includes(`/admin/tournament/${id}/rounds/config`),
-    },
-    {
-      href: `/admin/tournament/${id}/games`,
-      label: 'Matchs',
-      Icon: LuSwords,
-    },
-    {
-      href: `/admin/tournament/${id}/bracket`,
-      label: 'Tableau',
-      Icon: TbTournament,
-    },
-    // ➕ bouton \"Plus\" pour ouvrir le sous-menu du BottomNav
-    {
-      href: '#more',
-      label: 'Plus',
-      Icon: FiMoreHorizontal,
-    },
-  ];
+  const items = getAdminTournamentItems(id);
 
   useEffect(() => {
     let mounted = true;

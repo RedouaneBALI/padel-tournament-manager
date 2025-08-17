@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.github.redouanebali.model.Gender;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.TournamentFormat;
 import io.github.redouanebali.model.TournamentLevel;
 import java.time.LocalDate;
@@ -35,4 +36,26 @@ public class TournamentDTO {
 
   @JsonProperty("isEditable")
   private boolean editable;
+
+  @JsonProperty("currentRoundStage")
+  public Stage getCurrentRoundStage() {
+    if (rounds == null || rounds.isEmpty()) {
+      return null;
+    }
+
+    for (int i = rounds.size() - 1; i >= 0; i--) {
+      Round r = rounds.get(i);
+      if (r.getGames() == null || r.getGames().isEmpty()) {
+        continue;
+      }
+      boolean hasAssigned = r.getGames().stream()
+                             .anyMatch(g -> g.getTeamA() != null || g.getTeamB() != null);
+      if (hasAssigned) {
+        return r.getStage();
+      }
+    }
+
+    return rounds.getFirst().getStage();
+  }
+
 }

@@ -31,7 +31,7 @@ export default function TournamentLayout({
   const [isMoreOpen, setIsMoreOpen] = useState(false);
 
   // Navigation items for bottom navigation
-  const items = [
+  const moreItems = [
     {
       href: `/tournament/${id}`,
       label: 'Home',
@@ -52,6 +52,12 @@ export default function TournamentLayout({
       label: 'Tableau',
       Icon: TbTournament,
     },
+    {
+      href: '#more',
+      label: 'Plus',
+      Icon: FiMoreHorizontal
+    },
+
   ];
 
   useEffect(() => {
@@ -82,7 +88,7 @@ export default function TournamentLayout({
       {/* Bottom navigation – remplace les onglets du haut */}
       <nav className="fixed bottom-0 inset-x-0 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
         <div className="max-w-screen-2xl mx-auto px-2 sm:px-4">
-          <BottomNav items={items} pathname={pathname} />
+          <BottomNav items={moreItems} pathname={pathname} />
         </div>
       </nav>
 

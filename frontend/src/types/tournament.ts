@@ -1,5 +1,6 @@
 import type { Round } from '@/src/types/round';
 import type { PlayerPair } from '@/src/types/playerPair';
+import type { Stage } from '@/src/types/stage';
 
 export interface Tournament {
   id: number;
@@ -20,4 +21,5 @@ export interface Tournament {
   nbPairsPerPool: number;
   nbQualifiedByPool: number;
   isEditable: boolean;
+  currentRoundStage: Stage;
 }

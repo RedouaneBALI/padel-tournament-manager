@@ -10,13 +10,10 @@ import GroupStageResults from '@/src/components/round/GroupStageResults';
 import { Stage } from '@/src/types/stage';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import BracketHeader from '@/src/components/tournament/BracketHeader';
-import SubTabs from '@/src/components/tournament/SubTabs';
 import { calculateMatchPositions } from '@/src/utils/bracket';
 import { exportBracketAsImage } from '@/src/utils/imageExport';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
-
-export const VIEW_CLASSEMENT = 'pools';
-export const VIEW_PHASE_FINALE = 'final-phase';
+import { VIEW_CLASSEMENT, VIEW_PHASE_FINALE } from '@/src/constants/views';
 
 interface TournamentResultsTabProps {
   tournamentId: string;
@@ -46,8 +43,12 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
     load();
   }, [tournamentId]);
 
-  const firstRoundStage = tournament?.rounds?.[0]?.stage;
-  const defaultView = firstRoundStage === Stage.GROUPS ? VIEW_CLASSEMENT : VIEW_PHASE_FINALE;
+  const isGroupStageFormat = tournament?.tournamentFormat === "GROUP_STAGE";
+  const currentStage = tournament?.currentRoundStage;
+  const defaultView =
+    isGroupStageFormat && currentStage !== Stage.GROUPS
+      ? VIEW_PHASE_FINALE
+      : (isGroupStageFormat ? VIEW_CLASSEMENT : VIEW_PHASE_FINALE);
   const queryView = searchParams?.get('view');
   const activeView = (queryView === VIEW_CLASSEMENT || queryView === VIEW_PHASE_FINALE) ? queryView : defaultView;
 
@@ -83,8 +84,8 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
 
   return (
     <div className="w-full">
-      {/* Sub-tabs only if first round is GROUPS */}
-      {firstRoundStage === Stage.GROUPS && (
+      {/* Sub-tabs only if group stage format */}
+      {isGroupStageFormat && (
         <div className="mb-4 border-b border-border">
           <nav className="-mb-px flex justify-center gap-2" aria-label="Sous-onglets tableau">
             <button
@@ -111,8 +112,8 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
         </div>
       )}
 
-      {/* Poules view only for GROUPS */}
-      {firstRoundStage === Stage.GROUPS && activeView === VIEW_CLASSEMENT && (
+      {/* Poules view only for group stage format */}
+      {isGroupStageFormat && activeView === VIEW_CLASSEMENT && (
         <div className="relative overflow-auto border border-border rounded-lg px-2 py-6 md:p-8 bg-background">
           <GroupStageResults
             rounds={tournament?.rounds ?? []}
@@ -122,7 +123,7 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
       )}
 
       {/* Phase finale view */}
-      {firstRoundStage === Stage.GROUPS ? (
+      {isGroupStageFormat ? (
         activeView === VIEW_PHASE_FINALE && (
           hasFinals ? (
             <div className="w-full">
@@ -142,7 +143,7 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
           )
         )
       ) : (
-        // If not GROUPS: show knockout bracket directly, no tabs
+        // If not group stage format: show knockout bracket directly, no tabs
         hasFinals ? (
           <div className="w-full">
             <BracketHeader onExport={() => exportBracketAsImage('bracket-container')} />
