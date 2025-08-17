@@ -101,9 +101,9 @@ export default function AdminTournamentLayout({
   }
 
   return (
-    <div className="w-full max-w-screen-2xl px-1 sm:px-4 mx-auto">
+    <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
       <AdminTournamentHeader tournament={tournament} tournamentId={id} />
-      <div className="mt-6 mb-15">{children}</div>
+      <div className="mb-15">{children}</div>
       <BottomNav items={items} pathname={pathname} />
       <ToastContainer />
     </div>

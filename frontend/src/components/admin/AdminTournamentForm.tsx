@@ -1,0 +1,76 @@
+// src/components/admin/AdminTournamentForm.tsx
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import TournamentForm from '@/src/components/forms/TournamentForm';
+import type { Tournament } from '@/src/types/tournament';
+import { createTournament, fetchTournament, updateTournament } from '@/src/api/tournamentApi';
+import CenteredLoader from '@/src/components/ui/CenteredLoader';
+import BottomNav, { BottomNavItem } from '@/src/components/ui/BottomNav';
+import { FiMoreHorizontal } from 'react-icons/fi';
+import { usePathname } from 'next/navigation';
+import { Home as HomeIcon } from 'lucide-react';
+
+interface Props {
+  /** If provided, the form is in edit mode; otherwise, creation mode */
+  tournamentId?: string;
+}
+
+export default function AdminTournamentForm({ tournamentId }: Props) {
+  const router = useRouter();
+  const [tournament, setTournament] = useState<Tournament | null>(null);
+  const [loading, setLoading] = useState<boolean>(!!tournamentId);
+
+  const pathname = usePathname() ?? '';
+  const items: BottomNavItem[] = [
+    { href: '/', label: 'Accueil', Icon: HomeIcon, isActive: (p) => p === '/' },
+    { href: '#more', label: 'Plus', Icon: FiMoreHorizontal },
+  ];
+
+  // If editing, load tournament once
+  useEffect(() => {
+    if (!tournamentId) return;
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await fetchTournament(tournamentId);
+        if (mounted) setTournament(data);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [tournamentId]);
+
+  const handleCreate = async (data: Tournament) => {
+    const created = await createTournament(data);
+    router.push(`/admin/tournament/${created.id}/players`);
+  };
+
+  const handleUpdate = async (data: Tournament) => {
+    if (!tournamentId) return;
+    await updateTournament(tournamentId, data);
+    router.refresh();
+  };
+
+  if (loading) {
+    return <CenteredLoader />;
+  }
+
+  const isEditing = Boolean(tournamentId);
+
+  return (
+    <>
+      <TournamentForm
+        title={isEditing ? 'Modifier le tournoi' : 'Créer un tournoi'}
+        isEditing={isEditing}
+        onSubmit={isEditing ? handleUpdate : handleCreate}
+        initialData={isEditing ? tournament ?? undefined : undefined}
+      />
+      <BottomNav items={items} pathname={pathname} />
+    </>
+  );
+}

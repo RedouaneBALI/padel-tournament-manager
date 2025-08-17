@@ -1,3 +1,4 @@
+//src/components/round/RoundFormatTab.tsx
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -70,6 +71,7 @@ export default function RoundFormatTab({ tournamentId, pairs }: RoundFormatTabPr
               <>
                 <MatchFormatForm
                   format={matchFormat}
+                  readOnly={false}
                   onChange={(newFormat) => {
                     setMatchFormat(newFormat);
                     saveFormat(newFormat);

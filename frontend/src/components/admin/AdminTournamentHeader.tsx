@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import AdminTournamentTabs from './AdminTournamentTabs';
 import type { Tournament } from '@/src/types/tournament';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
+import PageHeader from '@/src/components/ui/PageHeader';
 
 interface Props {
   tournament: Tournament | null;
@@ -27,15 +28,12 @@ export default function AdminTournamentHeader({ tournament, tournamentId }: Prop
 
   return (
     <>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between">
         <h1 className="flex flex-col">
           {tournament ? (
-            <div className="flex items-center gap-3">
-              <div className="w-1 h-10 bg-primary rounded"></div>
-              <span className="text-2xl font-bold tracking-tight text-primary">
-                {tournament.name}
-              </span>
-            </div>
+            <header className="pt-4 pb-2">
+              <PageHeader title={tournament.name} />
+            </header>
           ) : (
             <CenteredLoader />
           )}

@@ -4,7 +4,7 @@ import { fetchPairs } from '@/src/api/tournamentApi';
 import { useEffect, useState } from 'react';
 import { PlayerPair } from '@/src/types/playerPair';
 import React from 'react';
-import PlayerPairList from '@/src/components/tournament/players/PlayerPairsList';
+import PlayerPairsList from '@/src/components/tournament/players/PlayerPairsList';
 
 export default function TournamentPlayersTab({ params }: {   params: Promise<{ id: string }>;}) {
   const { id } = React.use(params);
@@ -31,9 +31,6 @@ export default function TournamentPlayersTab({ params }: {   params: Promise<{ i
   }, [id]);
 
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-4">Equipes inscrites</h2>
-      <PlayerPairList pairs={playerPairs} loading={loading} tournamentId={id} />
-    </div>
+    <PlayerPairsList pairs={playerPairs} loading={loading} tournamentId={id} />
   );
 }

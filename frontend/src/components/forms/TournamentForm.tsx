@@ -46,7 +46,7 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
       {isSubmitting && (
 <CenteredLoader />
       )}
-      <div className="container mx-auto max-w-4xl pb-14" aria-busy={isSubmitting}>
+      <div className="container mx-auto max-w-4xl pb-[calc(var(--bottom-nav-height,64px)+96px)]" aria-busy={isSubmitting}>
         <div className="bg-card shadow-lg border border-border">
           <div className="p-6">
             {title && (
@@ -92,7 +92,8 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
         type="submit"
         form="tournament-form"
         disabled={isSubmitting}
-        className="fixed bottom-0 inset-x-0 z-50 flex items-center justify-center gap-2 px-5 py-4 shadow-lg bg-primary text-on-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/40"
+        className="fixed inset-x-0 z-[1000] flex items-center justify-center gap-2 px-5 py-4 shadow-lg bg-primary text-on-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/40"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom) + var(--bottom-nav-height, 64px) + 12px)' }}
         aria-busy={isSubmitting}
         aria-label={isEditing ? (isSubmitting ? 'Mise à jour…' : 'Mettre à jour') : (isSubmitting ? 'Création en cours…' : 'Créer le tournoi')}
       >

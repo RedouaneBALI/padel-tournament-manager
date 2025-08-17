@@ -16,6 +16,7 @@ import { TbTournament, TbTrophy } from 'react-icons/tb';
 import { FiMoreHorizontal, FiPlusCircle, FiMail } from 'react-icons/fi';
 import BottomNav from '@/src/components/ui/BottomNav';
 import type { IconType } from 'react-icons';
+import PageHeader from '@/src/components/ui/PageHeader';
 
 export default function TournamentLayout({
   children,
@@ -71,18 +72,12 @@ export default function TournamentLayout({
 
   return (
     <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
-      {/* Header simple avec nom du tournoi */}
       <header className="pt-4 pb-2">
-        <div className="flex items-center gap-3">
-          <div className="w-1 h-10 bg-primary rounded"></div>
-           <span className="text-2xl font-bold tracking-tight text-primary">
-              {tournament.name}
-           </span>
-        </div>
+        <PageHeader title={tournament.name} />
       </header>
 
       {/* Contenu avec padding bas pour ne pas passer sous la bottom bar */}
-      <main className="mt-6 mb-15">{children}</main>
+      <main className="mb-15">{children}</main>
 
       {/* Bottom navigation – remplace les onglets du haut */}
       <nav className="fixed bottom-0 inset-x-0 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">

@@ -1,10 +1,10 @@
+// app/admin/tournament/[id]/edit/page.tsx
 'use client';
 
-import React from 'react';
 import { use } from 'react';
-import AdminTournamentEditForm from '@/src/components/admin/AdminTournamentEditForm';
+import AdminTournamentForm from '@/src/components/admin/AdminTournamentForm';
 
 export default function AdminEditTournamentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  return <AdminTournamentEditForm tournamentId={id} />;
+  return <AdminTournamentForm tournamentId={id} />;
 }

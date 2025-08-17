@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import PlayerPairsTextarea from '@/src/components/tournament/players/PlayerPairsTextarea';
-import PlayerPairList from '@/src/components/tournament/players/PlayerPairsList';
+import PlayerPairsList from '@/src/components/tournament/players/PlayerPairsList';
 import { useRouter } from 'next/navigation';
 import { confirmAlert } from 'react-confirm-alert';
 import { generateDraw } from '@/src/api/tournamentApi';
@@ -96,18 +96,11 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
         <CenteredLoader />
       )}
       <div className="bg-card shadow-sm">
-        <div className="flex items-center gap-2 border-b border-border p-2">
-          <FileText className="h-5 w-5 text-muted-foreground" />
-          <h1 className="text-xl font-semibold text-foreground">
-            {!loadingTournament && !loadingPairs ? `${pairs.length} équipes` : ''}
-          </h1>
-        </div>
-
         <section>
           {loadingTournament ? (
             <CenteredLoader />
           ) : tournamentStarted ? (
-            <PlayerPairList tournamentId={tournamentId} pairs={pairs} loading={loadingPairs} editable={true} />
+            <PlayerPairsList tournamentId={tournamentId} pairs={pairs} loading={loadingPairs} editable={true} />
           ) : (
             <>
               <h2 className="text-base text-foreground px-2">
