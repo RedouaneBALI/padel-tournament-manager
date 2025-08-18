@@ -21,11 +21,16 @@ export async function fetchTournament(tournamentId: string): Promise<Tournament>
 }
 
 export async function fetchTournamentAdmin(tournamentId: string): Promise<Tournament> {
-  const res = await fetchWithAuth(`${BASE_URL}/admin/tournaments/${tournamentId}`, { method: 'GET' });
+  const res = await fetchWithAuth(`${BASE_URL}/tournaments/${tournamentId}`, {
+    method: "GET",
+  });
+
   if (!res.ok) {
     const text = await res.text().catch(() => '');
+    toast.error(`Erreur lors de la récupération du tournoi (${res.status})`);
     throw new Error(`HTTP_${res.status} ${text}`);
   }
+
   return res.json();
 }
 
