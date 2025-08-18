@@ -21,7 +21,7 @@ export default function TournamentOverviewTab({ tournament }: TournamentOverview
       {/* Divider & section header */}
       <div className="mb-4 flex items-center gap-3">
         <div className="h-px flex-1 bg-border" />
-        <h3 className="text-s sm:text-sm uppercase tracking-wider text-muted-foreground select-none">
+        <h3 className="text-s sm:text-sm uppercase tracking-wider text-muted-foreground select-none mb-4">
           Informations générales
         </h3>
         <div className="h-px flex-1 bg-border" />

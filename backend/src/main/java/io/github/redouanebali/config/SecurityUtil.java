@@ -13,8 +13,10 @@ public final class SecurityUtil {
   // Return the stable user id we use as ownerId (e.g., the JWT "sub")
   public static String currentUserId() {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    if (auth == null || !auth.isAuthenticated()) {
-      throw new AccessDeniedException("No authenticated user");
+    if (auth == null
+        || !auth.isAuthenticated()
+        || auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) {
+      return null;
     }
     if (!(auth instanceof final JwtAuthenticationToken jwtAuth)) {
       throw new AccessDeniedException("Email is not available for non-JWT authentication");

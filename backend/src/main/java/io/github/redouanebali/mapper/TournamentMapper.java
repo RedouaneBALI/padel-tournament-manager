@@ -36,8 +36,12 @@ public class TournamentMapper {
     dto.setNbPairsPerPool(tournament.getNbPairsPerPool());
     dto.setNbQualifiedByPool(tournament.getNbQualifiedByPool());
 
-    String me = SecurityUtil.currentUserId();
-    dto.setEditable(securityProps.getSuperAdmins().contains(me) || me.equals(tournament.getOwnerId()));
+    String  me       = SecurityUtil.currentUserId();
+    boolean editable = false;
+    if (me != null) {
+      editable = securityProps.getSuperAdmins().contains(me) || me.equals(tournament.getOwnerId());
+    }
+    dto.setEditable(editable);
 
     return dto;
   }

@@ -83,21 +83,26 @@ export default function Home() {
                   >
                     Créer un tournoi 🎾
                   </Link>
-
                   <Link
-                    href="/tournament/7"
-                    className="flex-1 text-center px-5 py-3 rounded-lg border border-border bg-background text-foreground hover:bg-card transition"
+                    href="/admin/tournaments"
+                    className="flex-1 text-center px-5 py-3 rounded-lg bg-primary text-on-primary font-semibold hover:bg-primary-hover transition"
                   >
-                    Voir l'exemple 🔎
+                    Mes tournois 🔎
                   </Link>
                 </div>
               ) : (
-                <div className="flex justify-center">
+                <div className="flex flex-col items-center w-full max-w-md mx-auto gap-3">
+                  <Link
+                    href="/tournament/7"
+                    className="w-full text-center px-5 py-3 rounded-lg bg-gradient-to-r from-primary to-primary-hover text-on-primary font-semibold text-lg shadow-md hover:shadow-lg hover:scale-105 transform transition"
+                  >
+                    Voir l'exemple 🔎
+                  </Link>
                   <button
                     onClick={() =>
-                      signIn('google', { redirect: true, callbackUrl: '/admin/tournaments' })
+                      signIn('google', { redirect: true, callbackUrl: '/tournaments/7' })
                     }
-                    className="flex items-center justify-center gap-2 px-5 py-2 text-base bg-card border border-border rounded hover:bg-background transition"
+                    className="flex items-center justify-center gap-2 px-5 py-2 text-base bg-card border border-border rounded hover:bg-background transition w-full"
                   >
                     <img src="/google-logo.svg" alt="Google" className="w-5 h-5" />
                     <span className="text-foreground">Se connecter avec Google</span>
