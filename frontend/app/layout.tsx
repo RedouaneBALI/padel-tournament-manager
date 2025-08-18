@@ -96,27 +96,25 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="fr" dir="ltr">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <SessionProviderWrapper>
-          {session && (
-            <header className="sticky top-0 z-[80] bg-background/80 border-b border-border">
-              <style>{`summary::-webkit-details-marker, summary::marker{display:none;}`}</style>
-              <div className="max-w-5xl mx-auto px-4">
-                <nav className="h-14 flex items-center justify-between w-full">
-                  {/* Center: logo */}
-                  <Link href="/" className="flex items-center gap-2" aria-label="Accueil" title="Accueil">
-                    <Image
-                      src="/ptm-logo-cropped.png"
-                      alt="Padel Tournament Manager"
-                      width={32}
-                      height={32}
-                      priority
-                      className="h-12 w-auto"
-                    />
-                    <span className="sr-only">Accueil</span>
-                  </Link>
-                </nav>
-              </div>
-            </header>
-          )}
+          <header className="sticky top-0 z-[80] bg-background/80 border-b border-border">
+            <style>{`summary::-webkit-details-marker, summary::marker{display:none;}`}</style>
+            <div className="max-w-5xl mx-auto px-4">
+              <nav className="h-14 flex items-center justify-between w-full">
+                {/* Center: logo */}
+                <Link href="/" className="flex items-center gap-2" aria-label="Accueil" title="Accueil">
+                  <Image
+                    src="/ptm-logo-cropped.png"
+                    alt="Padel Tournament Manager"
+                    width={32}
+                    height={32}
+                    priority
+                    className="h-12 w-auto"
+                  />
+                  <span className="sr-only">Accueil</span>
+                </Link>
+              </nav>
+            </div>
+          </header>
           {children}
         </SessionProviderWrapper>
       </body>

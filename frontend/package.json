@@ -9,13 +9,10 @@
     "test": "jest",
     "dev": "next dev",
     "build": "next build",
-    "clean:functions": "rm -rf .firebase/functions && mkdir -p .firebase/functions",
-    "copy:functions": "cp -r .next public .firebase/functions && cp functions.package.json .firebase/functions/package.json",
-    "copy:index": "if [ -f functions/index.js ]; then cp functions/index.js .firebase/functions/index.js; elif [ -f index.js ]; then cp index.js .firebase/functions/index.js; else echo '❌ Missing index.js (functions entrypoint)'; exit 1; fi",
-    "install:functions": "npm --prefix .firebase/functions install --omit=dev",
-    "strip:nexttypes": "rm -rf .firebase/functions/.next",
-    "build:functions": "rm -rf .next .firebase/functions/.next && NEXT_TELEMETRY_DISABLED=1 NEXT_DISABLE_ESLINT=1 NEXT_DISABLE_TYPECHECK=1 next build && npm run clean:functions && npm run copy:functions && rm -rf .firebase/functions/.next && npm run copy:index && npm run install:functions",
-    "deploy:functions": "npm run build:functions && firebase deploy --only functions"
+    "clean:functions": "rm -rf .firebase/functions",
+    "build:functions": "npm run clean:functions && next build && npm run prepare:functions && npm run copy:files && npm run install:deps",    "prepare:functions": "rm -rf .firebase/functions && mkdir -p .firebase/functions",
+    "copy:files": "mkdir -p .firebase/functions/.next && cp -r .next/standalone/* .firebase/functions && cp -r .next/static .firebase/functions/.next/static && cp .next/BUILD_ID .firebase/functions/.next/BUILD_ID && cp .next/*.json .firebase/functions/.next/ && cp -r .next/server .firebase/functions/.next/server && cp -r .next/types .firebase/functions/.next/types && cp -r public .firebase/functions/public && cp functions.package.json .firebase/functions/package.json && cp functions/index.js .firebase/functions/index.js",
+    "install:deps": "npm --prefix .firebase/functions install --omit=dev",    "deploy:functions": "npm run build:functions && firebase deploy --only functions"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation';
 import ContactButton from '@/src/components/ui/buttons/ContactButton';
 import BottomNav from '@/src/components/ui/BottomNav';
 import { getDefaultBottomItems } from '@/src/components/ui/bottomNavPresets';
+import ImageSlider from '@/src/components/ui/ImageSlider';
 
 export default function Home() {
   const { status } = useSession();
@@ -74,6 +75,7 @@ export default function Home() {
               Une interface simple pour préparer les tableaux, gérer les équipes et partager les scores.
             </p>
 
+
             <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
               {status === 'authenticated' ? (
                 <div className="flex w-full max-w-md mx-auto gap-3">
@@ -91,23 +93,26 @@ export default function Home() {
                   </Link>
                 </div>
               ) : (
-                <div className="flex flex-col items-center w-full max-w-md mx-auto gap-3">
-                  <Link
-                    href="/tournament/7"
-                    className="w-full text-center px-5 py-3 rounded-lg bg-gradient-to-r from-primary to-primary-hover text-on-primary font-semibold text-lg shadow-md hover:shadow-lg hover:scale-105 transform transition"
-                  >
-                    Voir l'exemple 🔎
-                  </Link>
-                  <button
-                    onClick={() =>
-                      signIn('google', { redirect: true, callbackUrl: '/tournaments/7' })
-                    }
-                    className="flex items-center justify-center gap-2 px-5 py-2 text-base bg-card border border-border rounded hover:bg-background transition w-full"
-                  >
-                    <img src="/google-logo.svg" alt="Google" className="w-5 h-5" />
-                    <span className="text-foreground">Se connecter avec Google</span>
-                  </button>
-                </div>
+                <>
+                  <ImageSlider />
+                  <div className="flex flex-col items-center w-full max-w-md mx-auto gap-3">
+                    <Link
+                      href="/tournament/7"
+                      className="w-full text-center px-5 py-3 rounded-lg bg-gradient-to-r from-primary to-primary-hover text-on-primary font-semibold text-lg shadow-md hover:shadow-lg hover:scale-105 transform transition"
+                    >
+                      Voir l'exemple 🔎
+                    </Link>
+                    <button
+                      onClick={() =>
+                        signIn('google', { redirect: true, callbackUrl: '/tournaments/7' })
+                      }
+                      className="flex items-center justify-center gap-2 px-5 py-2 text-base bg-card border border-border rounded hover:bg-background transition w-full"
+                    >
+                      <img src="/google-logo.svg" alt="Google" className="w-5 h-5" />
+                      <span className="text-foreground">Se connecter avec Google</span>
+                    </button>
+                  </div>
+                </>
               )}
             </div>
 

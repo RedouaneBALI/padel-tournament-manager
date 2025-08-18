@@ -36,6 +36,11 @@
     ".firebase/functions/.next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    ".next",
+    ".firebase",
+    ".firebase/**",
+    ".firebase/functions",
+    ".firebase/functions/**"
   ]
 }
