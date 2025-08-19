@@ -54,6 +54,20 @@ public class Game {
   }
 
   public boolean isFinished() {
+    // BYE handling using PlayerPair.isBye()
+    boolean aBye = teamA != null && teamA.isBye();
+    boolean bBye = teamB != null && teamB.isBye();
+
+    // Both BYE → consider finished (no meaningful winner)
+    if (aBye && bBye) {
+      return true;
+    }
+    // Exactly one BYE with a real opponent present → finished (auto-qualify the non-BYE side)
+    if ((aBye && teamB != null && !bBye) || (bBye && teamA != null && !aBye)) {
+      return true;
+    }
+
+    // Fall back to score-based completion
     if (score == null || score.getSets().isEmpty()) {
       return false;
     }
@@ -107,6 +121,19 @@ public class Game {
 
 
   public PlayerPair getWinner() {
+    // Resolve BYE first using PlayerPair.isBye()
+    boolean aBye = teamA != null && teamA.isBye();
+    boolean bBye = teamB != null && teamB.isBye();
+    if (aBye && !bBye) {
+      return teamB;
+    }
+    if (bBye && !aBye) {
+      return teamA;
+    }
+    if (aBye && bBye) {
+      return null;
+    }
+
     if (!isFinished()) {
       return null;
     }
@@ -128,7 +155,12 @@ public class Game {
   public void setScore(Score score) {
     this.score = score;
     if (this.isFinished()) {
-      this.winnerSide = getWinner().equals(teamA) ? TeamSide.TEAM_A : TeamSide.TEAM_B;
+      PlayerPair winner = getWinner();
+      if (winner == null) {
+        this.winnerSide = null;
+      } else {
+        this.winnerSide = winner.equals(teamA) ? TeamSide.TEAM_A : TeamSide.TEAM_B;
+      }
     } else {
       this.winnerSide = null;
     }

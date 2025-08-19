@@ -1,8 +1,9 @@
 // app/pricing/page.tsx
 'use client';
 
-import { FiMail, FiLinkedin, FiMoreHorizontal } from 'react-icons/fi';
+import { FiMoreHorizontal } from 'react-icons/fi';
 import { Home } from 'lucide-react';
+import { GiCrane } from 'react-icons/gi';
 import { usePathname } from 'next/navigation';
 import BottomNav, { BottomNavItem } from '@/src/components/ui/BottomNav';
 import BackButton from '@/src/components/ui/buttons/BackButton';
@@ -22,40 +23,17 @@ export default function PricingPage() {
           <div className="justify-self-start">
             <BackButton />
           </div>
-          <h1 className="justify-self-center text-2xl sm:text-3xl font-bold">Contact</h1>
+          <h1 className="justify-self-center text-2xl sm:text-3xl font-bold">Pricing</h1>
           <div className="justify-self-end" aria-hidden />
         </header>
 
         {/* Content */}
         <section className="max-w-md mx-auto">
-          <div className="grid grid-cols-1 gap-6">
-            <a
-              href="mailto:bali.redouane@gmail.com"
-              className="group flex items-center gap-4 rounded-xl border border-border bg-card hover:bg-accent hover:text-accent-foreground transition-colors p-4"
-            >
-              <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-white/70 group-hover:bg-background">
-                <FiMail size={28} className="text-[#EA4335]" />
-              </span>
-              <div>
-                <div className="font-medium">Email</div>
-                <div className="text-sm text-muted-foreground">bali.redouane@gmail.com</div>
-              </div>
-            </a>
-
-            <a
-              href="https://www.linkedin.com/in/redouane-bali/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex items-center gap-4 rounded-xl border border-border bg-card hover:bg-accent hover:text-accent-foreground transition-colors p-4"
-            >
-              <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-white/70 group-hover:bg-background">
-                <FiLinkedin size={28} className="text-[#0A66C2]" />
-              </span>
-              <div>
-                <div className="font-medium">LinkedIn</div>
-                <div className="text-sm text-muted-foreground">/in/redouane-bali</div>
-              </div>
-            </a>
+          <div className="flex justify-center mb-4">
+            <GiCrane className="text-6xl text-primary" />
+          </div>
+          <div className="text-center text-muted-foreground p-6">
+            L'application est en cours de finalisation. Plus d'informations seront disponibles prochainement.
           </div>
         </section>
       </main>

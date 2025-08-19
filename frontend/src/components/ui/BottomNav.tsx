@@ -9,6 +9,7 @@ import CreateTournamentButton from '@/src/components/ui/buttons/CreateTournament
 import MyTournamentsButton from '@/src/components/ui/buttons/MyTournamentsButton';
 import ContactButton from '@/src/components/ui/buttons/ContactButton';
 import GoogleLoginButton from '@/src/components/ui/buttons/GoogleLoginButton';
+import PricingButton from '@/src/components/ui/buttons/PricingButton';
 
 export type BottomNavItem = {
   href: string;
@@ -103,6 +104,7 @@ export default function BottomNav({ items, pathname, className, fixed = true }: 
               <div className="flex flex-col gap-2">
                 <CreateTournamentButton href={hrefCreate} onClick={closeMore} />
                 <MyTournamentsButton href={hrefMy} onClick={closeMore} />
+                <PricingButton onClick={closeMore} />
                 <ContactButton onClick={closeMore} />
                 <div className="mt-2" role="none">
                   {status === 'authenticated' ? (

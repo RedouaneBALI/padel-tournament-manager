@@ -55,6 +55,9 @@ public class PlayerPair {
   }
 
   public boolean isBye() {
+    if (player1 == null || player2 == null) {
+      return false;
+    }
     return "BYE".equals(player1.getName()) && "BYE".equals(player2.getName());
   }
 
@@ -63,4 +66,3 @@ public class PlayerPair {
     return player1.getName() + " / " + player2.getName();
   }
 }
-
