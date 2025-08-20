@@ -12,7 +12,7 @@ import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.model.TournamentFormat;
+import io.github.redouanebali.model.format.TournamentFormat;
 import io.github.redouanebali.util.TestFixtures;
 import java.util.ArrayList;
 import java.util.Comparator;

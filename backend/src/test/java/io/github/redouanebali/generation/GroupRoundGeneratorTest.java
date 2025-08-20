@@ -1,7 +1,7 @@
 package io.github.redouanebali.generation;
 
-import static org.hibernate.validator.internal.util.Contracts.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.MatchFormat;
@@ -11,7 +11,6 @@ import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.util.TestFixtures;
-import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +42,7 @@ public class GroupRoundGeneratorTest {
       "18,6,3,18"  // 6 groups of 3 => 3 games per group, total = 18
   })
   public void checkManualPoolGeneration(int nbPairs, int expectedGroups, int expectedPairsPerGroup, int expectedNbGames) {
-    generator = new GroupRoundGenerator(0, expectedGroups, expectedPairsPerGroup);
+    generator = new GroupRoundGenerator(0, expectedGroups, expectedPairsPerGroup, 1);
     List<PlayerPair> pairs = TestFixtures.createPairs(nbPairs);
     Round            round = generator.generateManualRound(pairs);
 
@@ -56,7 +55,7 @@ public class GroupRoundGeneratorTest {
       }
     }
 
-    assertEquals(expectedNbGames, round.getGames().size());
+    assertEquals(TestFixtures.totalGroupGames(expectedGroups, expectedPairsPerGroup), round.getGames().size());
   }
 
   @ParameterizedTest
@@ -72,21 +71,21 @@ public class GroupRoundGeneratorTest {
   })
   public void checkAlgorithmicPoolGeneration(int nbSeeds, int nbPools, int nbTeamPerPool, String expectedSeedsStr) {
     int totalPairs = nbPools * nbTeamPerPool;
-    generator = new GroupRoundGenerator(nbSeeds, nbPools, nbTeamPerPool);
+    generator = new GroupRoundGenerator(nbSeeds, nbPools, nbTeamPerPool, 1);
     List<PlayerPair> pairs = TestFixtures.createPairs(totalPairs);
     Round            round = generator.generateAlgorithmicRound(pairs);
 
     assertEquals(nbPools, round.getPools().size());
 
-    List<Pool> pools         = new ArrayList<>(round.getPools());
+    List<Pool> pools         = TestFixtures.sortedPoolsByName(round.getPools());
     String[]   expectedPools = expectedSeedsStr.split("\\|");
     for (int i = 0; i < expectedPools.length; i++) {
       String[]      seedStrings      = expectedPools[i].split("-");
-      List<Integer> expectedSeedList = new ArrayList<>();
+      List<Integer> expectedSeedList = new java.util.ArrayList<>();
       for (String s : seedStrings) {
         expectedSeedList.add(Integer.parseInt(s));
       }
-      List<PlayerPair> poolPairs   = new ArrayList<>(pools.get(i).getPairs());
+      List<PlayerPair> poolPairs   = TestFixtures.sortedPairsBySeed(pools.get(i).getPairs());
       List<Integer>    actualSeeds = poolPairs.stream().map(PlayerPair::getSeed).toList();
       for (int expectedSeed : expectedSeedList) {
         assert actualSeeds.contains(expectedSeed) : "Expected seed " + expectedSeed + " in pool " + i + ", but found seeds " + actualSeeds;
@@ -106,14 +105,12 @@ public class GroupRoundGeneratorTest {
   })
   public void testInitRoundsAndGames(int nbPools, int nbPairsPerPool, int expectedNbGames) {
     Tournament tournament = new Tournament();
-    tournament.setNbPools(nbPools);
-    tournament.setNbPairsPerPool(nbPairsPerPool);
 
-    GroupRoundGenerator generator = new GroupRoundGenerator(0, nbPools, nbPairsPerPool);
+    GroupRoundGenerator generator = new GroupRoundGenerator(0, nbPools, nbPairsPerPool, 1);
     List<Round>         rounds    = generator.initRoundsAndGames(tournament);
     Round               round     = rounds.iterator().next();
 
-    assertEquals(expectedNbGames, round.getGames().size());
+    assertEquals(TestFixtures.totalGroupGames(nbPools, nbPairsPerPool), round.getGames().size());
   }
 
   @ParameterizedTest
@@ -129,11 +126,8 @@ public class GroupRoundGeneratorTest {
   public void testFinalBracketCreation(int nbPools, int nbPairsPerPool, int nbQualifiedByPool,
                                        int expectedFinalRoundsCount, int expectedFirstFinalRoundMatches) {
     Tournament tournament = new Tournament();
-    tournament.setNbPools(nbPools);
-    tournament.setNbPairsPerPool(nbPairsPerPool);
-    tournament.setNbQualifiedByPool(nbQualifiedByPool);
 
-    GroupRoundGenerator generator = new GroupRoundGenerator(0, nbPools, nbPairsPerPool);
+    GroupRoundGenerator generator = new GroupRoundGenerator(0, nbPools, nbPairsPerPool, nbQualifiedByPool);
     List<Round>         rounds    = generator.initRoundsAndGames(tournament);
 
     // There must always be 1 group phase round first
@@ -168,9 +162,6 @@ public class GroupRoundGeneratorTest {
                                   int expectedTeamsInNextRound, int expectedMatchesInNextRound) {
     // Arrange
     Tournament tournament = new Tournament();
-    tournament.setNbPools(nbPools);
-    tournament.setNbPairsPerPool(nbPairsPerPool);
-    tournament.setNbQualifiedByPool(nbQualifiedByPool);
 
     Round groups = new Round();
     groups.setStage(Stage.GROUPS);
@@ -186,7 +177,7 @@ public class GroupRoundGeneratorTest {
     }
     tournament.getRounds().add(groups);
 
-    GroupRoundGenerator gen = new GroupRoundGenerator(0, nbPools, nbPairsPerPool);
+    GroupRoundGenerator gen = new GroupRoundGenerator(0, nbPools, nbPairsPerPool, nbQualifiedByPool);
 
     // Act
     gen.propagateWinners(tournament);
@@ -207,9 +198,6 @@ public class GroupRoundGeneratorTest {
   public void testGroupRankingAndFinal_MatchesScreenshot() {
     // --- Arrange: tournoi & format ---
     Tournament tournament = new Tournament();
-    tournament.setNbPools(2);
-    tournament.setNbPairsPerPool(3);
-    tournament.setNbQualifiedByPool(1);
 
     Round groups = new Round();
     groups.setStage(Stage.GROUPS);
@@ -288,7 +276,7 @@ public class GroupRoundGeneratorTest {
     tournament.getRounds().add(groups);
 
     // --- Act: recalc classements & propager en finale ---
-    GroupRoundGenerator gen = new GroupRoundGenerator(0, 2, 3);
+    GroupRoundGenerator gen = new GroupRoundGenerator(0, 2, 3, 1);
     gen.propagateWinners(tournament);
 
     // --- Assert: classements attendus ---

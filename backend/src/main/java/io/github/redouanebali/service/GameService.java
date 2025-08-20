@@ -2,7 +2,6 @@ package io.github.redouanebali.service;
 
 import io.github.redouanebali.dto.GameUpdateRequest;
 import io.github.redouanebali.dto.ScoreUpdateResponse;
-import io.github.redouanebali.generation.AbstractRoundGenerator;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.TeamSide;
@@ -41,7 +40,7 @@ public class GameService {
 
     TeamSide winner = null;
     if (game.isFinished()) {
-      AbstractRoundGenerator.of(tournament).propagateWinners(tournament);
+      tournament.getTournamentFormat().getStrategy().propagateWinners(tournament);
       winner = game.getWinner().equals(game.getTeamA()) ? TeamSide.TEAM_A : TeamSide.TEAM_B;
     }
 

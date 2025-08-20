@@ -18,11 +18,13 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
   private static final Logger LOG = LoggerFactory.getLogger(GroupRoundGenerator.class);
   private final        int    nbPools;
   private final        int    nbTeamPerPool;
+  private final        int    nbQualifiedByPool;
 
-  public GroupRoundGenerator(final int nbSeeds, int nbPools, int nbTeamPerPool) {
+  public GroupRoundGenerator(final int nbSeeds, int nbPools, int nbTeamPerPool, int nbQualifiedByPool) {
     super(nbSeeds);
-    this.nbPools       = nbPools;
-    this.nbTeamPerPool = nbTeamPerPool;
+    this.nbPools           = nbPools;
+    this.nbTeamPerPool     = nbTeamPerPool;
+    this.nbQualifiedByPool = nbQualifiedByPool;
   }
 
   @Override
@@ -127,10 +129,9 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
     Round round = new Round();
     round.setStage(Stage.GROUPS);
 
-    MatchFormat sharedFormat = round.getMatchFormat();
-
-    int nbPools        = tournament.getNbPools();
-    int nbPairsPerPool = tournament.getNbPairsPerPool();
+    MatchFormat sharedFormat   = round.getMatchFormat();
+    int         nbPools        = this.nbPools;
+    int         nbPairsPerPool = this.nbTeamPerPool;
 
     for (int i = 0; i < nbPools; i++) {
       Pool pool = new Pool();
@@ -149,7 +150,7 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
     rounds.add(round);
 
     // finale phase
-    int   nbTeamsInFinaleBracket = tournament.getNbPools() * tournament.getNbQualifiedByPool();
+    int   nbTeamsInFinaleBracket = this.nbPools * this.nbQualifiedByPool;
     Stage current                = Stage.fromNbTeams(nbTeamsInFinaleBracket);
     while (current != null && current != Stage.WINNER) {
       round = new Round(current);
@@ -195,8 +196,8 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
 
     this.updatePoolRankingIfNeeded(tournament.getRounds());
 
-    int nbPools           = tournament.getNbPools();
-    int nbQualifiedByPool = tournament.getNbQualifiedByPool();
+    int nbPools           = this.nbPools;
+    int nbQualifiedByPool = this.nbQualifiedByPool;
 
     if (nbPools <= 0 || nbQualifiedByPool <= 0) {
       LOG.warn("propagateWinners: invalid pools ({}), qualifiedByPool ({})", nbPools, nbQualifiedByPool);

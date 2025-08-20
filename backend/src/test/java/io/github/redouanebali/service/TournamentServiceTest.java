@@ -1,6 +1,10 @@
 package io.github.redouanebali.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -10,6 +14,8 @@ import io.github.redouanebali.config.SecurityProps;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.format.KnockoutConfig;
+import io.github.redouanebali.model.format.TournamentFormat;
 import io.github.redouanebali.repository.TournamentRepository;
 import java.util.Collections;
 import java.util.Optional;
@@ -39,8 +45,9 @@ public class TournamentServiceTest {
 
     tournamentRepository = mock(TournamentRepository.class);
     securityProps        = mock(SecurityProps.class);
-    org.mockito.Mockito.lenient().when(securityProps.getSuperAdmins()).thenReturn(Collections.emptySet());
+    lenient().when(securityProps.getSuperAdmins()).thenReturn(Collections.emptySet());
     drawGenerationService = mock(DrawGenerationService.class);
+    lenient().when(tournamentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
     tournamentService = new TournamentService(
         tournamentRepository,
@@ -77,6 +84,94 @@ public class TournamentServiceTest {
   }
 
   @Test
+  void testGetTournamentById_shouldThrowWhenNotFound() {
+    when(tournamentRepository.findById(99L)).thenReturn(Optional.empty());
+    assertThrows(IllegalArgumentException.class, () -> tournamentService.getTournamentById(99L));
+  }
+
+  @Test
+  void testCreateTournament_initializesStructure_whenConfigProvided() {
+    Tournament t = new Tournament();
+    t.setTournamentFormat(TournamentFormat.KNOCKOUT);
+    t.setNbMaxPairs(4);
+    t.setFormatConfig(new KnockoutConfig(4, 0));
+
+    Tournament saved = tournamentService.createTournament(t);
+
+    // rounds: SEMIS + FINAL
+    long semis  = saved.getRounds().stream().filter(r -> r.getStage() == Stage.SEMIS).count();
+    long finals = saved.getRounds().stream().filter(r -> r.getStage() == Stage.FINAL).count();
+    assertEquals(1, semis);
+    assertEquals(1, finals);
+  }
+
+  @Test
+  void testCreateTournament_skipsInit_whenNoFormatConfig() {
+    Tournament t = new Tournament();
+    t.setTournamentFormat(TournamentFormat.KNOCKOUT);
+    t.setNbMaxPairs(4);
+    t.setFormatConfig(null);
+
+    Tournament saved = tournamentService.createTournament(t);
+    assertEquals(0, saved.getRounds().size());
+  }
+
+  @Test
+  void testCreateTournament_throwsOnInvalidConfig() {
+    Tournament t = new Tournament();
+    t.setTournamentFormat(TournamentFormat.KNOCKOUT);
+    t.setNbMaxPairs(8);
+    // invalid: mainDrawSize not power of two and seeds > size
+    t.setFormatConfig(new KnockoutConfig(12, 16));
+
+    assertThrows(IllegalArgumentException.class, () -> tournamentService.createTournament(t));
+  }
+
+  @Test
+  void testDeleteTournament_deniedWhenNotOwnerOrSuperAdmin() {
+    Tournament existing = new Tournament();
+    existing.setId(42L);
+    existing.setOwnerId("someone@else");
+    when(tournamentRepository.findById(42L)).thenReturn(Optional.of(existing));
+
+    assertThrows(org.springframework.security.access.AccessDeniedException.class,
+                 () -> tournamentService.deleteTournament(42L));
+  }
+
+  @Test
+  void testDeleteTournament_allowedForOwner() {
+    Tournament existing = new Tournament();
+    existing.setId(43L);
+    existing.setOwnerId("bali.redouane@gmail.com");
+    when(tournamentRepository.findById(43L)).thenReturn(Optional.of(existing));
+
+    tournamentService.deleteTournament(43L);
+    verify(tournamentRepository, times(1)).delete(existing);
+  }
+
+  @Test
+  void testUpdateTournament_updatesFields_whenOwner() {
+    Tournament existing = new Tournament();
+    existing.setId(7L);
+    existing.setOwnerId("bali.redouane@gmail.com");
+    when(tournamentRepository.findById(7L)).thenReturn(Optional.of(existing));
+    lenient().when(tournamentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+    Tournament input = new Tournament();
+    input.setName("New name");
+    input.setNbSeeds(4);
+    input.setNbMaxPairs(16);
+    input.setTournamentFormat(TournamentFormat.KNOCKOUT);
+
+    Tournament updated = tournamentService.updateTournament(7L, input);
+
+    assertEquals("New name", updated.getName());
+    assertEquals(4, updated.getNbSeeds());
+    assertEquals(16, updated.getNbMaxPairs());
+    assertEquals(TournamentFormat.KNOCKOUT, updated.getTournamentFormat());
+  }
+
+  @Test
   void testGetGamesByTournamentAndStage_shouldReturnGames() {
     Tournament tournament = new Tournament();
     tournament.setId(1L);
@@ -89,5 +184,38 @@ public class TournamentServiceTest {
     when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
 
     assertEquals(0, tournamentService.getGamesByTournamentAndStage(1L, Stage.R16).size());
+  }
+
+  @Test
+  void testGetGamesByTournamentAndStage_shouldThrowWhenRoundMissing() {
+    Tournament tournament = new Tournament();
+    tournament.setId(2L);
+    when(tournamentRepository.findById(2L)).thenReturn(Optional.of(tournament));
+
+    assertThrows(IllegalArgumentException.class,
+                 () -> tournamentService.getGamesByTournamentAndStage(2L, Stage.QUARTERS));
+  }
+
+  @Test
+  void testGetTournamentForCurrentUser_setsEditableTrueForOwner() {
+    Tournament t = new Tournament();
+    t.setId(3L);
+    t.setOwnerId("bali.redouane@gmail.com");
+    when(tournamentRepository.findById(3L)).thenReturn(Optional.of(t));
+
+    Tournament res = tournamentService.getTournamentForCurrentUser(3L);
+    assertTrue(res.isEditable());
+  }
+
+  @Test
+  void testListByOwner_delegatesToRepository() {
+    tournamentService.listByOwner("owner");
+    verify(tournamentRepository, times(1)).findAllByOwnerId("owner");
+  }
+
+  @Test
+  void testListAll_delegatesToRepository() {
+    tournamentService.listAll();
+    verify(tournamentRepository, times(1)).findAll();
   }
 }

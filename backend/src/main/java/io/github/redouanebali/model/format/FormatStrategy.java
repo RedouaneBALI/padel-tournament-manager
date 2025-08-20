@@ -1,0 +1,35 @@
+package io.github.redouanebali.model.format;
+
+import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.Tournament;
+import java.util.List;
+
+public interface FormatStrategy<C extends TournamentConfig> {
+
+  void validate(C cfg, List<String> errors);
+
+  /**
+   * Retourne le plan des phases (ex: [MAIN_DRAW], [GROUPS, MAIN_DRAW], [PRE_QUALIF, MAIN_DRAW])
+   */
+  List<StageKey> stages(C cfg);
+
+  /**
+   * Construit les rounds initiaux (placements seeds/BYE/slots Q…) dans le Tournament.
+   */
+  void buildInitialRounds(Tournament t, C cfg);
+
+  /**
+   * Génère un round en fonction du mode (manuel vs algorithmique). Par défaut non supporté par la stratégie (à surcharger si applicable).
+   */
+  default Round generateRound(Tournament t, List<PlayerPair> pairs, boolean manual) {
+    throw new UnsupportedOperationException("generateRound not supported for this format");
+  }
+
+  /**
+   * Propage les vainqueurs du tournoi selon la logique du format (optionnel). Implémentation par défaut: no-op.
+   */
+  default void propagateWinners(Tournament t) {
+    // no-op by default
+  }
+}

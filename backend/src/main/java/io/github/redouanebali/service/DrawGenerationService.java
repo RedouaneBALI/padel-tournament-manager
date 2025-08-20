@@ -2,13 +2,13 @@ package io.github.redouanebali.service;
 
 import io.github.redouanebali.config.SecurityProps;
 import io.github.redouanebali.config.SecurityUtil;
-import io.github.redouanebali.generation.AbstractRoundGenerator;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.model.TournamentFormat;
+import io.github.redouanebali.model.format.FormatStrategy;
+import io.github.redouanebali.model.format.TournamentFormat;
 import io.github.redouanebali.repository.TournamentRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,14 +53,10 @@ public class DrawGenerationService {
       throw new AccessDeniedException("You are not allowed to generate draw for this tournament");
     }
 
-    AbstractRoundGenerator generator    = AbstractRoundGenerator.of(tournament);
-    List<PlayerPair>       pairsForDraw = capPairsToMax(tournament);
-    Round                  newRound;
-    if (manual) {
-      newRound = generator.generateManualRound(pairsForDraw);
-    } else {
-      newRound = generator.generateAlgorithmicRound(pairsForDraw);
-    }
+    TournamentFormat  format       = tournament.getTournamentFormat();
+    FormatStrategy<?> strategy     = format.getStrategy();
+    List<PlayerPair>  pairsForDraw = capPairsToMax(tournament);
+    Round             newRound     = strategy.generateRound(tournament, pairsForDraw, manual);
 
     Round existingRound = tournament.getRounds().stream()
                                     .filter(r -> r.getStage() == newRound.getStage())
@@ -69,8 +65,8 @@ public class DrawGenerationService {
     updatePools(existingRound, newRound);
     updateGames(existingRound, newRound);
 
-    if (tournament.getTournamentFormat() != TournamentFormat.GROUP_STAGE) {
-      generator.propagateWinners(tournament);
+    if (tournament.getTournamentFormat() != TournamentFormat.GROUPS_KO) {
+      strategy.propagateWinners(tournament);
     }
 
     log.info("Generated draw for tournament id {}", tournament.getId());

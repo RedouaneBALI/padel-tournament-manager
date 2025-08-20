@@ -8,13 +8,15 @@ import TournamentInfoSection from '@/src/components/forms/TournamentInfoSection'
 import TournamentDatesSection from '@/src/components/forms/TournamentDatesSection';
 import TournamentConfigSection from '@/src/components/forms/TournamentConfigSection';
 import type { Tournament } from '@/src/types/tournament';
+import { buildTournamentPayload } from '@/src/validation/tournament';
+import type { TournamentPayload } from '@/src/validation/tournament';
 import { useTournamentForm } from '@/src/hooks/useTournamentForm';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
 import { useRouter } from 'next/navigation';
 
 interface TournamentFormProps {
   initialData?: Partial<Tournament>;
-  onSubmit: (data: Tournament) => Promise<void>;
+  onSubmit: (data: TournamentPayload) => Promise<void>;
   isEditing?: boolean;
   title?: string;
 }
@@ -33,11 +35,11 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
         toast.error(messages.join('\n'));
         return;
       }
-      const validData = parsed.data as unknown as Tournament;
-      await onSubmit(validData);
+      const payload = buildTournamentPayload(parsed.data);
+      await onSubmit(payload);
 
-      if (validData.id) {
-        router.push(`/admin/tournament/${validData.id}/players`);
+      if (payload.id) {
+        router.push(`/admin/tournament/${payload.id}/players`);
       }
     } catch (err: any) {
       const msg = err?.message ?? 'Erreur inconnue lors de la création du tournoi.';

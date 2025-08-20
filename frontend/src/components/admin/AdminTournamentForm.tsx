@@ -10,6 +10,7 @@ import CenteredLoader from '@/src/components/ui/CenteredLoader';
 import BottomNav from '@/src/components/ui/BottomNav';
 import { getDefaultBottomItems } from '@/src/components/ui/bottomNavPresets';
 import { usePathname } from 'next/navigation';
+import type { TournamentPayload } from '@/src/validation/tournament';
 
 interface Props {
   /** If provided, the form is in edit mode; otherwise, creation mode */
@@ -41,12 +42,12 @@ export default function AdminTournamentForm({ tournamentId }: Props) {
     };
   }, [tournamentId]);
 
-  const handleCreate = async (data: Tournament) => {
+  const handleCreate = async (data: TournamentPayload) => {
     const created = await createTournament(data);
     router.push(`/admin/tournament/${created.id}/players`);
   };
 
-  const handleUpdate = async (data: Tournament) => {
+  const handleUpdate = async (data: TournamentPayload) => {
     if (!tournamentId) return;
     await updateTournament(tournamentId, data);
     router.refresh();

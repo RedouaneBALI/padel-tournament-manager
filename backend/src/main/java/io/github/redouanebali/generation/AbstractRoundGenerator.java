@@ -12,24 +12,6 @@ public abstract class AbstractRoundGenerator implements RoundGenerator {
 
   private final int nbSeeds;
 
-  /**
-   * Factory: return the appropriate generator for a given tournament.
-   */
-  public static AbstractRoundGenerator of(final Tournament tournament) {
-    if (tournament == null || tournament.getTournamentFormat() == null) {
-      throw new IllegalArgumentException("Tournament or format is null");
-    }
-    return switch (tournament.getTournamentFormat()) {
-      case KNOCKOUT -> new KnockoutRoundGenerator(tournament.getNbSeeds());
-      case GROUP_STAGE -> new GroupRoundGenerator(
-          tournament.getNbSeeds(),
-          tournament.getNbPools(),
-          tournament.getNbPairsPerPool()
-      );
-      default -> throw new IllegalArgumentException("Unsupported tournament format: " + tournament.getTournamentFormat());
-    };
-  }
-
   public void addMissingByePairsToReachPowerOfTwo(List<PlayerPair> pairs, int originalSize) {
     int powerOfTwo = 1;
     while (powerOfTwo < originalSize) {

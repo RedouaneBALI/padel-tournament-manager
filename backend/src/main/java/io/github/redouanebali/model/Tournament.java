@@ -2,14 +2,20 @@ package io.github.redouanebali.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import io.github.redouanebali.model.format.TournamentConfig;
+import io.github.redouanebali.model.format.TournamentConfigConverter;
+import io.github.redouanebali.model.format.TournamentFormat;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderColumn;
 import jakarta.persistence.PreUpdate;
@@ -73,10 +79,12 @@ public class Tournament {
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
   private LocalDate        endDate;
   private int              nbMaxPairs;
-  // for group stage
-  private int              nbPools;
-  private int              nbPairsPerPool;
-  private int              nbQualifiedByPool;
+  // Typed configuration object for the selected TournamentFormat (polymorphic via @JsonTypeInfo)
+  @Lob
+  @Column(name = "format_config", columnDefinition = "TEXT")
+  @Convert(converter = TournamentConfigConverter.class)
+  @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXTERNAL_PROPERTY, property = "tournamentFormat")
+  private TournamentConfig formatConfig;
   @JsonProperty("isEditable")
   @Transient
   private boolean          editable;

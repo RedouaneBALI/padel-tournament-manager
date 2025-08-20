@@ -8,9 +8,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import java.util.LinkedHashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,14 +22,14 @@ public class Pool {
 
   @OneToMany(cascade = CascadeType.ALL)
   @JoinColumn(name = "pool_id")
-  private final Set<PlayerPair> pairs       = new LinkedHashSet<>();
+  private final List<PlayerPair> pairs       = new ArrayList<>();
   @Id
   @GeneratedValue
-  private       Long            id;
-  private       String          name;
+  private       Long             id;
+  private       String           name;
   @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "pool_ranking_id")
-  private       PoolRanking     poolRanking = new PoolRanking();
+  private       PoolRanking      poolRanking = new PoolRanking();
 
   public Pool(String name, List<PlayerPair> pairs) {
     this.name = name;
@@ -58,7 +57,7 @@ public class Pool {
     pairs.forEach(pair -> poolRanking.addDetails(new PoolRankingDetails(pair, 0, 0)));
   }
 
-  public void initPairs(final Set<PlayerPair> pairs) {
+  public void initPairs(final List<PlayerPair> pairs) {
     this.pairs.clear();
     this.poolRanking.getDetails().clear();
     this.pairs.addAll(pairs);

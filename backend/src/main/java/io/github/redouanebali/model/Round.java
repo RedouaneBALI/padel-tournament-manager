@@ -14,9 +14,8 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.OrderColumn;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,7 +36,7 @@ public class Round {
   @JoinColumn(name = "round_id")
   @OrderBy("name ASC")
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
-  private final Set<Pool>   pools       = new LinkedHashSet<>();
+  private final List<Pool>  pools       = new LinkedList<>();
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private       Long        id;

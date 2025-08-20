@@ -1,7 +1,9 @@
+//src/hooks/useTournamentForm.ts
 'use client';
 
 import { useEffect, useState } from 'react';
 import type { Tournament } from '@/src/types/tournament';
+import { getGroupsConfig } from '@/src/types/tournament';
 import { TournamentFormSchema, type TournamentFormData } from '@/src/validation/tournament';
 
 export function getInitialFormData(initialData?: Partial<Tournament>): TournamentFormData {
@@ -9,8 +11,9 @@ export function getInitialFormData(initialData?: Partial<Tournament>): Tournamen
 
   const defaults: TournamentFormData = TournamentFormSchema.parse({});
 
-  if (!initialData?.nbSeeds && tournamentFormat === 'GROUP_STAGE') {
-    defaults.nbSeeds = initialData?.nbPools ?? defaults.nbPools;
+  if (!initialData?.nbSeeds && tournamentFormat === 'GROUPS_KO') {
+    const cfg = getGroupsConfig(initialData as Tournament | undefined);
+    defaults.nbSeeds = cfg?.nbSeeds ?? defaults.nbSeeds;
   }
 
   return {
@@ -41,8 +44,11 @@ export function useTournamentForm(initialData?: Partial<Tournament>) {
 
     if (name === 'tournamentFormat') {
       setFormData((prev) => {
-        const next: TournamentFormData = { ...prev, tournamentFormat: value as 'KNOCKOUT' | 'GROUP_STAGE' };
-        if (value === 'GROUP_STAGE' && !nbSeedsTouched && !groupDefaultApplied) {
+        type FormFormat = TournamentFormData['tournamentFormat'];
+        const isGroups = value === 'GROUPS_KO' || value === 'GROUP_STAGE';
+        const normalized: FormFormat = (value === 'GROUPS_KO' ? 'GROUP_STAGE' : (value as FormFormat));
+        const next: TournamentFormData = { ...prev, tournamentFormat: normalized };
+        if (isGroups && !nbSeedsTouched && !groupDefaultApplied) {
           next.nbSeeds = prev.nbPools ?? 3;
           setGroupDefaultApplied(true);
         }

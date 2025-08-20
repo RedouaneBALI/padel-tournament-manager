@@ -15,7 +15,7 @@ import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.SetScore;
 import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.model.TournamentFormat;
+import io.github.redouanebali.model.format.TournamentFormat;
 import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.util.TestFixtures;
 import java.util.LinkedList;

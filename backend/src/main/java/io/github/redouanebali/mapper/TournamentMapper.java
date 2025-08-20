@@ -32,9 +32,7 @@ public class TournamentMapper {
     dto.setStartDate(tournament.getStartDate());
     dto.setEndDate(tournament.getEndDate());
     dto.setNbMaxPairs(tournament.getNbMaxPairs());
-    dto.setNbPools(tournament.getNbPools());
-    dto.setNbPairsPerPool(tournament.getNbPairsPerPool());
-    dto.setNbQualifiedByPool(tournament.getNbQualifiedByPool());
+    dto.setFormatConfig(tournament.getFormatConfig());
 
     String  me       = SecurityUtil.currentUserId();
     boolean editable = false;

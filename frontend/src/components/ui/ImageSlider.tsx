@@ -85,7 +85,7 @@ const ImageSlider: React.FC = () => {
           <button
             key={idx}
             className={`w-3 h-3 rounded-full transition-colors ${
-              idx === currentIndex ? 'bg-blue-600' : 'bg-gray-300'
+              idx === currentIndex ? 'bg-primary' : 'bg-tab-inactive'
             }`}
             onClick={() => setCurrentIndex(idx)}
             aria-label={`Go to slide ${idx + 1}`}

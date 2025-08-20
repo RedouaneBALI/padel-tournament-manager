@@ -104,7 +104,7 @@ export default function Home() {
                     </Link>
                     <button
                       onClick={() =>
-                        signIn('google', { redirect: true, callbackUrl: '/tournaments/7' })
+                        signIn('google', { redirect: true, callbackUrl: '/tournament/7' })
                       }
                       className="flex items-center justify-center gap-2 px-5 py-2 text-base bg-card border border-border rounded hover:bg-background transition w-full"
                     >

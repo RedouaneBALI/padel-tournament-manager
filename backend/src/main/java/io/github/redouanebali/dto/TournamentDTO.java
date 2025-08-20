@@ -6,8 +6,9 @@ import io.github.redouanebali.model.Gender;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
-import io.github.redouanebali.model.TournamentFormat;
 import io.github.redouanebali.model.TournamentLevel;
+import io.github.redouanebali.model.format.TournamentConfig;
+import io.github.redouanebali.model.format.TournamentFormat;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.Data;
@@ -26,13 +27,11 @@ public class TournamentDTO {
   private Gender           gender;
   private TournamentLevel  level;
   private TournamentFormat tournamentFormat;
+  private TournamentConfig formatConfig;
   private int              nbSeeds;
   private LocalDate        startDate;
   private LocalDate        endDate;
   private int              nbMaxPairs;
-  private int              nbPools;
-  private int              nbPairsPerPool;
-  private int              nbQualifiedByPool;
 
   @JsonProperty("isEditable")
   private boolean editable;

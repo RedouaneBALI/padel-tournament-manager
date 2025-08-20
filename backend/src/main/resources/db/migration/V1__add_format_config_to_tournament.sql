@@ -1,0 +1,2 @@
+ALTER TABLE tournament
+ADD COLUMN IF NOT EXISTS format_config TEXT;
