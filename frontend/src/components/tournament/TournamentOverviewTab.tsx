@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Tournament } from '@/src/types/tournament';
+import { Tournament, getGroupsConfig, getKnockoutConfig } from '@/src/types/tournament';
 import MatchFormatForm from '@/src/components/round/MatchFormatForm';
 import RoundSelector from '@/src/components/round/RoundSelector';
 import { MapPin, Building2, Users2, Gauge, Layers, Hash, CalendarDays, CalendarRange, Info } from 'lucide-react';
@@ -81,7 +81,12 @@ export default function TournamentOverviewTab({ tournament }: TournamentOverview
             <Layers className="h-5 w-5 text-muted-foreground" aria-hidden />
             <div className="min-w-0 w-full">
               <div className="text-sm font-medium">
-                {(tournament.tournamentFormat || '—') + (tournament.formatConfig.nbSeeds ? ' - ' + tournament.formatConfig.nbSeeds + ' têtes de série' : '')}
+                {(() => {
+                  const seeds = getGroupsConfig(tournament)?.nbSeeds
+                    ?? getKnockoutConfig(tournament)?.nbSeeds
+                    ?? tournament.nbSeeds;
+                  return `${tournament.tournamentFormat ?? '—'}${seeds ? ` - ${seeds} têtes de série` : ''}`;
+                })()}
               </div>
             </div>
           </div>

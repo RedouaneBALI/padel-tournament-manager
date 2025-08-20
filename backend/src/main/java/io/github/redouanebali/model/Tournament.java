@@ -15,7 +15,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderColumn;
 import jakarta.persistence.PreUpdate;
@@ -80,7 +79,6 @@ public class Tournament {
   private LocalDate        endDate;
   private int              nbMaxPairs;
   // Typed configuration object for the selected TournamentFormat (polymorphic via @JsonTypeInfo)
-  @Lob
   @Column(name = "format_config", columnDefinition = "TEXT")
   @Convert(converter = TournamentConfigConverter.class)
   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXTERNAL_PROPERTY, property = "tournamentFormat")

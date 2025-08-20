@@ -97,14 +97,14 @@ export default function Home() {
                   <ImageSlider />
                   <div className="flex flex-col items-center w-full max-w-md mx-auto gap-3">
                     <Link
-                      href="/tournament/7"
+                      href="/tournament/1"
                       className="w-full text-center px-5 py-3 rounded-lg bg-gradient-to-r from-primary to-primary-hover text-on-primary font-semibold text-lg shadow-md hover:shadow-lg hover:scale-105 transform transition"
                     >
                       Voir l'exemple 🔎
                     </Link>
                     <button
                       onClick={() =>
-                        signIn('google', { redirect: true, callbackUrl: '/tournament/7' })
+                        signIn('google', { redirect: true, callbackUrl: '/admin/tournaments' })
                       }
                       className="flex items-center justify-center gap-2 px-5 py-2 text-base bg-card border border-border rounded hover:bg-background transition w-full"
                     >

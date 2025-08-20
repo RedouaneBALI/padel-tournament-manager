@@ -1,4 +1,3 @@
-//src/hooks/useTournamentForm.ts
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -45,8 +44,8 @@ export function useTournamentForm(initialData?: Partial<Tournament>) {
     if (name === 'tournamentFormat') {
       setFormData((prev) => {
         type FormFormat = TournamentFormData['tournamentFormat'];
-        const isGroups = value === 'GROUPS_KO' || value === 'GROUP_STAGE';
-        const normalized: FormFormat = (value === 'GROUPS_KO' ? 'GROUP_STAGE' : (value as FormFormat));
+        const isGroups = value === 'GROUPS_KO';
+        const normalized: FormFormat = value as FormFormat; // value is either 'KNOCKOUT' or 'GROUPS_KO'
         const next: TournamentFormData = { ...prev, tournamentFormat: normalized };
         if (isGroups && !nbSeedsTouched && !groupDefaultApplied) {
           next.nbSeeds = prev.nbPools ?? 3;

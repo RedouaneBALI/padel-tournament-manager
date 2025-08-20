@@ -98,6 +98,7 @@ export const TournamentFormSchema = z
   });
 
 export type TournamentFormData = z.input<typeof TournamentFormSchema>;   // état du formulaire (avant parse)
+export type ParsedTournamentForm = z.infer<typeof TournamentFormSchema>;
 
 // Payload with formatConfig (aligned with backend)
 export type KnockoutConfigPayload = { mainDrawSize: number; nbSeeds: number };
@@ -125,7 +126,7 @@ const greatestPowerOfTwo = (n: number) => {
   return 1 << Math.floor(Math.log2(n));
 };
 
-export function buildTournamentPayload(form: TournamentFormData): TournamentPayload {
+export function buildTournamentPayload(form: ParsedTournamentForm): TournamentPayload {
   const base = {
     id: form.id ?? null,
     name: form.name,

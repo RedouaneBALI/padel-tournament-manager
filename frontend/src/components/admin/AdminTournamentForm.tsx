@@ -43,13 +43,13 @@ export default function AdminTournamentForm({ tournamentId }: Props) {
   }, [tournamentId]);
 
   const handleCreate = async (data: TournamentPayload) => {
-    const created = await createTournament(data);
+    const created = await createTournament(data as unknown as Tournament);
     router.push(`/admin/tournament/${created.id}/players`);
   };
 
   const handleUpdate = async (data: TournamentPayload) => {
     if (!tournamentId) return;
-    await updateTournament(tournamentId, data);
+    await updateTournament(tournamentId, data as unknown as Tournament);
     router.refresh();
   };
 
