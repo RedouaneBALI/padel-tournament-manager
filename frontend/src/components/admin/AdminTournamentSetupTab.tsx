@@ -106,6 +106,11 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
               <h2 className="text-base text-foreground px-2">
                 Lister les joueurs ci-dessous (par ordre de classement ou du tirage)
               </h2>
+              <div className="flex items-center">
+                <div className="h-px flex-1 bg-border  my-6" />
+                <h3 className="text-s sm:text-sm uppercase tracking-wider text-muted-foreground select-none">{pairs.length} Equipes inscrites</h3>
+                <div className="h-px flex-1 bg-border" />
+              </div>
               <p className="p-1 text-tab-inactive"><i>Joueur1,Joueur2,Seed (optionnel)</i></p>
               <PlayerPairsTextarea
                 onPairsChange={setPairs}

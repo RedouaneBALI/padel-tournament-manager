@@ -109,7 +109,7 @@ export default function BottomNav({ items, pathname, className, fixed = true }: 
                 <div className="mt-2" role="none">
                   {status === 'authenticated' ? (
                     <div onClick={closeMore}>
-                      <LogoutButton className="flex h-12 items-center gap-3 px-2 rounded hover:bg-accent hover:text-accent-foreground" iconClassName="w-6 h-6 flex-none">
+                      <LogoutButton>
                         Déconnexion
                       </LogoutButton>
                     </div>

@@ -10,9 +10,15 @@ export function getInitialFormData(initialData?: Partial<Tournament>): Tournamen
 
   const defaults: TournamentFormData = TournamentFormSchema.parse({});
 
-  if (!initialData?.nbSeeds && tournamentFormat === 'GROUPS_KO') {
+  // Hydrate defaults from existing Groups+KO config if present
+  if (tournamentFormat === 'GROUPS_KO') {
     const cfg = getGroupsConfig(initialData as Tournament | undefined);
-    defaults.nbSeeds = cfg?.nbSeeds ?? defaults.nbSeeds;
+    if (cfg) {
+      defaults.nbPools = cfg.nbPools ?? defaults.nbPools;
+      defaults.nbPairsPerPool = cfg.nbPairsPerPool ?? defaults.nbPairsPerPool;
+      defaults.nbQualifiedByPool = cfg.nbQualifiedByPool ?? defaults.nbQualifiedByPool;
+      defaults.nbSeeds = cfg.nbSeeds ?? defaults.nbSeeds;
+    }
   }
 
   return {
@@ -28,7 +34,18 @@ export function useTournamentForm(initialData?: Partial<Tournament>) {
   const [groupDefaultApplied, setGroupDefaultApplied] = useState(false);
 
   useEffect(() => {
-    if (initialData) {
+    if (!initialData) return;
+    if (initialData.tournamentFormat === 'GROUPS_KO') {
+      const cfg = getGroupsConfig(initialData as Tournament | undefined);
+      setFormData((prev) => ({
+        ...prev,
+        ...initialData,
+        nbPools: cfg?.nbPools ?? prev.nbPools,
+        nbPairsPerPool: cfg?.nbPairsPerPool ?? prev.nbPairsPerPool,
+        nbQualifiedByPool: cfg?.nbQualifiedByPool ?? prev.nbQualifiedByPool,
+        nbSeeds: cfg?.nbSeeds ?? prev.nbSeeds,
+      }) as TournamentFormData);
+    } else {
       setFormData((prev) => ({ ...prev, ...initialData } as TournamentFormData));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

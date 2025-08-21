@@ -1,3 +1,4 @@
+//src/types/tournament.ts
 import type { Round } from '@/src/types/round';
 import type { PlayerPair } from '@/src/types/playerPair';
 import type { Stage } from '@/src/types/stage';

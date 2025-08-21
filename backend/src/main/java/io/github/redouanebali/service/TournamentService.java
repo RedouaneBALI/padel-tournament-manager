@@ -104,6 +104,22 @@ public class TournamentService {
     existing.setTournamentFormat(updatedTournament.getTournamentFormat());
     existing.setNbSeeds(updatedTournament.getNbSeeds());
     existing.setNbMaxPairs(updatedTournament.getNbMaxPairs());
+
+    // Apply (polymorphic) format configuration from client (e.g., GroupsKoConfig or KnockoutConfig)
+    existing.setFormatConfig(updatedTournament.getFormatConfig());
+
+    // Rebuild initial rounds if we have enough info (format + config) and a meaningful draw size
+    if (existing.getNbMaxPairs() > 1
+        && existing.getTournamentFormat() != null
+        && existing.getFormatConfig() != null) {
+      // Validate and (re)build the structure for the new/updated format configuration
+      TournamentFormat format = existing.getTournamentFormat();
+      existing.setTournamentFormat(format);
+      TournamentConfig config = readTypedConfig(existing);
+      existing.setFormatConfig(config);
+      validateAndBuild(format, existing, config);
+    }
+
     return applyEditable(tournamentRepository.save(existing));
   }
 

@@ -9,14 +9,11 @@ interface LogoutButtonProps {
   iconClassName?: string;
 }
 
-export default function LogoutButton({ children, className, iconClassName }: LogoutButtonProps) {
+export default function LogoutButton({ children, iconClassName }: LogoutButtonProps) {
   return (
-    <button
-      onClick={() => signOut({ callbackUrl: '/' })}
-      className={className ?? 'flex items-center gap-2 text-sm text-muted hover:text-error'}
-    >
-      <FiLogOut className={iconClassName ?? 'w-5 h-5'} />
-      {children ?? <span className="hidden md:inline">Déconnexion</span>}
+    <button onClick={() => signOut({ callbackUrl: '/' })} className="flex h-12 items-center gap-3 px-2 rounded hover:bg-accent hover:text-accent-foreground">
+      <FiLogOut className="inline-flex w-5 h-5 items-center justify-center" />
+      {children ?? <span className="text-sm">Déconnexion</span>}
     </button>
   );
 }
