@@ -1,21 +1,21 @@
 package io.github.redouanebali.service;
 
-import io.github.redouanebali.config.SecurityProps;
-import io.github.redouanebali.config.SecurityUtil;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.model.format.FormatStrategy;
-import io.github.redouanebali.model.format.TournamentConfig;
 import io.github.redouanebali.model.format.TournamentFormat;
+import io.github.redouanebali.model.format.TournamentFormatConfig;
 import io.github.redouanebali.repository.TournamentRepository;
-import java.util.ArrayList;
+import io.github.redouanebali.security.SecurityProps;
+import io.github.redouanebali.security.SecurityUtil;
+import io.github.redouanebali.service.builder.TournamentRoundBuilder;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,40 +30,22 @@ public class TournamentService {
 
   private final DrawGenerationService drawGenerationService;
 
+  @Autowired
+  private final TournamentRoundBuilder roundBuilder;
+
   public Tournament getTournamentById(Long id) {
     return tournamentRepository.findById(id)
                                .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
   }
 
-  @SuppressWarnings("unchecked")
-  private <C extends TournamentConfig> C readTypedConfig(Tournament t) {
-    return t.getFormatConfig() == null ? null : (C) t.getFormatConfig();
-  }
-
-  private <C extends TournamentConfig> void validateAndBuild(TournamentFormat format, Tournament t, C cfg) {
-    @SuppressWarnings("unchecked")
-    FormatStrategy<C> strategy = (FormatStrategy<C>) format.getStrategy();
-    List<String> errors = new ArrayList<>();
-    strategy.validate(cfg, errors);
-    if (!errors.isEmpty()) {
-      throw new IllegalArgumentException("Invalid tournament config: " + errors);
-    }
-    strategy.buildInitialRounds(t, cfg);
-  }
 
   @Transactional
   public Tournament createTournament(final Tournament tournament) {
     if (tournament == null) {
       throw new IllegalArgumentException("Tournament cannot be null");
     }
-    if (tournament.getNbMaxPairs() > 1 && tournament.getTournamentFormat() != null && tournament.getFormatConfig() != null) {
-      TournamentFormat format = tournament.getTournamentFormat();
-      TournamentConfig cfg    = readTypedConfig(tournament);
-      if (cfg == null) {
-        log.info("No formatConfig provided; skipping structure initialization for format {}.", format);
-      } else {
-        validateAndBuild(format, tournament, cfg);
-      }
+    if (tournament.getFormat() != null && tournament.getConfig() != null) {
+      roundBuilder.validateAndBuild(tournament);
     }
     tournament.setOwnerId(SecurityUtil.currentUserId());
 
@@ -84,7 +66,6 @@ public class TournamentService {
     log.info("Deleted tournament with id {}", tournamentId);
   }
 
-
   @Transactional
   public Tournament updateTournament(Long tournamentId, Tournament updatedTournament) {
     Tournament  existing    = getTournamentById(tournamentId);
@@ -101,28 +82,22 @@ public class TournamentService {
     existing.setClub(updatedTournament.getClub());
     existing.setGender(updatedTournament.getGender());
     existing.setLevel(updatedTournament.getLevel());
-    existing.setTournamentFormat(updatedTournament.getTournamentFormat());
-    existing.setNbSeeds(updatedTournament.getNbSeeds());
-    existing.setNbMaxPairs(updatedTournament.getNbMaxPairs());
-
+    existing.setFormat(updatedTournament.getFormat());
     // Apply (polymorphic) format configuration from client (e.g., GroupsKoConfig or KnockoutConfig)
-    existing.setFormatConfig(updatedTournament.getFormatConfig());
+    existing.setConfig(updatedTournament.getConfig());
 
     // Rebuild initial rounds if we have enough info (format + config) and a meaningful draw size
-    if (existing.getNbMaxPairs() > 1
-        && existing.getTournamentFormat() != null
-        && existing.getFormatConfig() != null) {
+    if (existing.getFormat() != null
+        && existing.getConfig() != null) {
       // Validate and (re)build the structure for the new/updated format configuration
-      TournamentFormat format = existing.getTournamentFormat();
-      existing.setTournamentFormat(format);
-      TournamentConfig config = readTypedConfig(existing);
-      existing.setFormatConfig(config);
-      validateAndBuild(format, existing, config);
+      TournamentFormat format = existing.getFormat();
+      existing.setFormat(format);
+      TournamentFormatConfig config = existing.getConfig();
+      roundBuilder.validateAndBuild(existing);
     }
 
     return applyEditable(tournamentRepository.save(existing));
   }
-
 
   /**
    * Call generator.generate() and dispatch all the players into games from the created round

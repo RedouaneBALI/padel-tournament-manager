@@ -1,7 +1,5 @@
 package io.github.redouanebali.controller;
 
-import io.github.redouanebali.config.SecurityProps;
-import io.github.redouanebali.config.SecurityUtil;
 import io.github.redouanebali.dto.GameUpdateRequest;
 import io.github.redouanebali.dto.ScoreUpdateResponse;
 import io.github.redouanebali.dto.TournamentDTO;
@@ -12,6 +10,8 @@ import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.security.SecurityProps;
+import io.github.redouanebali.security.SecurityUtil;
 import io.github.redouanebali.service.GameService;
 import io.github.redouanebali.service.MatchFormatService;
 import io.github.redouanebali.service.PlayerPairService;

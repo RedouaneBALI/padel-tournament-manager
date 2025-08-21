@@ -1,10 +1,10 @@
 package io.github.redouanebali.service;
 
-import io.github.redouanebali.config.SecurityProps;
-import io.github.redouanebali.config.SecurityUtil;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.TournamentRepository;
+import io.github.redouanebali.security.SecurityProps;
+import io.github.redouanebali.security.SecurityUtil;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;

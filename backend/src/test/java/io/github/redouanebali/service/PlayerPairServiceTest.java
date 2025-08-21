@@ -29,7 +29,7 @@ public class PlayerPairServiceTest {
   private TournamentRepository tournamentRepository;
 
   @Mock
-  private io.github.redouanebali.config.SecurityProps securityProps;
+  private io.github.redouanebali.security.SecurityProps securityProps;
 
   @InjectMocks
   private PlayerPairService playerPairService;

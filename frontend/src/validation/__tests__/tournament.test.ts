@@ -24,7 +24,7 @@ describe('TournamentFormSchema', () => {
   });
 
   it('should enforce nbMaxPairs range in KNOCKOUT', () => {
-    const result = TournamentFormSchema.safeParse({ nbMaxPairs: 2, tournamentFormat: 'KNOCKOUT' });
+    const result = TournamentFormSchema.safeParse({ nbMaxPairs: 2, format: 'KNOCKOUT' });
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.issues[0].path).toContain('nbMaxPairs');

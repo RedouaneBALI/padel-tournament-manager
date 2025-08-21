@@ -1,0 +1,79 @@
+import React, { useEffect, useRef } from 'react';
+import type { TournamentFormData } from '@/src/validation/tournament';
+
+interface KnockoutConfigSectionProps {
+  formData: TournamentFormData;
+  handleInputChange: (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+}
+
+export default function KnockoutConfigSection({
+  formData,
+  handleInputChange
+}: KnockoutConfigSectionProps) {
+  // S'assurer que format existe avec des valeurs par défaut
+  const cfg = formData.config || { mainDrawSize: 32, nbSeeds: 16 };
+
+  const mainDrawSize = Number((cfg as any).mainDrawSize ?? 32);
+  const defaultNbSeeds = mainDrawSize / 2;
+  const seedOptions = [0];
+  for (let i = 2; i <= defaultNbSeeds; i *= 2) {
+    seedOptions.push(i);
+  }
+
+  const hasChangedNbSeeds = useRef(false);
+
+  useEffect(() => {
+    if (!hasChangedNbSeeds.current) {
+      const syntheticEvent = {
+        target: {
+          name: 'config.nbSeeds',
+          value: defaultNbSeeds.toString(),
+        },
+      } as unknown as React.ChangeEvent<HTMLSelectElement>;
+      handleInputChange(syntheticEvent);
+    }
+  }, [mainDrawSize]);
+
+  return (
+    <>
+      <div className="space-y-2">
+        <label htmlFor="mainDrawSize" className="block text-sm font-medium text-foreground">
+          Taille du tableau principal (paires)
+        </label>
+        <select
+          id="mainDrawSize"
+          name="config.mainDrawSize"
+          value={Number((cfg as any).mainDrawSize ?? 32)}
+          onChange={(e) => {
+            console.log('Change detected', e.target.name, e.target.value);
+            handleInputChange(e);
+          }}
+          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10"
+        >
+          {[4, 8, 16, 32, 64, 128].map((val) => (
+            <option key={val} value={val}>{val}</option>
+          ))}
+        </select>
+      </div>
+      <div className="space-y-2">
+        <label htmlFor="nbSeeds" className="block text-sm font-medium text-foreground">
+          Nombre de têtes de série (0 si tirage aléatoire)
+        </label>
+        <select
+          id="nbSeeds"
+          name="config.nbSeeds"
+          value={Number((cfg as any).nbSeeds ?? defaultNbSeeds)}
+          onChange={(e) => {
+            hasChangedNbSeeds.current = true;
+            handleInputChange(e);
+          }}
+          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10"
+        >
+          {seedOptions.map((val) => (
+            <option key={val} value={val}>{val}</option>
+          ))}
+        </select>
+      </div>
+    </>
+  );
+}

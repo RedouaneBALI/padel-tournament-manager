@@ -12,9 +12,9 @@ import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.model.format.KnockoutConfig;
-import io.github.redouanebali.model.format.KnockoutStrategy;
 import io.github.redouanebali.model.format.TournamentFormat;
+import io.github.redouanebali.model.format.TournamentFormatConfig;
+import io.github.redouanebali.model.format.knockout.KnockoutStrategy;
 import io.github.redouanebali.util.TestFixtures;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,8 +37,8 @@ public class KnockoutStrategyTest {
       "8,10,false"
   })
   void validate_variousCases(int mainDrawSize, int nbSeeds, boolean expectedValid) {
-    KnockoutStrategy strategy = new KnockoutStrategy();
-    KnockoutConfig   cfg      = new KnockoutConfig(mainDrawSize, nbSeeds);
+    KnockoutStrategy       strategy = new KnockoutStrategy();
+    TournamentFormatConfig cfg      = TournamentFormatConfig.builder().mainDrawSize(mainDrawSize).nbSeeds(nbSeeds).build();
 
     List<String> errors = new ArrayList<>();
     strategy.validate(cfg, errors);
@@ -62,11 +62,10 @@ public class KnockoutStrategyTest {
   })
   void buildInitialRounds_variousSizes(int mainDrawSize, int nbSeeds) {
     Tournament t = new Tournament();
-    t.setTournamentFormat(TournamentFormat.KNOCKOUT);
-    t.setNbMaxPairs(mainDrawSize);
-    t.setNbSeeds(nbSeeds);
+    t.setFormat(TournamentFormat.KNOCKOUT);
 
-    KnockoutConfig   cfg      = new KnockoutConfig(mainDrawSize, nbSeeds);
+    TournamentFormatConfig cfg = TournamentFormatConfig.builder().mainDrawSize(mainDrawSize).nbSeeds(nbSeeds).build();
+    t.setConfig(cfg);
     KnockoutStrategy strategy = new KnockoutStrategy();
 
     List<String> errors = new ArrayList<>();
@@ -96,11 +95,10 @@ public class KnockoutStrategyTest {
   @Test
   void generateRound_manual_assignsSequentially() {
     Tournament t = new Tournament();
-    t.setTournamentFormat(TournamentFormat.KNOCKOUT);
-    t.setNbMaxPairs(4);
-    t.setNbSeeds(0);
+    t.setFormat(TournamentFormat.KNOCKOUT);
 
-    KnockoutConfig   cfg      = new KnockoutConfig(4, 0);
+    TournamentFormatConfig cfg = TournamentFormatConfig.builder().mainDrawSize(4).nbSeeds(0).build();
+    t.setConfig(cfg);
     KnockoutStrategy strategy = new KnockoutStrategy();
 
     // build structure (SEMIS + FINAL)
@@ -126,11 +124,10 @@ public class KnockoutStrategyTest {
   @Test
   void generateRound_algorithmic_placesAllPairs() {
     Tournament t = new Tournament();
-    t.setTournamentFormat(TournamentFormat.KNOCKOUT);
-    t.setNbMaxPairs(4);
-    t.setNbSeeds(0);
+    t.setFormat(TournamentFormat.KNOCKOUT);
 
-    KnockoutConfig   cfg      = new KnockoutConfig(4, 0);
+    TournamentFormatConfig cfg = TournamentFormatConfig.builder().mainDrawSize(4).nbSeeds(0).build();
+    t.setConfig(cfg);
     KnockoutStrategy strategy = new KnockoutStrategy();
 
     t.getRounds().clear();
@@ -164,11 +161,10 @@ public class KnockoutStrategyTest {
   })
   void propagateWinners_setsFinalists_param(int mainDrawSize, boolean manual, String winnerSide) {
     Tournament t = new Tournament();
-    t.setTournamentFormat(TournamentFormat.KNOCKOUT);
-    t.setNbMaxPairs(mainDrawSize);
-    t.setNbSeeds(0);
+    t.setFormat(TournamentFormat.KNOCKOUT);
 
-    KnockoutConfig   cfg      = new KnockoutConfig(mainDrawSize, 0);
+    TournamentFormatConfig cfg = TournamentFormatConfig.builder().mainDrawSize(4).nbSeeds(0).build();
+    t.setConfig(cfg);
     KnockoutStrategy strategy = new KnockoutStrategy();
 
     // Build structure and generate first round (QUARTS for size=8, R16 for size=16, etc.)

@@ -1,4 +1,4 @@
-package io.github.redouanebali.config;
+package io.github.redouanebali.security;
 
 import java.util.Arrays;
 import java.util.Set;

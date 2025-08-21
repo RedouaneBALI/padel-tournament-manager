@@ -6,6 +6,7 @@ import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.format.TournamentFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -53,21 +54,6 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
     return round;
   }
 
-  private List<Game> createEmptyGames(int nbTeams) {
-    int bracketSize = 1;
-    while (bracketSize < nbTeams) {
-      bracketSize *= 2;
-    }
-
-    int        nbGames = bracketSize / 2;
-    List<Game> games   = new ArrayList<>();
-
-    for (int i = 0; i < nbGames; i++) {
-      games.add(new Game(new MatchFormat()));
-    }
-
-    return games;
-  }
 
   /**
    * Place seeds and bye teams at the stratégic positions
@@ -257,7 +243,7 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
   @Override
   public List<Round> initRoundsAndGames(Tournament tournament) {
     LinkedList<Round> rounds  = new LinkedList<>();
-    Stage             current = Stage.fromNbTeams(tournament.getNbMaxPairs());
+    Stage             current = Stage.fromNbTeams(tournament.getConfig().getNbMaxPairs(TournamentFormat.KNOCKOUT));
 
     while (current != null && current != Stage.WINNER) {
       Round round = new Round(current);

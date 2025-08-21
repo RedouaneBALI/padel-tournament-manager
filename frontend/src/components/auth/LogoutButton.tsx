@@ -3,6 +3,8 @@
 import { signOut } from 'next-auth/react';
 import { FiLogOut } from 'react-icons/fi';
 
+import { navBtn, icon20 } from '@/src/styles/navClasses';
+
 interface LogoutButtonProps {
   children?: React.ReactNode;
   className?: string;
@@ -11,8 +13,8 @@ interface LogoutButtonProps {
 
 export default function LogoutButton({ children, iconClassName }: LogoutButtonProps) {
   return (
-    <button onClick={() => signOut({ callbackUrl: '/' })} className="flex h-12 items-center gap-3 px-2 rounded hover:bg-accent hover:text-accent-foreground">
-      <FiLogOut className="inline-flex w-5 h-5 items-center justify-center" />
+    <button onClick={() => signOut({ callbackUrl: '/' })} className={navBtn}>
+      <FiLogOut className={icon20} />
       {children ?? <span className="text-sm">Déconnexion</span>}
     </button>
   );

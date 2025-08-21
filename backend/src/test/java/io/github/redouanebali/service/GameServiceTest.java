@@ -16,6 +16,7 @@ import io.github.redouanebali.model.SetScore;
 import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.TournamentFormat;
+import io.github.redouanebali.model.format.TournamentFormatConfig;
 import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.util.TestFixtures;
 import java.util.LinkedList;
@@ -73,9 +74,10 @@ public class GameServiceTest {
 
     Tournament tournament = new Tournament();
     tournament.setId(tournamentId);
-    tournament.setTournamentFormat(TournamentFormat.KNOCKOUT);
+    tournament.setFormat(TournamentFormat.KNOCKOUT);
     tournament.getRounds().clear();
     tournament.getRounds().addAll(new LinkedList<>(List.of(round)));
+    tournament.setConfig(TournamentFormatConfig.builder().mainDrawSize(4).nbSeeds(0).build());
 
     when(tournamentService.getTournamentById(any())).thenReturn(tournament);
 

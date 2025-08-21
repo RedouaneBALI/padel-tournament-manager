@@ -1,12 +1,12 @@
 package io.github.redouanebali.service;
 
-import io.github.redouanebali.config.SecurityProps;
-import io.github.redouanebali.config.SecurityUtil;
 import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.TournamentRepository;
+import io.github.redouanebali.security.SecurityProps;
+import io.github.redouanebali.security.SecurityUtil;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;

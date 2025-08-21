@@ -1,7 +1,5 @@
 package io.github.redouanebali.service;
 
-import io.github.redouanebali.config.SecurityProps;
-import io.github.redouanebali.config.SecurityUtil;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Pool;
@@ -10,6 +8,9 @@ import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.FormatStrategy;
 import io.github.redouanebali.model.format.TournamentFormat;
 import io.github.redouanebali.repository.TournamentRepository;
+import io.github.redouanebali.security.SecurityProps;
+import io.github.redouanebali.security.SecurityUtil;
+import io.github.redouanebali.service.strategy.StrategyResolver;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -27,23 +28,23 @@ public class DrawGenerationService {
   private final SecurityProps        securityProps;
 
   public static List<PlayerPair> capPairsToMax(Tournament tournament) {
-    List<PlayerPair> pairs = tournament.getPlayerPairs();
-    int              max   = tournament.getNbMaxPairs();
+    List<PlayerPair> pairs    = tournament.getPlayerPairs();
+    int              maxPairs = tournament.getConfig().getNbMaxPairs(tournament.getFormat());
 
     if (pairs == null || pairs.isEmpty()) {
       return pairs == null ? List.of() : pairs;
     }
-    if (max <= 0) {
+    if (maxPairs <= 0) {
       return pairs;
     }
 
-    if (pairs.size() <= max) {
+    if (pairs.size() <= maxPairs) {
       return pairs;
     }
 
     log.warn("Tournament id {} has {} pairs; max is {} — using first {} only for draw generation.",
-             tournament.getId(), pairs.size(), max, max);
-    return new ArrayList<>(pairs.subList(0, max));
+             tournament.getId(), pairs.size(), maxPairs, maxPairs);
+    return new ArrayList<>(pairs.subList(0, maxPairs));
   }
 
   public Tournament generateDraw(Tournament tournament, boolean manual) {
@@ -53,10 +54,10 @@ public class DrawGenerationService {
       throw new AccessDeniedException("You are not allowed to generate draw for this tournament");
     }
 
-    TournamentFormat  format       = tournament.getTournamentFormat();
-    FormatStrategy<?> strategy     = format.getStrategy();
-    List<PlayerPair>  pairsForDraw = capPairsToMax(tournament);
-    Round             newRound     = strategy.generateRound(tournament, pairsForDraw, manual);
+    TournamentFormat format       = tournament.getFormat();
+    FormatStrategy   strategy     = StrategyResolver.resolve(tournament.getFormat());
+    List<PlayerPair> pairsForDraw = capPairsToMax(tournament);
+    Round            newRound     = strategy.generateRound(tournament, pairsForDraw, manual);
 
     Round existingRound = tournament.getRounds().stream()
                                     .filter(r -> r.getStage() == newRound.getStage())
@@ -65,7 +66,7 @@ public class DrawGenerationService {
     updatePools(existingRound, newRound);
     updateGames(existingRound, newRound);
 
-    if (tournament.getTournamentFormat() != TournamentFormat.GROUPS_KO) {
+    if (tournament.getFormat() != TournamentFormat.GROUPS_KO) {
       strategy.propagateWinners(tournament);
     }
 

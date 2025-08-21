@@ -1,6 +1,8 @@
-//src/components/forms/TournamentConfigSection.tsx
 import { Settings, Users, Trophy, Zap } from 'lucide-react';
 import type { TournamentFormData } from '@/src/validation/tournament';
+import KnockoutConfigSection from '@/src/components/forms/config/KnockoutConfigSection';
+import GroupsKoConfigSection from '@/src/components/forms/config/GroupsKoConfigSection';
+import QualifKnockoutConfigSection from '@/src/components/forms/config/QualifKnockoutConfigSection';
 
 const toStr = (v: unknown) => (v == null ? '' : String(v));
 
@@ -69,106 +71,31 @@ export default function TournamentConfigSection({
               <Zap className="h-4 w-4" />
               Format
             </label>
-        <select
-          name="tournamentFormat"
-          value={toStr(formData.tournamentFormat)}
-          onChange={handleInputChange}
-          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
-        >
-          <option value="KNOCKOUT">Élimination directe</option>
-          <option value="GROUPS_KO"> Poules + Elimination directe </option>
-          <option value="QUALIF_KNOCKOUT" disabled className="text-muted-foreground cursor-not-allowed">
-            Qualif + Élimination directe
-          </option>
-        </select>
+            <select
+              name="format"
+              value={toStr(formData.format ?? '')}
+              onChange={handleInputChange}
+              required
+              className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+            >
+              <option value="">Sélectionnez le format</option>
+              <option value="KNOCKOUT">Élimination directe</option>
+              <option value="GROUPS_KO"> Poules + Elimination directe </option>
+              <option value="QUALIF_KNOCKOUT"> Qualif + Élimination directe </option>
+            </select>
           </div>
         </div>
 
         <div className="grid gap-6 grid-cols-1 md:grid-cols-2 md:max-w-3xl">
-          <div className="space-y-2">
-            <label htmlFor="nbSeeds" className="block text-sm font-medium text-foreground">
-              Nombre de têtes de série (0 si tirage aléatoire)
-            </label>
-            <input
-              id="nbSeeds"
-              name="nbSeeds"
-              type="number"
-              min="0"
-              max="64"
-              value={Number(formData.nbSeeds ?? 16)}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
-            />
-          </div>
-          {formData.tournamentFormat !== 'GROUPS_KO' && (
-            <div className="space-y-2">
-              <label htmlFor="nbMaxPairs" className="block text-sm font-medium text-foreground">
-                Nombre d&apos;équipes maximum
-              </label>
-              <input
-                id="nbMaxPairs"
-                name="nbMaxPairs"
-                type="number"
-                min="0"
-                max="128"
-                value={Number(formData.nbMaxPairs ?? 48)}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
-              />
-            </div>
+
+          {formData.format === 'KNOCKOUT' && (
+            <KnockoutConfigSection formData={formData} handleInputChange={handleInputChange} />
           )}
-          {formData.tournamentFormat === 'GROUPS_KO' && (
-            <>
-              <div className="space-y-2">
-                <label htmlFor="nbPools" className="block text-sm font-medium text-foreground">
-                  Nombre de poules
-                </label>
-                <select
-                  id="nbPools"
-                  name="nbPools"
-                  value={toStr(formData.nbPools ?? 4)}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10"
-                >
-                  <option value={2}>2</option>
-                  <option value={4}>4</option>
-                  <option value={8}>8</option>
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="nbPairsPerPool" className="block text-sm font-medium text-foreground">
-                  Équipes par poule
-                </label>
-                <input
-                  id="nbPairsPerPool"
-                  name="nbPairsPerPool"
-                  type="number"
-                  min="3"
-                  max="8"
-                  value={Number(formData.nbPairsPerPool ?? 4)}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="nbQualifiedByPool" className="block text-sm font-medium text-foreground">
-                  Équipes qualifiées par poule
-                </label>
-                <select
-                  id="nbQualifiedByPool"
-                  name="nbQualifiedByPool"
-                  value={toStr(formData.nbQualifiedByPool ?? 2)}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10"
-                >
-                  <option value={1}>1</option>
-                  <option value={2}>2</option>
-                  <option value={4}>4</option>
-                </select>
-              </div>
-            </>
+          {formData.format === 'GROUPS_KO' && (
+            <GroupsKoConfigSection formData={formData} handleInputChange={handleInputChange} />
+          )}
+          {(formData.format as any) === 'QUALIF_KNOCKOUT' && (
+            <QualifKnockoutConfigSection formData={formData} handleInputChange={handleInputChange} />
           )}
         </div>
       </div>

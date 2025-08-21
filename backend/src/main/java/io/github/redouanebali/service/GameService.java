@@ -7,6 +7,7 @@ import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.TournamentRepository;
+import io.github.redouanebali.service.strategy.StrategyResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +41,7 @@ public class GameService {
 
     TeamSide winner = null;
     if (game.isFinished()) {
-      tournament.getTournamentFormat().getStrategy().propagateWinners(tournament);
+      StrategyResolver.resolve(tournament.getFormat()).propagateWinners(tournament);
       winner = game.getWinner().equals(game.getTeamA()) ? TeamSide.TEAM_A : TeamSide.TEAM_B;
     }
 

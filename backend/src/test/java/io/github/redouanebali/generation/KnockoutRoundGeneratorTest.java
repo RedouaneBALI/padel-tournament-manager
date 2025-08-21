@@ -197,7 +197,7 @@ public class KnockoutRoundGeneratorTest {
 
     // Tournament with both rounds in order
     Tournament tournament = new Tournament();
-    tournament.setTournamentFormat(TournamentFormat.KNOCKOUT);
+    tournament.setFormat(TournamentFormat.KNOCKOUT);
     List<Round> rounds = new LinkedList<>();
     rounds.add(semiFinals);
     rounds.add(finals);
@@ -276,7 +276,7 @@ public class KnockoutRoundGeneratorTest {
 
     // Tournoi
     Tournament tournament = new Tournament();
-    tournament.setTournamentFormat(TournamentFormat.KNOCKOUT);
+    tournament.setFormat(TournamentFormat.KNOCKOUT);
     List<Round> rounds = new LinkedList<>();
     rounds.add(roundCurrent);
     rounds.add(roundNext);

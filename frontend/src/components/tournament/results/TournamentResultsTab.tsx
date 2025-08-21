@@ -4,8 +4,6 @@ import { ArrowDownTrayIcon } from '@heroicons/react/24/solid';
 import { fetchTournament } from '@/src/api/tournamentApi';
 import type { Round } from '@/src/types/round';
 import type { Tournament } from '@/src/types/tournament';
-import type { GroupsKoConfig } from '@/src/types/tournament';
-import { isGroupsKo } from '@/src/types/tournament';
 import { toPng } from 'html-to-image';
 import KnockoutBracket from '@/src/components/round/KnockoutBracket';
 import GroupStageResults from '@/src/components/round/GroupStageResults';
@@ -45,7 +43,7 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
     load();
   }, [tournamentId]);
 
-  const isGroupStageFormat = tournament ? isGroupsKo(tournament) : false;
+  const isGroupStageFormat = tournament?.format === 'GROUPS_KO';
   const currentStage = tournament?.currentRoundStage;
   const defaultView =
     isGroupStageFormat && currentStage !== Stage.GROUPS
@@ -119,7 +117,7 @@ export default function TournamentResultsTab({ tournamentId}: TournamentResultsT
         <div className="relative overflow-auto border border-border rounded-lg px-2 py-6 md:p-8 bg-background">
           <GroupStageResults
             rounds={tournament?.rounds ?? []}
-            nbQualifiedByPool={isGroupStageFormat ? (tournament!.formatConfig as GroupsKoConfig).nbQualifiedByPool : 1}
+            nbQualifiedByPool={tournament.config.nbQualifiedByPool ?? 1}
           />
         </div>
       )}

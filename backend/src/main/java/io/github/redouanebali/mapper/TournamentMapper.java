@@ -1,9 +1,9 @@
 package io.github.redouanebali.mapper;
 
-import io.github.redouanebali.config.SecurityProps;
-import io.github.redouanebali.config.SecurityUtil;
 import io.github.redouanebali.dto.TournamentDTO;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.security.SecurityProps;
+import io.github.redouanebali.security.SecurityUtil;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -27,12 +27,10 @@ public class TournamentMapper {
     dto.setClub(tournament.getClub());
     dto.setGender(tournament.getGender());
     dto.setLevel(tournament.getLevel());
-    dto.setTournamentFormat(tournament.getTournamentFormat());
-    dto.setNbSeeds(tournament.getNbSeeds());
+    dto.setFormat(tournament.getFormat());
     dto.setStartDate(tournament.getStartDate());
     dto.setEndDate(tournament.getEndDate());
-    dto.setNbMaxPairs(tournament.getNbMaxPairs());
-    dto.setFormatConfig(tournament.getFormatConfig());
+    dto.setConfig(tournament.getConfig());
 
     String  me       = SecurityUtil.currentUserId();
     boolean editable = false;

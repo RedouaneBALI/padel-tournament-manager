@@ -2,14 +2,15 @@ package io.github.redouanebali.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import io.github.redouanebali.model.format.TournamentConfig;
-import io.github.redouanebali.model.format.TournamentConfigConverter;
 import io.github.redouanebali.model.format.TournamentFormat;
+import io.github.redouanebali.model.format.TournamentFormatConfig;
+import io.github.redouanebali.persistence.converter.TournamentFormatConfigConverter;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -43,49 +44,47 @@ public class Tournament {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long             id;
+  private Long                   id;
   // Who can edit this tournament (user external id or email)
   @Column(name = "owner_id", nullable = false, length = 191)
-  private String           ownerId;
+  private String                 ownerId;
   @Column(name = "created_at", nullable = false, updatable = false)
-  private Instant          createdAt   = Instant.now();
+  private Instant                createdAt   = Instant.now();
   @Column(name = "updated_at", nullable = false)
-  private Instant          updatedAt   = Instant.now();
-  private String           name;
+  private Instant                updatedAt   = Instant.now();
+  private String                 name;
   @Setter(AccessLevel.NONE)
   @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
   @OneToMany(cascade = CascadeType.ALL/*, orphanRemoval = true*/)
   @JoinColumn(name = "tournament_id")
   @OrderColumn(name = "order_index") // persists list order
-  private List<Round>      rounds      = new ArrayList<>();
+  private List<Round>            rounds      = new ArrayList<>();
   @Setter(AccessLevel.NONE)
   @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "tournament_id")
   @OrderColumn(name = "order_index") // persists list order
-  private List<PlayerPair> playerPairs = new ArrayList<>();
-  private String           description;
-  private String           city;
-  private String           club;
-  private Gender           gender;
-  private TournamentLevel  level;
-  private TournamentFormat tournamentFormat;
-  private int              nbSeeds;
+  private List<PlayerPair>       playerPairs = new ArrayList<>();
+  private String                 description;
+  private String                 city;
+  private String                 club;
+  @Enumerated(EnumType.ORDINAL)
+  private Gender                 gender;
+  @Enumerated(EnumType.ORDINAL)
+  private TournamentLevel        level;
+  private TournamentFormat       format;
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-  private LocalDate        startDate;
+  private LocalDate              startDate;
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-  private LocalDate        endDate;
-  private int              nbMaxPairs;
-  // Typed configuration object for the selected TournamentFormat (polymorphic via @JsonTypeInfo)
+  private LocalDate              endDate;
+  @Convert(converter = TournamentFormatConfigConverter.class)
   @Column(name = "format_config", columnDefinition = "TEXT")
-  @Convert(converter = TournamentConfigConverter.class)
-  @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXTERNAL_PROPERTY, property = "tournamentFormat")
-  private TournamentConfig formatConfig;
+  private TournamentFormatConfig config;
   @JsonProperty("isEditable")
   @Transient
-  private boolean          editable;
+  private boolean                editable;
 
   @PreUpdate
   public void onUpdate() {

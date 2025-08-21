@@ -8,21 +8,27 @@ import TournamentInfoSection from '@/src/components/forms/TournamentInfoSection'
 import TournamentDatesSection from '@/src/components/forms/TournamentDatesSection';
 import TournamentConfigSection from '@/src/components/forms/TournamentConfigSection';
 import type { Tournament } from '@/src/types/tournament';
-import { buildTournamentPayload } from '@/src/validation/tournament';
-import type { TournamentPayload } from '@/src/validation/tournament';
+import type { ParsedTournamentForm } from '@/src/validation/tournament';
 import { useTournamentForm } from '@/src/hooks/useTournamentForm';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
 import { useRouter } from 'next/navigation';
+import type { TournamentFormData } from '@/src/validation/tournament';
 
 interface TournamentFormProps {
   initialData?: Partial<Tournament>;
-  onSubmit: (data: TournamentPayload) => Promise<void>;
+  onSubmit: (data: ParsedTournamentForm) => Promise<void>;
   isEditing?: boolean;
   title?: string;
 }
 
-export default function TournamentForm({ initialData, onSubmit, isEditing = false, title }: TournamentFormProps) {
-  const { formData, isSubmitting, setIsSubmitting, handleInputChange, validate } = useTournamentForm(initialData);
+export default function TournamentForm({
+  initialData,
+  onSubmit,
+  isEditing = false,
+  title,
+}: TournamentFormProps) {
+  const { formData, isSubmitting, setIsSubmitting, handleInputChange, validate } =
+    useTournamentForm(initialData as Partial<TournamentFormData>);
   const router = useRouter();
 
   const handleSubmit = async (e: FormEvent) => {
@@ -35,11 +41,9 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
         toast.error(messages.join('\n'));
         return;
       }
-      const payload = buildTournamentPayload(parsed.data);
-      await onSubmit(payload);
-
-      if (payload.id) {
-        router.push(`/admin/tournament/${payload.id}/players`);
+      await onSubmit(parsed.data);
+      if (parsed.data.id) {
+        router.push(`/admin/tournament/${parsed.data.id}/players`);
       }
     } catch (err: any) {
       const msg = err?.message ?? 'Erreur inconnue lors de la création du tournoi.';
@@ -56,7 +60,10 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
           <CenteredLoader size={48} />
         </div>
       )}
-      <div className="container mx-auto max-w-4xl pb-[calc(var(--bottom-nav-height,64px)+96px)]" aria-busy={isSubmitting}>
+      <div
+        className="container mx-auto max-w-4xl pb-[calc(var(--bottom-nav-height,64px)+96px)]"
+        aria-busy={isSubmitting}
+      >
         <div className="bg-card shadow-lg border border-border">
           <div className="p-6">
             {title && (
@@ -103,9 +110,20 @@ export default function TournamentForm({ initialData, onSubmit, isEditing = fals
         form="tournament-form"
         disabled={isSubmitting}
         className="fixed inset-x-0 z-[1000] flex items-center justify-center gap-2 px-5 py-4 shadow-lg bg-primary text-on-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/40"
-        style={{ bottom: 'calc(env(safe-area-inset-bottom) + var(--bottom-nav-height, 64px) + 12px)' }}
+        style={{
+          bottom:
+            'calc(env(safe-area-inset-bottom) + var(--bottom-nav-height, 64px) + 12px)',
+        }}
         aria-busy={isSubmitting}
-        aria-label={isEditing ? (isSubmitting ? 'Mise à jour…' : 'Mettre à jour') : (isSubmitting ? 'Création en cours…' : 'Créer le tournoi')}
+        aria-label={
+          isEditing
+            ? isSubmitting
+              ? 'Mise à jour…'
+              : 'Mettre à jour'
+            : isSubmitting
+            ? 'Création en cours…'
+            : 'Créer le tournoi'
+        }
       >
         <Trophy className="h-5 w-5" />
         <span className="text-base font-medium">

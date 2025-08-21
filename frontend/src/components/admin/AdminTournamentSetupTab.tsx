@@ -130,7 +130,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
                     className="px-3 py-2 h-12 border border-border rounded-md text-sm h-10 shadow-sm text-center"
                     value={drawMode}
                   >
-                    <option value="seeded">{tournament?.formatConfig.nbSeeds === 0 ? 'Aléatoire' : 'Par classement (TS)'}</option>
+                    <option value="seeded">{tournament?.config.nbSeeds === 0 ? 'Aléatoire' : 'Par classement (TS)'}</option>
                     <option value="order">Par ordre d&apos;enregistrement</option>
                   </select>
                   <button
