@@ -10,6 +10,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.github.redouanebali.dto.UpdateTournamentRequest;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
@@ -158,7 +159,7 @@ public class TournamentServiceTest {
     when(tournamentRepository.findById(7L)).thenReturn(Optional.of(existing));
     lenient().when(tournamentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-    Tournament input = new Tournament();
+    UpdateTournamentRequest input = new UpdateTournamentRequest();
     input.setName("New name");
     // input.setNbSeeds(4); @todo to fixe later
     input.setFormat(TournamentFormat.KNOCKOUT);

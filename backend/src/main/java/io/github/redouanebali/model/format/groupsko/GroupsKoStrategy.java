@@ -4,6 +4,7 @@ import io.github.redouanebali.generation.GroupRoundGenerator;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.format.DrawMath;
 import io.github.redouanebali.model.format.FormatStrategy;
 import io.github.redouanebali.model.format.StageKey;
 import io.github.redouanebali.model.format.TournamentFormatConfig;
@@ -22,13 +23,17 @@ public class GroupsKoStrategy implements FormatStrategy {
     if (cfg.getNbQualifiedByPool() == null || cfg.getNbQualifiedByPool() < 1) {
       errors.add("nbQualifiedByPool must be >= 1.");
     }
-    int totalPlayers = cfg.getNbPools() * cfg.getNbPairsPerPool();
-    if (cfg.getNbSeeds() != null && cfg.getNbSeeds() > totalPlayers) {
-      errors.add("nbSeeds > total players");
-    }
-    if (cfg.getNbPools() != null && cfg.getNbQualifiedByPool() != null) {
-      int qualifiers = cfg.getNbPools() * cfg.getNbQualifiedByPool();
-      // @todo check if power of two
+    if (cfg.getNbPools() != null && cfg.getNbPairsPerPool() != null) {
+      int totalPlayers = cfg.getNbPools() * cfg.getNbPairsPerPool();
+      if (cfg.getNbSeeds() != null && cfg.getNbSeeds() > totalPlayers) {
+        errors.add("nbSeeds > total players");
+      }
+      if (cfg.getNbPools() != null && cfg.getNbQualifiedByPool() != null) {
+        int qualifiers = cfg.getNbPools() * cfg.getNbQualifiedByPool();
+        if (!DrawMath.isPowerOfTwo(qualifiers)) {
+          errors.add("qualifiers should be a power of two");
+        }
+      }
     }
   }
 

@@ -2,9 +2,11 @@ package io.github.redouanebali.dto;
 
 import io.github.redouanebali.model.Score;
 import java.time.LocalTime;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class GameUpdateRequest {
 
   private Score     score;

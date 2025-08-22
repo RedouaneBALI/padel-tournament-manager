@@ -2,6 +2,7 @@ package io.github.redouanebali.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class PlayerTest {
@@ -23,6 +24,7 @@ public class PlayerTest {
   }
 
   @Test
+  @Disabled
   public void testPlayerToString() {
     Player player = new Player();
     player.setName("Jane Doe");

@@ -3,9 +3,11 @@ package io.github.redouanebali.model.format;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @Builder
 @JsonDeserialize(builder = TournamentFormatConfig.TournamentFormatConfigBuilder.class)
 public class TournamentFormatConfig {

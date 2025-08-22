@@ -19,8 +19,31 @@
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>${argLine}</argLine>
+          <useModulePath>false</useModulePath>
+        </configuration>
         <groupId>org.apache.maven.plugins</groupId>
         <version>3.2.5</version>
+      </plugin>
+      <plugin>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <id>report</id>
+            <phase>test</phase>
+          </execution>
+        </executions>
+        <groupId>org.jacoco</groupId>
+        <version>0.8.12</version>
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -143,6 +166,7 @@
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <sonar.organization>redouanebali</sonar.organization>
   </properties>
 
   <version>1.0-SNAPSHOT</version>

@@ -2,6 +2,7 @@ package io.github.redouanebali.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -13,12 +14,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import java.time.LocalTime;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor(force = true)
 public class Game {
@@ -27,29 +30,33 @@ public class Game {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne(cascade = CascadeType.ALL)
+  @ManyToOne
+  @JoinColumn(name = "teama_id")
   private PlayerPair teamA;
 
-  @ManyToOne(cascade = CascadeType.ALL)
+  @ManyToOne
+  @JoinColumn(name = "teamb_id")
   private PlayerPair teamB;
 
   @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
   private Score score;
 
-  @ManyToOne(cascade = CascadeType.ALL)
+  @ManyToOne
+  @JoinColumn(name = "format_id")
   private MatchFormat format;
 
-  @Enumerated(EnumType.ORDINAL)
-  @jakarta.persistence.Column(name = "winner_side")
+  @Enumerated(EnumType.STRING)
+  @Column(name = "winner_side")
   private TeamSide winnerSide;
 
   @DateTimeFormat(pattern = "HH:mm")
   @JsonFormat(pattern = "HH:mm")
+  @Column(name = "scheduled_time")
   private LocalTime scheduledTime;
 
   private String court;
 
-  @ManyToOne(cascade = CascadeType.ALL)
+  @ManyToOne
   @JoinColumn(name = "pool_id")
   private Pool pool;
 

@@ -4,6 +4,7 @@ import io.github.redouanebali.dto.GameUpdateRequest;
 import io.github.redouanebali.dto.ScoreUpdateResponse;
 import io.github.redouanebali.dto.TournamentDTO;
 import io.github.redouanebali.dto.UpdatePlayerPairRequest;
+import io.github.redouanebali.dto.UpdateTournamentRequest;
 import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.PlayerPair;
@@ -84,7 +85,7 @@ public class AdminTournamentController {
   }
 
   @PutMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public TournamentDTO updateTournament(@PathVariable Long id, @RequestBody @Valid Tournament updated) {
+  public TournamentDTO updateTournament(@PathVariable Long id, @RequestBody @Valid UpdateTournamentRequest updated) {
     checkOwnership(id);
     return tournamentMapper.toDTO(tournamentService.updateTournament(id, updated));
   }

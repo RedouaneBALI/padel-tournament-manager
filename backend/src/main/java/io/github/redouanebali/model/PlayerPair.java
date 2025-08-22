@@ -1,30 +1,28 @@
 package io.github.redouanebali.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
 public class PlayerPair {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long   id;
-  @ManyToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "player1_id")
   private Player player1;
-  @ManyToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "player2_id")
   private Player player2;
   private int    seed;

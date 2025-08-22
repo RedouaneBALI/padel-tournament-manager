@@ -11,9 +11,11 @@ import io.github.redouanebali.model.format.TournamentFormat;
 import io.github.redouanebali.model.format.TournamentFormatConfig;
 import java.time.LocalDate;
 import java.util.List;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class TournamentDTO {
 
   private Long                   id;

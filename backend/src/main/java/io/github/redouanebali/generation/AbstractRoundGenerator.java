@@ -8,10 +8,12 @@ import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import java.util.List;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @AllArgsConstructor
-@Data
+@Getter
+@Setter
 public abstract class AbstractRoundGenerator implements RoundGenerator {
 
   private final int nbSeeds;

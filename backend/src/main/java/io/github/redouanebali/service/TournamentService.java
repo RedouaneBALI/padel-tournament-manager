@@ -1,5 +1,6 @@
 package io.github.redouanebali.service;
 
+import io.github.redouanebali.dto.UpdateTournamentRequest;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
@@ -15,7 +16,6 @@ import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +30,6 @@ public class TournamentService {
 
   private final DrawGenerationService drawGenerationService;
 
-  @Autowired
   private final TournamentRoundBuilder roundBuilder;
 
   public Tournament getTournamentById(Long id) {
@@ -67,7 +66,7 @@ public class TournamentService {
   }
 
   @Transactional
-  public Tournament updateTournament(Long tournamentId, Tournament updatedTournament) {
+  public Tournament updateTournament(Long tournamentId, UpdateTournamentRequest updatedTournament) {
     Tournament  existing    = getTournamentById(tournamentId);
     String      me          = SecurityUtil.currentUserId();
     Set<String> superAdmins = securityProps.getSuperAdmins();
@@ -83,9 +82,7 @@ public class TournamentService {
     existing.setGender(updatedTournament.getGender());
     existing.setLevel(updatedTournament.getLevel());
     existing.setFormat(updatedTournament.getFormat());
-    // Apply (polymorphic) format configuration from client (e.g., GroupsKoConfig or KnockoutConfig)
     existing.setConfig(updatedTournament.getConfig());
-
     // Rebuild initial rounds if we have enough info (format + config) and a meaningful draw size
     if (existing.getFormat() != null
         && existing.getConfig() != null) {

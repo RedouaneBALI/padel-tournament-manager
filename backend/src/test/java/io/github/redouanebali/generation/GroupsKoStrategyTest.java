@@ -144,7 +144,6 @@ public class GroupsKoStrategyTest {
     assertTrue(errors.stream().anyMatch(e -> e.contains("nbPools must be > 0.")));
     assertTrue(errors.stream().anyMatch(e -> e.contains("nbPairsPerPool must be >= 2.")));
     assertTrue(errors.stream().anyMatch(e -> e.contains("nbQualifiedByPool must be >= 1.")));
-    assertTrue(errors.stream().anyMatch(e -> e.contains("mainDrawSize must be a power of two.")));
   }
 
 }
