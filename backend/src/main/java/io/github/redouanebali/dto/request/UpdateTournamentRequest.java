@@ -1,4 +1,4 @@
-package io.github.redouanebali.dto;
+package io.github.redouanebali.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.github.redouanebali.model.Gender;

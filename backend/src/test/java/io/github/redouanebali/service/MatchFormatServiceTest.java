@@ -53,7 +53,7 @@ public class MatchFormatServiceTest {
 
     existingFormat = new MatchFormat();
     existingFormat.setNumberOfSetsToWin(2);
-    existingFormat.setPointsPerSet(6);
+    existingFormat.setGamesPerSet(6);
     existingFormat.setAdvantage(true);
     existingFormat.setSuperTieBreakInFinalSet(false);
 
@@ -82,14 +82,14 @@ public class MatchFormatServiceTest {
   void testUpdateMatchFormatForRound() {
     MatchFormat newFormat = new MatchFormat();
     newFormat.setNumberOfSetsToWin(3);
-    newFormat.setPointsPerSet(7);
+    newFormat.setGamesPerSet(7);
     newFormat.setAdvantage(false);
     newFormat.setSuperTieBreakInFinalSet(true);
 
     MatchFormat updated = matchFormatService.updateMatchFormatForRound(1L, Stage.R32, newFormat);
 
     assertEquals(3, existingFormat.getNumberOfSetsToWin());
-    assertEquals(7, existingFormat.getPointsPerSet());
+    assertEquals(7, existingFormat.getGamesPerSet());
     assertFalse(existingFormat.isAdvantage());
     assertTrue(existingFormat.isSuperTieBreakInFinalSet());
     assertEquals(newFormat, updated);

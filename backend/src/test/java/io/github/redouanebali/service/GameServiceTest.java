@@ -6,7 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.github.redouanebali.dto.ScoreUpdateResponse;
+import io.github.redouanebali.dto.response.UpdateScoreDTO;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.PlayerPair;
@@ -88,7 +88,7 @@ public class GameServiceTest {
     ));
 
     // Call service (no mocks for game.getWinner(); Game computes it from score)
-    ScoreUpdateResponse response = gameService.updateGameScore(tournamentId, gameId, score);
+    UpdateScoreDTO response = gameService.updateGameScore(tournamentId, gameId, score);
 
     if ("TEAM_A".equals(expectedWinner)) {
       assertEquals(TeamSide.TEAM_A, response.getWinner());

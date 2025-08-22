@@ -1,4 +1,4 @@
-package io.github.redouanebali.dto;
+package io.github.redouanebali.dto.response;
 
 import io.github.redouanebali.model.TeamSide;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ScoreUpdateResponse {
+public class UpdateScoreDTO {
 
   private boolean  tournamentUpdated;
   private TeamSide winner; // TEAM_A, TEAM_B ou null

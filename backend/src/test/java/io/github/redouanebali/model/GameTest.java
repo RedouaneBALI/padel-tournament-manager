@@ -157,7 +157,7 @@ public class GameTest {
   ) {
     MatchFormat format = new MatchFormat();
     format.setNumberOfSetsToWin(numberOfSetsToWin);
-    format.setPointsPerSet(pointsPerSet);
+    format.setGamesPerSet(pointsPerSet);
     format.setSuperTieBreakInFinalSet(isSuperTieBreakInFinalSet);
 
     Game game = new Game(createSimpleFormat());
@@ -222,7 +222,7 @@ public class GameTest {
   ) {
     MatchFormat format = new MatchFormat();
     format.setNumberOfSetsToWin(numberOfSetsToWin);
-    format.setPointsPerSet(pointsPerSet);
+    format.setGamesPerSet(pointsPerSet);
     format.setSuperTieBreakInFinalSet(isSuperTieBreakInFinalSet);
 
     PlayerPair teamA = new PlayerPair();
@@ -255,7 +255,7 @@ public class GameTest {
   private MatchFormat createSimpleFormat() {
     MatchFormat format = new MatchFormat();
     format.setNumberOfSetsToWin(1);
-    format.setPointsPerSet(6);
+    format.setGamesPerSet(6);
     format.setSuperTieBreakInFinalSet(false);
     return format;
   }

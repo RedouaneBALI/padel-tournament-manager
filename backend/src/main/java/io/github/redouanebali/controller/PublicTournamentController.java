@@ -1,12 +1,12 @@
 package io.github.redouanebali.controller;
 
-import io.github.redouanebali.dto.TournamentDTO;
+import io.github.redouanebali.dto.response.GameDTO;
+import io.github.redouanebali.dto.response.MatchFormatDTO;
+import io.github.redouanebali.dto.response.PlayerPairDTO;
+import io.github.redouanebali.dto.response.PoolRankingDTO;
+import io.github.redouanebali.dto.response.RoundDTO;
+import io.github.redouanebali.dto.response.TournamentDTO;
 import io.github.redouanebali.mapper.TournamentMapper;
-import io.github.redouanebali.model.Game;
-import io.github.redouanebali.model.MatchFormat;
-import io.github.redouanebali.model.PlayerPair;
-import io.github.redouanebali.model.PoolRanking;
-import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.service.GroupRankingService;
@@ -18,6 +18,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,17 +28,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/tournaments")
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
+@RequiredArgsConstructor
 public class PublicTournamentController {
 
-  private TournamentService tournamentService;
+  private final TournamentService tournamentService;
 
-  private PlayerPairService playerPairService;
+  private final PlayerPairService playerPairService;
 
-  private GroupRankingService groupRankingService;
+  private final GroupRankingService groupRankingService;
 
-  private MatchFormatService matchFormatService;
+  private final MatchFormatService matchFormatService;
 
-  private TournamentMapper tournamentMapper;
+  private final TournamentMapper tournamentMapper;
 
   @GetMapping("/{id}")
   public TournamentDTO getTournament(@PathVariable Long id) {
@@ -47,31 +49,35 @@ public class PublicTournamentController {
 
   @PermitAll
   @GetMapping("/{id}/pairs")
-  public List<PlayerPair> getPairs(@PathVariable Long id) {
-    return playerPairService.getPairsByTournamentId(id);
+  public List<PlayerPairDTO> getPairs(@PathVariable Long id) {
+    return tournamentMapper.toDTOPlayerPairList(playerPairService.getPairsByTournamentId(id));
   }
 
   @GetMapping("/{id}/rounds")
-  public List<Round> getRounds(@PathVariable Long id) {
+  public List<RoundDTO> getRounds(@PathVariable Long id) {
     Tournament tournament = tournamentService.getTournamentById(id);
-    return tournament.getRounds().stream()
-                     .sorted(Comparator.comparing(r -> r.getStage().getOrder()))
-                     .collect(Collectors.toList());
+    return tournamentMapper.toDTORoundList(
+        tournament.getRounds().stream()
+                  .sorted(Comparator.comparing(r -> r.getStage().getOrder()))
+                  .collect(Collectors.toList())
+    );
   }
 
   @GetMapping("/{id}/rounds/{stage}/games")
-  public Set<Game> getGamesByStage(@PathVariable Long id, @PathVariable Stage stage) {
-    return tournamentService.getGamesByTournamentAndStage(id, stage);
+  public Set<GameDTO> getGamesByStage(@PathVariable Long id, @PathVariable Stage stage) {
+    return tournamentMapper.toDTOGameSet(tournamentService.getGamesByTournamentAndStage(id, stage));
   }
 
   @GetMapping("/{id}/rounds/{stage}/match-format")
-  public MatchFormat getMatchFormat(@PathVariable Long id, @PathVariable Stage stage) {
-    return matchFormatService.getMatchFormatForRound(id, stage);
+  public MatchFormatDTO getMatchFormat(@PathVariable Long id, @PathVariable Stage stage) {
+    return tournamentMapper.toDTO(matchFormatService.getMatchFormatForRound(id, stage));
   }
 
 
   @GetMapping("/{id}/groups/ranking")
-  public List<PoolRanking> getGroupRankings(@PathVariable Long id) {
-    return GroupRankingService.getGroupRankings(tournamentService.getTournamentById(id));
+  public List<PoolRankingDTO> getGroupRankings(@PathVariable Long id) {
+    return tournamentMapper.toDTOPoolRankingList(
+        GroupRankingService.getGroupRankings(tournamentService.getTournamentById(id))
+    );
   }
 }

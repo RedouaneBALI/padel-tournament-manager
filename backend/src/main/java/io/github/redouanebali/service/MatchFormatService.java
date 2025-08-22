@@ -47,7 +47,7 @@ public class MatchFormatService {
       round.setMatchFormat(newFormat);
     } else {
       currentFormat.setNumberOfSetsToWin(newFormat.getNumberOfSetsToWin());
-      currentFormat.setPointsPerSet(newFormat.getPointsPerSet());
+      currentFormat.setGamesPerSet(newFormat.getGamesPerSet());
       currentFormat.setAdvantage(newFormat.isAdvantage());
       currentFormat.setSuperTieBreakInFinalSet(newFormat.isSuperTieBreakInFinalSet());
     }

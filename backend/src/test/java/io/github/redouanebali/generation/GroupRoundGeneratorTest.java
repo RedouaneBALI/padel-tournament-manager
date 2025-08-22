@@ -205,7 +205,7 @@ public class GroupRoundGeneratorTest {
     // Format: 2 sets gagnants, 6 jeux par set, pas de super tie-break
     MatchFormat format = new MatchFormat();
     format.setNumberOfSetsToWin(2);
-    format.setPointsPerSet(6);
+    format.setGamesPerSet(6);
     format.setSuperTieBreakInFinalSet(false);
 
     // --- Paires (fixtures) ---

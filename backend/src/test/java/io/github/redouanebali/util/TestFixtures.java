@@ -54,7 +54,7 @@ public final class TestFixtures {
     int gamesToWinPerSet = 6;
     if (game.getFormat() != null) {
       setsToWin        = game.getFormat().getNumberOfSetsToWin();
-      gamesToWinPerSet = game.getFormat().getPointsPerSet();
+      gamesToWinPerSet = game.getFormat().getGamesPerSet();
     }
     List<SetScore> sets = new ArrayList<>();
     for (int i = 0; i < setsToWin; i++) {
@@ -80,7 +80,7 @@ public final class TestFixtures {
   public static MatchFormat createSimpleFormat(int nbSetToWin) {
     MatchFormat format = new MatchFormat();
     format.setNumberOfSetsToWin(nbSetToWin);
-    format.setPointsPerSet(6);
+    format.setGamesPerSet(6);
     format.setSuperTieBreakInFinalSet(false);
     return format;
   }

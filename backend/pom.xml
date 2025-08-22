@@ -48,8 +48,26 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
+          <annotationProcessorPaths>
+            <path>
+              <artifactId>lombok</artifactId>
+              <groupId>org.projectlombok</groupId>
+              <version>1.18.38</version>
+            </path>
+            <path>
+              <artifactId>lombok-mapstruct-binding</artifactId>
+              <groupId>org.projectlombok</groupId>
+              <version>0.2.0</version>
+            </path>
+            <path>
+              <artifactId>mapstruct-processor</artifactId>
+              <groupId>org.mapstruct</groupId>
+              <version>1.6.2</version>
+            </path>
+          </annotationProcessorPaths>
           <compilerArgs>
             <arg>-parameters</arg>
+            <arg>-Amapstruct.defaultComponentModel=spring</arg>
           </compilerArgs>
           <release>21</release>
         </configuration>
@@ -148,6 +166,18 @@
       <artifactId>flyway-database-postgresql</artifactId>
       <groupId>org.flywaydb</groupId>
       <version>11.11.1</version>
+    </dependency>
+
+    <dependency>
+      <artifactId>mapstruct</artifactId>
+      <groupId>org.mapstruct</groupId>
+      <version>1.6.2</version>
+    </dependency>
+    <dependency>
+      <artifactId>mapstruct-processor</artifactId>
+      <groupId>org.mapstruct</groupId>
+      <scope>provided</scope>
+      <version>1.6.2</version>
     </dependency>
 
   </dependencies>

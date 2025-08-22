@@ -1,4 +1,4 @@
-package io.github.redouanebali.dto;
+package io.github.redouanebali.dto.response;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,7 +30,6 @@ public class TournamentDTO {
   private TournamentLevel        level;
   private TournamentFormat       format;
   private TournamentFormatConfig config;
-  private int                    nbSeeds;
   private LocalDate              startDate;
   private LocalDate              endDate;
 

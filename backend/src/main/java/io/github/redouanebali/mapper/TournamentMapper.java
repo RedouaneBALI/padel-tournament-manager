@@ -1,44 +1,73 @@
 package io.github.redouanebali.mapper;
 
-import io.github.redouanebali.dto.TournamentDTO;
+import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
+import io.github.redouanebali.dto.response.GameDTO;
+import io.github.redouanebali.dto.response.MatchFormatDTO;
+import io.github.redouanebali.dto.response.PlayerPairDTO;
+import io.github.redouanebali.dto.response.PoolRankingDTO;
+import io.github.redouanebali.dto.response.RoundDTO;
+import io.github.redouanebali.dto.response.TournamentDTO;
+import io.github.redouanebali.model.Game;
+import io.github.redouanebali.model.MatchFormat;
+import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.PoolRanking;
+import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.security.SecurityProps;
-import io.github.redouanebali.security.SecurityUtil;
-import org.springframework.stereotype.Component;
+import java.util.List;
+import java.util.Set;
+import org.mapstruct.Mapper;
 
-@Component
-public class TournamentMapper {
+@Mapper(componentModel = "spring")
+public interface TournamentMapper {
 
-  private final SecurityProps securityProps;
+  TournamentDTO toDTO(Tournament tournament);
 
-  public TournamentMapper(SecurityProps securityProps) {
-    this.securityProps = securityProps;
-  }
+  List<TournamentDTO> toDTO(List<Tournament> tournaments);
 
-  public TournamentDTO toDTO(Tournament tournament) {
-    TournamentDTO dto = new TournamentDTO();
-    dto.setId(tournament.getId());
-    dto.setOwnerId(tournament.getOwnerId());
-    dto.setName(tournament.getName());
-    dto.setRounds(tournament.getRounds());
-    dto.setPlayerPairs(tournament.getPlayerPairs());
-    dto.setDescription(tournament.getDescription());
-    dto.setCity(tournament.getCity());
-    dto.setClub(tournament.getClub());
-    dto.setGender(tournament.getGender());
-    dto.setLevel(tournament.getLevel());
-    dto.setFormat(tournament.getFormat());
-    dto.setStartDate(tournament.getStartDate());
-    dto.setEndDate(tournament.getEndDate());
-    dto.setConfig(tournament.getConfig());
+  Set<TournamentDTO> toDTO(Set<Tournament> tournaments);
 
-    String  me       = SecurityUtil.currentUserId();
-    boolean editable = false;
-    if (me != null) {
-      editable = securityProps.getSuperAdmins().contains(me) || me.equals(tournament.getOwnerId());
+  GameDTO toDTO(Game game);
+
+  List<GameDTO> toDTOGameList(List<Game> games);
+
+  Set<GameDTO> toDTOGameSet(Set<Game> games);
+
+  default PlayerPairDTO toDTO(PlayerPair playerPair) {
+    if (playerPair == null) {
+      return null;
     }
-    dto.setEditable(editable);
-
+    PlayerPairDTO dto = new PlayerPairDTO();
+    dto.setId(playerPair.getId());
+    dto.setSeed(playerPair.getSeed());
+    dto.setBye(playerPair.isBye());
+    dto.setPlayer1Name(playerPair.getPlayer1() != null ? playerPair.getPlayer1().getName() : null);
+    dto.setPlayer2Name(playerPair.getPlayer2() != null ? playerPair.getPlayer2().getName() : null);
     return dto;
   }
+
+  List<PlayerPairDTO> toDTOPlayerPairList(List<PlayerPair> playerPairs);
+
+  Set<PlayerPairDTO> toDTOPlayerPairSet(Set<PlayerPair> playerPairs);
+
+  RoundDTO toDTO(Round round);
+
+  List<RoundDTO> toDTORoundList(List<Round> rounds);
+
+  Set<RoundDTO> toDTORoundSet(Set<Round> rounds);
+
+  MatchFormatDTO toDTO(MatchFormat matchFormat);
+
+  List<MatchFormatDTO> toDTOMatchFormatList(List<MatchFormat> matchFormats);
+
+  Set<MatchFormatDTO> toDTOMatchFormatSet(Set<MatchFormat> matchFormats);
+
+  PoolRankingDTO toDTO(PoolRanking poolRanking);
+
+  List<PoolRankingDTO> toDTOPoolRankingList(List<PoolRanking> poolRankings);
+
+  Set<PoolRankingDTO> toDTOPoolRankingSet(Set<PoolRanking> poolRankings);
+
+  PlayerPair toPlayerPair(CreatePlayerPairRequest request);
+
+  List<PlayerPair> toPlayerPairList(List<CreatePlayerPairRequest> requests);
 }

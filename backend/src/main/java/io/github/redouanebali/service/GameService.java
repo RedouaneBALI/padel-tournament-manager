@@ -1,7 +1,7 @@
 package io.github.redouanebali.service;
 
-import io.github.redouanebali.dto.GameUpdateRequest;
-import io.github.redouanebali.dto.ScoreUpdateResponse;
+import io.github.redouanebali.dto.request.UpdateGameRequest;
+import io.github.redouanebali.dto.response.UpdateScoreDTO;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.TeamSide;
@@ -18,14 +18,14 @@ public class GameService {
   private final TournamentRepository tournamentRepository;
   private final TournamentService    tournamentService;
 
-  public ScoreUpdateResponse updateGameScore(Long tournamentId, Long gameId, Score score) {
+  public UpdateScoreDTO updateGameScore(Long tournamentId, Long gameId, Score score) {
     Tournament tournament = tournamentService.getTournamentById(tournamentId);
     Game       game       = findGameInTournament(tournament, gameId);
 
     return updateScoreAndPropagate(game, tournament, score);
   }
 
-  public ScoreUpdateResponse updateGame(Long tournamentId, Long gameId, GameUpdateRequest request) {
+  public UpdateScoreDTO updateGame(Long tournamentId, Long gameId, UpdateGameRequest request) {
     Tournament tournament = tournamentService.getTournamentById(tournamentId);
     Game       game       = findGameInTournament(tournament, gameId);
 
@@ -36,7 +36,7 @@ public class GameService {
     return updateScoreAndPropagate(game, tournament, request.getScore());
   }
 
-  private ScoreUpdateResponse updateScoreAndPropagate(Game game, Tournament tournament, Score score) {
+  private UpdateScoreDTO updateScoreAndPropagate(Game game, Tournament tournament, Score score) {
     game.setScore(score);
 
     TeamSide winner = null;
@@ -46,7 +46,7 @@ public class GameService {
     }
 
     tournamentRepository.save(tournament);
-    return new ScoreUpdateResponse(game.isFinished(), winner);
+    return new UpdateScoreDTO(game.isFinished(), winner);
   }
 
 

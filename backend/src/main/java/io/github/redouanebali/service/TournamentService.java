@@ -1,6 +1,6 @@
 package io.github.redouanebali.service;
 
-import io.github.redouanebali.dto.UpdateTournamentRequest;
+import io.github.redouanebali.dto.request.UpdateTournamentRequest;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;

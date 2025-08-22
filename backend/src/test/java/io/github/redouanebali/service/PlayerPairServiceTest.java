@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
+import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
+import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.TournamentRepository;
@@ -34,6 +36,9 @@ public class PlayerPairServiceTest {
   @InjectMocks
   private PlayerPairService playerPairService;
 
+  @Mock
+  private TournamentMapper tournamentMapper;
+
   @BeforeEach
   void setUp() {
     Jwt jwt = Jwt.withTokenValue("fake")
@@ -54,10 +59,13 @@ public class PlayerPairServiceTest {
     tournament.setId(1L);
     tournament.setOwnerId("bali.redouane@gmail.com");
 
-    PlayerPair       pp1   = new PlayerPair("Alice", "Bob", 1);
-    PlayerPair       pp2   = new PlayerPair("Charlie", "Dave", 2);
-    List<PlayerPair> pairs = List.of(pp1, pp2);
+    CreatePlayerPairRequest       pp1   = new CreatePlayerPairRequest("Alice", "Bob", 1);
+    CreatePlayerPairRequest       pp2   = new CreatePlayerPairRequest("Charlie", "Dave", 2);
+    List<CreatePlayerPairRequest> pairs = List.of(pp1, pp2);
 
+    when(tournamentMapper.toPlayerPairList(pairs)).thenReturn(
+        List.of(new PlayerPair("Alice", "Bob", 1), new PlayerPair("Charlie", "Dave", 2))
+    );
     when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
     when(tournamentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 

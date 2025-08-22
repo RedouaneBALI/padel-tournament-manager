@@ -1,4 +1,4 @@
-package io.github.redouanebali.dto;
+package io.github.redouanebali.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.AssertTrue;

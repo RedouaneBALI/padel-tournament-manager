@@ -1,5 +1,7 @@
 package io.github.redouanebali.service;
 
+import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
+import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.TournamentRepository;
@@ -18,8 +20,9 @@ public class PlayerPairService {
 
   private final TournamentRepository tournamentRepository;
   private final SecurityProps        securityProps;
+  private final TournamentMapper     tournamentMapper;
 
-  public Tournament addPairs(Long tournamentId, List<PlayerPair> playerPairs) {
+  public Tournament addPairs(Long tournamentId, List<CreatePlayerPairRequest> requests) {
     Tournament tournament = tournamentRepository.findById(tournamentId)
                                                 .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
     String      me          = SecurityUtil.currentUserId();
@@ -33,8 +36,9 @@ public class PlayerPairService {
                                          game.setTeamB(null);
                                        })
     );
+    List<PlayerPair> pairs = tournamentMapper.toPlayerPairList(requests);
     tournament.getPlayerPairs().clear();
-    tournament.getPlayerPairs().addAll(playerPairs);
+    tournament.getPlayerPairs().addAll(pairs);
     return tournamentRepository.save(tournament);
   }
 

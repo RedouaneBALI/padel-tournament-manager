@@ -1,4 +1,4 @@
-package io.github.redouanebali.dto;
+package io.github.redouanebali.dto.request;
 
 import io.github.redouanebali.model.Score;
 import java.time.LocalTime;
@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class GameUpdateRequest {
+public class UpdateGameRequest {
 
   private Score     score;
   private LocalTime scheduledTime;

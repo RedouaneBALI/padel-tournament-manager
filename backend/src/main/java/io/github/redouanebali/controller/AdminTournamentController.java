@@ -1,13 +1,13 @@
 package io.github.redouanebali.controller;
 
-import io.github.redouanebali.dto.GameUpdateRequest;
-import io.github.redouanebali.dto.ScoreUpdateResponse;
-import io.github.redouanebali.dto.TournamentDTO;
-import io.github.redouanebali.dto.UpdatePlayerPairRequest;
-import io.github.redouanebali.dto.UpdateTournamentRequest;
+import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
+import io.github.redouanebali.dto.request.UpdateGameRequest;
+import io.github.redouanebali.dto.request.UpdatePlayerPairRequest;
+import io.github.redouanebali.dto.request.UpdateTournamentRequest;
+import io.github.redouanebali.dto.response.TournamentDTO;
+import io.github.redouanebali.dto.response.UpdateScoreDTO;
 import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.MatchFormat;
-import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
@@ -91,7 +91,7 @@ public class AdminTournamentController {
   }
 
   @PostMapping(path = "/{id}/pairs", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public TournamentDTO addPairs(@PathVariable Long id, @RequestBody @Valid List<PlayerPair> players) {
+  public TournamentDTO addPairs(@PathVariable Long id, @RequestBody @Valid List<CreatePlayerPairRequest> players) {
     checkOwnership(id);
     return tournamentMapper.toDTO(playerPairService.addPairs(id, players));
   }
@@ -125,17 +125,17 @@ public class AdminTournamentController {
   }
 
   @PutMapping(path = "/{tournamentId}/games/{gameId}/score", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ScoreUpdateResponse updateScore(@PathVariable Long tournamentId,
-                                         @PathVariable Long gameId,
-                                         @RequestBody @Valid Score score) {
+  public UpdateScoreDTO updateScore(@PathVariable Long tournamentId,
+                                    @PathVariable Long gameId,
+                                    @RequestBody @Valid Score score) {
     checkOwnership(tournamentId);
     return gameService.updateGameScore(tournamentId, gameId, score);
   }
 
   @PutMapping(path = "/{tournamentId}/games/{gameId}", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ScoreUpdateResponse updateGame(@PathVariable Long tournamentId,
-                                        @PathVariable Long gameId,
-                                        @RequestBody @Valid GameUpdateRequest request) {
+  public UpdateScoreDTO updateGame(@PathVariable Long tournamentId,
+                                   @PathVariable Long gameId,
+                                   @RequestBody @Valid UpdateGameRequest request) {
     checkOwnership(tournamentId);
     return gameService.updateGame(tournamentId, gameId, request);
   }

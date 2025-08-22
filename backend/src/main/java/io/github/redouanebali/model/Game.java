@@ -86,7 +86,7 @@ public class Game {
     int     teamAWonSets = 0;
     int     teamBWonSets = 0;
     int     setsToWin    = format.getNumberOfSetsToWin();
-    int     pointsPerSet = format.getPointsPerSet();
+    int     pointsPerSet = format.getGamesPerSet();
     boolean superTie     = format.isSuperTieBreakInFinalSet();
 
     for (int i = 0; i < score.getSets().size(); i++) {
