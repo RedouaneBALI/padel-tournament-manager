@@ -35,6 +35,7 @@ public interface TournamentMapper {
 
   Set<TournamentDTO> toDTO(Set<Tournament> tournaments);
 
+  @Mapping(target = "winnerSide", source = "winnerSide")
   GameDTO toDTO(Game game);
 
   List<GameDTO> toDTOGameList(List<Game> games);

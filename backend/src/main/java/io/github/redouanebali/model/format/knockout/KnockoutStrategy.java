@@ -36,7 +36,7 @@ public class KnockoutStrategy implements FormatStrategy {
   }
 
   @Override
-  public Round generateRound(Tournament t, List<PlayerPair> pairs, boolean manual) {
+  public Round initializeTournament(Tournament t, List<PlayerPair> pairs, boolean manual) {
     KnockoutRoundGenerator generator = new KnockoutRoundGenerator(t.getConfig().getNbSeeds());
     return manual ? generator.generateManualRound(pairs)
                   : generator.generateAlgorithmicRound(pairs);

@@ -43,7 +43,7 @@ public class QualifMainStrategy implements FormatStrategy {
   }
 
   @Override
-  public Round generateRound(Tournament t, List<PlayerPair> pairs, boolean manual) {
+  public Round initializeTournament(Tournament t, List<PlayerPair> pairs, boolean manual) {
     QualifyMainRoundGenerator generator = new QualifyMainRoundGenerator(
         t.getConfig().getNbSeeds() != null ? t.getConfig().getNbSeeds() : 0,
         t.getConfig().getMainDrawSize() != null ? t.getConfig().getMainDrawSize() : 0,
@@ -51,6 +51,16 @@ public class QualifMainStrategy implements FormatStrategy {
     );
     return manual ? generator.generateManualRound(pairs)
                   : generator.generateAlgorithmicRound(pairs);
+  }
+
+  @Override
+  public void propagateWinners(Tournament t) {
+    QualifyMainRoundGenerator generator = new QualifyMainRoundGenerator(
+        t.getConfig().getNbSeeds() != null ? t.getConfig().getNbSeeds() : 0,
+        t.getConfig().getMainDrawSize() != null ? t.getConfig().getMainDrawSize() : 0,
+        t.getConfig().getNbQualifiers() != null ? t.getConfig().getNbQualifiers() : 0
+    );
+    generator.propagateWinners(t);
   }
 
 }

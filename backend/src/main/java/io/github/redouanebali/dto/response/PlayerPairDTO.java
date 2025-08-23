@@ -1,5 +1,7 @@
 package io.github.redouanebali.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,7 +13,9 @@ public class PlayerPairDTO {
   private String  player1Name;
   private String  player2Name;
   private Integer seed;
+  @JsonInclude(Include.NON_DEFAULT)
   private boolean bye;
+  @JsonInclude(Include.NON_DEFAULT)
   private boolean qualifierSlot;
 
   public PlayerPairDTO(String player1Name, String player2Name) {

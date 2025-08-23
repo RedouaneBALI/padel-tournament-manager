@@ -78,7 +78,6 @@ export default function TournamentConfigSection({
               required
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             >
-              <option value="">Sélectionnez le format</option>
               <option value="KNOCKOUT">Élimination directe</option>
               <option value="GROUPS_KO"> Poules + Elimination directe </option>
               <option value="QUALIF_KO"> Qualif + Élimination directe </option>

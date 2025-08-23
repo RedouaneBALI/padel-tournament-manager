@@ -180,10 +180,6 @@ public class QualifyMainRoundGenerator extends AbstractRoundGenerator {
     for (int roundIndex = 0; roundIndex < qualifyingRounds.size() - 1; roundIndex++) {
       Round currentRound = qualifyingRounds.get(roundIndex);
       Round nextRound    = qualifyingRounds.get(roundIndex + 1);
-      if (!currentRound.isFinished()) {
-        // Do not propagate forward until the current qualification round is fully finished
-        return;
-      }
       propagateWinnersBetweenRounds(currentRound, nextRound);
     }
 

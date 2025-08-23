@@ -8,7 +8,9 @@ export default function QualifStageView({
   tournament: Tournament;
   tournamentId: string;
 }) {
-  const qualifRounds = (tournament.rounds ?? []).filter((round) => round.stage === 'Q1');
+  const qualifRounds = (tournament.rounds ?? []).filter(
+    (round) => ['Q1', 'Q2', 'Q3'].includes(round.stage)
+  );
   const hasQualifs = qualifRounds.length > 0;
   console.log(tournament.rounds);
 
@@ -22,4 +24,3 @@ export default function QualifStageView({
     </div>
   );
 }
-

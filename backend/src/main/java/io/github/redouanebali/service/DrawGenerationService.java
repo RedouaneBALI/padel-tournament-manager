@@ -56,7 +56,8 @@ public class DrawGenerationService {
 
     FormatStrategy   strategy     = StrategyResolver.resolve(tournament.getFormat());
     List<PlayerPair> pairsForDraw = capPairsToMax(tournament);
-    Round            newRound     = strategy.generateRound(tournament, pairsForDraw, manual);
+    // @todo change to void to have a full control on the tournament
+    Round newRound = strategy.initializeTournament(tournament, pairsForDraw, manual);
 
     Round existingRound = tournament.getRounds().stream()
                                     .filter(r -> r.getStage() == newRound.getStage())

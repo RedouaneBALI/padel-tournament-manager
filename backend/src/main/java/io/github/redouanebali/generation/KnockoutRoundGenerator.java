@@ -52,6 +52,7 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
 
     round.addGames(games);
     round.setStage(Stage.fromNbTeams(pairs.size()));
+
     return round;
   }
 

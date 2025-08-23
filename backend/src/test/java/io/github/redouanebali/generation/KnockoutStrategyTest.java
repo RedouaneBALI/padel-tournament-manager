@@ -93,7 +93,7 @@ public class KnockoutStrategyTest {
   }
 
   @Test
-  void generateRound_manual_assignsSequentially() {
+  void initializeTournament_manual_assignsSequentially() {
     Tournament t = new Tournament();
     t.setFormat(TournamentFormat.KNOCKOUT);
 
@@ -108,7 +108,7 @@ public class KnockoutStrategyTest {
     // 4 pairs in input order
     List<PlayerPair> pairs = new ArrayList<>(TestFixtures.createPairs(4));
 
-    Round semis = strategy.generateRound(t, pairs, true); // manual
+    Round semis = strategy.initializeTournament(t, pairs, true); // manual
     assertEquals(Stage.SEMIS, semis.getStage());
     assertEquals(2, semis.getGames().size());
 
@@ -122,7 +122,7 @@ public class KnockoutStrategyTest {
   }
 
   @Test
-  void generateRound_algorithmic_placesAllPairs() {
+  void initializeTournament_algorithmic_placesAllPairs() {
     Tournament t = new Tournament();
     t.setFormat(TournamentFormat.KNOCKOUT);
 
@@ -135,7 +135,7 @@ public class KnockoutStrategyTest {
 
     List<PlayerPair> pairs = new ArrayList<>(TestFixtures.createPairs(4));
 
-    Round semis = strategy.generateRound(t, pairs, false); // algorithmic
+    Round semis = strategy.initializeTournament(t, pairs, false); // algorithmic
     assertEquals(Stage.SEMIS, semis.getStage());
     assertEquals(2, semis.getGames().size());
 
@@ -172,7 +172,7 @@ public class KnockoutStrategyTest {
     strategy.buildInitialRounds(t, cfg);
 
     List<PlayerPair> pairs     = new ArrayList<>(TestFixtures.createPairs(mainDrawSize));
-    Round            generated = strategy.generateRound(t, pairs, manual);
+    Round            generated = strategy.initializeTournament(t, pairs, manual);
 
     // Apply generated teams to the first round stored in the tournament
     Round existingFirst = t.getRounds().get(0);

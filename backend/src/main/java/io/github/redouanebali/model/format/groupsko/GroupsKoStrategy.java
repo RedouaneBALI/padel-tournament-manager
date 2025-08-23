@@ -57,7 +57,7 @@ public class GroupsKoStrategy implements FormatStrategy {
 
 
   @Override
-  public Round generateRound(Tournament t, List<PlayerPair> pairs, boolean manual) {
+  public Round initializeTournament(Tournament t, List<PlayerPair> pairs, boolean manual) {
     TournamentFormatConfig cfg = t.getConfig();
     GroupRoundGenerator generator = new GroupRoundGenerator(
         cfg.getNbSeeds() != null ? cfg.getNbSeeds() : 0,

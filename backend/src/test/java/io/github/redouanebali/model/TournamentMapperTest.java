@@ -18,6 +18,7 @@ import io.github.redouanebali.dto.response.ScoreDTO;
 import io.github.redouanebali.dto.response.SetScoreDTO;
 import io.github.redouanebali.dto.response.TournamentDTO;
 import io.github.redouanebali.mapper.TournamentMapper;
+import io.github.redouanebali.util.TestFixtures;
 import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -349,6 +350,35 @@ public class TournamentMapperTest {
     assertNotNull(poolDTO.getPoolRanking());
     assertNotNull(poolDTO.getPoolRanking().getDetails());
     assertEquals(pool.getPoolRanking().getDetails().size(), poolDTO.getPoolRanking().getDetails().size());
+  }
+
+  @Test
+  void testGameWinnerSideMapping() {
+    Player     player1 = new Player("A");
+    Player     player2 = new Player("B");
+    PlayerPair pairA   = new PlayerPair();
+    pairA.setPlayer1(player1);
+    pairA.setPlayer2(player2);
+
+    Player     player3 = new Player("C");
+    Player     player4 = new Player("D");
+    PlayerPair pairB   = new PlayerPair();
+    pairB.setPlayer1(player3);
+    pairB.setPlayer2(player4);
+
+    Game game = new Game();
+    game.setId(999L);
+    game.setFormat(new MatchFormat());
+    game.setTeamA(pairA);
+    game.setTeamB(pairB);
+    game.setScore(TestFixtures.createScoreWithWinner(game, pairA));
+    game.setWinnerSide(TeamSide.TEAM_A);
+
+    GameDTO dto = mapper.toDTO(game);
+
+    assertNotNull(dto);
+    assertEquals(999L, dto.getId());
+    assertEquals(TeamSide.TEAM_A, dto.getWinnerSide());
   }
 
 }

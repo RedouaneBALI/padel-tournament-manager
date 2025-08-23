@@ -22,9 +22,7 @@ public interface FormatStrategy {
   /**
    * Génère un round en fonction du mode (manuel vs algorithmique). Par défaut non supporté par la stratégie (à surcharger si applicable).
    */
-  default Round generateRound(Tournament t, List<PlayerPair> pairs, boolean manual) {
-    throw new UnsupportedOperationException("generateRound not supported for this format");
-  }
+  Round initializeTournament(Tournament t, List<PlayerPair> pairs, boolean manual);
 
   /**
    * Propage les vainqueurs du tournoi selon la logique du format (optionnel). Implémentation par défaut: no-op.
