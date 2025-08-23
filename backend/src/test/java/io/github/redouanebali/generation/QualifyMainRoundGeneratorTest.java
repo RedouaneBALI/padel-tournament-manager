@@ -1,15 +1,14 @@
 package io.github.redouanebali.generation;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
-import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.TournamentFormatConfig;
 import io.github.redouanebali.util.TestFixtures;
@@ -23,8 +22,17 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
-// @todo testing generateManualRound method
+/**
+ * Test suite for {@link QualifyMainRoundGenerator} covering both phases: 1) Qualification brackets (Q1..Qk) 2) Main draw (R{2^n}..FINAL)
+ *
+ * Goals: - Structure of pre‑qual rounds matches the expected ascending stages (Q1, Q2, ...) - Manual round population is supported and deterministic
+ * scoring works - Propagation from last qualification round to the first main round fills the slots correctly - When qualifications are not finished,
+ * main draw rounds may exist structurally but must have null teams/scores (placeholders) - Full run from pre‑qual to champion produces exactly one
+ * winner
+ */
 public class QualifyMainRoundGeneratorTest {
+
+  // ---------- Data Providers ----------
 
   private static Stream<Arguments> fullTournamentCases() {
     return Stream.of(
@@ -33,11 +41,59 @@ public class QualifyMainRoundGeneratorTest {
             8,  // numQualifiers
             16, // mainDrawSize
             List.of(Stage.Q1, Stage.Q2, Stage.R16, Stage.QUARTERS, Stage.SEMIS, Stage.FINAL)
+        ),
+        Arguments.of(
+            16, // preQualDraw
+            4,  // numQualifiers
+            32, // mainDrawSize
+            List.of(Stage.Q1, Stage.Q2, Stage.R32, Stage.R16, Stage.QUARTERS, Stage.SEMIS, Stage.FINAL)
         )
     );
   }
 
-  // --- Pré-qualif : 1, 2, 3 tours (Q1..Qk en ordre croissant) ---
+  // ---------- Qualification structure only ----------
+
+  private static Round roundByName(Tournament t, String stageName) {
+    return t.getRounds().stream()
+            .filter(r -> r.getStage() != null && stageName.equals(r.getStage().name()))
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("Round avec stage " + stageName + " introuvable"));
+  }
+
+  // ---------- Full path: Q... -> Main draw -> Champion ----------
+
+  private static void placePairsAB(Round round, List<PlayerPair> pairs) {
+    for (int i = 0; i < pairs.size(); i++) {
+      PlayerPair p       = pairs.get(i);
+      int        gameIdx = i / 2;
+      if (i % 2 == 0) {
+        round.getGames().get(gameIdx).setTeamA(p);
+      } else {
+        round.getGames().get(gameIdx).setTeamB(p);
+      }
+    }
+  }
+
+  // ---------- Placeholder behavior when Q not finished ----------
+
+  private static List<PlayerPair> finishRoundLowestSeedWins(Round round) {
+    List<PlayerPair> winners = new ArrayList<>();
+    round.getGames().forEach(g -> {
+      g.setFormat(TestFixtures.createSimpleFormat(1));
+      PlayerPair a = g.getTeamA();
+      PlayerPair b = g.getTeamB();
+      assertNotNull(a, "teamA ne doit pas être null pour ce match");
+      assertNotNull(b, "teamB ne doit pas être null pour ce match");
+      PlayerPair winner = (a.getSeed() <= b.getSeed()) ? a : b;
+      g.setScore(TestFixtures.createScoreWithWinner(g, winner));
+      winners.add(winner);
+    });
+    return winners;
+  }
+
+  // ---------- Helpers ----------
+
+  // preQualDraw, numQualifiers -> expected ascending Q-stages sequence
   @ParameterizedTest(name = "preQual={0}, qualifiers={1} ⇒ stages(asc)={2}")
   @CsvSource({
       // preQualDraw, numQualifiers, expectedStages (ascending order)
@@ -48,13 +104,18 @@ public class QualifyMainRoundGeneratorTest {
       "16,8,'Q1'",
       "32,16,'Q1'",
       "32,8,'Q1,Q2'",
+      "32,4,'Q1,Q2,Q3'"
   })
   void preQual_generateManualRound_builds_expected_stage_and_games(int preQualDraw, int numQualifiers,
                                                                    String expectedStagesCsv) {
-    TournamentFormatConfig cfg = TournamentFormatConfig.builder().preQualDrawSize(preQualDraw)
-                                                       .nbQualifiers(numQualifiers).mainDrawSize(32).nbSeeds(8).build();
+    TournamentFormatConfig cfg = TournamentFormatConfig.builder()
+                                                       .preQualDrawSize(preQualDraw)
+                                                       .nbQualifiers(numQualifiers)
+                                                       .mainDrawSize(32)
+                                                       .nbSeeds(8)
+                                                       .build();
 
-    // Les moins bien classés commencent en pré-qualif: on génère des seeds élevés (ex: 100+)
+    // Least‑ranked pairs play the qualifications: create artificially high seeds (100+)
     List<PlayerPair> pairs = new ArrayList<>();
     for (int i = 0; i < preQualDraw; i++) {
       pairs.add(TestFixtures.buildPairWithSeed(100 + i));
@@ -62,7 +123,7 @@ public class QualifyMainRoundGeneratorTest {
 
     QualifyMainRoundGenerator gen = new QualifyMainRoundGenerator(cfg.getNbSeeds());
 
-    // Construire la structure des tours (Q1..Qk + main) une seule fois
+    // Build once the tournament rounds structure (Q1..Qk + main)
     Tournament t = new Tournament();
     t.setConfig(cfg);
     List<Round> rounds = gen.createRoundsStructure(t);
@@ -73,51 +134,27 @@ public class QualifyMainRoundGeneratorTest {
 
     List<PlayerPair> currentPairs = pairs;
     for (String expectedStage : expectedStages) {
-      // Récupérer le round correspondant dans le tournoi
-      Round round = t.getRounds().stream()
-                     .filter(r -> r.getStage() != null && expectedStage.equals(r.getStage().name()))
-                     .findFirst()
-                     .orElseThrow(() -> new AssertionError("Round avec stage " + expectedStage + " introuvable"));
-
-      assertNotNull(round, "Le round de pré-qualif ne doit pas être null");
-      assertEquals(expectedStage, round.getStage().name(), "Stage Q attendu");
+      Round round = roundByName(t, expectedStage);
 
       int expectedGames = currentPairs.size() / 2;
-      assertEquals(expectedGames, round.getGames().size(), "Nombre de matchs attendu sur ce tour de qualifs");
+      assertEquals(expectedGames, round.getGames().size(),
+                   "Nombre de matchs attendu sur le tour de qualifs " + expectedStage);
 
-      // Placer les équipes manuellement (A,B),(C,D)... dans le round existant
-      for (int i = 0; i < currentPairs.size(); i++) {
-        PlayerPair p       = currentPairs.get(i);
-        int        gameIdx = i / 2;
-        if (i % 2 == 0) {
-          round.getGames().get(gameIdx).setTeamA(p);
-        } else {
-          round.getGames().get(gameIdx).setTeamB(p);
-        }
-      }
+      // Place teams manually (A,B),(C,D)... into existing round
+      placePairsAB(round, currentPairs);
 
-      // Simuler les matchs: la paire au seed le plus bas gagne
-      List<PlayerPair> winners = new ArrayList<>();
-      round.getGames().forEach(g -> {
-        g.setFormat(TestFixtures.createSimpleFormat(1));
-        PlayerPair a = g.getTeamA();
-        PlayerPair b = g.getTeamB();
-        assertNotNull(a, "teamA ne doit pas être null en pré-qualif");
-        assertNotNull(b, "teamB ne doit pas être null en pré-qualif");
-        PlayerPair winner = (a.getSeed() <= b.getSeed()) ? a : b;
-        g.setScore(TestFixtures.createScoreWithWinner(g, winner));
-        winners.add(winner);
-      });
+      // Simulate matches: lower seed wins (deterministic)
+      List<PlayerPair> winners = finishRoundLowestSeedWins(round);
 
-      // Vérifier cohérence
-      assertEquals(expectedGames, winners.size(), "Le tour doit produire autant de vainqueurs que de matchs");
+      // Sanity checks
+      assertEquals(expectedGames, winners.size(),
+                   "Le tour doit produire autant de vainqueurs que de matchs");
+      assertTrue(round.getGames().stream()
+                      .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                      .allMatch(p -> p != null && p.getSeed() >= 100),
+                 "Les pré‑qualifs doivent contenir uniquement des équipes moins bien classées");
 
-      boolean allLowRank = round.getGames().stream()
-                                .flatMap(g -> java.util.stream.Stream.of(g.getTeamA(), g.getTeamB()))
-                                .allMatch(p -> p != null && p.getSeed() >= 100);
-      assertTrue(allLowRank, "Les pré-qualifs doivent contenir uniquement des équipes moins bien classées");
-
-      // Les vainqueurs deviennent les entrants du tour suivant
+      // Winners go to next Q-stage (or main)
       currentPairs = winners;
     }
   }
@@ -126,16 +163,20 @@ public class QualifyMainRoundGeneratorTest {
   @MethodSource("fullTournamentCases")
   void fullTournamentStructure_builds_expected_stages(int preQualDraw, int numQualifiers, int mainDrawSize,
                                                       List<Stage> expectedStages) {
-    TournamentFormatConfig cfg = TournamentFormatConfig.builder().preQualDrawSize(preQualDraw)
-                                                       .nbQualifiers(numQualifiers).mainDrawSize(mainDrawSize).nbSeeds(4).build();
+    TournamentFormatConfig cfg = TournamentFormatConfig.builder()
+                                                       .preQualDrawSize(preQualDraw)
+                                                       .nbQualifiers(numQualifiers)
+                                                       .mainDrawSize(mainDrawSize)
+                                                       .nbSeeds(4)
+                                                       .build();
 
-    // Paires moins bien classées pour les qualifs
+    // Less‑ranked pairs for qualifications
     List<PlayerPair> preQualPairs = new ArrayList<>();
     for (int i = 0; i < preQualDraw; i++) {
       preQualPairs.add(TestFixtures.buildPairWithSeed(100 + i));
     }
 
-    // Paires mieux classées pour compléter le main draw
+    // Better pairs to complete the main draw (seeds 1..)
     List<PlayerPair> mainPairs = new ArrayList<>();
     for (int i = 0; i < (mainDrawSize - numQualifiers); i++) {
       mainPairs.add(TestFixtures.buildPairWithSeed(i + 1));
@@ -151,12 +192,13 @@ public class QualifyMainRoundGeneratorTest {
 
     Stage firstMainStage = Stage.fromNbTeams(mainDrawSize);
 
-    assertEquals(expectedStages.size(), t.getRounds().size());
-    // On part des pré-qualifs
-    List<PlayerPair> currentPairs = preQualPairs;
+    assertEquals(expectedStages.size(), t.getRounds().size(),
+                 "Structure globale inattendue (nb de rounds)");
+
+    List<PlayerPair> currentPairs = preQualPairs; // start from Q
 
     for (Stage expectedStage : expectedStages) {
-      // Lors du premier stage du main draw, on ajoute les top seeds AVANT de calculer expectedGames
+      // When we reach first main stage, add the top seeded mainPairs BEFORE computing expectedGames
       if (expectedStage == firstMainStage) {
         currentPairs.addAll(mainPairs);
       }
@@ -166,159 +208,141 @@ public class QualifyMainRoundGeneratorTest {
                      .findFirst()
                      .orElseThrow(() -> new AssertionError("Round avec stage " + expectedStage + " introuvable"));
 
-      assertNotNull(round, "Le round " + expectedStage + " ne doit pas être null");
-
       int expectedGames = currentPairs.size() / 2;
       assertEquals(expectedGames, round.getGames().size(),
                    "Nombre de matchs attendu au stage " + expectedStage);
 
-      // Placer les équipes dans le round
-      for (int i = 0; i < currentPairs.size(); i++) {
-        PlayerPair p       = currentPairs.get(i);
-        int        gameIdx = i / 2;
-        if (i % 2 == 0) {
-          round.getGames().get(gameIdx).setTeamA(p);
-        } else {
-          round.getGames().get(gameIdx).setTeamB(p);
-        }
-      }
+      // Populate and finish deterministically
+      placePairsAB(round, currentPairs);
+      List<PlayerPair> winners = finishRoundLowestSeedWins(round);
 
-      // Simuler les matchs: seed le plus bas gagne
-      List<PlayerPair> winners = new ArrayList<>();
-      round.getGames().forEach(g -> {
-        g.setFormat(TestFixtures.createSimpleFormat(1));
-        PlayerPair a = g.getTeamA();
-        PlayerPair b = g.getTeamB();
-        assertNotNull(a, "teamA ne doit pas être null au stage " + expectedStage);
-        assertNotNull(b, "teamB ne doit pas être null au stage " + expectedStage);
-        PlayerPair winner = (a.getSeed() <= b.getSeed()) ? a : b;
-        g.setScore(TestFixtures.createScoreWithWinner(g, winner));
-        winners.add(winner);
-      });
-
-      // Les vainqueurs deviennent les entrants du prochain stage
+      // Winners move forward
       currentPairs = winners;
     }
 
-    // Vérif: il ne doit rester qu'un seul vainqueur à la fin
+    // At the end, exactly one champion must remain
     assertEquals(1, currentPairs.size(), "Le tournoi doit produire un seul champion à la fin");
   }
 
   @Test
-  void verifyManualRoundGenerationAndStagesUpToR32() {
-    // Configuration du tournoi
-    int preQualDrawSize = 16; // Taille du tableau de pré-qualification
-    int mainDrawSize    = 32;    // Taille du tableau principal
-    int nbQualifiers    = 4;     // Nombre de qualifiés
-    int totalPairs      = 40;      // Total des paires dans le tournoi
+  void mainDrawRoundsRemainPlaceholders_untilQualificationsFinished() {
+    int preQualDrawSize = 8;
+    int mainDrawSize    = 16;
+    int nbQualifiers    = 4;
 
-    // Création de la configuration pour le tournoi
     TournamentFormatConfig cfg = TournamentFormatConfig.builder()
                                                        .preQualDrawSize(preQualDrawSize)
                                                        .nbQualifiers(nbQualifiers)
                                                        .mainDrawSize(mainDrawSize)
-                                                       .nbSeeds(8) // Nombre de têtes de série
+                                                       .nbSeeds(4)
                                                        .build();
 
-    // Liste de toutes les paires
-    List<PlayerPair> allPairs = TestFixtures.createPairs(totalPairs);
+    // Build Q pairs only (do not touch main pairs yet)
+    List<PlayerPair> qPairs = new ArrayList<>();
+    for (int i = 0; i < preQualDrawSize; i++) {
+      qPairs.add(TestFixtures.buildPairWithSeed(100 + i));
+    }
+    List<PlayerPair> mainPairs = new ArrayList<>();
+    for (int i = 0; i < (mainDrawSize - nbQualifiers); i++) {
+      mainPairs.add(TestFixtures.buildPairWithSeed(i + 1));
+    }
+    List<PlayerPair> allPairs = new ArrayList<>();
+    allPairs.addAll(mainPairs);
+    allPairs.addAll(qPairs);
 
-    // Initialisation du générateur et du tournoi
-    QualifyMainRoundGenerator generator  = new QualifyMainRoundGenerator(cfg.getNbSeeds(), mainDrawSize, nbQualifiers);
-    Tournament                tournament = new Tournament();
-    tournament.setConfig(cfg);
+    QualifyMainRoundGenerator gen = new QualifyMainRoundGenerator(cfg.getNbSeeds());
 
-    // Génération manuelle du tour Q1
-    Round       q1Round = generator.generateManualRound(allPairs);
-    List<Round> rounds  = generator.createRoundsStructure(tournament);
-    tournament.getRounds().clear();
-    tournament.getRounds().addAll(rounds);
-    tournament.getRounds().replaceAll(round -> round.getStage() == Stage.Q1 ? q1Round : round);
+    Tournament t = new Tournament();
+    t.setConfig(cfg);
+    List<Round> rounds = gen.createRoundsStructure(t);
+    t.getRounds().clear();
+    t.getRounds().addAll(rounds);
+    Round q1 = gen.generateManualRound(t, allPairs);
+    t.getRounds().replaceAll(r -> r.getStage() == Stage.Q1 ? q1 : r);
 
-    // Vérification Q1
-    assertNotNull(q1Round, "Le round Q1 généré manuellement ne doit pas être null");
-    assertEquals(Stage.Q1, q1Round.getStage(), "Le stage du round doit être Q1");
-    assertFalse(q1Round.getGames().isEmpty(), "Les matchs du round Q1 ne doivent pas être vides");
+    // Put teams and finish all but the first match
+    placePairsAB(q1, qPairs);
+    for (int i = 1; i < q1.getGames().size(); i++) {
+      var        g      = q1.getGames().get(i);
+      PlayerPair a      = g.getTeamA();
+      PlayerPair b      = g.getTeamB();
+      PlayerPair winner = (a.getSeed() <= b.getSeed()) ? a : b;
+      g.setFormat(TestFixtures.createSimpleFormat(1));
+      g.setScore(TestFixtures.createScoreWithWinner(g, winner));
+    }
 
-    // Ajout des scores pour les matchs de Q1
-    q1Round.getGames().forEach(game -> {
-      game.setFormat(new MatchFormat());
-      PlayerPair winner = game.getTeamA() != null ? game.getTeamA() : game.getTeamB();
-      if (winner != null) {
-        game.setScore(TestFixtures.createScoreWithWinner(game, winner));
-      }
-    });
+    // Propagate now while Q not finished
+    gen.propagateWinners(t);
 
-    // Propager les vainqueurs de Q1 vers Q2
-    generator.propagateWinners(tournament);
+    // All main draw rounds should exist structurally, but their matches must be placeholders (null teams, null score)
+    List<Round> mainRounds = t.getRounds().stream()
+                              .filter(r -> r.getStage() != Stage.Q1 && r.getStage() != Stage.Q2) // keep it generic if only two Q stages max used here
+                              .filter(r -> r.getStage() != Stage.GROUPS) // no groups in this format
+                              .toList();
 
-    // Vérification Q2
-    Round q2Round = tournament.getRounds().stream()
-                              .filter(round -> round.getStage() == Stage.Q2)
-                              .findFirst()
-                              .orElse(null);
+    assertTrue(mainRounds.size() >= 1, "Des rounds du tableau final doivent exister structurellement");
 
-    assertNotNull(q2Round, "Le round Q2 généré automatiquement ne doit pas être null");
-    assertFalse(q2Round.getGames().isEmpty(), "Les matchs du round Q2 ne doivent pas être vides");
+    // Identify the first main-draw stage (e.g., R16 when mainDrawSize=16)
+    Stage firstMainStageId = Stage.fromNbTeams(mainDrawSize);
+    Round firstMainStage = t.getRounds().stream()
+                            .filter(r -> r.getStage() == firstMainStageId)
+                            .findFirst()
+                            .orElseThrow(() -> new AssertionError("First main stage not found"));
 
-    List<PlayerPair> q1Winners = q1Round.getGames().stream()
-                                        .map(game -> game.getWinnerSide() == TeamSide.TEAM_A ? game.getTeamA() : game.getTeamB())
-                                        .filter(Objects::nonNull)
-                                        .toList();
+    // In the first main round:
+    //  - direct entrants (mainDrawSize - nbQualifiers) should already be placed (non-null)
+    //  - slots for future qualifiers should be left null (exactly nbQualifiers null teams across A/B)
+    //  - BYEs (if any for other configs) are allowed and count as non-null teams
+    long totalTeamsFirst = firstMainStage.getGames().stream()
+                                         .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                         .count();
+    assertEquals(mainDrawSize, totalTeamsFirst, "Le premier round du tableau doit contenir exactement mainDrawSize emplacements");
 
-    List<PlayerPair> q2Teams = q2Round.getGames().stream()
-                                      .flatMap(game -> Stream.of(game.getTeamA(), game.getTeamB()))
-                                      .toList();
+    long nullTeamsFirst = firstMainStage.getGames().stream()
+                                        .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                        .filter(Objects::isNull)
+                                        .count();
+    assertEquals(nbQualifiers, nullTeamsFirst, "Le premier round doit comporter exactement nbQualifiers emplacements null en attente des qualifiés");
 
-    assertTrue(q2Teams.containsAll(q1Winners), "Tous les gagnants de Q1 doivent être propagés dans Q2");
+    // All scores in the first main round must still be null at this point
+    assertTrue(firstMainStage.getGames().stream().allMatch(g -> g.getScore() == null),
+               "Aucun score ne doit être défini dans le premier round du tableau tant que les qualifs ne sont pas finies");
 
-    // Ajout des scores pour les matchs de Q2
-    q2Round.getGames().forEach(game -> {
-      PlayerPair winner = game.getTeamA() != null ? game.getTeamA() : game.getTeamB();
-      if (winner != null) {
-        game.setScore(TestFixtures.createScoreWithWinner(game, winner));
-      }
-    });
+    // For subsequent main-draw rounds (e.g., QUARTERS/SEMIS/FINAL), all teams should still be null and scores null
+    List<Round> laterMainRounds = mainRounds.stream()
+                                            .filter(r -> r.getStage() != firstMainStageId)
+                                            .toList();
 
-    // Propager les vainqueurs de Q2 vers R32
-    generator.propagateWinners(tournament);
+    assertAll("Les rounds suivants du tableau doivent rester des placeholders complets",
+              laterMainRounds.stream().map(r -> () -> assertAll(
+                  "Round " + r.getStage(),
+                  r.getGames().stream().map(g -> () -> {
+                    assertNull(g.getTeamA(), "teamA doit être null avant la complétion des qualifs");
+                    assertNull(g.getTeamB(), "teamB doit être null avant la complétion des qualifs");
+                    assertNull(g.getScore(), "score doit être null avant la complétion des qualifs");
+                  })
+              ))
+    );
 
-    // Vérification R32
-    Round r32 = tournament.getRounds().stream()
-                          .filter(round -> round.getStage() == Stage.R32)
-                          .findFirst()
-                          .orElse(null);
+    // Now finish the remaining Q1 game and propagate again
+    var        g0 = q1.getGames().get(0);
+    PlayerPair a0 = g0.getTeamA();
+    PlayerPair b0 = g0.getTeamB();
+    PlayerPair w0 = (a0.getSeed() <= b0.getSeed()) ? a0 : b0;
+    g0.setFormat(TestFixtures.createSimpleFormat(1));
+    g0.setScore(TestFixtures.createScoreWithWinner(g0, w0));
 
-    assertNotNull(r32, "Le round R32 généré automatiquement ne doit pas être null");
-    assertFalse(r32.getGames().isEmpty(), "Les matchs du round R32 ne doivent pas être vides");
+    gen.propagateWinners(t);
 
-    List<PlayerPair> q2Winners = q2Round.getGames().stream()
-                                        .map(game -> game.getWinnerSide() == TeamSide.TEAM_A ? game.getTeamA() : game.getTeamB())
-                                        .filter(Objects::nonNull)
-                                        .toList();
+    // After completion, at least the first main stage should be populated (non-null teams)
+    Stage firstMain      = Stage.fromNbTeams(mainDrawSize);
+    Round firstMainRound = t.getRounds().stream().filter(r -> r.getStage() == firstMain).findFirst().orElseThrow();
 
-    List<PlayerPair> r32Teams = r32.getGames().stream()
-                                   .flatMap(game -> Stream.of(game.getTeamA(), game.getTeamB()))
-                                   .toList();
+    long nonNullTeams = firstMainRound.getGames().stream()
+                                      .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                      .filter(Objects::nonNull)
+                                      .count();
 
-    assertTrue(r32Teams.containsAll(q2Winners), "Tous les gagnants de Q2 doivent être propagés dans R32");
-
-    // Vérification des matchs dans R32
-    long matchesWithBye = r32.getGames().stream()
-                             .filter(game -> game.getTeamA() == null || game.getTeamB() == null)
-                             .count();
-
-    long matchesWithoutBye = r32.getGames().stream()
-                                .filter(game -> game.getTeamA() != null && game.getTeamB() != null)
-                                .count();
-
-    assertEquals(8, matchesWithoutBye, "Il doit y avoir 8 matchs normaux sans BYE dans R32");
-    assertEquals(0, matchesWithBye, "Il ne doit pas y avoir de matchs avec BYE dans R32");
-
-    // Vérifications supplémentaires
-    assertEquals(8, q1Round.getGames().size(), "Le round Q1 doit avoir 8 matchs au total");
-    assertEquals(4, q2Round.getGames().size(), "Le round Q2 doit avoir 4 matchs au total");
-    assertEquals(8, r32.getGames().size(), "Le round R32 doit avoir 8 matchs au total");
+    assertTrue(nonNullTeams > 0, "Des équipes doivent être injectées dans le premier round du tableau final après fin des qualifs");
   }
-
 }

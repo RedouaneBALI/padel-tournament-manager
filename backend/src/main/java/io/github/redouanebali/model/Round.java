@@ -87,6 +87,18 @@ public class Round {
     return stage == round.getStage();
   }
 
+  public boolean isFinished() {
+    if (this.getGames() == null || this.getGames().isEmpty()) {
+      return false;
+    }
+    for (Game g : this.getGames()) {
+      if (g == null || !g.isFinished()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   @Override
   public int hashCode() {
     return stage != null ? stage.hashCode() : 0;

@@ -86,6 +86,101 @@ public class QualifyMainRoundGenerator extends AbstractRoundGenerator {
     return round;
   }
 
+  /**
+   * Overload: Generates Q1 and pre-seeds main draw with direct entrants, leaving nbQualifiers null slots.
+   */
+  public Round generateManualRound(final Tournament tournament, final List<PlayerPair> allPairs) {
+    if (tournament == null) {
+      throw new IllegalArgumentException("tournament must not be null");
+    }
+    if (allPairs == null || allPairs.isEmpty()) {
+      throw new IllegalArgumentException("allPairs must not be empty");
+    }
+
+    // Sort all pairs by ascending seed (best first)
+    List<PlayerPair> sorted = new ArrayList<>(allPairs);
+    sorted.sort(Comparator.comparingInt(PlayerPair::getSeed));
+
+    // Read sizes from tournament config if not provided via constructor
+    int
+        cfgMainDrawSize =
+        (this.mainDrawSize > 0) ? this.mainDrawSize : (tournament.getConfig() != null ? tournament.getConfig().getMainDrawSize() : 0);
+    int
+        cfgNbQualifiers =
+        (this.nbQualifiers > 0) ? this.nbQualifiers : (tournament.getConfig() != null ? tournament.getConfig().getNbQualifiers() : 0);
+
+    // Determine direct main-draw entrants and qualifiers pool
+    int              directMainDrawPairs = Math.max(0, Math.min(cfgMainDrawSize - cfgNbQualifiers, sorted.size()));
+    List<PlayerPair> directEntrants      = new ArrayList<>(sorted.subList(0, directMainDrawPairs));
+
+    // Seed first main round with direct entrants (leave exactly nbQualifiers null slots)
+    seedFirstMainRound(tournament, directEntrants);
+
+    // Build and return Q1 using the remaining pairs (same logic as the existing generateManualRound)
+    List<PlayerPair> remaining = new ArrayList<>(sorted.subList(directMainDrawPairs, sorted.size()));
+
+    // 4. Add BYEs to reach next power of two for the pre-qual field
+    int powerOfTwoSize = 1;
+    while (powerOfTwoSize < remaining.size()) {
+      powerOfTwoSize *= 2;
+    }
+    int              numByes        = powerOfTwoSize - remaining.size();
+    List<PlayerPair> fullRoundPairs = new ArrayList<>(remaining);
+    for (int i = 0; i < numByes; i++) {
+      fullRoundPairs.add(i * 2, PlayerPair.bye());
+    }
+
+    // Pair into games
+    List<Game> games     = new ArrayList<>();
+    int        teamIndex = 0;
+    while (teamIndex < fullRoundPairs.size()) {
+      PlayerPair teamA = fullRoundPairs.get(teamIndex++);
+      PlayerPair teamB = (teamIndex < fullRoundPairs.size()) ? fullRoundPairs.get(teamIndex++) : null;
+      if (teamA.isBye() && teamB != null && teamB.isBye()) {
+        throw new IllegalStateException("Match between BYE vs BYE is not allowed");
+      }
+      Game game = new Game();
+      game.setTeamA(teamA);
+      game.setTeamB(teamB);
+      games.add(game);
+    }
+
+    Round q1 = new Round();
+    q1.setStage(Stage.Q1);
+    q1.addGames(games);
+    return q1;
+  }
+
+  /**
+   * Seeds the first main round with direct entrants, leaving nbQualifiers null slots for qualifiers.
+   */
+  private void seedFirstMainRound(final Tournament tournament, final List<PlayerPair> directEntrants) {
+    if (tournament == null || tournament.getRounds() == null || tournament.getRounds().isEmpty()) {
+      return;
+    }
+    Round firstFinalRound = null;
+    for (Round r : tournament.getRounds()) {
+      if (r.getStage() != null && !r.getStage().isQualification()) {
+        firstFinalRound = r;
+        break;
+      }
+    }
+    if (firstFinalRound == null || firstFinalRound.getGames() == null) {
+      return;
+    }
+
+    int idx = 0;
+    for (Game g : firstFinalRound.getGames()) {
+      if (idx < directEntrants.size()) {
+        g.setTeamA(directEntrants.get(idx++));
+      }
+      if (idx < directEntrants.size()) {
+        g.setTeamB(directEntrants.get(idx++));
+      }
+      // If we run out of direct entrants, we keep remaining slots null as placeholders for future qualifiers
+    }
+  }
+
   @Override
   public void propagateWinners(Tournament tournament) {
     if (tournament == null || tournament.getRounds() == null || tournament.getRounds().size() < 2) {
@@ -110,12 +205,18 @@ public class QualifyMainRoundGenerator extends AbstractRoundGenerator {
     for (int roundIndex = 0; roundIndex < qualifyingRounds.size() - 1; roundIndex++) {
       Round currentRound = qualifyingRounds.get(roundIndex);
       Round nextRound    = qualifyingRounds.get(roundIndex + 1);
-
+      if (!currentRound.isFinished()) {
+        // Do not propagate forward until the current qualification round is fully finished
+        return;
+      }
       propagateWinnersBetweenRounds(currentRound, nextRound);
     }
 
     // Étape 2 : Injecter les vainqueurs du dernier round de qualification dans la phase finale
     if (!qualifyingRounds.isEmpty() && !finalRounds.isEmpty()) {
+      if (!qualifyingRounds.stream().allMatch(Round::isFinished)) {
+        return;
+      }
       Round lastQualifyingRound = qualifyingRounds.get(qualifyingRounds.size() - 1);
       Round firstFinalRound     = finalRounds.get(0);
 
@@ -199,11 +300,11 @@ public class QualifyMainRoundGenerator extends AbstractRoundGenerator {
     int pre  = tournament.getConfig().getPreQualDrawSize();
     int qual = Math.max(1, tournament.getConfig().getNbQualifiers());
     if (pre > 0 && DrawMath.isPowerOfTwo(pre) && pre % qual == 0 && DrawMath.isPowerOfTwo(pre / qual)) {
-      int ratio   = pre / qual;        // ex. 32/8 = 4
-      int qRounds = Math.min(2, log2Safe(ratio)); // au plus Q1,Q2
-      for (int i = 1; i <= qRounds; i++) { // Q1 puis Q2
+      int ratio   = pre / qual;        // ex. 32/4 = 8 → Q1,Q2,Q3
+      int qRounds = Math.min(3, log2Safe(ratio)); // au plus Q1,Q2,Q3
+      for (int i = 1; i <= qRounds; i++) { // Q1 puis Q2 puis Q3
         Stage stage = Stage.valueOf("Q" + i);
-        int   games = pre >> i; // Q1: pre/2, Q2: pre/4
+        int   games = pre >> i; // Q1: pre/2, Q2: pre/4, Q3: pre/8
         rounds.add(createEmptyRound(stage, games));
       }
     }
@@ -225,5 +326,5 @@ public class QualifyMainRoundGenerator extends AbstractRoundGenerator {
 
     return rounds;
   }
-
 }
+

@@ -177,4 +177,13 @@ public class Game {
     }
   }
 
+  @Override
+  public String toString() {
+    return String.format(
+        "%s vs %s",
+        teamA != null ? teamA.toString() : "Unknown Team A",
+        teamB != null ? teamB.toString() : "Unknown Team B"
+    );
+  }
+
 }

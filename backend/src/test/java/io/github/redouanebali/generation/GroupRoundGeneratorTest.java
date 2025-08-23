@@ -1,6 +1,8 @@
 package io.github.redouanebali.generation;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.redouanebali.model.Game;
@@ -20,6 +22,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+// edit this file please
 public class GroupRoundGeneratorTest {
 
   private GroupRoundGenerator generator;
@@ -110,7 +113,7 @@ public class GroupRoundGeneratorTest {
     List<Round>         rounds    = generator.createRoundsStructure(tournament);
     Round               round     = rounds.iterator().next();
 
-    assertEquals(TestFixtures.totalGroupGames(nbPools, nbPairsPerPool), round.getGames().size());
+    assertEquals(expectedNbGames, round.getGames().size());
   }
 
   @ParameterizedTest
@@ -304,5 +307,123 @@ public class GroupRoundGeneratorTest {
     assertTrue(TestFixtures.gameContainsBoth(finalGame, a1, b6), "Expected Final to be A1 vs B1");
   }
 
+
+  @Test
+  public void testPropagateWinners_waitsUntilGroupsAreFinished() {
+    Tournament tournament = new Tournament();
+
+    GroupRoundGenerator gen    = new GroupRoundGenerator(0, 2, 3, 1);
+    List<Round>         rounds = gen.createRoundsStructure(tournament);
+    Round               groups = rounds.get(0);
+    tournament.getRounds().addAll(rounds);
+
+    List<PlayerPair> pairs = TestFixtures.createPairs(6);
+    groups.getPools().get(0).addPair(pairs.get(0));
+    groups.getPools().get(0).addPair(pairs.get(1));
+    groups.getPools().get(0).addPair(pairs.get(2));
+    groups.getPools().get(1).addPair(pairs.get(3));
+    groups.getPools().get(1).addPair(pairs.get(4));
+    groups.getPools().get(1).addPair(pairs.get(5));
+
+    // No scores set => groups not finished
+    gen.propagateWinners(tournament);
+
+    List<Round> finalsRounds = tournament.getRounds().stream()
+                                         .filter(r -> r.getStage() != Stage.GROUPS)
+                                         .toList();
+
+    // Finals rounds may exist structurally, but since groups are unfinished,
+    // every match must have null teams and no score assigned
+    assertTrue(finalsRounds.size() >= 1, "Finals rounds should exist structurally even if groups not finished");
+
+    assertAll("Finals matches should be placeholders (null teams, no score) while groups are unfinished",
+              finalsRounds.stream().map(r -> () -> assertAll(
+                  "Round " + r.getStage() + " games have null teams",
+                  r.getGames().stream().map(g -> () -> {
+                    assertNull(g.getTeamA(), "Round " + r.getStage() + ": teamA should be null");
+                    assertNull(g.getTeamB(), "Round " + r.getStage() + ": teamB should be null");
+                    assertNull(g.getScore(), "Round " + r.getStage() + ": score should be null");
+                  })
+              ))
+    );
+  }
+
+  @Test
+  public void testPropagateWinners_invalidQualifiedNotPowerOfTwo() {
+    Tournament tournament = new Tournament();
+
+    GroupRoundGenerator gen    = new GroupRoundGenerator(0, 3, 3, 1); // 3 pools * 1 = 3 (not power of two)
+    List<Round>         rounds = gen.createRoundsStructure(tournament);
+    tournament.getRounds().addAll(rounds);
+    Round groups = rounds.get(0);
+
+    List<PlayerPair> pairs = TestFixtures.createPairs(9);
+    for (int i = 0, p = 0; p < 3; p++) {
+      groups.getPools().get(p).addPair(pairs.get(i++));
+      groups.getPools().get(p).addPair(pairs.get(i++));
+      groups.getPools().get(p).addPair(pairs.get(i++));
+    }
+
+    finishAllGroupGamesDeterministically(groups);
+
+    gen.propagateWinners(tournament);
+
+    List<Round> finalsRounds = tournament.getRounds().stream()
+                                         .filter(r -> r.getStage() != Stage.GROUPS)
+                                         .toList();
+
+    // Finals rounds should still exist to keep the structure consistent…
+    assertTrue(finalsRounds.size() >= 1, "Finals rounds should still be created to keep structure consistent");
+
+    // Matches can exist, but teams must be unassigned (null) and no scores set
+    assertAll("Finals matches should be placeholders with null teams",
+              finalsRounds.stream().map(r -> () -> assertAll(
+                  "Round " + r.getStage() + " games have null teams",
+                  r.getGames().stream().map(g -> () -> {
+                    assertNull(g.getTeamA(), "Round " + r.getStage() + ": teamA should be null");
+                    assertNull(g.getTeamB(), "Round " + r.getStage() + ": teamB should be null");
+                    assertNull(g.getScore(), "Round " + r.getStage() + ": score should be null");
+                  })
+              ))
+    );
+  }
+
+  @Test
+  public void testAlgorithmicSeeding_distributesTopSeedsAcrossPools() {
+    int nbPools      = 4;
+    int teamsPerPool = 3;
+    int nbSeeds      = nbPools;
+
+    GroupRoundGenerator generator = new GroupRoundGenerator(nbSeeds, nbPools, teamsPerPool, 1);
+    List<PlayerPair>    pairs     = TestFixtures.createPairs(nbPools * teamsPerPool);
+    Round               round     = generator.generateAlgorithmicRound(pairs);
+
+    List<Pool> pools = TestFixtures.sortedPoolsByName(round.getPools());
+
+    assertEquals(nbPools, pools.size(), "Unexpected number of pools");
+
+    assertAll("Each pool should contain exactly one top seed",
+              java.util.stream.IntStream.range(0, nbPools)
+                                        .mapToObj(i -> () -> {
+                                          Pool pool = pools.get(i);
+                                          long topSeedsInPool = pool.getPairs().stream()
+                                                                    .filter(pp -> pp.getSeed() >= 1 && pp.getSeed() <= nbPools)
+                                                                    .count();
+                                          assertEquals(1, topSeedsInPool, "Pool " + pool.getName() + " should contain exactly one top seed");
+                                        })
+    );
+  }
+
+  private void finishAllGroupGamesDeterministically(Round groupsRound) {
+    for (Game g : groupsRound.getGames()) {
+      PlayerPair a = g.getTeamA();
+      PlayerPair b = g.getTeamB();
+      if (a == null || b == null) {
+        continue;
+      }
+      PlayerPair winner = (a.getSeed() <= b.getSeed()) ? a : b;
+      g.setScore(TestFixtures.createScoreWithWinner(g, winner));
+    }
+  }
 
 }

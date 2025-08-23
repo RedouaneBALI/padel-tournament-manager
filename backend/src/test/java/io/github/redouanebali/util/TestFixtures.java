@@ -26,7 +26,7 @@ public final class TestFixtures {
   public static PlayerPair buildPairWithSeed(int seed) {
     Player player1 = new Player((long) seed, "Player" + seed + "A", seed, 0, 1990);
     Player player2 = new Player((long) seed + 100, "Player" + seed + "B", seed, 0, 1990);
-    return new PlayerPair(-1L, player1, player2, seed);
+    return new PlayerPair(player1, player2, seed);
   }
 
   /**

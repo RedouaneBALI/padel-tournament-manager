@@ -36,8 +36,8 @@ public class GameTest {
                                               int pointsPerSet,
                                               boolean superTieBreakInFinalSet,
                                               boolean expectedComplete) {
-    PlayerPair teamA = new PlayerPair(-1L, new Player(), new Player(), 1);
-    PlayerPair teamB = new PlayerPair(-1L, new Player(), new Player(), 2);
+    PlayerPair teamA = new PlayerPair(new Player(), new Player(), 1);
+    PlayerPair teamB = new PlayerPair(new Player(), new Player(), 2);
     Game       game  = new Game(new MatchFormat(1L, numberOfSetsToWin, pointsPerSet, superTieBreakInFinalSet, false));
     game.setTeamA(teamA);
     game.setTeamB(teamB);
@@ -76,8 +76,8 @@ public class GameTest {
                             boolean superTieBreakInFinalSet,
                             String expectedWinner) {
 
-    PlayerPair teamA = new PlayerPair(-1L, new Player("A1"), new Player("A2"), 1);
-    PlayerPair teamB = new PlayerPair(-1L, new Player("B1"), new Player("B2"), 2);
+    PlayerPair teamA = new PlayerPair(new Player("A1"), new Player("A2"), 1);
+    PlayerPair teamB = new PlayerPair(new Player("B1"), new Player("B2"), 2);
     Game       game  = new Game(new MatchFormat(1L, numberOfSetsToWin, pointsPerSet, superTieBreakInFinalSet, false));
     game.setTeamA(teamA);
     game.setTeamB(teamB);
