@@ -10,6 +10,7 @@ import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
 import io.github.redouanebali.dto.response.GameDTO;
 import io.github.redouanebali.dto.response.MatchFormatDTO;
 import io.github.redouanebali.dto.response.PlayerPairDTO;
+import io.github.redouanebali.dto.response.PoolDTO;
 import io.github.redouanebali.dto.response.PoolRankingDTO;
 import io.github.redouanebali.dto.response.PoolRankingDetailsDTO;
 import io.github.redouanebali.dto.response.RoundDTO;
@@ -67,7 +68,7 @@ public class TournamentMapperTest {
   void testPoolRankingDTO() {
     PoolRankingDetailsDTO detail = new PoolRankingDetailsDTO();
     detail.setPairId(10L);
-    detail.setPairName("Team X");
+    detail.setPlayerPair(new PlayerPairDTO("J1", "J2"));
     detail.setPoints(100);
     detail.setSetAverage(5);
 
@@ -79,7 +80,8 @@ public class TournamentMapperTest {
     assertEquals(1, dto.getDetails().size());
     PoolRankingDetailsDTO d = dto.getDetails().get(0);
     assertEquals(10L, d.getPairId());
-    assertEquals("Team X", d.getPairName());
+    assertEquals("J1", d.getPlayerPair().getPlayer1Name());
+    assertEquals("J2", d.getPlayerPair().getPlayer2Name());
     assertEquals(100, d.getPoints());
     assertEquals(5, d.getSetAverage());
   }
@@ -88,11 +90,12 @@ public class TournamentMapperTest {
   void testPoolRankingDetailsDTO() {
     PoolRankingDetailsDTO dto = new PoolRankingDetailsDTO();
     dto.setPairId(20L);
-    dto.setPairName("Team Y");
+    dto.setPlayerPair(new PlayerPairDTO("J1", "J2"));
     dto.setPoints(80);
     dto.setSetAverage(3);
     assertEquals(20L, dto.getPairId());
-    assertEquals("Team Y", dto.getPairName());
+    assertEquals("J1", dto.getPlayerPair().getPlayer1Name());
+    assertEquals("J2", dto.getPlayerPair().getPlayer2Name());
     assertEquals(80, dto.getPoints());
     assertEquals(3, dto.getSetAverage());
   }
@@ -293,6 +296,59 @@ public class TournamentMapperTest {
     List<PlayerPair> pairs = mapper.toPlayerPairList(List.of());
     assertNotNull(pairs);
     assertTrue(pairs.isEmpty());
+  }
+
+  @Test
+  void testRoundPoolsMapping() {
+    // Création des joueurs et des paires
+    Player player1 = new Player("John");
+    Player player2 = new Player("Alice");
+    Player player3 = new Player("Bob");
+    Player player4 = new Player("Carol");
+
+    PlayerPair pair1 = new PlayerPair();
+    pair1.setId(1L);
+    pair1.setPlayer1(player1);
+    pair1.setPlayer2(player2);
+
+    PlayerPair pair2 = new PlayerPair();
+    pair2.setId(2L);
+    pair2.setPlayer1(player3);
+    pair2.setPlayer2(player4);
+
+    // Création du pool avec son nom et ses paires
+    Pool pool = new Pool("Pool A", List.of(pair1, pair2));
+
+    // Création du round avec son stage
+    Round round = new Round(Stage.GROUPS);
+    round.addPool(pool);
+
+    // Mapping vers DTO
+    RoundDTO roundDTO = mapper.toDTO(round);
+
+    // Vérifications
+    assertNotNull(roundDTO.getPools());
+    assertEquals(1, roundDTO.getPools().size());
+
+    PoolDTO poolDTO = roundDTO.getPools().get(0);
+    assertEquals("Pool A", poolDTO.getName());
+    assertNotNull(poolDTO.getPairs());
+    assertEquals(2, poolDTO.getPairs().size());
+
+    // Vérification du premier pair
+    PlayerPairDTO firstPairDTO = poolDTO.getPairs().get(0);
+    assertEquals("John", firstPairDTO.getPlayer1Name());
+    assertEquals("Alice", firstPairDTO.getPlayer2Name());
+
+    // Vérification du deuxième pair
+    PlayerPairDTO secondPairDTO = poolDTO.getPairs().get(1);
+    assertEquals("Bob", secondPairDTO.getPlayer1Name());
+    assertEquals("Carol", secondPairDTO.getPlayer2Name());
+
+    // Vérification du ranking
+    assertNotNull(poolDTO.getPoolRanking());
+    assertNotNull(poolDTO.getPoolRanking().getDetails());
+    assertEquals(pool.getPoolRanking().getDetails().size(), poolDTO.getPoolRanking().getDetails().size());
   }
 
 }

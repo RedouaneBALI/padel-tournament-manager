@@ -13,7 +13,7 @@ export interface TournamentFormatConfig {
   nbSeedsQualify?: number;
 }
 
-export type TournamentFormat = 'KNOCKOUT' | 'GROUPS_KO' | 'QUALIF_KNOCKOUT';
+export type TournamentFormat = 'KNOCKOUT' | 'GROUPS_KO' | 'QUALIF_KO';
 
 export interface Tournament {
   id: number;

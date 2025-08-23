@@ -1,5 +1,7 @@
 package io.github.redouanebali.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -33,6 +35,7 @@ public class PlayerPair {
   @JoinColumn(name = "player2_id")
   private Player player2;
 
+  @JsonIgnore
   private int      seed;
   @Enumerated(EnumType.STRING)
   private PairType type = PairType.NORMAL;
@@ -78,6 +81,11 @@ public class PlayerPair {
 
   public boolean isQualifierSlot() {
     return type == PairType.QUALIFIER;
+  }
+
+  @JsonProperty("seed")
+  public Integer getJsonSeed() {
+    return (isBye() || isQualifierSlot()) ? null : this.seed;
   }
 
   @Override

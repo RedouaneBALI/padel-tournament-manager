@@ -5,8 +5,8 @@ import lombok.Data;
 @Data
 public class PoolRankingDetailsDTO {
 
-  private Long   pairId;
-  private String pairName;
-  private int    points;
-  private int    setAverage;
+  private Long          pairId;
+  private PlayerPairDTO playerPair;
+  private int           points;
+  private int           setAverage;
 }

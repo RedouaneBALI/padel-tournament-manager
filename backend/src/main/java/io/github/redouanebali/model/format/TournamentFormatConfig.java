@@ -34,7 +34,7 @@ public class TournamentFormatConfig {
       case GROUPS_KO -> {
         return nbPairsPerPool * nbPairsPerPool;
       }
-      case QUALIF_MAIN -> {
+      case QUALIF_KO -> {
         return mainDrawSize + preQualDrawSize;
       }
     }

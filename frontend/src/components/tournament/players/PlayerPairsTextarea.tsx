@@ -21,7 +21,6 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
     setIsLoading(true);
     try {
       const data = await fetchPairs(tournamentId);
-      console.log(data);
       setText(data.map(pair => `${pair.player1Name},${pair.player2Name},${pair.seed}`).join('\n'));
       if (onPairsChange) onPairsChange(data);
     } catch (e: any) {

@@ -14,6 +14,7 @@ public class QualifyMainRoundGenerator extends AbstractRoundGenerator {
 
   private int mainDrawSize;
   private int nbQualifiers;
+  // @todo add nbSeeds for qualification rounds too
 
   public QualifyMainRoundGenerator(int nbSeeds, int mainDrawSize, int nbQualifiers) {
     super(nbSeeds);
@@ -37,50 +38,34 @@ public class QualifyMainRoundGenerator extends AbstractRoundGenerator {
     List<PlayerPair> sortedPairs = new ArrayList<>(allPairs);
     sortedPairs.sort(Comparator.comparingInt(PlayerPair::getSeed)); // Trier par seed croissant
 
-    // 3. Identifier les paires jouant les qualifications
-    int              directMainDrawPairs = mainDrawSize - nbQualifiers; // Paires directement qualifiées pour le main draw
-    List<PlayerPair> qualificationPairs  = sortedPairs.subList(directMainDrawPairs, sortedPairs.size()); // Dernières paires
+    int directMainDrawPairs = mainDrawSize - nbQualifiers; // Paires directement qualifiées pour le main draw
+    // Copie matérialisée pour pouvoir insérer des BYE
+    List<PlayerPair> qualificationPairs = new ArrayList<>(sortedPairs.subList(directMainDrawPairs, sortedPairs.size()));
 
-    // 4. Ajouter des BYEs pour atteindre la puissance de 2
-    // Les BYEs sont ajoutés selon le besoin
-    int powerOfTwoSize = 1;
-    while (powerOfTwoSize < qualificationPairs.size()) {
-      powerOfTwoSize *= 2;
-    }
-    int              numByes = powerOfTwoSize - qualificationPairs.size();
-    List<PlayerPair> byes    = new ArrayList<>();
-    for (int i = 0; i < numByes; i++) {
-      byes.add(PlayerPair.bye());
-    }
+    // Assure une taille puissance de 2 en ajoutant des BYE, comme dans KnockoutRoundGenerator
+    int originalQualSize = qualificationPairs.size();
+    addMissingByePairsToReachPowerOfTwo(qualificationPairs, originalQualSize);
 
-    // 5. Assigner les BYEs aux meilleures paires
-    List<PlayerPair> fullRoundPairs = new ArrayList<>(qualificationPairs);
-    for (int i = 0; i < numByes; i++) {
-      fullRoundPairs.add(i * 2, byes.get(i)); // Intercaler les BYEs avec les meilleures paires
-    }
+    Round round = new Round();
 
-    // 6. Créer les matchs (pairer les paires sans BYE vs BYE en priorité)
-    List<Game> games     = new ArrayList<>();
-    int        teamIndex = 0;
-    while (teamIndex < fullRoundPairs.size()) {
-      PlayerPair teamA = fullRoundPairs.get(teamIndex++);
-      PlayerPair teamB = (teamIndex < fullRoundPairs.size()) ? fullRoundPairs.get(teamIndex++) : null;
+    // Crée les matchs vides en fonction de la taille puissance de 2
+    List<Game> games = createEmptyGames(qualificationPairs.size(), round.getMatchFormat());
 
-      if (teamA.isBye() && teamB != null && teamB.isBye()) {
-        throw new IllegalStateException("Match between BYE vs BYE is not allowed");
+    // Remplissage séquentiel A puis B (même logique que KO)
+    int teamIndex = 0;
+    for (Game game : games) {
+      if (teamIndex < qualificationPairs.size()) {
+        game.setTeamA(qualificationPairs.get(teamIndex++));
       }
-
-      Game game = new Game();
-      game.setTeamA(teamA);
-      game.setTeamB(teamB);
-      games.add(game);
+      if (teamIndex < qualificationPairs.size()) {
+        game.setTeamB(qualificationPairs.get(teamIndex++));
+      }
     }
 
     // 7. Déterminer le stage pour Q1
     Stage stage = Stage.Q1;
 
     // 8. Création du Round avec les matchs
-    Round round = new Round();
     round.setStage(stage);
     round.addGames(games);
     return round;
@@ -116,36 +101,26 @@ public class QualifyMainRoundGenerator extends AbstractRoundGenerator {
     // Seed first main round with direct entrants (leave exactly nbQualifiers null slots)
     seedFirstMainRound(tournament, directEntrants);
 
-    // Build and return Q1 using the remaining pairs (same logic as the existing generateManualRound)
+    // Build and return Q1 using the remaining pairs (align with KO: reach power-of-two via BYE, then fill sequentially)
     List<PlayerPair> remaining = new ArrayList<>(sorted.subList(directMainDrawPairs, sorted.size()));
 
-    // 4. Add BYEs to reach next power of two for the pre-qual field
-    int powerOfTwoSize = 1;
-    while (powerOfTwoSize < remaining.size()) {
-      powerOfTwoSize *= 2;
-    }
-    int              numByes        = powerOfTwoSize - remaining.size();
-    List<PlayerPair> fullRoundPairs = new ArrayList<>(remaining);
-    for (int i = 0; i < numByes; i++) {
-      fullRoundPairs.add(i * 2, PlayerPair.bye());
-    }
-
-    // Pair into games
-    List<Game> games     = new ArrayList<>();
-    int        teamIndex = 0;
-    while (teamIndex < fullRoundPairs.size()) {
-      PlayerPair teamA = fullRoundPairs.get(teamIndex++);
-      PlayerPair teamB = (teamIndex < fullRoundPairs.size()) ? fullRoundPairs.get(teamIndex++) : null;
-      if (teamA.isBye() && teamB != null && teamB.isBye()) {
-        throw new IllegalStateException("Match between BYE vs BYE is not allowed");
-      }
-      Game game = new Game();
-      game.setTeamA(teamA);
-      game.setTeamB(teamB);
-      games.add(game);
-    }
+    int originalQualSize = remaining.size();
+    addMissingByePairsToReachPowerOfTwo(remaining, originalQualSize);
 
     Round q1 = new Round();
+
+    List<Game> games = createEmptyGames(remaining.size(), q1.getMatchFormat());
+
+    int teamIndex = 0;
+    for (Game game : games) {
+      if (teamIndex < remaining.size()) {
+        game.setTeamA(remaining.get(teamIndex++));
+      }
+      if (teamIndex < remaining.size()) {
+        game.setTeamB(remaining.get(teamIndex++));
+      }
+    }
+
     q1.setStage(Stage.Q1);
     q1.addGames(games);
     return q1;
@@ -246,7 +221,7 @@ public class QualifyMainRoundGenerator extends AbstractRoundGenerator {
       Game       currentGame = currentGames.get(i);
       PlayerPair winner      = null;
 
-      // Récupération de l'équipe gagnante
+      // Récupération de l'équipe gagnante (même logique que KO : BYE explicite ou match terminé)
       if (currentGame.getTeamA() != null && currentGame.getTeamA().isBye()) {
         winner = currentGame.getTeamB();
       } else if (currentGame.getTeamB() != null && currentGame.getTeamB().isBye()) {
@@ -327,4 +302,3 @@ public class QualifyMainRoundGenerator extends AbstractRoundGenerator {
     return rounds;
   }
 }
-

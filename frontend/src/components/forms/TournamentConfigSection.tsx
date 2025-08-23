@@ -81,7 +81,7 @@ export default function TournamentConfigSection({
               <option value="">Sélectionnez le format</option>
               <option value="KNOCKOUT">Élimination directe</option>
               <option value="GROUPS_KO"> Poules + Elimination directe </option>
-              <option value="QUALIF_KNOCKOUT"> Qualif + Élimination directe </option>
+              <option value="QUALIF_KO"> Qualif + Élimination directe </option>
             </select>
           </div>
         </div>
@@ -94,7 +94,7 @@ export default function TournamentConfigSection({
           {formData.format === 'GROUPS_KO' && (
             <GroupsKoConfigSection formData={formData} handleInputChange={handleInputChange} />
           )}
-          {(formData.format as any) === 'QUALIF_KNOCKOUT' && (
+          {(formData.format as any) === 'QUALIF_KO' && (
             <QualifKnockoutConfigSection formData={formData} handleInputChange={handleInputChange} />
           )}
         </div>

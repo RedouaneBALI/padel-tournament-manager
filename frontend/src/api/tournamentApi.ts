@@ -118,7 +118,6 @@ export async function updateMatchFormat(tournamentId: string, stage: string, mat
  * @param idToken id_token Google (JWT) à mettre dans Authorization (Bearer)
  */
 export async function createTournament(payload: Tournament) {
-  console.log(payload);
   const res = await fetchWithAuth(`${BASE_URL}/admin/tournaments`, {
     method: "POST",
     body: JSON.stringify(payload),
@@ -164,7 +163,6 @@ export async function updateTournament(tournamentId: string, updatedTournament: 
 }
 
 export async function savePlayerPairs(tournamentId: string, pairs: PlayerPair[]) {
-  console.log(pairs);
   const response = await fetchWithAuth(`${BASE_URL}/admin/tournaments/${tournamentId}/pairs`, {
     method: 'POST',
     body: JSON.stringify(pairs),

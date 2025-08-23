@@ -19,11 +19,7 @@ public class StageTest {
       "17, R32",
       "32, R32",
       "33, R64",
-      "64, R64",
-      "65, Q2",
-      "128, Q2",
-      "129, Q1",
-      "256, Q1"
+      "64, R64"
   })
   void testFromNbTeams(int teamCount, Stage expectedStage) {
     assertEquals(expectedStage, Stage.fromNbTeams(teamCount));

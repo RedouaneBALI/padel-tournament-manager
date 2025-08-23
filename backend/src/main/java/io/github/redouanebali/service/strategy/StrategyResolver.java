@@ -12,7 +12,7 @@ public class StrategyResolver {
     return switch (format) {
       case KNOCKOUT -> new KnockoutStrategy();
       case GROUPS_KO -> new GroupsKoStrategy();
-      case QUALIF_MAIN -> new QualifMainStrategy();
+      case QUALIF_KO -> new QualifMainStrategy();
     };
   }
 }

@@ -6,6 +6,7 @@ import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -48,7 +49,7 @@ public abstract class AbstractRoundGenerator implements RoundGenerator {
     r.setStage(stage);
     java.util.List<Game> list = new java.util.ArrayList<>(nbGames);
     for (int i = 0; i < nbGames; i++) {
-      list.add(new Game(new MatchFormat()));
+      list.add(new Game(r.getMatchFormat()));
     }
     r.addGames(list);
     return r;
@@ -68,15 +69,15 @@ public abstract class AbstractRoundGenerator implements RoundGenerator {
     return r;
   }
 
-  protected List<Game> createEmptyGames(int nbTeams) {
+  protected List<Game> createEmptyGames(int nbTeams, MatchFormat format) {
     int bracket = 1;
     while (bracket < nbTeams) {
       bracket <<= 1;
     }
-    int                                               nbGames = bracket / 2;
-    java.util.List<io.github.redouanebali.model.Game> list    = new java.util.ArrayList<>(nbGames);
+    int        nbGames = bracket / 2;
+    List<Game> list    = new ArrayList<>(nbGames);
     for (int i = 0; i < nbGames; i++) {
-      list.add(new io.github.redouanebali.model.Game(new MatchFormat()));
+      list.add(new Game(format));
     }
     return list;
   }

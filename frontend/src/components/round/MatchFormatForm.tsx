@@ -105,22 +105,24 @@ export default function MatchFormatForm({
         </div>
 
         {/* Super tie-break au 3e set */}
-        <div className="flex items-center justify-between mt-2">
-          <span className="text-sm">3ᵉ set en super tie-break</span>
-          {readOnly ? (
-            <Switch
-              checked={!!format.superTieBreakInFinalSet}
-              disabled
-              aria-readonly
-              className="pointer-events-none opacity-60"
-            />
-          ) : (
-            <Switch
-              checked={format.superTieBreakInFinalSet}
-              onCheckedChange={(value) => handleChange('superTieBreakInFinalSet', value)}
-            />
-          )}
-        </div>
+        {format.numberOfSetsToWin === 2 && (
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-sm">3ᵉ set en super tie-break</span>
+            {readOnly ? (
+              <Switch
+                checked={!!format.superTieBreakInFinalSet}
+                disabled
+                aria-readonly
+                className="pointer-events-none opacity-60"
+              />
+            ) : (
+              <Switch
+                checked={format.superTieBreakInFinalSet}
+                onCheckedChange={(value) => handleChange('superTieBreakInFinalSet', value)}
+              />
+            )}
+          </div>
+        )}
       </div>
     </fieldset>
   );

@@ -22,12 +22,12 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
 
   @Override
   public Round generateAlgorithmicRound(List<PlayerPair> pairs) {
-    int originalSize = pairs.size();
+    int   originalSize = pairs.size();
+    Round round        = new Round();
     addMissingByePairsToReachPowerOfTwo(pairs, originalSize);
-    List<Game>       games     = createEmptyGames(pairs.size());
+    List<Game>       games     = createEmptyGames(pairs.size(), round.getMatchFormat());
     List<PlayerPair> remaining = placeSeedAndByeTeams(games, pairs, getNbSeeds());
     placeRemainingTeamsRandomly(games, remaining, getNbSeeds());
-    Round round = new Round();
     round.addGames(games);
     round.setStage(Stage.fromNbTeams(pairs.size()));
     return round;
@@ -35,9 +35,10 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
 
   @Override
   public Round generateManualRound(final List<PlayerPair> pairs) {
-    int originalSize = pairs.size();
+    int   originalSize = pairs.size();
+    Round round        = new Round();
     addMissingByePairsToReachPowerOfTwo(pairs, originalSize);
-    List<Game> games = createEmptyGames(pairs.size());
+    List<Game> games = createEmptyGames(pairs.size(), round.getMatchFormat());
 
     int teamIndex = 0;
     for (Game game : games) {
@@ -49,7 +50,6 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
       }
     }
 
-    Round round = new Round();
     round.addGames(games);
     round.setStage(Stage.fromNbTeams(pairs.size()));
     return round;
@@ -267,7 +267,7 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
 
       List<Game> games = new ArrayList<>();
       for (int i = 0; i < nbMatches; i++) {
-        Game game = new Game(matchFormat); // Initialise un match (possiblement inutile, d'après votre commentaire)
+        Game game = new Game(matchFormat);
         games.add(game);
       }
 

@@ -4,13 +4,16 @@ import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
 import io.github.redouanebali.dto.response.GameDTO;
 import io.github.redouanebali.dto.response.MatchFormatDTO;
 import io.github.redouanebali.dto.response.PlayerPairDTO;
+import io.github.redouanebali.dto.response.PoolDTO;
 import io.github.redouanebali.dto.response.PoolRankingDTO;
+import io.github.redouanebali.dto.response.PoolRankingDetailsDTO;
 import io.github.redouanebali.dto.response.RoundDTO;
 import io.github.redouanebali.dto.response.TournamentDTO;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.PoolRanking;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
@@ -59,20 +62,30 @@ public interface TournamentMapper {
 
   List<RoundDTO> toDTORoundList(List<Round> rounds);
 
-  Set<RoundDTO> toDTORoundSet(Set<Round> rounds);
-
   MatchFormatDTO toDTO(MatchFormat matchFormat);
 
   List<MatchFormatDTO> toDTOMatchFormatList(List<MatchFormat> matchFormats);
 
   Set<MatchFormatDTO> toDTOMatchFormatSet(Set<MatchFormat> matchFormats);
 
+  // Mapping Pool -> PoolDTO
+  @Mapping(target = "pairs", source = "pairs")
+  @Mapping(target = "poolRanking", source = "poolRanking")
+  PoolDTO toDTO(Pool pool);
+
+  List<PoolDTO> toDTOPoolList(List<io.github.redouanebali.model.Pool> pools);
+
+  // Mapping PoolRanking -> PoolRankingDTO
+  @Mapping(target = "id", source = "id")
+  @Mapping(target = "details", source = "details")
   PoolRankingDTO toDTO(PoolRanking poolRanking);
 
   List<PoolRankingDTO> toDTOPoolRankingList(List<PoolRanking> poolRankings);
 
-  Set<PoolRankingDTO> toDTOPoolRankingSet(Set<PoolRanking> poolRankings);
 
+  PoolRankingDetailsDTO toDTO(io.github.redouanebali.model.PoolRankingDetails details);
+
+  List<PoolRankingDetailsDTO> toDTOPoolRankingDetailsList(List<io.github.redouanebali.model.PoolRankingDetails> details);
 
   List<PlayerPair> toPlayerPairList(List<CreatePlayerPairRequest> requests);
 
