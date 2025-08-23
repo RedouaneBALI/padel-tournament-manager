@@ -50,7 +50,7 @@ public class GroupsKoStrategy implements FormatStrategy {
         cfg.getNbPairsPerPool() != null ? cfg.getNbPairsPerPool() : 0,
         cfg.getNbQualifiedByPool() != null ? cfg.getNbQualifiedByPool() : 0
     );
-    List<Round> rounds = generator.initRoundsAndGames(t);
+    List<Round> rounds = generator.createRoundsStructure(t);
     t.getRounds().clear();
     t.getRounds().addAll(rounds);
   }

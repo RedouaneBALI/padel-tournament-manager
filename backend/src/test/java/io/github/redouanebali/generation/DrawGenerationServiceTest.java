@@ -128,7 +128,7 @@ class DrawGenerationServiceTest {
     tournament.getPlayerPairs().addAll(TestFixtures.createPairs(4));
     // init structure with empty games
     KnockoutRoundGenerator gen       = new KnockoutRoundGenerator(0);
-    List<Round>            structure = gen.initRoundsAndGames(tournament);
+    List<Round>            structure = gen.createRoundsStructure(tournament);
     tournament.getRounds().clear();
     tournament.getRounds().addAll(structure);
 
@@ -158,7 +158,7 @@ class DrawGenerationServiceTest {
     tournament.getPlayerPairs().addAll(TestFixtures.createPairs(4));
 
     KnockoutRoundGenerator gen       = new KnockoutRoundGenerator(0);
-    List<Round>            structure = gen.initRoundsAndGames(tournament);
+    List<Round>            structure = gen.createRoundsStructure(tournament);
     tournament.getRounds().clear();
     tournament.getRounds().addAll(structure);
 
@@ -198,7 +198,7 @@ class DrawGenerationServiceTest {
     t.getPlayerPairs().addAll(TestFixtures.createPairs(4));
 
     KnockoutRoundGenerator gen       = new KnockoutRoundGenerator(0);
-    List<Round>            structure = gen.initRoundsAndGames(t);
+    List<Round>            structure = gen.createRoundsStructure(t);
     t.getRounds().clear();
     t.getRounds().addAll(structure);
 
@@ -216,7 +216,7 @@ class DrawGenerationServiceTest {
     t.getPlayerPairs().addAll(TestFixtures.createPairs(4));
 
     KnockoutRoundGenerator gen       = new KnockoutRoundGenerator(0);
-    List<Round>            structure = gen.initRoundsAndGames(t);
+    List<Round>            structure = gen.createRoundsStructure(t);
     t.getRounds().clear();
     t.getRounds().addAll(structure);
 
@@ -233,7 +233,7 @@ class DrawGenerationServiceTest {
     t.getPlayerPairs().addAll(TestFixtures.createPairs(4));
 
     KnockoutRoundGenerator gen       = new KnockoutRoundGenerator(0);
-    List<Round>            structure = gen.initRoundsAndGames(t);
+    List<Round>            structure = gen.createRoundsStructure(t);
     t.getRounds().clear();
     t.getRounds().addAll(structure);
 
@@ -249,7 +249,7 @@ class DrawGenerationServiceTest {
     t.getPlayerPairs().addAll(TestFixtures.createPairs(6)); // 6 registered, should use first 4
 
     KnockoutRoundGenerator gen       = new KnockoutRoundGenerator(0);
-    List<Round>            structure = gen.initRoundsAndGames(t);
+    List<Round>            structure = gen.createRoundsStructure(t);
     t.getRounds().clear();
     t.getRounds().addAll(structure);
 

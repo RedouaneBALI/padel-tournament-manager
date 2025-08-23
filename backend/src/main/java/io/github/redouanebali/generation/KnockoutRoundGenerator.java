@@ -6,6 +6,7 @@ import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.format.DrawMath;
 import io.github.redouanebali.model.format.TournamentFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -241,9 +242,18 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
   }
 
   @Override
-  public List<Round> initRoundsAndGames(Tournament tournament) {
+  public List<Round> createRoundsStructure(Tournament tournament) {
+    // Récupération du nombre maximal d'équipes
+    int nbMaxTeams = tournament.getConfig().getNbMaxPairs(TournamentFormat.KNOCKOUT);
+
+    // Validation : Vérifie si `nbMaxTeams` est une puissance de deux
+    if (!DrawMath.isPowerOfTwo(nbMaxTeams)) {
+      throw new IllegalArgumentException("Taille de tableau non supportée : " + nbMaxTeams);
+    }
+
+    // Création des rounds si le tableau est valide
     LinkedList<Round> rounds  = new LinkedList<>();
-    Stage             current = Stage.fromNbTeams(tournament.getConfig().getNbMaxPairs(TournamentFormat.KNOCKOUT));
+    Stage             current = Stage.fromNbTeams(nbMaxTeams);
 
     while (current != null && current != Stage.WINNER) {
       Round round = new Round(current);
@@ -257,7 +267,7 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
 
       List<Game> games = new ArrayList<>();
       for (int i = 0; i < nbMatches; i++) {
-        Game game = new Game(matchFormat); // @todo useless ?
+        Game game = new Game(matchFormat); // Initialise un match (possiblement inutile, d'après votre commentaire)
         games.add(game);
       }
 

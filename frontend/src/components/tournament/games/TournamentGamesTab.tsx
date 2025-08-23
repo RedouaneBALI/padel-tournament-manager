@@ -57,10 +57,10 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
     return games
       .filter(game =>
         (game.teamA !== null || game.teamB !== null) &&
-        (game.teamA?.player1?.name !== 'BYE' &&
-         game.teamA?.player2?.name !== 'BYE' &&
-         game.teamB?.player1?.name !== 'BYE' &&
-         game.teamB?.player2?.name !== 'BYE')
+        (game.teamA?.player1Name !== 'BYE' &&
+         game.teamA?.player2Name !== 'BYE' &&
+         game.teamB?.player1Name !== 'BYE' &&
+         game.teamB?.player2Name !== 'BYE')
       )
       .sort((a, b) => {
         if (!a.scheduledTime && !b.scheduledTime) return 0;

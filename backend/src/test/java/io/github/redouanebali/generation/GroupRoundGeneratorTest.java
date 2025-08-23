@@ -42,7 +42,7 @@ public class GroupRoundGeneratorTest {
       "18,6,3,18"  // 6 groups of 3 => 3 games per group, total = 18
   })
   public void checkManualPoolGeneration(int nbPairs, int expectedGroups, int expectedPairsPerGroup, int expectedNbGames) {
-    generator = new GroupRoundGenerator(0, expectedGroups, expectedPairsPerGroup, 1);
+    generator = new GroupRoundGenerator(0, expectedGroups, expectedPairsPerGroup, 1); // @todo to remove
     List<PlayerPair> pairs = TestFixtures.createPairs(nbPairs);
     Round            round = generator.generateManualRound(pairs);
 
@@ -103,11 +103,11 @@ public class GroupRoundGeneratorTest {
       "5,4,30",  // 5 pools of 4 => 6 games per pool = 4*3/2 = 6, total = 30
       "6,3,18"   // 6 pools of 3 => 3 games per pool = 3*2/2 = 3, total = 18
   })
-  public void testInitRoundsAndGames(int nbPools, int nbPairsPerPool, int expectedNbGames) {
+  public void testCreateRoundsStructure(int nbPools, int nbPairsPerPool, int expectedNbGames) {
     Tournament tournament = new Tournament();
 
     GroupRoundGenerator generator = new GroupRoundGenerator(0, nbPools, nbPairsPerPool, 1);
-    List<Round>         rounds    = generator.initRoundsAndGames(tournament);
+    List<Round>         rounds    = generator.createRoundsStructure(tournament);
     Round               round     = rounds.iterator().next();
 
     assertEquals(TestFixtures.totalGroupGames(nbPools, nbPairsPerPool), round.getGames().size());
@@ -128,7 +128,7 @@ public class GroupRoundGeneratorTest {
     Tournament tournament = new Tournament();
 
     GroupRoundGenerator generator = new GroupRoundGenerator(0, nbPools, nbPairsPerPool, nbQualifiedByPool);
-    List<Round>         rounds    = generator.initRoundsAndGames(tournament);
+    List<Round>         rounds    = generator.createRoundsStructure(tournament);
 
     // There must always be 1 group phase round first
     assertEquals(1 + expectedFinalRoundsCount, rounds.size(),

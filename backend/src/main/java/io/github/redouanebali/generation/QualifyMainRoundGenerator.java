@@ -1,61 +1,185 @@
 package io.github.redouanebali.generation;
 
+import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.DrawMath;
-import io.github.redouanebali.model.format.TournamentFormatConfig;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class QualifyMainRoundGenerator extends AbstractRoundGenerator {
+
+  private int mainDrawSize;
+  private int nbQualifiers;
+
+  public QualifyMainRoundGenerator(int nbSeeds, int mainDrawSize, int nbQualifiers) {
+    super(nbSeeds);
+    this.mainDrawSize = mainDrawSize;
+    this.nbQualifiers = nbQualifiers;
+  }
 
   public QualifyMainRoundGenerator(final int nbSeeds) {
     super(nbSeeds);
   }
 
-  public Round generateManualRound(final Tournament tournament, final List<PlayerPair> pairs) {
-    TournamentFormatConfig config = tournament.getConfig();
-    if (config == null) {
-      throw new IllegalArgumentException("Tournament formatConfig must be QualifMainConfig");
+  @Override
+  public Round generateManualRound(final List<PlayerPair> allPairs) {
+    // 1. Validation des données d'entrée
+    final int totalPairs = (allPairs != null) ? allPairs.size() : 0;
+    if (totalPairs <= 0) {
+      throw new IllegalArgumentException("allPairs must not be empty");
     }
 
-    final int size = pairs != null ? pairs.size() : 0;
-    if (size <= 0) {
-      throw new IllegalArgumentException("pairs must not be empty");
+    // 2. Tri des paires en fonction de leur seed (ou autre critère)
+    List<PlayerPair> sortedPairs = new ArrayList<>(allPairs);
+    sortedPairs.sort(Comparator.comparingInt(PlayerPair::getSeed)); // Trier par seed croissant
+
+    // 3. Identifier les paires jouant les qualifications
+    int              directMainDrawPairs = mainDrawSize - nbQualifiers; // Paires directement qualifiées pour le main draw
+    List<PlayerPair> qualificationPairs  = sortedPairs.subList(directMainDrawPairs, sortedPairs.size()); // Dernières paires
+
+    // 4. Ajouter des BYEs pour atteindre la puissance de 2
+    // Les BYEs sont ajoutés selon le besoin
+    int powerOfTwoSize = 1;
+    while (powerOfTwoSize < qualificationPairs.size()) {
+      powerOfTwoSize *= 2;
+    }
+    int              numByes = powerOfTwoSize - qualificationPairs.size();
+    List<PlayerPair> byes    = new ArrayList<>();
+    for (int i = 0; i < numByes; i++) {
+      byes.add(PlayerPair.bye());
     }
 
-    // 1) Pré-qualif (au plus 2 tours): on déduit le numéro de Q depuis la taille courante.
-    int pre  = config.getPreQualDrawSize();
-    int qual = Math.max(1, config.getNbQualifiers());
-    if (pre > 0 && DrawMath.isPowerOfTwo(pre) && size <= pre && size >= qual && (pre % size) == 0) {
-      int qNum = 1 + log2Safe(pre / size); // size==pre -> Q1, size==pre/2 -> Q2
-      if (qNum > 2) {
-        qNum = 2;               // on borne à Q2 max
+    // 5. Assigner les BYEs aux meilleures paires
+    List<PlayerPair> fullRoundPairs = new ArrayList<>(qualificationPairs);
+    for (int i = 0; i < numByes; i++) {
+      fullRoundPairs.add(i * 2, byes.get(i)); // Intercaler les BYEs avec les meilleures paires
+    }
+
+    // 6. Créer les matchs (pairer les paires sans BYE vs BYE en priorité)
+    List<Game> games     = new ArrayList<>();
+    int        teamIndex = 0;
+    while (teamIndex < fullRoundPairs.size()) {
+      PlayerPair teamA = fullRoundPairs.get(teamIndex++);
+      PlayerPair teamB = (teamIndex < fullRoundPairs.size()) ? fullRoundPairs.get(teamIndex++) : null;
+
+      if (teamA.isBye() && teamB != null && teamB.isBye()) {
+        throw new IllegalStateException("Match between BYE vs BYE is not allowed");
       }
-      Stage stage = Stage.valueOf("Q" + qNum);
-      return createManualRound(stage, pairs);
+
+      Game game = new Game();
+      game.setTeamA(teamA);
+      game.setTeamB(teamB);
+      games.add(game);
     }
 
-    // 2) Cas Main Draw : on reçoit mainDrawSize (ou rempli avec BYE jusqu'à nextPow2)
-    int main      = config.getMainDrawSize();
-    int stageSize = DrawMath.isPowerOfTwo(size) ? size : DrawMath.nextPowerOfTwo(size);
-    // Par convention, on cible le stage correspondant à la puissance de 2 couvrante
-    if (size == main || stageSize == main) {
-      Stage stage = Stage.fromNbTeams(stageSize);
-      return createManualRound(stage, pairs);
-    }
+    // 7. Déterminer le stage pour Q1
+    Stage stage = Stage.Q1;
 
-    // fallback : considérer comme un KO simple basé sur la taille reçue
-    Stage stage = Stage.fromNbTeams(stageSize);
-    return createManualRound(stage, pairs);
+    // 8. Création du Round avec les matchs
+    Round round = new Round();
+    round.setStage(stage);
+    round.addGames(games);
+    return round;
   }
 
   @Override
-  public void propagateWinners(final Tournament tournament) {
-    // On s'appuie sur la logique éprouvée du KO pour propager les vainqueurs entre tours successifs
-    new KnockoutRoundGenerator(tournament.getConfig().getNbSeeds()).propagateWinners(tournament);
+  public void propagateWinners(Tournament tournament) {
+    if (tournament == null || tournament.getRounds() == null || tournament.getRounds().size() < 2) {
+      return;
+    }
+
+    List<Round> rounds = tournament.getRounds();
+
+    // Identifier les rounds de préqualification et de phase finale
+    List<Round> qualifyingRounds = new ArrayList<>();
+    List<Round> finalRounds      = new ArrayList<>();
+
+    for (Round round : rounds) {
+      if (round.getStage().isQualification()) {
+        qualifyingRounds.add(round); // Les rounds Q1, Q2, Q3 ou similaires
+      } else {
+        finalRounds.add(round); // Les rounds finaux (R16, QF, etc.)
+      }
+    }
+
+    // Étape 1 : Propager les vainqueurs dans les rounds de préqualification
+    for (int roundIndex = 0; roundIndex < qualifyingRounds.size() - 1; roundIndex++) {
+      Round currentRound = qualifyingRounds.get(roundIndex);
+      Round nextRound    = qualifyingRounds.get(roundIndex + 1);
+
+      propagateWinnersBetweenRounds(currentRound, nextRound);
+    }
+
+    // Étape 2 : Injecter les vainqueurs du dernier round de qualification dans la phase finale
+    if (!qualifyingRounds.isEmpty() && !finalRounds.isEmpty()) {
+      Round lastQualifyingRound = qualifyingRounds.get(qualifyingRounds.size() - 1);
+      Round firstFinalRound     = finalRounds.get(0);
+
+      propagateWinnersBetweenRounds(lastQualifyingRound, firstFinalRound);
+    }
+  }
+
+  /**
+   * Propage les gagnants entre deux rounds.
+   */
+  private void propagateWinnersBetweenRounds(Round currentRound, Round nextRound) {
+    if (currentRound == null || nextRound == null || currentRound.getGames() == null || nextRound.getGames() == null) {
+      return;
+    }
+
+    List<Game> currentGames = currentRound.getGames();
+    List<Game> nextGames    = nextRound.getGames();
+
+    // Vérifie si le round actuel est vide
+    boolean currentRoundEmpty = currentGames.stream()
+                                            .allMatch(game -> game.getTeamA() == null && game.getTeamB() == null);
+    if (currentRoundEmpty) {
+      return;
+    }
+
+    for (int i = 0; i < currentGames.size(); i++) {
+      Game       currentGame = currentGames.get(i);
+      PlayerPair winner      = null;
+
+      // Récupération de l'équipe gagnante
+      if (currentGame.getTeamA() != null && currentGame.getTeamA().isBye()) {
+        winner = currentGame.getTeamB();
+      } else if (currentGame.getTeamB() != null && currentGame.getTeamB().isBye()) {
+        winner = currentGame.getTeamA();
+      } else if (currentGame.isFinished()) {
+        winner = currentGame.getWinner();
+      }
+
+      System.out.println("Processing Game: " + currentGame);
+      System.out.println("Winner identified: " + (winner != null ? winner : "No winner yet!"));
+
+      int targetGameIndex = i / 2;
+      if (targetGameIndex >= nextGames.size()) {
+        System.err.println("Target game index out of bounds for Q2: " + targetGameIndex);
+        continue;
+      }
+
+      Game nextGame = nextGames.get(targetGameIndex);
+
+      // Placement des gagnants dans le prochain round
+      if (winner == null) {
+        if (i % 2 == 0) {
+          nextGame.setTeamA(null);
+        } else {
+          nextGame.setTeamB(null);
+        }
+      } else {
+        if (i % 2 == 0) {
+          nextGame.setTeamA(winner);
+        } else {
+          nextGame.setTeamB(winner);
+        }
+      }
+    }
   }
 
   @Override
@@ -65,19 +189,7 @@ public class QualifyMainRoundGenerator extends AbstractRoundGenerator {
   }
 
   @Override
-  public Round generateManualRound(final List<PlayerPair> pairs) {
-    // Méthode héritée (sans tournoi) — on se rabat sur une déduction par taille
-    if (pairs == null || pairs.isEmpty()) {
-      throw new IllegalArgumentException("pairs must not be empty");
-    }
-    int size = pairs.size();
-    // Sans accès à la config du tournoi, on assume qu'un appel manuel ici concerne la pré-qualif → Q1
-    Stage stage = Stage.Q1;
-    return createManualRound(stage, pairs);
-  }
-
-  @Override
-  public List<Round> initRoundsAndGames(final Tournament tournament) {
+  public List<Round> createRoundsStructure(final Tournament tournament) {
     List<Round> rounds = new ArrayList<>();
     if (tournament.getConfig() == null) {
       return rounds;

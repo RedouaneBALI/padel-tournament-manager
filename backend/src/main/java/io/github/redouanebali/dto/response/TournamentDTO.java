@@ -3,8 +3,6 @@ package io.github.redouanebali.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.github.redouanebali.model.Gender;
-import io.github.redouanebali.model.PlayerPair;
-import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.TournamentLevel;
 import io.github.redouanebali.model.format.TournamentFormat;
@@ -21,8 +19,8 @@ public class TournamentDTO {
   private Long                   id;
   private String                 ownerId;
   private String                 name;
-  private List<Round>            rounds;
-  private List<PlayerPair>       playerPairs;
+  private List<RoundDTO>         rounds;
+  private List<PlayerPairDTO>    playerPairs;
   private String                 description;
   private String                 city;
   private String                 club;
@@ -45,7 +43,7 @@ public class TournamentDTO {
     Stage lastUsedStage = null; // last round where at least one team is assigned
 
     // Iterate from earliest to latest
-    for (Round r : rounds) {
+    for (RoundDTO r : rounds) {
       if (r.getGames() == null || r.getGames().isEmpty()) {
         continue;
       }
@@ -72,7 +70,7 @@ public class TournamentDTO {
       return lastUsedStage;
     }
 
-    return rounds.getFirst().getStage();
+    return rounds.get(0).getStage();
   }
 
 }

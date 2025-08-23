@@ -27,17 +27,17 @@ export default function PlayerPairLine({
   onCancelEdit,
   onSaved,
 }: Props) {
-  const [p1, setP1] = useState<string>(pair.player1.name);
-  const [p2, setP2] = useState<string>(pair.player2.name);
+  const [p1, setP1] = useState<string>(pair.player1Name);
+  const [p2, setP2] = useState<string>(pair.player2Name);
   const [seedStr, setSeedStr] = useState<string>(pair.seed?.toString() ?? '');
   const [isSaving, setIsSaving] = useState(false);
 
   // Reset inputs when the source pair or editing mode changes
   useEffect(() => {
-    setP1(pair.player1.name);
-    setP2(pair.player2.name);
+    setP1(pair.player1Name);
+    setP2(pair.player2Name);
     setSeedStr(pair.seed?.toString() ?? '');
-  }, [pair.player1.name, pair.player2.name, pair.seed, isEditing]);
+  }, [pair.player1Name, pair.player2Name, pair.seed, isEditing]);
 
   const save = async () => {
     const id = pair.id ?? -1;
@@ -47,8 +47,8 @@ export default function PlayerPairLine({
 
     const p1Trim = p1.trim();
     const p2Trim = p2.trim();
-    if (p1Trim && p1Trim !== pair.player1.name) payload.player1Name = p1Trim;
-    if (p2Trim && p2Trim !== pair.player2.name) payload.player2Name = p2Trim;
+    if (p1Trim && p1Trim !== pair.player1Name) payload.player1Name = p1Trim;
+    if (p2Trim && p2Trim !== pair.player2Name) payload.player2Name = p2Trim;
 
     const parsedSeed = seedStr === '' ? undefined : Number(seedStr);
     if (Number.isFinite(parsedSeed as number) && parsedSeed !== pair.seed) payload.seed = parsedSeed as number;
@@ -76,7 +76,7 @@ export default function PlayerPairLine({
           <span className="font-semibold text-primary">
             {pair.seed && pair.seed > 0 ? `#${pair.seed} ` : ''}
           </span>
-          {pair.player1.name} – {pair.player2.name}
+          {pair.player1Name} – {pair.player2Name}
         </div>
         {editable && (
           <button
@@ -132,8 +132,8 @@ export default function PlayerPairLine({
         bindEnter={editable}
         onCancel={() => {
           // reset inputs, then cancel
-          setP1(pair.player1.name);
-          setP2(pair.player2.name);
+          setP1(pair.player1Name);
+          setP2(pair.player2Name);
           setSeedStr(pair.seed?.toString() ?? '');
           onCancelEdit();
         }}

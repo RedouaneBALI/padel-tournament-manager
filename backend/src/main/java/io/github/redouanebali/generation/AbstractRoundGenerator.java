@@ -31,6 +31,12 @@ public abstract class AbstractRoundGenerator implements RoundGenerator {
     }
   }
 
+  public Round generateRound(Tournament tournament, List<PlayerPair> pairs, boolean manual) {
+    if (manual) {
+      return generateManualRound(pairs);
+    }
+    return generateAlgorithmicRound(pairs);
+  }
 
   /**
    * Optional propagation hook, overridden by specific generators if needed.

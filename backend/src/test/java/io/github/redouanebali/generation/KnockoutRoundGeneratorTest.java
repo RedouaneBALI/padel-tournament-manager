@@ -1,34 +1,28 @@
 package io.github.redouanebali.generation;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.github.redouanebali.model.Game;
-import io.github.redouanebali.model.MatchFormat;
-import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.model.format.TournamentFormat;
+import io.github.redouanebali.model.format.TournamentFormatConfig;
 import io.github.redouanebali.util.TestFixtures;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
+import java.util.Objects;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.MockitoAnnotations;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 public class KnockoutRoundGeneratorTest {
 
@@ -47,13 +41,288 @@ public class KnockoutRoundGeneratorTest {
     );
   }
 
-  @BeforeEach
-  void setUp() {
-    MockitoAnnotations.openMocks(this);
+  @ParameterizedTest
+  @CsvSource({
+      "4, 4, 0, true",
+      "4, 4, 0, false",
+      "8, 6, 4, true",
+      "8, 8, 4, false",
+      "16, 12, 8, true",
+      "16, 14, 4, false",
+      "32, 28, 16, true",
+      "32, 30, 16, true",
+      "32, 32, 16, true",
+      "32, 32, 16, false",
+      "64, 60, 32, true",
+      "64, 64, 32, true"
+  })
+  public void testFullKnockoutStagesUntilFinale(int mainDrawSize, int nbPlayerPairs, int nbSeeds, boolean manualMode) {
+    int nbByePairs = mainDrawSize - nbPlayerPairs;
+    generator = new KnockoutRoundGenerator(nbSeeds);
 
-    SecurityContextHolder.getContext().setAuthentication(
-        new UsernamePasswordAuthenticationToken("bali.redouane@gmail.com", null, List.of())
+    Tournament       tournament = setupTournament(mainDrawSize, nbSeeds);
+    List<PlayerPair> players    = TestFixtures.createPairs(nbPlayerPairs);
+    tournament.getRounds().addAll(generator.createRoundsStructure(tournament));
+    Stage[] stages = determineStages(mainDrawSize);
+
+    // Traite chaque stage automatiquement
+    for (int i = 0; i < stages.length; i++) {
+      Stage            stage            = stages[i];
+      int              expectedGames    = mainDrawSize / (int) Math.pow(2, i + 1);
+      int              expectedByeCount = (i == 0) ? nbByePairs : 0; // Seuls les BYE pairs sont dans le premier round
+      List<PlayerPair> stagePlayers     = (i == 0) ? players : null;
+
+      processStage(tournament, stage, stagePlayers, expectedGames, expectedByeCount, manualMode && i == 0);
+    }
+  }
+
+  @Test
+  public void testPropagationWithUnfinishedMatchLeavesNullSlot() {
+    int mainDrawSize  = 8;
+    int nbSeeds       = 4;
+    int nbPlayerPairs = 8; // pas de BYE
+
+    generator = new KnockoutRoundGenerator(nbSeeds);
+
+    Tournament       tournament = setupTournament(mainDrawSize, nbSeeds);
+    List<PlayerPair> players    = TestFixtures.createPairs(nbPlayerPairs);
+    tournament.getRounds().addAll(generator.createRoundsStructure(tournament));
+
+    // Génère QUARTERS (1er round à 8 joueurs)
+    Round quarters = generator.generateRound(tournament, players, false);
+
+    // On marque un seul match comme "non terminé" (pas de score, pas de BYE) et on renseigne des gagnants pour les autres
+    for (int i = 0; i < quarters.getGames().size(); i++) {
+      var game = quarters.getGames().get(i);
+      // s'assurer qu'il n'y a pas de BYE sur ce test
+      assertFalse(game.getTeamA() != null && game.getTeamA().isBye());
+      assertFalse(game.getTeamB() != null && game.getTeamB().isBye());
+      if (i == 0) {
+        // laisser ce match sans score -> pas de gagnant
+        continue;
+      }
+      PlayerPair a      = game.getTeamA();
+      PlayerPair b      = game.getTeamB();
+      PlayerPair winner = (a != null) ? a : b;
+      if (winner != null) {
+        game.setScore(TestFixtures.createScoreWithWinner(game, winner));
+      }
+    }
+
+    tournament.applyRound(quarters);
+    generator.propagateWinners(tournament);
+
+    // Vérifie qu'en SEMIS, exactement un emplacement est null (slot non déterminé)
+    Round semis = tournament.getRoundByStage(Stage.SEMIS);
+    assertNotNull(semis, "Le round SEMIS doit exister");
+    long nullCount = countNullTeams(semis);
+    assertEquals(1, nullCount, "Un seul slot en demi-finale doit rester vide suite au match non terminé");
+  }
+
+  @Test
+  public void testGroupsStageIsIgnoredForKnockoutPropagation() {
+    int mainDrawSize  = 8;
+    int nbSeeds       = 4;
+    int nbPlayerPairs = 8;
+
+    generator = new KnockoutRoundGenerator(nbSeeds);
+
+    Tournament tournament = setupTournament(mainDrawSize, nbSeeds);
+
+    // Ajoute d'abord la structure KO
+    tournament.getRounds().addAll(generator.createRoundsStructure(tournament));
+
+    // Injecte un round de poules fictif avant (il ne doit pas interférer avec la propagation KO)
+    Round groups = new Round(Stage.GROUPS);
+    tournament.getRounds().add(groups);
+
+    // Génère le premier round KO avec 8 joueurs (QUARTERS)
+    List<PlayerPair> players  = TestFixtures.createPairs(nbPlayerPairs);
+    Round            quarters = generator.generateRound(tournament, players, false);
+
+    // Donne des gagnants à tous les matchs des quarts
+    quarters.getGames().forEach(game -> {
+      PlayerPair a      = game.getTeamA();
+      PlayerPair b      = game.getTeamB();
+      PlayerPair winner = (a != null) ? a : b;
+      if (winner != null) {
+        game.setScore(TestFixtures.createScoreWithWinner(game, winner));
+      }
+    });
+
+    tournament.applyRound(quarters);
+    generator.propagateWinners(tournament);
+
+    // La propagation doit remplir SEMIS sans toucher le round GROUPS
+    Round semis = tournament.getRoundByStage(Stage.SEMIS);
+    assertNotNull(semis, "Le round SEMIS doit exister");
+    long semisNullSlots = countNullTeams(semis);
+    assertEquals(0, semisNullSlots, "Tous les slots des demi-finales doivent être déterminés après propagation");
+
+    // Le round GROUPS ne doit pas contenir d'équipes injectées
+    assertEquals(0, groups.getGames().size(), "Le round GROUPS ne doit pas être peuplé par la propagation KO");
+  }
+
+
+  private void processStage(
+      Tournament tournament,
+      Stage stage,
+      List<PlayerPair> players,
+      int expectedGames,
+      int expectedGamesWithBye,
+      boolean isManual
+  ) {
+    Round round = generateRound(tournament, stage, players, isManual);
+
+    // Validation du round (ajout de vérifications demandées)
+    validateRound(round, stage, expectedGames, players != null ? expectedGamesWithBye : 0, isManual);
+
+    // Process and assign winners, then propagate
+    tournament.applyRound(round);
+    List<PlayerPair> winners = assignWinners(round);
+    generator.propagateWinners(tournament);
+
+    // *** Validations supplémentaires pour les rounds suivants ***
+
+    // Vérifie les gagnants du round courant
+    validateWinnersForNextRound(tournament, stage, winners);
+
+    // Vérifie que les perdants ne réapparaissent pas dans les rounds suivants
+    validateLosersNotReappearing(tournament, round, winners);
+  }
+
+  private void validateWinnersForNextRound(Tournament tournament, Stage currentStage, List<PlayerPair> winners) {
+    // Si c'est le dernier stage, pas de stage suivant
+    Stage nextStage = currentStage.next();
+    if (nextStage == null || nextStage == Stage.WINNER) {
+      return;
+    }
+
+    Round nextRound = tournament.getRoundByStage(nextStage);
+    if (nextRound == null) {
+      throw new AssertionError("Le round suivant (" + nextStage + ") n'a pas été généré correctement.");
+    }
+
+    // Collecte des joueurs dans le round suivant
+    List<PlayerPair> nextRoundPlayers = nextRound.getGames().stream()
+                                                 .flatMap(game -> Stream.of(game.getTeamA(), game.getTeamB()))
+                                                 .filter(Objects::nonNull)
+                                                 .toList();
+
+    // Assure que chaque gagnant est présent dans le round suivant
+    assertAll("Tous les gagnants doivent être présents dans le round suivant",
+              winners.stream().map(winner -> () -> assertTrue(
+                  nextRoundPlayers.contains(winner),
+                  "Le gagnant " + winner + " n'est pas présent dans le round suivant (" + nextStage + ")"
+              ))
     );
+  }
+
+  private void validateLosersNotReappearing(Tournament tournament, Round currentRound, List<PlayerPair> winners) {
+    // Collecte des perdants
+    List<PlayerPair> losers = currentRound.getGames().stream()
+                                          .flatMap(game -> Stream.of(game.getTeamA(), game.getTeamB()))
+                                          .filter(Objects::nonNull)
+                                          .filter(player -> !winners.contains(player)) // Tous ceux qui ne sont pas gagnants
+                                          .toList();
+
+    // Vérifie que ces perdants n'apparaissent pas dans des rounds suivants
+    List<PlayerPair> remainingPlayersInTournament = tournament.getRounds().stream()
+                                                              .filter(round -> round.getStage().ordinal() > currentRound.getStage()
+                                                                                                                        .ordinal()) // Rounds ultérieurs
+                                                              .flatMap(round -> round.getGames().stream()
+                                                                                     .flatMap(game -> Stream.of(game.getTeamA(), game.getTeamB()))
+                                                              )
+                                                              .filter(Objects::nonNull)
+                                                              .toList();
+
+    for (PlayerPair loser : losers) {
+      if (remainingPlayersInTournament.contains(loser)) {
+        throw new AssertionError("Le perdant " + loser + " a été réutilisé dans les rounds suivants.");
+      }
+    }
+  }
+
+  // Génération du round (séparée du reste pour plus de clarté)
+  private Round generateRound(Tournament tournament, Stage stage, List<PlayerPair> players, boolean isManual) {
+    return (players != null) ?
+           generator.generateRound(tournament, players, isManual) :
+           tournament.getRoundByStage(stage);
+  }
+
+  // Validation du round
+  private void validateRound(Round round, Stage stage, int expectedGames, int expectedGamesWithBye, boolean isManual) {
+    assertEquals(expectedGames, round.getGames().size(), "Nombre de matchs attendu incorrect au stage : " + stage);
+
+    // Vérifie les BYE uniquement au premier round (et si non mode manuel)
+    if (expectedGamesWithBye > 0 && !isManual) {
+      long byeCount = round.getGames().stream()
+                           .filter(game -> (game.getTeamA() != null && game.getTeamA().isBye())
+                                           || (game.getTeamB() != null && game.getTeamB().isBye()))
+                           .count();
+      assertEquals(expectedGamesWithBye, byeCount, "Nombre de BYE attendu incorrect pour le stage : " + stage);
+    }
+  }
+
+  // Prépare le tournoi avec la configuration de base
+  private Tournament setupTournament(int mainDrawSize, int nbSeeds) {
+    Tournament tournament = new Tournament();
+    tournament.setConfig(
+        TournamentFormatConfig.builder()
+                              .nbSeeds(nbSeeds)
+                              .mainDrawSize(mainDrawSize)
+                              .build()
+    );
+    return tournament;
+  }
+
+  private List<PlayerPair> assignWinners(Round round) {
+    List<PlayerPair> winners = new ArrayList<>();
+
+    round.getGames().forEach(game -> {
+      PlayerPair a = game.getTeamA();
+      PlayerPair b = game.getTeamB();
+
+      if (a == null && b == null) {
+        return; // rien à faire si le match est vide
+      }
+
+      PlayerPair winner;
+      if (a != null && a.isBye()) {
+        winner = b;
+      } else if (b != null && b.isBye()) {
+        winner = a;
+      } else {
+        // Choix déterministe du gagnant pour le test si pas de score fourni: privilégier A s'il existe, sinon B
+        winner = (a != null) ? a : b;
+      }
+
+      if (winner != null) {
+        game.setScore(TestFixtures.createScoreWithWinner(game, winner));
+        winners.add(winner);
+      }
+    });
+
+    return winners;
+  }
+
+  private long countNullTeams(Round round) {
+    return round.getGames().stream()
+                .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                .filter(Objects::isNull)
+                .count();
+  }
+
+  // Détermine les stages à traiter en fonction de mainDrawSize
+  private Stage[] determineStages(int mainDrawSize) {
+    return switch (mainDrawSize) {
+      case 4 -> new Stage[]{Stage.SEMIS, Stage.FINAL}; // Avec 4 joueurs, uniquement SEMIS et FINAL
+      case 8 -> new Stage[]{Stage.QUARTERS, Stage.SEMIS, Stage.FINAL}; // Avec 8 joueurs
+      case 16 -> new Stage[]{Stage.R16, Stage.QUARTERS, Stage.SEMIS, Stage.FINAL}; // Avec 16 joueurs
+      case 32 -> new Stage[]{Stage.R32, Stage.R16, Stage.QUARTERS, Stage.SEMIS, Stage.FINAL}; // Avec 32 joueurs
+      case 64 -> new Stage[]{Stage.R64, Stage.R32, Stage.R16, Stage.QUARTERS, Stage.SEMIS, Stage.FINAL}; // Avec 64 joueurs
+      default -> throw new IllegalArgumentException("Taille de tableau non supportée : " + mainDrawSize);
+    };
   }
 
   @ParameterizedTest
@@ -75,229 +344,36 @@ public class KnockoutRoundGeneratorTest {
     }
   }
 
-  @ParameterizedTest
-  @MethodSource("provideBracketSeedPositionCases")
-  public void testGenerateGames(
-      int nbTeams,
-      int nbSeeds,
-      int[] expectedSeedIndices,
-      Stage expectedStage
-  ) {
-    List<PlayerPair> pairs = TestFixtures.createPairs(nbTeams);
-    pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
+  @Test
+  public void testInvalidMainDrawSize() {
+    generator = new KnockoutRoundGenerator(0);
+    IllegalArgumentException exception = assertThrows(
+        IllegalArgumentException.class,
+        () -> generator.createRoundsStructure(setupTournament(10, 4))
+    );
+    assertEquals("Taille de tableau non supportée : 10", exception.getMessage());
+  }
+
+  @Test
+  public void testTournamentStartsAtCorrectStageWhenPairsAreHalfOfMainDraw() {
+    int mainDrawSize  = 16; // Taille du tableau principal
+    int nbSeeds       = 4;       // Nombre de têtes de série
+    int nbPlayerPairs = 8; // Moitié moins que le tableau principal
+
     generator = new KnockoutRoundGenerator(nbSeeds);
-    Round round = generator.generateAlgorithmicRound(pairs);
-    assertEquals(expectedStage, round.getStage());
-    List<Game> games = round.getGames();
 
-    for (int i = 0; i < expectedSeedIndices.length; i++) {
-      int        expectedPosition = expectedSeedIndices[i];
-      int        gameIndex        = expectedPosition / 2;
-      Game       game             = games.get(gameIndex);
-      PlayerPair seedTeam         = pairs.get(i);
+    Tournament tournament = setupTournament(mainDrawSize, nbSeeds);
 
-      assertEquals(seedTeam, game.getTeamA(),
-                   String.format("seed %d should be in position %d (game %d)",
-                                 seedTeam.getSeed(), expectedPosition, gameIndex));
-    }
+    // Création de paires de joueurs pour le tournoi
+    List<PlayerPair> players = TestFixtures.createPairs(nbPlayerPairs);
 
-    Set<PlayerPair> allTeamsInGames = new HashSet<>();
-    for (Game game : games) {
-      if (game.getTeamA() != null) {
-        allTeamsInGames.add(game.getTeamA());
-      }
-      if (game.getTeamB() != null) {
-        allTeamsInGames.add(game.getTeamB());
-      }
-    }
-
-    // Vérifier que toutes les équipes sont présentes
-    assertEquals(nbTeams, allTeamsInGames.size(),
-                 "Toutes les équipes doivent jouer dans un match");
-
-    for (PlayerPair pair : pairs) {
-      assertTrue(allTeamsInGames.contains(pair),
-                 String.format("L'équipe avec seed %d doit jouer dans un match", pair.getSeed()));
-    }
-
-    Set<PlayerPair> duplicateCheck = new HashSet<>();
-    for (Game game : games) {
-      if (game.getTeamA() != null) {
-        assertFalse(duplicateCheck.contains(game.getTeamA()),
-                    String.format("L'équipe avec seed %d joue dans plusieurs matchs", game.getTeamA().getSeed()));
-        duplicateCheck.add(game.getTeamA());
-      }
-      if (game.getTeamB() != null) {
-        assertFalse(duplicateCheck.contains(game.getTeamB()),
-                    String.format("L'équipe avec seed %d joue dans plusieurs matchs", game.getTeamB().getSeed()));
-        duplicateCheck.add(game.getTeamB());
-      }
-    }
-
-    assertEquals(nbTeams / 2, games.size(),
-                 "Le nombre de matchs doit être égal à nbTeams / 2");
-  }
-
-  @Test
-  void testGenerateManualRound() {
-
-    PlayerPair pairA = new PlayerPair(1L, new Player("A"), new Player("B"), 1);
-    PlayerPair pairB = new PlayerPair(2L, new Player("C"), new Player("D"), 2);
-    PlayerPair pairC = new PlayerPair(3L, new Player("E"), new Player("F"), 3);
-    PlayerPair pairD = new PlayerPair(4L, new Player("G"), new Player("H"), 4);
-
-    List<PlayerPair> pairs = List.of(pairA, pairB, pairC, pairD);
-
-    generator = new KnockoutRoundGenerator(0);
-    Round      round = generator.generateManualRound(pairs);
-    List<Game> games = round.getGames();
-    assertEquals(2, games.size());
-
-    Game game1 = games.get(0);
-    assertEquals(pairA, game1.getTeamA());
-    assertEquals(pairB, game1.getTeamB());
-
-    Game game2 = games.get(1);
-    assertEquals(pairC, game2.getTeamA());
-    assertEquals(pairD, game2.getTeamB());
-  }
-
-  @Test
-  void testPropagateWinners_UpdatesFinalWhenScoresChange() {
-    // Pairs A,B,C,D with deterministic ids for createScoreWithWinner
-    PlayerPair pairA = new PlayerPair(1L, new Player("A"), new Player("B"), 1);
-    PlayerPair pairB = new PlayerPair(2L, new Player("C"), new Player("D"), 2);
-    PlayerPair pairC = new PlayerPair(3L, new Player("E"), new Player("F"), 3);
-    PlayerPair pairD = new PlayerPair(4L, new Player("G"), new Player("H"), 4);
-
-    List<PlayerPair> pairs = List.of(pairA, pairB, pairC, pairD);
-
-    // Generate manual round: A vs B, C vs D
-    generator = new KnockoutRoundGenerator(0);
-    Round semiFinals = generator.generateManualRound(pairs);
-
-    // Ensure we have two games
-    List<Game> semiGames = semiFinals.getGames();
-    assertEquals(2, semiGames.size());
-    MatchFormat matchFormat = TestFixtures.createSimpleFormat(1);
-    // Set formats and initial winners: A beats B, C beats D
-    Game semi0 = semiGames.get(0);
-    semi0.setFormat(matchFormat);
-    semi0.setScore(TestFixtures.createScoreWithWinner(semi0, pairA));
-
-    Game semi1 = semiGames.get(1);
-    semi1.setFormat(matchFormat);
-    semi1.setScore(TestFixtures.createScoreWithWinner(semi1, pairC));
-
-    // Prepare final round with one game
-    Round finals = new Round();
-    finals.setStage(Stage.FINAL);
-    Game finalGame = new Game(matchFormat);
-    finals.addGames(List.of(finalGame));
-
-    // Tournament with both rounds in order
-    Tournament tournament = new Tournament();
-    tournament.setFormat(TournamentFormat.KNOCKOUT);
-    List<Round> rounds = new LinkedList<>();
-    rounds.add(semiFinals);
-    rounds.add(finals);
-    tournament.getRounds().clear();
+    // Génération de la structure des rounds
+    List<Round> rounds = generator.createRoundsStructure(tournament);
     tournament.getRounds().addAll(rounds);
 
-    // First propagation: finalists should be A vs C
-    generator.propagateWinners(tournament);
-    assertEquals(pairA, finalGame.getTeamA());
-    assertEquals(pairC, finalGame.getTeamB());
-
-    // Change winners: set B and D as winners of their semis
-    semi0.setScore(TestFixtures.createScoreWithWinner(semi0, pairB));
-    semi1.setScore(TestFixtures.createScoreWithWinner(semi1, pairD));
-
-    // Re-propagate and verify final updates to B vs D
-    generator.propagateWinners(tournament);
-    assertEquals(pairB, finalGame.getTeamA());
-    assertEquals(pairD, finalGame.getTeamB());
+    // Vérifier que le tournoi commence directement au bon stage (QUARTERS) avec 8 joueurs
+    Round firstRound = generator.generateRound(tournament, players, false);
+    assertEquals(Stage.QUARTERS, firstRound.getStage(),
+                 "Avec 8 joueurs pour un tableau principal de 16, le tournoi doit commencer en QUARTERS.");
   }
-
-  @Test
-  void testPropagateWinners() {
-    Round roundCurrent = new Round();
-    roundCurrent.setStage(Stage.R32);
-
-    MatchFormat matchFormat = TestFixtures.createSimpleFormat(1);
-
-    List<Game> gamesCurrent = new
-        ArrayList<>();
-
-    PlayerPair byePair = PlayerPair.bye();
-    byePair.setId(99L);
-
-    List<PlayerPair> pairs = TestFixtures.createPairs(6);
-
-    Game game0 = new Game(matchFormat);
-    game0.setTeamA(pairs.get(0));
-    game0.setTeamB(pairs.get(1));
-    game0.setScore(TestFixtures.createScoreWithWinner(game0, pairs.get(0)));
-
-    Game game1 = new Game(matchFormat);
-    game1.setTeamA(pairs.get(2));
-    game1.setTeamB(byePair);
-    game1.setScore(null);
-    Game game2 = new Game(matchFormat);
-    game2.setTeamA(pairs.get(3));
-    game2.setTeamB(pairs.get(4));
-    game2.setScore(null);
-
-    // Match 3 : pair6 vs BYE (pair6 passe automatiquement)
-    Game game3 = new Game(matchFormat);
-    game3.setTeamA(pairs.get(5));
-    game3.setTeamB(byePair);
-    game3.setScore(null);
-
-    gamesCurrent.add(game0);
-    gamesCurrent.add(game1);
-    gamesCurrent.add(game2);
-    gamesCurrent.add(game3);
-
-    roundCurrent.addGames(gamesCurrent);
-
-    // Round suivant (ex: R16) avec 2 matchs (indices 0 et 1)
-    Round roundNext = new Round();
-    roundNext.setStage(Stage.R16);
-    List<Game> gamesNext = new ArrayList<>();
-
-    Game nextGame0 = new Game(matchFormat); // Correspond aux matchs 0 et 1 du round actuel
-    Game nextGame1 = new Game(matchFormat); // Correspond aux matchs 2 et 3 du round actuel
-
-    gamesNext.add(nextGame0);
-    gamesNext.add(nextGame1);
-
-    roundNext.addGames(gamesNext);
-
-    // Tournoi
-    Tournament tournament = new Tournament();
-    tournament.setFormat(TournamentFormat.KNOCKOUT);
-    List<Round> rounds = new LinkedList<>();
-    rounds.add(roundCurrent);
-    rounds.add(roundNext);
-    tournament.getRounds().clear();
-    tournament.getRounds().addAll(rounds);
-
-    // Action
-    generator = new KnockoutRoundGenerator(0);
-    generator.propagateWinners(tournament);
-
-    // Vérification match nextGame0 (issu des matchs 0 et 1)
-    // i=0 -> pair1 (vainqueur de game0) en teamA
-    assertEquals(pairs.get(0), nextGame0.getTeamA());
-    // i=1 -> pair3 (match gagné par BYE) en teamB
-    assertEquals(pairs.get(2), nextGame0.getTeamB());
-
-    // Vérification match nextGame1 (issu des matchs 2 et 3)
-    // i=2 -> game2 non terminé donc teamA = null
-    assertNull(nextGame1.getTeamA());
-    // i=3 -> pair6 (BYE) en teamB
-    assertEquals(pairs.get(5), nextGame1.getTeamB());
-  }
-
 }

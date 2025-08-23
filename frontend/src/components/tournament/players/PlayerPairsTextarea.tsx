@@ -21,7 +21,8 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
     setIsLoading(true);
     try {
       const data = await fetchPairs(tournamentId);
-      setText(data.map(pair => `${pair.player1.name},${pair.player2.name},${pair.seed}`).join('\n'));
+      console.log(data);
+      setText(data.map(pair => `${pair.player1Name},${pair.player2Name},${pair.seed}`).join('\n'));
       if (onPairsChange) onPairsChange(data);
     } catch (e: any) {
       toast.error(e?.message ?? 'Impossible de charger les paires.');
@@ -56,8 +57,8 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
         const seed = Number.isFinite(parsedSeed) ? (parsedSeed as number) : (index + 1);
 
         return {
-          player1: { name: p1 },
-          player2: { name: p2 },
+          player1Name: p1,
+          player2Name: p2,
           seed,
         };
       });

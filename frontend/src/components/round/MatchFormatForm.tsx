@@ -60,7 +60,7 @@ export default function MatchFormatForm({
           Jeux par set
           {readOnly ? (
             <select
-              value={format.pointsPerSet}
+              value={format.gamesPerSet}
               disabled
               aria-readonly
               className="mt-1 rounded border border-input bg-background px-3 py-2 text-foreground pointer-events-none opacity-60"
@@ -73,8 +73,8 @@ export default function MatchFormatForm({
             </select>
           ) : (
             <select
-              value={format.pointsPerSet}
-              onChange={(e) => handleChange('pointsPerSet', parseInt(e.target.value))}
+              value={format.gamesPerSet}
+              onChange={(e) => handleChange('gamesPerSet', parseInt(e.target.value))}
               className="mt-1 rounded border border-input bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value={4}>4 jeux</option>

@@ -44,7 +44,7 @@ export default function PlayerPairsTab({ tournamentId }: Props) {
           <span className="font-semibold text-primary">
             {pair.seed && pair.seed > 0 ? `#${pair.seed} ` : ''}
           </span>
-          {pair.player1.name} – {pair.player2.name}
+          {pair.player1Name} – {pair.player2Name}
         </li>
       ))}
     </ul>

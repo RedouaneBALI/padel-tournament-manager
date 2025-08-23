@@ -1,18 +1,23 @@
 package io.github.redouanebali.generation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
+import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.TournamentFormatConfig;
 import io.github.redouanebali.util.TestFixtures;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -60,7 +65,7 @@ public class QualifyMainRoundGeneratorTest {
     // Construire la structure des tours (Q1..Qk + main) une seule fois
     Tournament t = new Tournament();
     t.setConfig(cfg);
-    List<Round> rounds = gen.initRoundsAndGames(t);
+    List<Round> rounds = gen.createRoundsStructure(t);
     t.getRounds().clear();
     t.getRounds().addAll(rounds);
 
@@ -140,7 +145,7 @@ public class QualifyMainRoundGeneratorTest {
 
     Tournament t = new Tournament();
     t.setConfig(cfg);
-    List<Round> rounds = gen.initRoundsAndGames(t);
+    List<Round> rounds = gen.createRoundsStructure(t);
     t.getRounds().clear();
     t.getRounds().addAll(rounds);
 
@@ -197,6 +202,123 @@ public class QualifyMainRoundGeneratorTest {
 
     // Vérif: il ne doit rester qu'un seul vainqueur à la fin
     assertEquals(1, currentPairs.size(), "Le tournoi doit produire un seul champion à la fin");
+  }
+
+  @Test
+  void verifyManualRoundGenerationAndStagesUpToR32() {
+    // Configuration du tournoi
+    int preQualDrawSize = 16; // Taille du tableau de pré-qualification
+    int mainDrawSize    = 32;    // Taille du tableau principal
+    int nbQualifiers    = 4;     // Nombre de qualifiés
+    int totalPairs      = 40;      // Total des paires dans le tournoi
+
+    // Création de la configuration pour le tournoi
+    TournamentFormatConfig cfg = TournamentFormatConfig.builder()
+                                                       .preQualDrawSize(preQualDrawSize)
+                                                       .nbQualifiers(nbQualifiers)
+                                                       .mainDrawSize(mainDrawSize)
+                                                       .nbSeeds(8) // Nombre de têtes de série
+                                                       .build();
+
+    // Liste de toutes les paires
+    List<PlayerPair> allPairs = TestFixtures.createPairs(totalPairs);
+
+    // Initialisation du générateur et du tournoi
+    QualifyMainRoundGenerator generator  = new QualifyMainRoundGenerator(cfg.getNbSeeds(), mainDrawSize, nbQualifiers);
+    Tournament                tournament = new Tournament();
+    tournament.setConfig(cfg);
+
+    // Génération manuelle du tour Q1
+    Round       q1Round = generator.generateManualRound(allPairs);
+    List<Round> rounds  = generator.createRoundsStructure(tournament);
+    tournament.getRounds().clear();
+    tournament.getRounds().addAll(rounds);
+    tournament.getRounds().replaceAll(round -> round.getStage() == Stage.Q1 ? q1Round : round);
+
+    // Vérification Q1
+    assertNotNull(q1Round, "Le round Q1 généré manuellement ne doit pas être null");
+    assertEquals(Stage.Q1, q1Round.getStage(), "Le stage du round doit être Q1");
+    assertFalse(q1Round.getGames().isEmpty(), "Les matchs du round Q1 ne doivent pas être vides");
+
+    // Ajout des scores pour les matchs de Q1
+    q1Round.getGames().forEach(game -> {
+      game.setFormat(new MatchFormat());
+      PlayerPair winner = game.getTeamA() != null ? game.getTeamA() : game.getTeamB();
+      if (winner != null) {
+        game.setScore(TestFixtures.createScoreWithWinner(game, winner));
+      }
+    });
+
+    // Propager les vainqueurs de Q1 vers Q2
+    generator.propagateWinners(tournament);
+
+    // Vérification Q2
+    Round q2Round = tournament.getRounds().stream()
+                              .filter(round -> round.getStage() == Stage.Q2)
+                              .findFirst()
+                              .orElse(null);
+
+    assertNotNull(q2Round, "Le round Q2 généré automatiquement ne doit pas être null");
+    assertFalse(q2Round.getGames().isEmpty(), "Les matchs du round Q2 ne doivent pas être vides");
+
+    List<PlayerPair> q1Winners = q1Round.getGames().stream()
+                                        .map(game -> game.getWinnerSide() == TeamSide.TEAM_A ? game.getTeamA() : game.getTeamB())
+                                        .filter(Objects::nonNull)
+                                        .toList();
+
+    List<PlayerPair> q2Teams = q2Round.getGames().stream()
+                                      .flatMap(game -> Stream.of(game.getTeamA(), game.getTeamB()))
+                                      .toList();
+
+    assertTrue(q2Teams.containsAll(q1Winners), "Tous les gagnants de Q1 doivent être propagés dans Q2");
+
+    // Ajout des scores pour les matchs de Q2
+    q2Round.getGames().forEach(game -> {
+      PlayerPair winner = game.getTeamA() != null ? game.getTeamA() : game.getTeamB();
+      if (winner != null) {
+        game.setScore(TestFixtures.createScoreWithWinner(game, winner));
+      }
+    });
+
+    // Propager les vainqueurs de Q2 vers R32
+    generator.propagateWinners(tournament);
+
+    // Vérification R32
+    Round r32 = tournament.getRounds().stream()
+                          .filter(round -> round.getStage() == Stage.R32)
+                          .findFirst()
+                          .orElse(null);
+
+    assertNotNull(r32, "Le round R32 généré automatiquement ne doit pas être null");
+    assertFalse(r32.getGames().isEmpty(), "Les matchs du round R32 ne doivent pas être vides");
+
+    List<PlayerPair> q2Winners = q2Round.getGames().stream()
+                                        .map(game -> game.getWinnerSide() == TeamSide.TEAM_A ? game.getTeamA() : game.getTeamB())
+                                        .filter(Objects::nonNull)
+                                        .toList();
+
+    List<PlayerPair> r32Teams = r32.getGames().stream()
+                                   .flatMap(game -> Stream.of(game.getTeamA(), game.getTeamB()))
+                                   .toList();
+
+    assertTrue(r32Teams.containsAll(q2Winners), "Tous les gagnants de Q2 doivent être propagés dans R32");
+
+    // Vérification des matchs dans R32
+    long matchesWithBye = r32.getGames().stream()
+                             .filter(game -> game.getTeamA() == null || game.getTeamB() == null)
+                             .count();
+
+    long matchesWithoutBye = r32.getGames().stream()
+                                .filter(game -> game.getTeamA() != null && game.getTeamB() != null)
+                                .count();
+
+    assertEquals(8, matchesWithoutBye, "Il doit y avoir 8 matchs normaux sans BYE dans R32");
+    assertEquals(0, matchesWithBye, "Il ne doit pas y avoir de matchs avec BYE dans R32");
+
+    // Vérifications supplémentaires
+    assertEquals(8, q1Round.getGames().size(), "Le round Q1 doit avoir 8 matchs au total");
+    assertEquals(4, q2Round.getGames().size(), "Le round Q2 doit avoir 4 matchs au total");
+    assertEquals(8, r32.getGames().size(), "Le round R32 doit avoir 8 matchs au total");
   }
 
 }

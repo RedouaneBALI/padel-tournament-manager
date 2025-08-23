@@ -54,7 +54,6 @@ public class DrawGenerationService {
       throw new AccessDeniedException("You are not allowed to generate draw for this tournament");
     }
 
-    TournamentFormat format       = tournament.getFormat();
     FormatStrategy   strategy     = StrategyResolver.resolve(tournament.getFormat());
     List<PlayerPair> pairsForDraw = capPairsToMax(tournament);
     Round            newRound     = strategy.generateRound(tournament, pairsForDraw, manual);

@@ -51,8 +51,8 @@ export default function TeamScoreRow({
     <div className="flex items-center px-4 h-[60px]">
       <div className={`flex flex-1 items-center ${winnerSide === teamIndex ? 'font-bold' : ''}`}>
         <div className={`flex flex-col ${winnerSide !== undefined && winnerSide !== teamIndex ? 'text-muted-foreground' : ''}`}>
-          <span className="text-sm">{team?.player1?.name || ''}</span>
-          <span className="text-sm">{team?.player2?.name || ''}</span>
+          <span className="text-sm">{team?.player1Name || ''}</span>
+          <span className="text-sm">{team?.player2Name || ''}</span>
         </div>
 
         {team?.seed && (

@@ -41,8 +41,8 @@ export default function PlayerPairList({ pairs, tournamentId, loading = false, e
       return {
         ...p,
         seed: update.seed !== undefined ? update.seed : p.seed,
-        player1: update.player1Name ? { ...p.player1, name: update.player1Name } : p.player1,
-        player2: update.player2Name ? { ...p.player2, name: update.player2Name } : p.player2,
+        player1Name: update.player1Name !== undefined ? update.player1Name : p.player1Name,
+        player2Name: update.player2Name !== undefined ? update.player2Name : p.player2Name,
       };
     }));
     setEditingPairId(null);

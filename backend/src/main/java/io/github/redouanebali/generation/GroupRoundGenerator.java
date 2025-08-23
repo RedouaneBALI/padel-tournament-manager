@@ -93,7 +93,7 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
     return round;
   }
 
-  @Override
+  @Override // @todo to fix
   public Round generateManualRound(List<PlayerPair> pairs) {
     //     addMissingByePairsToReachPowerOfTwo(this.getPairs(), originalSize);
     Round round = new Round();
@@ -122,7 +122,7 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
     return round;
   }
 
-  public List<Round> initRoundsAndGames(final Tournament tournament) {
+  public List<Round> createRoundsStructure(final Tournament tournament) {
     List<Round> rounds = new ArrayList<>();
 
     // group phase

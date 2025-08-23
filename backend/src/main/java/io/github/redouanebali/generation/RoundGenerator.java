@@ -11,5 +11,7 @@ public interface RoundGenerator {
 
   Round generateManualRound(List<PlayerPair> pairs);
 
-  List<Round> initRoundsAndGames(Tournament tournament);
+  Round generateRound(Tournament tournament, List<PlayerPair> pairs, boolean manual);
+
+  List<Round> createRoundsStructure(Tournament tournament);
 }

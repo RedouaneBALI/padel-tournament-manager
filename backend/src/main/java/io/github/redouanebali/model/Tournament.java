@@ -24,6 +24,7 @@ import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -99,6 +100,19 @@ public class Tournament {
   @PreUpdate
   public void onUpdate() {
     this.updatedAt = Instant.now();
+  }
+
+  public void applyRound(Round round) {
+    this.rounds.removeIf(r -> r.getStage() == round.getStage());
+    this.rounds.add(round);
+    this.rounds.sort(Comparator.comparing(Round::getStage));
+  }
+
+  public Round getRoundByStage(Stage stage) {
+    return this.getRounds().stream()
+               .filter(round -> round.getStage() == stage)
+               .findFirst()
+               .orElseThrow(() -> new IllegalStateException("No round fourt for " + stage));
   }
 
 }

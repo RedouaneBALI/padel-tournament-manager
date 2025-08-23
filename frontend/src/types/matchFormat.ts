@@ -1,6 +1,6 @@
 export interface MatchFormat {
   numberOfSetsToWin: number;
-  pointsPerSet: number;
+  gamesPerSet: number;
   superTieBreakInFinalSet: boolean;
   advantage: boolean;
 }

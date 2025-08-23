@@ -3,10 +3,12 @@ package io.github.redouanebali.dto.request;
 import io.github.redouanebali.model.Score;
 import java.time.LocalTime;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class UpdateGameRequest {
 
   private Score     score;

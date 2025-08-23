@@ -30,7 +30,7 @@ public class KnockoutStrategy implements FormatStrategy {
   @Override
   public void buildInitialRounds(Tournament t, TournamentFormatConfig cfg) {
     KnockoutRoundGenerator generator = new KnockoutRoundGenerator(cfg.getNbSeeds());
-    List<Round>            rounds    = generator.initRoundsAndGames(t);
+    List<Round>            rounds    = generator.createRoundsStructure(t);
     t.getRounds().clear();
     t.getRounds().addAll(rounds);
   }
