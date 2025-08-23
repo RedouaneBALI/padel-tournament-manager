@@ -32,8 +32,8 @@ export default function GroupStageResults({
                     <td className="p-2 text-center border border-border">{index + 1}</td>
                     <td className="p-2 text-center border border-border">
                       <div className="flex flex-col items-center">
-                        <span>{entry.player1Name}</span>
-                        <span>{entry.player2Name}</span>
+                        <span>{entry.playerPair.player1Name}</span>
+                        <span>{entry.playerPair.player2Name}</span>
                       </div>
                     </td>
                     <td className="p-2 text-center border border-border">{entry.points}</td>

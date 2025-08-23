@@ -8,8 +8,9 @@ export default function QualifStageView({
   tournament: Tournament;
   tournamentId: string;
 }) {
-  const qualifRounds = (tournament.rounds ?? []).filter((round) => round.stage === 'QUALIFICATIONS');
+  const qualifRounds = (tournament.rounds ?? []).filter((round) => round.stage === 'Q1');
   const hasQualifs = qualifRounds.length > 0;
+  console.log(tournament.rounds);
 
   return (
     <div className="relative overflow-auto border border-border rounded-lg px-2 py-6 md:p-8 bg-background">

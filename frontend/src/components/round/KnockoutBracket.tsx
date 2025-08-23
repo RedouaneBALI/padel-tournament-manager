@@ -9,7 +9,6 @@ interface KnockoutBracketProps {
 
 export default function KnockoutBracket({ rounds, tournamentId }: KnockoutBracketProps) {
   const ROUND_WIDTH = 320;
-
   const matchPositions = calculateMatchPositions(rounds);
   const maxPosition = Math.max(...matchPositions.flat()) + 200;
 
