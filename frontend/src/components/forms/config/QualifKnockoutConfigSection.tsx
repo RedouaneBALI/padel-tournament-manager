@@ -1,6 +1,8 @@
 // src/components/forms/config/QualifKnockoutConfigSection.tsx
 import type { TournamentFormData } from '@/src/validation/tournament';
 import KnockoutConfigSection from '@/src/components/forms/config/KnockoutConfigSection';
+import { Hash, Trophy } from 'lucide-react';
+import { TbTournament } from "react-icons/tb";
 
 interface QualifKnockoutConfigSectionProps {
   formData: TournamentFormData;
@@ -25,7 +27,8 @@ export default function QualifKnockoutConfigSection({
     <>
       {/* Taille du tableau de pré-qualif (puissance de 2) */}
       <div className="space-y-2">
-        <label htmlFor="preQualDrawSize" className="block text-sm font-medium text-foreground">
+        <label htmlFor="preQualDrawSize" className="flex items-center gap-2 text-sm font-medium text-foreground leading-none">
+          <TbTournament className="h-4 w-4" />
           Taille du tableau de pré-qualif (paires)
         </label>
         <select
@@ -41,8 +44,9 @@ export default function QualifKnockoutConfigSection({
         </select>
       </div>
       <div className="space-y-2">
-        <label htmlFor="nbSeedsQualify" className="block text-sm font-medium text-foreground">
-          Nombre de tête de série en qualif (0 si tirage aléatoire)
+        <label htmlFor="nbSeedsQualify" className="flex items-center gap-2 text-sm font-medium text-foreground leading-none">
+          <Hash className="h-4 w-4" />
+          Têtes de série en qualif (0 si tirage aléatoire)
         </label>
         <select
           id="nbSeedsQualify"
@@ -59,7 +63,8 @@ export default function QualifKnockoutConfigSection({
 
       {/* Nombre de qualifiés depuis les pré-qualifs */}
       <div className="space-y-2">
-        <label htmlFor="nbQualifiers" className="block text-sm font-medium text-foreground">
+        <label htmlFor="nbQualifiers" className="flex items-center gap-2 text-sm font-medium text-foreground leading-none">
+          <Trophy className="h-4 w-4" />
           Nombre de qualifiés
         </label>
         <select

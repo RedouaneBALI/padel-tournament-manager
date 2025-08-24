@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from 'react';
+import { Hash } from 'lucide-react';
+import { TbTournament } from "react-icons/tb";
 import type { TournamentFormData } from '@/src/validation/tournament';
 
 interface KnockoutConfigSectionProps {
@@ -37,7 +39,8 @@ export default function KnockoutConfigSection({
   return (
     <>
       <div className="space-y-2">
-        <label htmlFor="mainDrawSize" className="block text-sm font-medium text-foreground">
+        <label htmlFor="mainDrawSize" className="flex items-center gap-2 text-sm font-medium text-foreground leading-none">
+          <TbTournament className="h-4 w-4" />
           Taille du tableau principal (paires)
         </label>
         <select
@@ -55,8 +58,9 @@ export default function KnockoutConfigSection({
         </select>
       </div>
       <div className="space-y-2">
-        <label htmlFor="nbSeeds" className="block text-sm font-medium text-foreground">
-          Nombre de têtes de série (0 si tirage aléatoire)
+        <label htmlFor="nbSeeds" className="flex items-center gap-2 text-sm font-medium text-foreground leading-none">
+          <Hash className="h-4 w-4" />
+          Têtes de série (0 si tirage aléatoire)
         </label>
         <select
           id="nbSeeds"

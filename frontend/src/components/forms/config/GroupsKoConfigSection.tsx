@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import type { TournamentFormData } from '@/src/validation/tournament';
+import { Grid, Users, Hash, CheckSquare } from 'lucide-react';
+import { TbTournament } from "react-icons/tb";
 
 interface GroupsKoConfigSectionProps {
   formData: TournamentFormData;
@@ -27,7 +29,8 @@ export default function GroupsKoConfigSection({
   return (
     <>
       <div className="space-y-2">
-        <label htmlFor="nbPools" className="block text-sm font-medium text-foreground">
+        <label htmlFor="nbPools" className="flex items-center gap-2 text-sm font-medium text-foreground leading-none">
+          <Grid className="h-4 w-4" />
           Nombre de poules
         </label>
         <select
@@ -43,7 +46,8 @@ export default function GroupsKoConfigSection({
         </select>
       </div>
       <div className="space-y-2">
-        <label htmlFor="nbPairsPerPool" className="block text-sm font-medium text-foreground">
+        <label htmlFor="nbPairsPerPool" className="flex items-center gap-2 text-sm font-medium text-foreground leading-none">
+          <Users className="h-4 w-4" />
           Équipes par poule
         </label>
         <input
@@ -62,7 +66,8 @@ export default function GroupsKoConfigSection({
         />
       </div>
       <div className="space-y-2">
-        <label htmlFor="nbSeeds" className="block text-sm font-medium text-foreground">
+        <label htmlFor="nbSeeds" className="flex items-center gap-2 text-sm font-medium text-foreground leading-none">
+          <Hash className="h-4 w-4" />
           Nombre de têtes de série (0 si tirage aléatoire)
         </label>
         <select
@@ -78,7 +83,8 @@ export default function GroupsKoConfigSection({
         </select>
       </div>
       <div className="space-y-2">
-        <label htmlFor="nbQualifiedByPool" className="block text-sm font-medium text-foreground">
+        <label htmlFor="nbQualifiedByPool" className="flex items-center gap-2 text-sm font-medium text-foreground leading-none">
+          <CheckSquare className="h-4 w-4" />
           Équipes qualifiées par poule
         </label>
         {(() => {

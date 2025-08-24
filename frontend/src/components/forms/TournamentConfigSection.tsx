@@ -1,4 +1,4 @@
-import { Settings, Users, Trophy, Zap } from 'lucide-react';
+import { Settings, Users, Trophy, Zap, Cog } from 'lucide-react';
 import type { TournamentFormData } from '@/src/validation/tournament';
 import KnockoutConfigSection from '@/src/components/forms/config/KnockoutConfigSection';
 import GroupsKoConfigSection from '@/src/components/forms/config/GroupsKoConfigSection';
@@ -83,6 +83,8 @@ export default function TournamentConfigSection({
               <option value="QUALIF_KO"> Qualif + Élimination directe </option>
             </select>
           </div>
+
+
         </div>
 
         <div className="grid gap-6 grid-cols-1 md:grid-cols-2 md:max-w-3xl">
@@ -97,6 +99,23 @@ export default function TournamentConfigSection({
             <QualifKnockoutConfigSection formData={formData} handleInputChange={handleInputChange} />
           )}
         </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-foreground flex items-center gap-2">
+            <Cog className="h-4 w-4" />
+            Mode de tirage
+          </label>
+          <select
+            name="drawMode"
+            value={toStr((formData as any).drawMode ?? 'seeded')}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+          >
+            <option value="seeded">{formData.nbSeeds === 0 ? 'Aléatoire' : 'Par classement (TS)'}</option>
+            <option value="order">Manuel</option>
+          </select>
+        </div>
+
       </div>
     </div>
   );

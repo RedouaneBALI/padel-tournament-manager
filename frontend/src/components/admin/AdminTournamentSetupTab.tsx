@@ -24,7 +24,6 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
   const [tournamentStarted, setTournamentStarted] = useState(false);
   const [loadingTournament, setLoadingTournament] = useState(true);
 
-  const [drawMode, setDrawMode] = useState('seeded');
   const [isGenerating, setIsGenerating] = useState(false);
   const router = useRouter();
 
@@ -39,7 +38,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
           onClick: async () => {
             setIsGenerating(true);
             try {
-              const manual = drawMode === 'order';
+              const manual = (tournament?.config as any)?.drawMode === 'order';
               await generateDraw(tournamentId, manual);
               router.push(`/admin/tournament/${tournamentId}/bracket`);
             } finally {
@@ -119,23 +118,19 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
               />
             </>
           )}
-          {pairs.length > 0 && !tournamentStarted && !loadingTournament && !loadingPairs && (
+          {!tournamentStarted && !loadingTournament && !loadingPairs && (
             <>
               <hr className="my-2 border-t border-border" />
               <div className="flex flex-col sm:flex-row sm:justify-center sm:items-end gap-4 mt-4">
                 <div className="flex flex-col gap-2 pb-4">
-                  <label className="text-xl font-semibold text-foreground text-center">Tirage</label>
-                  <select
-                    onChange={(e) => setDrawMode(e.target.value)}
-                    className="px-3 py-2 h-12 border border-border rounded-md text-sm h-10 shadow-sm text-center"
-                    value={drawMode}
-                  >
-                    <option value="seeded">{tournament?.config.nbSeeds === 0 ? 'Aléatoire' : 'Par classement (TS)'}</option>
-                    <option value="order">Par ordre d&apos;enregistrement</option>
-                  </select>
                   <button
-                    onClick={handleDraw}
-                    className="px-4 py-2 h-12 bg-primary text-on-primary rounded hover:bg-primary-hover"
+                    onClick={pairs.length > 0 ? handleDraw : undefined}
+                    disabled={pairs.length === 0}
+                    className={`px-4 py-2 h-12 rounded transition-colors ${
+                      pairs.length === 0
+                        ? 'bg-border text-color-text-secondary cursor-not-allowed'
+                        : 'bg-primary text-on-primary hover:bg-primary-hover'
+                    }`}
                   >
                     Générer le tirage
                   </button>
