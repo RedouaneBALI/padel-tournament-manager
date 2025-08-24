@@ -5,5 +5,5 @@ export interface PlayerPair {
   seed?: number;
   player1Name: string;
   player2Name: string;
-  type: 'NORMAL'| 'BYE' | 'QUALIFIER';
+  type: 'NORMAL' | 'BYE' | 'QUALIFIER';
 }

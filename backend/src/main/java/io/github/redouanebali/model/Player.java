@@ -1,7 +1,5 @@
 package io.github.redouanebali.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -26,8 +24,6 @@ public class Player {
   private String  name;
   private Integer ranking;
   private Integer points;
-  @JsonProperty("birth_year")
-  @Column(name = "birth_year")
   private Integer birthYear;
 
   public Player(String name) {

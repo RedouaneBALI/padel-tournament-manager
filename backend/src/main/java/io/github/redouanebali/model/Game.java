@@ -2,7 +2,6 @@ package io.github.redouanebali.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -46,12 +45,10 @@ public class Game {
   private MatchFormat format;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "winner_side")
   private TeamSide winnerSide;
 
   @DateTimeFormat(pattern = "HH:mm")
   @JsonFormat(pattern = "HH:mm")
-  @Column(name = "scheduled_time")
   private LocalTime scheduledTime;
 
   private String court;

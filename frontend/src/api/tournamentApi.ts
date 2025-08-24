@@ -1,3 +1,4 @@
+// API shape for Game coming from backend (snake_case via @JsonNaming)
 import { toast } from 'react-toastify';
 import type { Round } from '@/src/types/round';
 import type { PlayerPair } from '@/src/types/playerPair';
@@ -10,14 +11,12 @@ export const BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').replace(/\/
 
 export async function fetchTournament(tournamentId: string): Promise<Tournament> {
   const res = await fetch(`${BASE_URL}/tournaments/${tournamentId}`, { method: 'GET' });
-
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     toast.error(`Erreur lors de la récupération du tournoi (${res.status})`);
     throw new Error(`HTTP_${res.status} ${text}`);
   }
-
-  return res.json();
+  return await res.json();
 }
 
 export async function fetchTournamentAdmin(tournamentId: string): Promise<Tournament> {
@@ -31,7 +30,7 @@ export async function fetchTournamentAdmin(tournamentId: string): Promise<Tourna
     throw new Error(`HTTP_${res.status} ${text}`);
   }
 
-  return res.json();
+  return await res.json();
 }
 
 export async function fetchMyTournaments(scope: 'mine' | 'all' = 'mine'): Promise<Tournament[]> {
@@ -50,7 +49,7 @@ export async function fetchMyTournaments(scope: 'mine' | 'all' = 'mine'): Promis
     throw new Error(`HTTP_${res.status} ${text}`);
   }
 
-  return res.json();
+  return await res.json();
 }
 
 export async function fetchRounds(tournamentId: string): Promise<Round[]> {
@@ -62,7 +61,7 @@ export async function fetchRounds(tournamentId: string): Promise<Round[]> {
   return await response.json();
 }
 
-export async function fetchPairs(tournamentId: string): Promise<PlayerPair[]>{
+export async function fetchPairs(tournamentId: string): Promise<PlayerPair[]> {
   const response = await fetch(`${BASE_URL}/tournaments/${tournamentId}/pairs`);
   if (!response.ok) {
     throw new Error('Erreur de récupération des PlayerPair');
@@ -70,7 +69,7 @@ export async function fetchPairs(tournamentId: string): Promise<PlayerPair[]>{
   return await response.json();
 }
 
-export async function fetchMatchFormat(tournamentId: string, currentStage: string): Promise<MatchFormat>{
+export async function fetchMatchFormat(tournamentId: string, currentStage: string): Promise<MatchFormat> {
   const response = await fetch(`${BASE_URL}/tournaments/${tournamentId}/rounds/${currentStage}/match-format`);
   if (!response.ok) {
     toast.error('Erreur lors du chargement du format.');
@@ -128,7 +127,7 @@ export async function createTournament(payload: Tournament) {
     throw new Error(`Erreur création (${res.status}) ${text}`);
   }
   toast.success('Tournoi créé !');
-  return res.json();
+  return await res.json();
 }
 
 export async function deleteTournament(tournamentId: string | number): Promise<void> {

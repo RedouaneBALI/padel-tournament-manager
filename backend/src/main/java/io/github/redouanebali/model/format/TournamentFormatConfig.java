@@ -27,7 +27,7 @@ public class TournamentFormatConfig {
   private Integer nbSeedsQualify;      // Ex: 8
 
   // @todo add constructors wihth TournamentFormat to set defaults
-  
+
   public int getNbMaxPairs(TournamentFormat format) {
     switch (format) {
       case KNOCKOUT -> {

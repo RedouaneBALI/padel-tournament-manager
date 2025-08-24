@@ -1,6 +1,5 @@
 package io.github.redouanebali.model;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -25,7 +24,6 @@ public class PoolRankingDetails {
   @JoinColumn(name = "player_pair_id")
   private PlayerPair playerPair;
   private int        points; // 1 victory = 1 point
-  @Column(name = "set_average")
   private int        setAverage; // difference between cumul of points for and points against
 
   public PoolRankingDetails(PlayerPair playerPair, int points, int setAverage) {

@@ -1,7 +1,5 @@
 package io.github.redouanebali.dto.response;
 
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.github.redouanebali.model.Gender;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.TournamentLevel;
@@ -30,11 +28,8 @@ public class TournamentDTO {
   private TournamentFormatConfig config;
   private LocalDate              startDate;
   private LocalDate              endDate;
+  private boolean                editable;
 
-  @JsonProperty("isEditable")
-  private boolean editable;
-
-  @JsonProperty("currentRoundStage")
   public Stage getCurrentRoundStage() {
     if (rounds == null || rounds.isEmpty()) {
       return null;

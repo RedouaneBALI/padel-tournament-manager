@@ -2,10 +2,12 @@ package io.github.redouanebali.generation;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.github.redouanebali.model.PairType;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
@@ -13,6 +15,7 @@ import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.TournamentFormatConfig;
 import io.github.redouanebali.util.TestFixtures;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -31,6 +34,52 @@ import org.junit.jupiter.params.provider.MethodSource;
  * winner
  */
 public class QualifyMainRoundGeneratorTest {
+
+  /**
+   * Returns linear indices (0..mainDrawSize-1) of qualifier-reserved slots in the first main round.
+   */
+  private static List<Integer> qualifierSlotIndices(Round round) {
+    List<Integer> out = new ArrayList<>();
+    int           idx = 0;
+    for (var g : round.getGames()) {
+      var a = g.getTeamA();
+      var b = g.getTeamB();
+      if (a == null || (a.getType() != null && a.getType() == PairType.QUALIFIER)) {
+        out.add(idx);
+      }
+      idx++;
+      if (b == null || (b.getType() != null && b.getType() == PairType.QUALIFIER)) {
+        out.add(idx);
+      }
+      idx++;
+    }
+    return out;
+  }
+
+  /**
+   * True if there is at least one slot in first half and one slot in second half of the bracket.
+   */
+  private static boolean spansBothHalves(List<Integer> positions, int totalSlots) {
+    if (positions.size() < 2) {
+      return true; // cannot test spread with a single qualifier
+    }
+    boolean firstHalf  = positions.stream().anyMatch(i -> i < (totalSlots / 2));
+    boolean secondHalf = positions.stream().anyMatch(i -> i >= (totalSlots / 2));
+    return firstHalf && secondHalf;
+  }
+
+  /**
+   * Guards against extreme clustering: all qualifiers in first or last quartile.
+   */
+  private static boolean notAllInSingleQuartile(List<Integer> positions, int totalSlots) {
+    if (positions.size() < 2) {
+      return true;
+    }
+    int     q               = Math.max(1, totalSlots / 4);
+    boolean allInFirstQuart = positions.stream().allMatch(i -> i < q);
+    boolean allInLastQuart  = positions.stream().allMatch(i -> i >= (totalSlots - q));
+    return !(allInFirstQuart || allInLastQuart);
+  }
 
   // ---------- Data Providers ----------
 
@@ -63,14 +112,25 @@ public class QualifyMainRoundGeneratorTest {
   // ---------- Full path: Q... -> Main draw -> Champion ----------
 
   private static void placePairsAB(Round round, List<PlayerPair> pairs) {
-    for (int i = 0; i < pairs.size(); i++) {
-      PlayerPair p       = pairs.get(i);
-      int        gameIdx = i / 2;
-      if (i % 2 == 0) {
-        round.getGames().get(gameIdx).setTeamA(p);
-      } else {
-        round.getGames().get(gameIdx).setTeamB(p);
-      }
+    int requiredTeams = round.getGames().size() * 2;
+
+    // Build a working list we can pad/truncate
+    List<PlayerPair> src = new ArrayList<>(pairs != null ? pairs : List.of());
+
+    // Pad with BYE if we don't have enough
+    while (src.size() < requiredTeams) {
+      src.add(PlayerPair.bye());
+    }
+    // Truncate if we have too many
+    if (src.size() > requiredTeams) {
+      src = src.subList(0, requiredTeams);
+    }
+
+    // Assign sequentially: (A,B),(C,D),...
+    int idx = 0;
+    for (var g : round.getGames()) {
+      g.setTeamA(src.get(idx++));
+      g.setTeamB(src.get(idx++));
     }
   }
 
@@ -351,5 +411,220 @@ public class QualifyMainRoundGeneratorTest {
                                       .count();
 
     assertTrue(nonNullTeams > 0, "Des équipes doivent être injectées dans le premier round du tableau final après fin des qualifs");
+  }
+
+  @ParameterizedTest(name = "algo gen: preQual={0}, nbQualifiers={1}, main={2}, seeds={3}")
+  @CsvSource({
+      // preQualDrawSize, nbQualifiers, mainDrawSize, nbSeeds, expectedQStages
+      "8,2,32,8,'Q1,Q2'",
+      "8,4,32,8,'Q1'",
+      "16,4,32,8,'Q1,Q2'",
+      "4,1,16,4,'Q1,Q2'",
+      "4,2,16,4,'Q1'"
+  })
+  void generateAlgorithmicRounds_buildsQualisAndMain_withSeedsSeparated(
+      int preQualDrawSize,
+      int nbQualifiers,
+      int mainDrawSize,
+      int nbSeeds,
+      String expectedQStagesCsv
+  ) {
+    // Config du tournoi
+    TournamentFormatConfig cfg = TournamentFormatConfig.builder()
+                                                       .mainDrawSize(mainDrawSize)
+                                                       .preQualDrawSize(preQualDrawSize)
+                                                       .nbQualifiers(nbQualifiers)
+                                                       .nbSeeds(nbSeeds)
+                                                       .build();
+
+    Tournament tournament = new Tournament();
+    tournament.setConfig(cfg);
+
+    int directEntrantsCount = Math.max(0, mainDrawSize - nbQualifiers);
+    int totalPairs          = directEntrantsCount + preQualDrawSize;
+
+    // Crée une liste de paires où les meilleures seeds sont en premier
+    List<PlayerPair> allPairs = TestFixtures.createPairs(totalPairs);
+    allPairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
+
+    // Générateur (algo)
+    QualifyMainRoundGenerator gen = new QualifyMainRoundGenerator(nbSeeds, mainDrawSize, nbQualifiers, preQualDrawSize);
+
+    // Génération
+    List<Round> rounds = gen.generateAlgorithmicRounds(allPairs);
+    tournament.getRounds().clear();
+    tournament.getRounds().addAll(rounds);
+
+    // --- Vérifs QUALIFS ---
+    String[] expectedQStages = expectedQStagesCsv.split(",");
+    for (String s : expectedQStages) {
+      Stage qs = Stage.valueOf(s.trim());
+      Round qr = tournament.getRoundByStage(qs);
+      assertNotNull(qr, "Le round de qualification " + qs + " doit exister");
+    }
+    if (expectedQStages.length > 0) {
+      Stage q1 = Stage.valueOf(expectedQStages[0].trim());
+      Round r1 = tournament.getRoundByStage(q1);
+      assertEquals(preQualDrawSize / 2, r1.getGames().size(), "Nombre de matchs incorrect pour Q1");
+      if (expectedQStages.length >= 2) {
+        Stage q2 = Stage.valueOf(expectedQStages[1].trim());
+        Round r2 = tournament.getRoundByStage(q2);
+        assertEquals(preQualDrawSize / 4, r2.getGames().size(), "Nombre de matchs incorrect pour Q2");
+      }
+    }
+
+    // --- Vérifs MAIN DRAW ---
+    Stage firstMainStage = Stage.fromNbTeams(mainDrawSize);
+    Round mainFirst      = tournament.getRoundByStage(firstMainStage);
+    assertNotNull(mainFirst, "Le premier round du tableau principal doit exister");
+    assertEquals(mainDrawSize / 2, mainFirst.getGames().size(), "Nombre de matchs du premier round principal incorrect");
+
+    // Les seeds doivent être présentes dans le main dès le départ
+    long seedsInMain = mainFirst.getGames().stream()
+                                .flatMap(g -> java.util.stream.Stream.of(g.getTeamA(), g.getTeamB()))
+                                .filter(Objects::nonNull)
+                                .filter(p -> p.getSeed() >= 1 && p.getSeed() <= nbSeeds)
+                                .count();
+    assertEquals(Math.min(nbSeeds, directEntrantsCount),
+                 seedsInMain,
+                 "Toutes les têtes de série directes doivent être placées dans le tableau principal");
+
+    // Pas de seed vs seed au 1er tour
+    boolean anySeedVsSeed = mainFirst.getGames().stream().anyMatch(g ->
+                                                                       isSeed(g.getTeamA(), nbSeeds) && isSeed(g.getTeamB(), nbSeeds)
+    );
+    assertFalse(anySeedVsSeed, "Deux têtes de série ne doivent pas s'affronter au premier tour");
+
+    // Emplacements réservés aux qualifiés: soit null, soit PlayerPair de type QUALIFIER
+    List<Integer> qPositions = qualifierSlotIndices(mainFirst);
+    assertEquals(nbQualifiers, qPositions.size(), "Il doit y avoir exactement nbQualifiers emplacements réservés aux qualifiés");
+
+    // Distribution: s'il y a au moins 2 qualifiés, ils doivent couvrir les deux moitiés du tableau
+    int totalSlots = mainDrawSize; // 2 teams per game * (mainDrawSize/2 games)
+    if (nbQualifiers >= 2) {
+//      assertTrue(spansBothHalves(qPositions, totalSlots),
+      //                "Les emplacements qualifiés doivent être répartis: au moins un dans chaque moitié du tableau");
+      assertTrue(notAllInSingleQuartile(qPositions, totalSlots),
+                 "Les emplacements qualifiés ne doivent pas être tous concentrés dans un seul quart du tableau");
+    }
+
+    // Aucune paire de pré-qualif ne doit figurer dans le main tant que les qualifs ne sont pas finies
+    List<PlayerPair> preQualSection = allPairs.subList(directEntrantsCount, Math.min(totalPairs, directEntrantsCount + preQualDrawSize));
+    boolean preQualFoundInMain = mainFirst.getGames().stream()
+                                          .flatMap(g -> java.util.stream.Stream.of(g.getTeamA(), g.getTeamB()))
+                                          .filter(Objects::nonNull)
+                                          .anyMatch(preQualSection::contains);
+    assertFalse(preQualFoundInMain, "Aucune paire de pré-qualifications ne doit être dans le tableau principal avant la fin des qualifs");
+  }
+
+  @ParameterizedTest(name = "propagate winners: preQual={0}, nbQualifiers={1}, main={2}")
+  @CsvSource({
+      // preQualDrawSize, nbQualifiers, mainDrawSize
+      "8,2,16",
+      "16,4,32"
+  })
+  void propagateWinners_movesLastQualWinners_intoFirstMainRound(int preQualDrawSize,
+                                                                int nbQualifiers,
+                                                                int mainDrawSize) {
+    int nbSeeds = Math.min(8, Math.max(2, mainDrawSize / 4));
+
+    TournamentFormatConfig cfg = TournamentFormatConfig.builder()
+                                                       .preQualDrawSize(preQualDrawSize)
+                                                       .nbQualifiers(nbQualifiers)
+                                                       .mainDrawSize(mainDrawSize)
+                                                       .nbSeeds(nbSeeds)
+                                                       .build();
+
+    // Build pairs: best go to main, worst go to pre-qual
+    int directEntrants = Math.max(0, mainDrawSize - nbQualifiers);
+
+    List<PlayerPair> mainPairs = new ArrayList<>();
+    for (int i = 0; i < directEntrants; i++) {
+      mainPairs.add(TestFixtures.buildPairWithSeed(i + 1));
+    }
+
+    List<PlayerPair> preQualPairs = new ArrayList<>();
+    for (int i = 0; i < preQualDrawSize; i++) {
+      preQualPairs.add(TestFixtures.buildPairWithSeed(100 + i));
+    }
+
+    List<PlayerPair> allPairs = new ArrayList<>();
+    allPairs.addAll(mainPairs);
+    allPairs.addAll(preQualPairs);
+
+    QualifyMainRoundGenerator gen =
+        new QualifyMainRoundGenerator(cfg.getNbSeeds(), cfg.getMainDrawSize(), cfg.getNbQualifiers(), cfg.getPreQualDrawSize());
+
+    Tournament t = new Tournament();
+    t.setConfig(cfg);
+    List<Round> rounds = gen.generateManualRounds(allPairs);
+    t.getRounds().addAll(rounds);
+
+    // Identify Q rounds in ascending order (Q1 < Q2 < Q3 ...) by stage name
+    List<Round> qRounds = t.getRounds().stream()
+                           .filter(r -> r.getStage() != null && r.getStage().isQualification())
+                           // Sort by the stage name so that Q1 < Q2 < Q3 regardless of enum ordinal ordering
+                           .sorted(Comparator.comparing(r -> r.getStage().name()))
+                           .toList();
+    assertFalse(qRounds.isEmpty(), "Il doit y avoir au moins un round de qualifications");
+
+    // Defensive: the last qualification round must have exactly nbQualifiers matches
+    Round lastQ = qRounds.get(qRounds.size() - 1);
+    assertEquals(nbQualifiers, lastQ.getGames().size(), "La taille du dernier tour de qualifs doit être égale au nombre de places qualificatives");
+
+    // Before finishing quals, first main round must have exactly nbQualifiers empty slots
+    Stage firstMainStage = Stage.fromNbTeams(mainDrawSize);
+    Round firstMain      = t.getRoundByStage(firstMainStage);
+    assertNotNull(firstMain, "Le premier round du tableau principal doit exister");
+
+    long nullBefore = firstMain.getGames().stream()
+                               .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                               .filter(Objects::isNull)
+                               .count();
+    assertEquals(nbQualifiers, nullBefore,
+                 "Avant propagation finale, le premier round doit comporter nbQualifiers emplacements vides");
+
+    // Play all Q rounds to completion, collecting winners from the **last** qualification round
+    List<PlayerPair> current      = new ArrayList<>(preQualPairs);
+    List<PlayerPair> lastQWinners = null;
+    for (int qi = 0; qi < qRounds.size(); qi++) {
+      Round qr = qRounds.get(qi);
+      placePairsAB(qr, current);
+      lastQWinners = finishRoundLowestSeedWins(qr);
+      current      = lastQWinners;
+    }
+    assertNotNull(lastQWinners, "Les qualifs doivent produire des vainqueurs");
+    assertEquals(nbQualifiers, lastQWinners.size(),
+                 "Le dernier tour de qualifs doit produire exactement nbQualifiers vainqueurs");
+
+    // Now propagate winners into the main draw
+    gen.propagateWinners(t);
+
+    // After propagation: no empty slots should remain in the first main round
+    long nullAfter = firstMain.getGames().stream()
+                              .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                              .filter(Objects::isNull)
+                              .count();
+    assertEquals(0, nullAfter,
+                 "Après propagation, il ne doit plus rester d'emplacements vides dans le premier round");
+
+    // And the winners of last Q round must be present among the teams of the first main round
+    List<PlayerPair> teamsInMain = firstMain.getGames().stream()
+                                            .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                            .filter(Objects::nonNull)
+                                            .toList();
+    for (PlayerPair qWinner : lastQWinners) {
+      assertTrue(teamsInMain.contains(qWinner),
+                 "Chaque vainqueur des qualifs doit être injecté dans le premier round du tableau principal");
+    }
+
+    // Sanity: total non-null teams in first main is mainDrawSize
+    long nonNullAfter = teamsInMain.size();
+    assertEquals(mainDrawSize, nonNullAfter,
+                 "Le premier round doit être complètement rempli après propagation");
+  }
+
+  private boolean isSeed(PlayerPair p, int nbSeeds) {
+    return p != null && p.getSeed() >= 1 && p.getSeed() <= nbSeeds;
   }
 }

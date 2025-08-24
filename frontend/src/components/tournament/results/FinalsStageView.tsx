@@ -18,7 +18,7 @@ export default function FinalsStageView({
   const finalsRounds = (() => {
     const r = tournament.rounds ?? [];
     if (isGroupStageFormat) return r.filter((round) => round.stage !== 'GROUPS');
-    if (isQualifStageFormat) return r.filter((round) => round.stage === 'FINALS');
+    if (isQualifStageFormat) return r.filter((round) => round.stage !== 'Q1' && round.stage !== 'Q2' && round.stage !== 'Q3');
     return r;
   })();
 

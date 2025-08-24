@@ -64,6 +64,17 @@ public class PlayerPair {
     return byePair;
   }
 
+  public static PlayerPair qualifier() {
+    Player     q1    = new Player("Q");
+    Player     q2    = new Player("Q");
+    PlayerPair qPair = new PlayerPair();
+    qPair.setPlayer1(q1);
+    qPair.setPlayer2(q2);
+    qPair.setSeed(Integer.MAX_VALUE);
+    qPair.setType(PairType.QUALIFIER);
+    return qPair;
+  }
+
   public static PlayerPair qualifierSlot(String label, int slotNumber) {
     Player     placeholder1 = new Player(label + " #" + slotNumber);
     Player     placeholder2 = new Player(label + " #" + slotNumber);

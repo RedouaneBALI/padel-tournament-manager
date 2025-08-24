@@ -1,7 +1,6 @@
 package io.github.redouanebali.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.github.redouanebali.model.format.TournamentFormat;
 import io.github.redouanebali.model.format.TournamentFormatConfig;
 import jakarta.persistence.CascadeType;
@@ -49,11 +48,11 @@ public class Tournament {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long                   id;
   // Who can edit this tournament (user email)
-  @Column(name = "owner_id", nullable = false, length = 191)
+  @Column(nullable = false, length = 191)
   private String                 ownerId;
-  @Column(name = "created_at", nullable = false, updatable = false)
+  @Column(nullable = false, updatable = false)
   private Instant                createdAt   = Instant.now();
-  @Column(name = "updated_at", nullable = false)
+  @Column(nullable = false)
   private Instant                updatedAt   = Instant.now();
   @NotBlank
   private String                 name;
@@ -80,20 +79,16 @@ public class Tournament {
   @Enumerated(EnumType.STRING)
   private TournamentLevel        level;
   @Enumerated(EnumType.STRING)
-  @Column(name = "format")
   private TournamentFormat       format;
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-  @Column(name = "start_date")
   private LocalDate              startDate;
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-  @Column(name = "end_date")
   private LocalDate              endDate;
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(columnDefinition = "JSONB")
   private TournamentFormatConfig config;
-  @JsonProperty("isEditable")
   @Transient
   private boolean                editable;
 

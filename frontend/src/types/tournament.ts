@@ -1,17 +1,7 @@
 import type { Round } from '@/src/types/round';
 import type { PlayerPair } from '@/src/types/playerPair';
 import type { Stage } from '@/src/types/stage';
-
-export interface TournamentFormatConfig {
-  mainDrawSize: number;
-  nbSeeds: number;
-  nbPools?: number;
-  nbPairsPerPool?: number;
-  nbQualifiedByPool?: number;
-  preQualDrawSize?: number;
-  numQualifiers?: number;
-  nbSeedsQualify?: number;
-}
+import { TournamentFormatConfig } from '@/src/types/tournamentFormatConfig';
 
 export type TournamentFormat = 'KNOCKOUT' | 'GROUPS_KO' | 'QUALIF_KO';
 
