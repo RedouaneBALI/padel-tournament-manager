@@ -24,6 +24,6 @@ public class TournamentRoundBuilder {
       throw new IllegalArgumentException("Invalid tournament config: " + errors);
     }
 
-    strategy.buildInitialRounds(tournament, cfg);
+    // strategy.buildEmptyRounds(tournament, cfg);
   }
 }

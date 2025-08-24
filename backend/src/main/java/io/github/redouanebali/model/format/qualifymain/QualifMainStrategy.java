@@ -30,8 +30,9 @@ public class QualifMainStrategy implements FormatStrategy {
     return List.of(StageKey.PRE_QUALIF, StageKey.MAIN_DRAW);
   }
 
+  /*
   @Override
-  public void buildInitialRounds(Tournament t, TournamentFormatConfig cfg) {
+  public void buildEmptyRounds(Tournament t, TournamentFormatConfig cfg) {
     QualifyMainRoundGenerator generator = new QualifyMainRoundGenerator(
         cfg.getNbSeeds() != null ? cfg.getNbSeeds() : 0,
         cfg.getPreQualDrawSize() != null ? cfg.getPreQualDrawSize() : 0,
@@ -40,17 +41,18 @@ public class QualifMainStrategy implements FormatStrategy {
     List<Round> rounds = generator.createRoundsStructure(t);
     t.getRounds().clear();
     t.getRounds().addAll(rounds);
-  }
+  } */
 
   @Override
-  public Round initializeTournament(Tournament t, List<PlayerPair> pairs, boolean manual) {
+  public List<Round> initializeRounds(Tournament t, List<PlayerPair> pairs, boolean manual) {
     QualifyMainRoundGenerator generator = new QualifyMainRoundGenerator(
         t.getConfig().getNbSeeds() != null ? t.getConfig().getNbSeeds() : 0,
         t.getConfig().getMainDrawSize() != null ? t.getConfig().getMainDrawSize() : 0,
-        t.getConfig().getNbQualifiers() != null ? t.getConfig().getNbQualifiers() : 0
+        t.getConfig().getNbQualifiers() != null ? t.getConfig().getNbQualifiers() : 0,
+        t.getConfig().getPreQualDrawSize() != null ? t.getConfig().getPreQualDrawSize() : 0
     );
-    return manual ? generator.generateManualRound(pairs)
-                  : generator.generateAlgorithmicRound(pairs);
+    return manual ? generator.generateManualRounds(pairs)
+                  : generator.generateAlgorithmicRounds(pairs);
   }
 
   @Override
@@ -58,7 +60,8 @@ public class QualifMainStrategy implements FormatStrategy {
     QualifyMainRoundGenerator generator = new QualifyMainRoundGenerator(
         t.getConfig().getNbSeeds() != null ? t.getConfig().getNbSeeds() : 0,
         t.getConfig().getMainDrawSize() != null ? t.getConfig().getMainDrawSize() : 0,
-        t.getConfig().getNbQualifiers() != null ? t.getConfig().getNbQualifiers() : 0
+        t.getConfig().getNbQualifiers() != null ? t.getConfig().getNbQualifiers() : 0,
+        t.getConfig().getPreQualDrawSize() != null ? t.getConfig().getPreQualDrawSize() : 0
     );
     generator.propagateWinners(t);
   }

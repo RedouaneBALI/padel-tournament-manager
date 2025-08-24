@@ -32,11 +32,11 @@ public abstract class AbstractRoundGenerator implements RoundGenerator {
     }
   }
 
-  public Round generateRound(Tournament tournament, List<PlayerPair> pairs, boolean manual) {
+  public List<Round> generateRounds(Tournament tournament, List<PlayerPair> pairs, boolean manual) {
     if (manual) {
-      return generateManualRound(pairs);
+      return generateManualRounds(pairs);
     }
-    return generateAlgorithmicRound(pairs);
+    return generateAlgorithmicRounds(pairs);
   }
 
   /**

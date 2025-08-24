@@ -6,8 +6,6 @@ import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.model.format.DrawMath;
-import io.github.redouanebali.model.format.TournamentFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -20,40 +18,28 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
     super(nbSeeds);
   }
 
-  @Override
-  public Round generateAlgorithmicRound(List<PlayerPair> pairs) {
-    int   originalSize = pairs.size();
-    Round round        = new Round();
+  public List<Round> generateRounds(List<PlayerPair> pairs, boolean manual) {
+    int originalSize = pairs.size();
     addMissingByePairsToReachPowerOfTwo(pairs, originalSize);
-    List<Game>       games     = createEmptyGames(pairs.size(), round.getMatchFormat());
-    List<PlayerPair> remaining = placeSeedAndByeTeams(games, pairs, getNbSeeds());
-    placeRemainingTeamsRandomly(games, remaining, getNbSeeds());
-    round.addGames(games);
-    round.setStage(Stage.fromNbTeams(pairs.size()));
-    return round;
+    Stage       start  = Stage.fromNbTeams(pairs.size());
+    List<Round> rounds = buildBracketFrom(start, pairs.size());
+    Round       first  = rounds.getFirst();
+    if (manual) {
+      populateFirstRoundManual(first, pairs);
+    } else {
+      populateFirstRoundAlgorithmic(first, pairs);
+    }
+    return rounds;
   }
 
   @Override
-  public Round generateManualRound(final List<PlayerPair> pairs) {
-    int   originalSize = pairs.size();
-    Round round        = new Round();
-    addMissingByePairsToReachPowerOfTwo(pairs, originalSize);
-    List<Game> games = createEmptyGames(pairs.size(), round.getMatchFormat());
+  public List<Round> generateAlgorithmicRounds(List<PlayerPair> pairs) {
+    return generateRounds(pairs, false);
+  }
 
-    int teamIndex = 0;
-    for (Game game : games) {
-      if (teamIndex < pairs.size()) {
-        game.setTeamA(pairs.get(teamIndex++));
-      }
-      if (teamIndex < pairs.size()) {
-        game.setTeamB(pairs.get(teamIndex++));
-      }
-    }
-
-    round.addGames(games);
-    round.setStage(Stage.fromNbTeams(pairs.size()));
-
-    return round;
+  @Override
+  public List<Round> generateManualRounds(List<PlayerPair> pairs) {
+    return generateRounds(pairs, true);
   }
 
 
@@ -87,6 +73,70 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
              .filter(p -> !seeds.contains(p) && !byeTeams.contains(p))
              .toList()
     );
+  }
+
+  /**
+   * Build full bracket rounds from the given starting stage down to (but excluding) WINNER.
+   *
+   * @param start The starting Stage.
+   * @param startNbTeams The number of teams in the starting round.
+   */
+  private List<Round> buildBracketFrom(Stage start, int startNbTeams) {
+    LinkedList<Round> rounds         = new LinkedList<>();
+    Stage             cur            = start;
+    int               teamsThisStage = startNbTeams; // e.g., 8 teams -> 4 matches for QUARTERS
+    while (cur != null && cur != Stage.WINNER) {
+      Round       r  = new Round(cur);
+      MatchFormat mf = r.getMatchFormat();
+      if (mf != null && mf.getId() == null) {
+        r.setMatchFormat(mf);
+      }
+      int        nbMatches  = Math.max(teamsThisStage / 2, 0);
+      List<Game> emptyGames = new ArrayList<>(nbMatches);
+      for (int i = 0; i < nbMatches; i++) {
+        emptyGames.add(new Game(r.getMatchFormat()));
+      }
+      r.addGames(emptyGames);
+      rounds.add(r);
+      teamsThisStage = Math.max(teamsThisStage / 2, 0); // halve for next stage
+      cur            = cur.next();
+    }
+    return rounds;
+  }
+
+  /**
+   * Populate the first round with seeds/BYEs and then remaining teams (algorithmic).
+   */
+  private void populateFirstRoundAlgorithmic(Round first, List<PlayerPair> pairs) {
+    // reset any previous assignments
+    for (Game g : first.getGames()) {
+      g.setTeamA(null);
+      g.setTeamB(null);
+      g.setScore(null);
+    }
+    List<Game>       games     = first.getGames();
+    List<PlayerPair> remaining = placeSeedAndByeTeams(games, pairs, getNbSeeds());
+    placeRemainingTeamsRandomly(games, remaining, getNbSeeds());
+  }
+
+  /**
+   * Populate the first round manually by assigning A then B sequentially.
+   */
+  private void populateFirstRoundManual(Round first, List<PlayerPair> pairs) {
+    for (Game g : first.getGames()) {
+      g.setTeamA(null);
+      g.setTeamB(null);
+      g.setScore(null);
+    }
+    int teamIndex = 0;
+    for (Game game : first.getGames()) {
+      if (teamIndex < pairs.size()) {
+        game.setTeamA(pairs.get(teamIndex++));
+      }
+      if (teamIndex < pairs.size()) {
+        game.setTeamB(pairs.get(teamIndex++));
+      }
+    }
   }
 
   public void propagateWinners(Tournament tournament) {
@@ -240,45 +290,6 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
     }
 
     return result;
-  }
-
-  @Override
-  public List<Round> createRoundsStructure(Tournament tournament) {
-    // Récupération du nombre maximal d'équipes
-    int nbMaxTeams = tournament.getConfig().getNbMaxPairs(TournamentFormat.KNOCKOUT);
-
-    // Validation : Vérifie si `nbMaxTeams` est une puissance de deux
-    if (!DrawMath.isPowerOfTwo(nbMaxTeams)) {
-      throw new IllegalArgumentException("Taille de tableau non supportée : " + nbMaxTeams);
-    }
-
-    // Création des rounds si le tableau est valide
-    LinkedList<Round> rounds  = new LinkedList<>();
-    Stage             current = Stage.fromNbTeams(nbMaxTeams);
-
-    while (current != null && current != Stage.WINNER) {
-      Round round = new Round(current);
-
-      MatchFormat matchFormat = round.getMatchFormat();
-      if (matchFormat != null && matchFormat.getId() == null) {
-        round.setMatchFormat(matchFormat);
-      }
-
-      int nbMatches = current.getNbTeams() / 2;
-
-      List<Game> games = new ArrayList<>();
-      for (int i = 0; i < nbMatches; i++) {
-        Game game = new Game(matchFormat);
-        games.add(game);
-      }
-
-      round.addGames(games);
-      rounds.add(round);
-
-      current = current.next();
-    }
-
-    return rounds;
   }
 
 

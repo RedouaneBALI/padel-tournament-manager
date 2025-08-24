@@ -56,15 +56,11 @@ public class DrawGenerationService {
 
     FormatStrategy   strategy     = StrategyResolver.resolve(tournament.getFormat());
     List<PlayerPair> pairsForDraw = capPairsToMax(tournament);
-    // @todo change to void to have a full control on the tournament
-    Round newRound = strategy.initializeTournament(tournament, pairsForDraw, manual);
-
-    Round existingRound = tournament.getRounds().stream()
-                                    .filter(r -> r.getStage() == newRound.getStage())
-                                    .findFirst()
-                                    .orElseThrow(() -> new IllegalArgumentException("Round not found for stage: " + newRound.getStage()));
-    updatePools(existingRound, newRound);
-    updateGames(existingRound, newRound);
+    List<Round>      rounds       = strategy.initializeRounds(tournament, pairsForDraw, manual);
+    tournament.getRounds().clear();
+    tournament.getRounds().addAll(rounds);
+    //updatePools(existingRound, rounds);
+    //updateGames(existingRound, rounds);
 
     if (tournament.getFormat() != TournamentFormat.GROUPS_KO) {
       strategy.propagateWinners(tournament);

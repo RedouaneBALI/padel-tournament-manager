@@ -27,101 +27,35 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
     this.nbQualifiedByPool = nbQualifiedByPool;
   }
 
-  @Override
-  public Round generateAlgorithmicRound(final List<PlayerPair> pairs) {
-    Round round = new Round();
-    round.setStage(Stage.GROUPS);
+  private List<Round> generateRounds(final List<PlayerPair> pairs, final boolean manual) {
+    List<Round> rounds = new ArrayList<>();
 
-    // Create groups and assign names
-    for (int i = 0; i < nbPools; i++) {
-      Pool pool = new Pool();
-      pool.setName("" + (char) ('A' + i));
-      round.getPools().add(pool);
-    }
-
-    // Distribute seeds algorithmically
-    if (this.getNbSeeds() > 0) {
-      // Distribute seeds in zigzag pattern to balance pools
-      List<Pool> pools     = new ArrayList<>(round.getPools());
-      boolean    forward   = true;
-      int        poolIndex = 0;
-
-      for (int i = 0; i < this.getNbSeeds(); i++) {
-        PlayerPair pair = pairs.get(i);
-        pools.get(poolIndex).addPair(pair);
-
-        if (forward) {
-          poolIndex++;
-          if (poolIndex >= pools.size()) {
-            poolIndex = pools.size() - 1;
-            forward   = false;
-          }
-        } else {
-          poolIndex--;
-          if (poolIndex < 0) {
-            poolIndex = 0;
-            forward   = true;
-          }
-        }
-      }
-      // Assign remaining pairs to pools in block order
-      int index = this.getNbSeeds();
-      outer:
-      for (Pool pool : pools) {
-        while (pool.getPairs().size() < nbTeamPerPool) {
-          if (index >= pairs.size()) {
-            break outer;
-          }
-          pool.addPair(pairs.get(index++));
-        }
-      }
+    // Build GROUPS round according to mode
+    Round groups;
+    if (manual) {
+      groups = buildGroupsRoundManual(pairs);
     } else {
-      // Assign player pairs to each group in block order (not round-robin)
-      List<Pool> pools = round.getPools().stream().toList();
-      int        index = 0;
-      for (Pool pool : pools) {
-        for (int j = 0; j < nbTeamPerPool; j++) {
-          if (index < pairs.size()) {
-            pool.addPair(pairs.get(index++));
-          }
-        }
-      }
+      groups = buildGroupsRoundAlgorithmic(pairs);
     }
+    rounds.add(groups);
 
-    generateGroupGames(round);
+    // Build empty finals structure
+    rounds.addAll(createFinalRoundsStructure());
 
-    return round;
+    return rounds;
   }
 
-  @Override // @todo to fix
-  public Round generateManualRound(List<PlayerPair> pairs) {
-    //     addMissingByePairsToReachPowerOfTwo(this.getPairs(), originalSize);
-    Round round = new Round();
-    round.setStage(Stage.GROUPS);
-
-    // Create groups and assign names
-    for (int i = 0; i < nbPools; i++) {
-      Pool pool = new Pool();
-      pool.setName("" + (char) ('A' + i));
-      round.getPools().add(pool);
-    }
-
-    // Assign player pairs to each group in block order (not round-robin)
-    List<Pool> pools = round.getPools().stream().toList();
-    int        index = 0;
-    for (Pool pool : pools) {
-      for (int j = 0; j < nbTeamPerPool; j++) {
-        if (index < pairs.size()) {
-          pool.addPair(pairs.get(index++));
-        }
-      }
-    }
-
-    generateGroupGames(round);
-
-    return round;
+  @Override
+  public List<Round> generateAlgorithmicRounds(final List<PlayerPair> pairs) {
+    return generateRounds(pairs, false);
   }
 
+  @Override
+  public List<Round> generateManualRounds(List<PlayerPair> pairs) {
+    return generateRounds(pairs, true);
+  }
+
+  /*
   public List<Round> createRoundsStructure(final Tournament tournament) {
     List<Round> rounds = new ArrayList<>();
 
@@ -174,6 +108,111 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
       current = current.next();
     }
     return new ArrayList<>(rounds);
+  } */
+
+  // --- Helpers extracted to reduce duplication ---
+  private Round createGroupsRoundSkeleton() {
+    Round round = new Round();
+    round.setStage(Stage.GROUPS);
+    // Create named pools A, B, C, ...
+    for (int i = 0; i < nbPools; i++) {
+      Pool pool = new Pool();
+      pool.setName("" + (char) ('A' + i));
+      round.getPools().add(pool);
+    }
+    return round;
+  }
+
+  private Round buildGroupsRoundAlgorithmic(final List<PlayerPair> pairs) {
+    Round round = createGroupsRoundSkeleton();
+
+    if (this.getNbSeeds() > 0) {
+      // Distribute seeds in zigzag pattern to balance pools
+      List<Pool> pools     = new ArrayList<>(round.getPools());
+      boolean    forward   = true;
+      int        poolIndex = 0;
+
+      for (int i = 0; i < Math.min(this.getNbSeeds(), pairs.size()); i++) {
+        PlayerPair pair = pairs.get(i);
+        pools.get(poolIndex).addPair(pair);
+
+        if (forward) {
+          poolIndex++;
+          if (poolIndex >= pools.size()) {
+            poolIndex = pools.size() - 1;
+            forward   = false;
+          }
+        } else {
+          poolIndex--;
+          if (poolIndex < 0) {
+            poolIndex = 0;
+            forward   = true;
+          }
+        }
+      }
+      // Assign remaining pairs to pools in block order
+      int index = this.getNbSeeds();
+      outer:
+      for (Pool pool : pools) {
+        while (pool.getPairs().size() < nbTeamPerPool) {
+          if (index >= pairs.size()) {
+            break outer;
+          }
+          pool.addPair(pairs.get(index++));
+        }
+      }
+    } else {
+      // Fallback to manual-like block assignment if there are no seeds
+      buildGroupsRoundManualInternal(round, pairs);
+    }
+
+    generateGroupGames(round);
+    return round;
+  }
+
+  private Round buildGroupsRoundManual(final List<PlayerPair> pairs) {
+    Round round = createGroupsRoundSkeleton();
+    buildGroupsRoundManualInternal(round, pairs);
+    generateGroupGames(round);
+    return round;
+  }
+
+  private void buildGroupsRoundManualInternal(Round round, final List<PlayerPair> pairs) {
+    List<Pool> pools = round.getPools().stream().toList();
+    int        index = 0;
+    for (Pool pool : pools) {
+      for (int j = 0; j < nbTeamPerPool; j++) {
+        if (index < pairs.size()) {
+          pool.addPair(pairs.get(index++));
+        }
+      }
+    }
+  }
+
+  private List<Round> createFinalRoundsStructure() {
+    List<Round> finals                 = new ArrayList<>();
+    int         nbTeamsInFinaleBracket = this.nbPools * this.nbQualifiedByPool;
+    Stage       current                = Stage.fromNbTeams(nbTeamsInFinaleBracket);
+    while (current != null && current != Stage.WINNER) {
+      Round r = new Round(current);
+
+      MatchFormat matchFormat = r.getMatchFormat();
+      if (matchFormat != null && matchFormat.getId() == null) {
+        r.setMatchFormat(matchFormat);
+      }
+
+      int        nbMatches = current.getNbTeams() / 2;
+      List<Game> games     = new ArrayList<>();
+      for (int i = 0; i < nbMatches; i++) {
+        Game game = new Game(matchFormat);
+        games.add(game);
+      }
+      r.addGames(games);
+      finals.add(r);
+
+      current = current.next();
+    }
+    return finals;
   }
 
   private void generateGroupGames(Round round) {

@@ -52,7 +52,7 @@ public class QualifyMainRoundGeneratorTest {
   }
 
   // ---------- Qualification structure only ----------
-
+  // @todo à déplacer
   private static Round roundByName(Tournament t, String stageName) {
     return t.getRounds().stream()
             .filter(r -> r.getStage() != null && stageName.equals(r.getStage().name()))
@@ -94,54 +94,56 @@ public class QualifyMainRoundGeneratorTest {
   // ---------- Helpers ----------
 
   // preQualDraw, numQualifiers -> expected ascending Q-stages sequence
-  @ParameterizedTest(name = "preQual={0}, qualifiers={1} ⇒ stages(asc)={2}")
+  @ParameterizedTest(name = "preQual={0}, qualifiers={1}, mainDraw={2} ⇒ stages(asc)={3}")
   @CsvSource({
-      // preQualDraw, numQualifiers, expectedStages (ascending order)
-      "4,2,'Q1'",
-      "4,1,'Q1,Q2'",
-      "8,2,'Q1,Q2'",
-      "16,4,'Q1,Q2'",
-      "16,8,'Q1'",
-      "32,16,'Q1'",
-      "32,8,'Q1,Q2'",
-      "32,4,'Q1,Q2,Q3'"
+      // preQualDraw, numQualifiers, mainDrawSize, expectedStages (ascending order)
+      "4,2,32,'Q1'",
+      "4,1,32,'Q1,Q2'",
+      "8,2,32,'Q1,Q2'",
+      "16,4,32,'Q1,Q2'",
+      "16,8,32,'Q1'",
+      "32,16,32,'Q1'",
+      "32,8,32,'Q1,Q2'",
+      "32,4,32,'Q1,Q2,Q3'"
   })
-  void preQual_generateManualRound_builds_expected_stage_and_games(int preQualDraw, int numQualifiers,
-                                                                   String expectedStagesCsv) {
+  void preQual_generateManualRounds_builds_expected_stage_and_games(int preQualDraw, int numQualifiers,
+                                                                    int mainDrawSize,
+                                                                    String expectedStagesCsv) {
     TournamentFormatConfig cfg = TournamentFormatConfig.builder()
                                                        .preQualDrawSize(preQualDraw)
                                                        .nbQualifiers(numQualifiers)
-                                                       .mainDrawSize(32)
+                                                       .mainDrawSize(mainDrawSize)
                                                        .nbSeeds(8)
                                                        .build();
 
     // Least‑ranked pairs play the qualifications: create artificially high seeds (100+)
     List<PlayerPair> pairs = new ArrayList<>();
-    for (int i = 0; i < preQualDraw; i++) {
+    for (int i = 0; i < mainDrawSize + preQualDraw; i++) {
       pairs.add(TestFixtures.buildPairWithSeed(100 + i));
     }
 
-    QualifyMainRoundGenerator gen = new QualifyMainRoundGenerator(cfg.getNbSeeds());
+    QualifyMainRoundGenerator
+        gen =
+        new QualifyMainRoundGenerator(cfg.getNbSeeds(), cfg.getMainDrawSize(), cfg.getNbQualifiers(), cfg.getPreQualDrawSize());
 
     // Build once the tournament rounds structure (Q1..Qk + main)
     Tournament t = new Tournament();
     t.setConfig(cfg);
-    List<Round> rounds = gen.createRoundsStructure(t);
-    t.getRounds().clear();
+    List<Round> rounds = gen.generateManualRounds(pairs);
     t.getRounds().addAll(rounds);
 
     String[] expectedStages = expectedStagesCsv.replace(" ", "").split(",");
 
-    List<PlayerPair> currentPairs = pairs;
+    List<PlayerPair> currentQualifPairs = pairs.subList(pairs.size() - preQualDraw, pairs.size()); // à modifier
     for (String expectedStage : expectedStages) {
       Round round = roundByName(t, expectedStage);
 
-      int expectedGames = currentPairs.size() / 2;
+      int expectedGames = currentQualifPairs.size() / 2;
       assertEquals(expectedGames, round.getGames().size(),
                    "Nombre de matchs attendu sur le tour de qualifs " + expectedStage);
 
       // Place teams manually (A,B),(C,D)... into existing round
-      placePairsAB(round, currentPairs);
+      placePairsAB(round, currentQualifPairs);
 
       // Simulate matches: lower seed wins (deterministic)
       List<PlayerPair> winners = finishRoundLowestSeedWins(round);
@@ -155,7 +157,7 @@ public class QualifyMainRoundGeneratorTest {
                  "Les pré‑qualifs doivent contenir uniquement des équipes moins bien classées");
 
       // Winners go to next Q-stage (or main)
-      currentPairs = winners;
+      currentQualifPairs = winners;
     }
   }
 
@@ -182,12 +184,17 @@ public class QualifyMainRoundGeneratorTest {
       mainPairs.add(TestFixtures.buildPairWithSeed(i + 1));
     }
 
-    QualifyMainRoundGenerator gen = new QualifyMainRoundGenerator(cfg.getNbSeeds());
+    QualifyMainRoundGenerator
+        gen =
+        new QualifyMainRoundGenerator(cfg.getNbSeeds(), cfg.getMainDrawSize(), cfg.getNbQualifiers(), cfg.getPreQualDrawSize());
 
     Tournament t = new Tournament();
     t.setConfig(cfg);
-    List<Round> rounds = gen.createRoundsStructure(t);
-    t.getRounds().clear();
+    // Build complete structure (qualifications + main draw)
+    List<PlayerPair> allPairs = new ArrayList<>();
+    allPairs.addAll(mainPairs);
+    allPairs.addAll(preQualPairs);
+    List<Round> rounds = gen.generateManualRounds(allPairs);
     t.getRounds().addAll(rounds);
 
     Stage firstMainStage = Stage.fromNbTeams(mainDrawSize);
@@ -250,15 +257,15 @@ public class QualifyMainRoundGeneratorTest {
     allPairs.addAll(mainPairs);
     allPairs.addAll(qPairs);
 
-    QualifyMainRoundGenerator gen = new QualifyMainRoundGenerator(cfg.getNbSeeds());
+    QualifyMainRoundGenerator
+        gen =
+        new QualifyMainRoundGenerator(cfg.getNbSeeds(), cfg.getMainDrawSize(), cfg.getNbQualifiers(), cfg.getPreQualDrawSize());
 
     Tournament t = new Tournament();
     t.setConfig(cfg);
-    List<Round> rounds = gen.createRoundsStructure(t);
-    t.getRounds().clear();
+    List<Round> rounds = gen.generateManualRounds(allPairs);
     t.getRounds().addAll(rounds);
-    Round q1 = gen.generateManualRound(t, allPairs);
-    t.getRounds().replaceAll(r -> r.getStage() == Stage.Q1 ? q1 : r);
+    Round q1 = rounds.getFirst();
 
     // Put teams and finish all but the first match
     placePairsAB(q1, qPairs);

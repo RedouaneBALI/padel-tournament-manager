@@ -42,8 +42,8 @@ public class GroupsKoStrategy implements FormatStrategy {
     return List.of(StageKey.GROUPS, StageKey.MAIN_DRAW);
   }
 
-  @Override
-  public void buildInitialRounds(Tournament t, TournamentFormatConfig cfg) {
+  /*@Override @todo to remove
+  public void buildEmptyRounds(Tournament t, TournamentFormatConfig cfg) {
     GroupRoundGenerator generator = new GroupRoundGenerator(
         cfg.getNbSeeds() != null ? cfg.getNbSeeds() : 0,
         cfg.getNbPools() != null ? cfg.getNbPools() : 0,
@@ -53,11 +53,11 @@ public class GroupsKoStrategy implements FormatStrategy {
     List<Round> rounds = generator.createRoundsStructure(t);
     t.getRounds().clear();
     t.getRounds().addAll(rounds);
-  }
+  }*/
 
 
   @Override
-  public Round initializeTournament(Tournament t, List<PlayerPair> pairs, boolean manual) {
+  public List<Round> initializeRounds(Tournament t, List<PlayerPair> pairs, boolean manual) {
     TournamentFormatConfig cfg = t.getConfig();
     GroupRoundGenerator generator = new GroupRoundGenerator(
         cfg.getNbSeeds() != null ? cfg.getNbSeeds() : 0,
@@ -65,8 +65,8 @@ public class GroupsKoStrategy implements FormatStrategy {
         cfg.getNbPairsPerPool() != null ? cfg.getNbPairsPerPool() : 0,
         cfg.getNbQualifiedByPool() != null ? cfg.getNbQualifiedByPool() : 0
     );
-    return manual ? generator.generateManualRound(pairs)
-                  : generator.generateAlgorithmicRound(pairs);
+    return manual ? generator.generateManualRounds(pairs)
+                  : generator.generateAlgorithmicRounds(pairs);
   }
 
   @Override

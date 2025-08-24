@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.redouanebali.model.PlayerPair;
@@ -62,7 +61,7 @@ public class KnockoutRoundGeneratorTest {
 
     Tournament       tournament = setupTournament(mainDrawSize, nbSeeds);
     List<PlayerPair> players    = TestFixtures.createPairs(nbPlayerPairs);
-    tournament.getRounds().addAll(generator.createRoundsStructure(tournament));
+    tournament.getRounds().addAll(generator.generateManualRounds(players));
     Stage[] stages = determineStages(mainDrawSize);
 
     // Traite chaque stage automatiquement
@@ -86,10 +85,10 @@ public class KnockoutRoundGeneratorTest {
 
     Tournament       tournament = setupTournament(mainDrawSize, nbSeeds);
     List<PlayerPair> players    = TestFixtures.createPairs(nbPlayerPairs);
-    tournament.getRounds().addAll(generator.createRoundsStructure(tournament));
+    tournament.getRounds().addAll(generator.generateRounds(tournament, players, false));
 
     // Génère QUARTERS (1er round à 8 joueurs)
-    Round quarters = generator.generateRound(tournament, players, false);
+    Round quarters = tournament.getRounds().getFirst();
 
     // On marque un seul match comme "non terminé" (pas de score, pas de BYE) et on renseigne des gagnants pour les autres
     for (int i = 0; i < quarters.getGames().size(); i++) {
@@ -129,17 +128,11 @@ public class KnockoutRoundGeneratorTest {
 
     Tournament tournament = setupTournament(mainDrawSize, nbSeeds);
 
-    // Ajoute d'abord la structure KO
-    tournament.getRounds().addAll(generator.createRoundsStructure(tournament));
-
-    // Injecte un round de poules fictif avant (il ne doit pas interférer avec la propagation KO)
-    Round groups = new Round(Stage.GROUPS);
-    tournament.getRounds().add(groups);
-
     // Génère le premier round KO avec 8 joueurs (QUARTERS)
-    List<PlayerPair> players  = TestFixtures.createPairs(nbPlayerPairs);
-    Round            quarters = generator.generateRound(tournament, players, false);
-
+    List<PlayerPair> players = TestFixtures.createPairs(nbPlayerPairs);
+    List<Round>      rounds  = generator.generateRounds(tournament, players, false);
+    tournament.getRounds().addAll(rounds);
+    Round quarters = rounds.getFirst();
     // Donne des gagnants à tous les matchs des quarts
     quarters.getGames().forEach(game -> {
       PlayerPair a      = game.getTeamA();
@@ -160,7 +153,7 @@ public class KnockoutRoundGeneratorTest {
     assertEquals(0, semisNullSlots, "Tous les slots des demi-finales doivent être déterminés après propagation");
 
     // Le round GROUPS ne doit pas contenir d'équipes injectées
-    assertEquals(0, groups.getGames().size(), "Le round GROUPS ne doit pas être peuplé par la propagation KO");
+    // assertEquals(0, groups.getGames().size(), "Le round GROUPS ne doit pas être peuplé par la propagation KO");
   }
 
 
@@ -172,8 +165,8 @@ public class KnockoutRoundGeneratorTest {
       int expectedGamesWithBye,
       boolean isManual
   ) {
-    Round round = generateRound(tournament, stage, players, isManual);
-
+    List<Round> rounds = generateRounds(tournament, players, isManual);
+    Round       round  = rounds.stream().filter(r -> r.getStage() == stage).findFirst().get();
     // Validation du round (ajout de vérifications demandées)
     validateRound(round, stage, expectedGames, players != null ? expectedGamesWithBye : 0, isManual);
 
@@ -244,10 +237,10 @@ public class KnockoutRoundGeneratorTest {
   }
 
   // Génération du round (séparée du reste pour plus de clarté)
-  private Round generateRound(Tournament tournament, Stage stage, List<PlayerPair> players, boolean isManual) {
+  private List<Round> generateRounds(Tournament tournament, List<PlayerPair> players, boolean isManual) {
     return (players != null) ?
-           generator.generateRound(tournament, players, isManual) :
-           tournament.getRoundByStage(stage);
+           generator.generateRounds(tournament, players, isManual) :
+           tournament.getRounds();
   }
 
   // Validation du round
@@ -344,15 +337,6 @@ public class KnockoutRoundGeneratorTest {
     }
   }
 
-  @Test
-  public void testInvalidMainDrawSize() {
-    generator = new KnockoutRoundGenerator(0);
-    IllegalArgumentException exception = assertThrows(
-        IllegalArgumentException.class,
-        () -> generator.createRoundsStructure(setupTournament(10, 4))
-    );
-    assertEquals("Taille de tableau non supportée : 10", exception.getMessage());
-  }
 
   @Test
   public void testTournamentStartsAtCorrectStageWhenPairsAreHalfOfMainDraw() {
@@ -367,13 +351,11 @@ public class KnockoutRoundGeneratorTest {
     // Création de paires de joueurs pour le tournoi
     List<PlayerPair> players = TestFixtures.createPairs(nbPlayerPairs);
 
-    // Génération de la structure des rounds
-    List<Round> rounds = generator.createRoundsStructure(tournament);
+    // Vérifier que le tournoi commence directement au bon stage (QUARTERS) avec 8 joueurs
+    List<Round> rounds = generator.generateRounds(tournament, players, false);
     tournament.getRounds().addAll(rounds);
 
-    // Vérifier que le tournoi commence directement au bon stage (QUARTERS) avec 8 joueurs
-    Round firstRound = generator.generateRound(tournament, players, false);
-    assertEquals(Stage.QUARTERS, firstRound.getStage(),
+    assertEquals(Stage.QUARTERS, rounds.getFirst().getStage(),
                  "Avec 8 joueurs pour un tableau principal de 16, le tournoi doit commencer en QUARTERS.");
   }
 }

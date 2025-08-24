@@ -27,19 +27,18 @@ public class KnockoutStrategy implements FormatStrategy {
     return List.of(StageKey.MAIN_DRAW);
   }
 
-  @Override
-  public void buildInitialRounds(Tournament t, TournamentFormatConfig cfg) {
-    KnockoutRoundGenerator generator = new KnockoutRoundGenerator(cfg.getNbSeeds());
-    List<Round>            rounds    = generator.createRoundsStructure(t);
-    t.getRounds().clear();
-    t.getRounds().addAll(rounds);
-  }
 
   @Override
-  public Round initializeTournament(Tournament t, List<PlayerPair> pairs, boolean manual) {
+  public List<Round> initializeRounds(Tournament t, List<PlayerPair> pairs, boolean manual) {
     KnockoutRoundGenerator generator = new KnockoutRoundGenerator(t.getConfig().getNbSeeds());
-    return manual ? generator.generateManualRound(pairs)
-                  : generator.generateAlgorithmicRound(pairs);
+    //  List<Round>            rounds    = generator.createRoundsStructure(t);
+    //  t.getRounds().clear();
+    //  t.getRounds().addAll(rounds);
+    if (manual) {
+      return generator.generateManualRounds(pairs);
+    } else {
+      return generator.generateAlgorithmicRounds(pairs);
+    }
   }
 
   @Override

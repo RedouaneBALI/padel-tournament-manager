@@ -15,14 +15,9 @@ public interface FormatStrategy {
   List<StageKey> stages(TournamentFormatConfig cfg);
 
   /**
-   * Construit les rounds initiaux (placements seeds/BYE/slots Q…) dans le Tournament.
-   */
-  void buildInitialRounds(Tournament t, TournamentFormatConfig cfg);
-
-  /**
    * Génère un round en fonction du mode (manuel vs algorithmique). Par défaut non supporté par la stratégie (à surcharger si applicable).
    */
-  Round initializeTournament(Tournament t, List<PlayerPair> pairs, boolean manual);
+  List<Round> initializeRounds(Tournament t, List<PlayerPair> pairs, boolean manual);
 
   /**
    * Propage les vainqueurs du tournoi selon la logique du format (optionnel). Implémentation par défaut: no-op.
