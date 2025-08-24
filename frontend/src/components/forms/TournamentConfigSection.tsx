@@ -106,13 +106,13 @@ export default function TournamentConfigSection({
             Mode de tirage
           </label>
           <select
-            name="drawMode"
-            value={toStr((formData as any).drawMode ?? 'seeded')}
+            name="config.drawMode"
+            value={toStr(formData.config?.drawMode ?? 'SEEDED')}
             onChange={handleInputChange}
             className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
           >
-            <option value="seeded">{formData.nbSeeds === 0 ? 'Aléatoire' : 'Par classement (TS)'}</option>
-            <option value="order">Manuel</option>
+            <option value="SEEDED">{((formData.config?.nbSeeds ?? 0) > 0) ? 'Par classement (TS)' : 'Aléatoire'}</option>
+            <option value="MANUAL">Manuel</option>
           </select>
         </div>
 

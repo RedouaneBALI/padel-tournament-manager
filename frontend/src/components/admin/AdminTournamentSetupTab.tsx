@@ -12,6 +12,7 @@ import { PlayerPair } from '@/src/types/playerPair';
 import { Tournament } from '@/src/types/tournament';
 import { fetchTournament, fetchPairs } from '@/src/api/tournamentApi';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
+import AdminTournamentPlayerAssignment from '@/src/components/admin/AdminTournamentPlayerAssignment';
 
 interface Props {
   tournamentId: string;
@@ -27,6 +28,9 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
   const [isGenerating, setIsGenerating] = useState(false);
   const router = useRouter();
 
+  const [activeTab, setActiveTab] = useState<'players' | 'assignment'>('players');
+
+  const manual = (tournament?.config as any)?.drawMode === 'MANUAL';
   const handleDraw = () => {
     confirmAlert({
       title: 'Confirmer le tirage',
@@ -38,7 +42,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
           onClick: async () => {
             setIsGenerating(true);
             try {
-              const manual = (tournament?.config as any)?.drawMode === 'order';
+              const manual = (tournament?.config as any)?.drawMode === 'MANUAL';
               await generateDraw(tournamentId, manual);
               router.push(`/admin/tournament/${tournamentId}/bracket`);
             } finally {
@@ -98,24 +102,72 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
         <section>
           {loadingTournament ? (
             <CenteredLoader />
-          ) : tournamentStarted ? (
-            <PlayerPairsList tournamentId={tournamentId} pairs={pairs} loading={loadingPairs} editable={true} />
+          ) : !manual ? (
+            // --- MODE AUTO: on garde l'affichage actuel ---
+            tournamentStarted ? (
+              <PlayerPairsList tournamentId={tournamentId} pairs={pairs} loading={loadingPairs} editable={true} />
+            ) : (
+              <>
+                <h2 className="text-base text-foreground px-2">
+                  Lister les joueurs ci-dessous (par ordre de classement ou du tirage)
+                </h2>
+                <div className="flex items-center">
+                  <div className="h-px flex-1 bg-border  my-6" />
+                  <h3 className="text-s sm:text-sm uppercase tracking-wider text-muted-foreground select-none">{pairs.length} Equipes inscrites</h3>
+                  <div className="h-px flex-1 bg-border" />
+                </div>
+                <p className="p-1 text-tab-inactive"><i>Joueur1,Joueur2,Seed (optionnel)</i></p>
+                <PlayerPairsTextarea
+                  onPairsChange={setPairs}
+                  tournamentId={tournamentId}
+                  hasStarted={tournamentStarted}
+                />
+              </>
+            )
           ) : (
+            // --- MODE MANUEL: tabs Joueurs / Affectation ---
             <>
-              <h2 className="text-base text-foreground px-2">
-                Lister les joueurs ci-dessous (par ordre de classement ou du tirage)
-              </h2>
-              <div className="flex items-center">
-                <div className="h-px flex-1 bg-border  my-6" />
-                <h3 className="text-s sm:text-sm uppercase tracking-wider text-muted-foreground select-none">{pairs.length} Equipes inscrites</h3>
-                <div className="h-px flex-1 bg-border" />
+              <div className="flex justify-center border-b border-border mb-4">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('players')}
+                  className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'players' ? 'border-primary text-foreground' : 'border-transparent text-tab-inactive'}`}
+                >
+                  Joueurs
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('assignment')}
+                  className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'assignment' ? 'border-primary text-foreground' : 'border-transparent text-tab-inactive'}`}
+                >
+                  Affectation
+                </button>
               </div>
-              <p className="p-1 text-tab-inactive"><i>Joueur1,Joueur2,Seed (optionnel)</i></p>
-              <PlayerPairsTextarea
-                onPairsChange={setPairs}
-                tournamentId={tournamentId}
-                hasStarted={tournamentStarted}
-              />
+
+              {activeTab === 'players' ? (
+                tournamentStarted ? (
+                  <PlayerPairsList tournamentId={tournamentId} pairs={pairs} loading={loadingPairs} editable={true} />
+                ) : (
+                  <>
+                    <h2 className="text-base text-foreground px-2">
+                      Lister les joueurs ci-dessous (par ordre de classement ou du tirage)
+                    </h2>
+                    <div className="flex items-center">
+                      <div className="h-px flex-1 bg-border  my-6" />
+                      <h3 className="text-s sm:text-sm uppercase tracking-wider text-muted-foreground select-none">{pairs.length} Equipes inscrites</h3>
+                      <div className="h-px flex-1 bg-border" />
+                    </div>
+                    <p className="p-1 text-tab-inactive"><i>Joueur1,Joueur2,Seed (optionnel)</i></p>
+                    <PlayerPairsTextarea
+                      onPairsChange={setPairs}
+                      tournamentId={tournamentId}
+                      hasStarted={tournamentStarted}
+                    />
+                  </>
+                )
+              ) : (
+                <AdminTournamentPlayerAssignment tournament={tournament} playerPairs={pairs} />
+              )}
             </>
           )}
           {!tournamentStarted && !loadingTournament && !loadingPairs && (

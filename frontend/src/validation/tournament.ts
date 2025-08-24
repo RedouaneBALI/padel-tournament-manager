@@ -20,11 +20,15 @@ const num = (v: number | null | undefined, fallback = 0) =>
 export const TournamentFormatConfigSchema = z.object({
   mainDrawSize: z.preprocess(emptyToNull, intFromInput.nullable()).default(32),
   nbSeeds: z.preprocess(emptyToNull, intFromInput.nullable()).default(null),
+  drawMode: z.preprocess((v) => (v === '' || v === undefined ? 'SEEDED' : v), z.enum(['SEEDED', 'MANUAL'])).default('SEEDED'),
+
   nbPools: z.preprocess(emptyToNull, intFromInput.nullable()).default(4),
   nbPairsPerPool: z.preprocess(emptyToNull, intFromInput.nullable()).default(4),
   nbQualifiedByPool: z.preprocess(emptyToNull, intFromInput.nullable()).default(2),
+
   preQualDrawSize: z.preprocess(emptyToNull, intFromInput.nullable()).default(16),
   nbQualifiers: z.preprocess(emptyToNull, intFromInput.nullable()).default(2),
+  nbSeedsQualify: z.preprocess(emptyToNull, intFromInput.nullable()).default(null),
 });
 
 export const TournamentFormSchema = z.object({
@@ -42,22 +46,21 @@ export const TournamentFormSchema = z.object({
 }).superRefine((data, ctx) => {
   const { config, format } = data;
   const nbSeeds = num(config.nbSeeds);
-  console.log(data);
   if (format === 'KNOCKOUT') {
     const md = num(config.mainDrawSize);
     if (md < 4 || md > 128) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `En élimination directe, la taille du tableau doit être entre 4 et 128 (actuellement ${md}).`, path: ['formatConfig', 'mainDrawSize'] });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `En élimination directe, la taille du tableau doit être entre 4 et 128 (actuellement ${md}).`, path: ['config', 'mainDrawSize'] });
     }
     const maxSeeds = Math.floor(md / 2);
     if (nbSeeds > maxSeeds) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `En élimination directe, les têtes de série (${nbSeeds}) ne peuvent pas dépasser la moitié du tableau (${md} → max ${maxSeeds}).`, path: ['formatConfig', 'nbSeeds'] });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `En élimination directe, les têtes de série (${nbSeeds}) ne peuvent pas dépasser la moitié du tableau (${md} → max ${maxSeeds}).`, path: ['config', 'nbSeeds'] });
     }
   }
 
   if (format === 'GROUPS_KO') {
     const { nbPools, nbPairsPerPool } = config;
     if (num(nbPairsPerPool) < 3) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `En poules, il faut au moins 3 équipes par poule (actuellement ${nbPairsPerPool}).`, path: ['formatConfig', 'nbPairsPerPool'] });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `En poules, il faut au moins 3 équipes par poule (actuellement ${nbPairsPerPool}).`, path: ['config', 'nbPairsPerPool'] });
     }
     const maxSeeds = num(nbPools) * num(nbPairsPerPool);
     if (nbSeeds > maxSeeds) {
@@ -80,7 +83,7 @@ export const TournamentFormSchema = z.object({
         path: ['config', 'nbQualifiers'],
       });
     }
-}
+  }
   if (data.startDate && data.endDate && data.startDate > data.endDate) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'La date de fin doit être postérieure ou égale à la date de début.', path: ['endDate'] });
   }

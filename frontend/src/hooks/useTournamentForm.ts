@@ -25,6 +25,7 @@ export function getInitialFormData(initialData?: Partial<TournamentFormData>): T
       nbQualifiedByPool: 2,
       preQualDrawSize: 16,
       nbQualifiers: 4,
+      drawMode: "SEEDED",
     },
   };
 
@@ -60,19 +61,28 @@ export function useTournamentForm(initialData?: Partial<TournamentFormData>) {
     const { name, value } = e.target;
 
     setFormData((prev) => {
-      const updated = { ...prev };
-      // @todo to remove
+      const updated = { ...prev } as TournamentFormData;
+
       if (name.startsWith('config.')) {
-        const key = name.split('.')[1];
-        updated.config = {
-          ...prev.config,
-          [key]: parseInt(value, 10),
-        };
+        const key = name.split('.')[1] as keyof TournamentFormData['config'];
+        const numericKeys = new Set([
+          'mainDrawSize', 'nbSeeds', 'nbPools', 'nbPairsPerPool', 'nbQualifiedByPool',
+          'preQualDrawSize', 'nbQualifiers', 'nbSeedsQualify',
+        ]);
+
+        updated.config = { ...prev.config } as TournamentFormData['config'];
+        if (key === 'drawMode') {
+          (updated.config as any)[key] = value; // 'SEEDED' | 'MANUAL'
+        } else if (numericKeys.has(key as string)) {
+          (updated.config as any)[key] = value === '' ? null : parseInt(value, 10);
+        } else {
+          (updated.config as any)[key] = value as any;
+        }
       } else {
         (updated as any)[name] = value;
       }
 
-      return updated as TournamentFormData;
+      return updated;
     });
   };
 

@@ -16,6 +16,9 @@ public class TournamentFormatConfig {
   private Integer mainDrawSize; // Ex: 32, 64
   private Integer nbSeeds;      // Ex: 8, 16
 
+  @Builder.Default
+  private DrawMode drawMode = DrawMode.SEEDED;
+  
   // Pour GROUPS_KO
   private Integer nbPools;             // Ex: 4, 8
   private Integer nbPairsPerPool;      // Ex: 3, 4
