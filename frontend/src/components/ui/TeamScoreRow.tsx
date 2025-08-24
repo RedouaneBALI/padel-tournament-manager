@@ -55,9 +55,9 @@ export default function TeamScoreRow({
           <span className="text-sm">{team?.player2Name || ''}</span>
         </div>
 
-        {team?.seed && (
+        {team?.displaySeed && (
           <span className="text-xs text-muted-foreground font-medium self-center px-2">
-            ({team.seed})
+            ({team.displaySeed})
           </span>
         )}
       </div>

@@ -616,6 +616,8 @@ public class QualifyMainRoundGeneratorTest {
     for (PlayerPair qWinner : lastQWinners) {
       assertTrue(teamsInMain.contains(qWinner),
                  "Chaque vainqueur des qualifs doit être injecté dans le premier round du tableau principal");
+      assertEquals(PairType.QUALIFIER, qWinner.getType(),
+                   "Une équipe qualifiée dans le main draw doit avoir le type QUALIFIER");
     }
 
     // Sanity: total non-null teams in first main is mainDrawSize

@@ -18,6 +18,8 @@ public class PlayerPairDTO {
   @JsonInclude(Include.NON_DEFAULT)
   private boolean qualifierSlot;
 
+  private String displaySeed;
+
   public PlayerPairDTO(String player1Name, String player2Name) {
     this.player1Name = player1Name;
     this.player2Name = player2Name;

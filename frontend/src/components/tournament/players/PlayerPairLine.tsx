@@ -29,15 +29,15 @@ export default function PlayerPairLine({
 }: Props) {
   const [p1, setP1] = useState<string>(pair.player1Name);
   const [p2, setP2] = useState<string>(pair.player2Name);
-  const [seedStr, setSeedStr] = useState<string>(pair.seed?.toString() ?? '');
+  const [seedStr, setSeedStr] = useState<string>(pair.displaySeed?.toString() ?? '');
   const [isSaving, setIsSaving] = useState(false);
 
   // Reset inputs when the source pair or editing mode changes
   useEffect(() => {
     setP1(pair.player1Name);
     setP2(pair.player2Name);
-    setSeedStr(pair.seed?.toString() ?? '');
-  }, [pair.player1Name, pair.player2Name, pair.seed, isEditing]);
+    setSeedStr(pair.displaySeed?.toString() ?? '');
+  }, [pair.player1Name, pair.player2Name, pair.displaySeed, isEditing]);
 
   const save = async () => {
     const id = pair.id ?? -1;
@@ -51,9 +51,9 @@ export default function PlayerPairLine({
     if (p2Trim && p2Trim !== pair.player2Name) payload.player2Name = p2Trim;
 
     const parsedSeed = seedStr === '' ? undefined : Number(seedStr);
-    if (Number.isFinite(parsedSeed as number) && parsedSeed !== pair.seed) payload.seed = parsedSeed as number;
+    if (Number.isFinite(parsedSeed as number) && parsedSeed !== pair.displaySeed) payload.displaySeed = parsedSeed as number;
 
-    if (!payload.player1Name && !payload.player2Name && payload.seed === undefined) {
+    if (!payload.player1Name && !payload.player2Name && payload.displaySeed === undefined) {
       onCancelEdit();
       return;
     }
@@ -74,7 +74,7 @@ export default function PlayerPairLine({
       <div className="w-full flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0 truncate">
           <span className="font-semibold text-primary">
-            {pair.seed && pair.seed > 0 ? `#${pair.seed} ` : ''}
+            {pair.displaySeed && pair.displaySeed > 0 ? `#${pair.displaySeed} ` : ''}
           </span>
           {pair.player1Name} – {pair.player2Name}
         </div>
@@ -134,7 +134,7 @@ export default function PlayerPairLine({
           // reset inputs, then cancel
           setP1(pair.player1Name);
           setP2(pair.player2Name);
-          setSeedStr(pair.seed?.toString() ?? '');
+          setSeedStr(pair.displaySeed?.toString() ?? '');
           onCancelEdit();
         }}
       />

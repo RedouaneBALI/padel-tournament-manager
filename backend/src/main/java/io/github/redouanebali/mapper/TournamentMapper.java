@@ -48,8 +48,23 @@ public interface TournamentMapper {
     }
     PlayerPairDTO dto = new PlayerPairDTO();
     dto.setId(playerPair.getId());
-    dto.setSeed(playerPair.getSeed());
+    dto.setSeed(playerPair.getSeed()); // numeric seed stays numeric
     dto.setBye(playerPair.isBye());
+
+    // Consider any PairType.QUALIFIER (placeholder or real qualified entrant) as qualifierSlot for DTO purposes
+    dto.setQualifierSlot(playerPair.isQualifier());
+
+    // Display seed for UI
+    String display;
+    if (playerPair.isBye()) {
+      display = "BYE";
+    } else if (playerPair.isQualifier()) {
+      display = "Q";
+    } else {
+      display = String.valueOf(playerPair.getSeed());
+    }
+    dto.setDisplaySeed(display);
+
     dto.setPlayer1Name(playerPair.getPlayer1() != null ? playerPair.getPlayer1().getName() : null);
     dto.setPlayer2Name(playerPair.getPlayer2() != null ? playerPair.getPlayer2().getName() : null);
     return dto;

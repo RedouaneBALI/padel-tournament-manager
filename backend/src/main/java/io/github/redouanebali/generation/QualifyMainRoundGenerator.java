@@ -225,7 +225,10 @@ public class QualifyMainRoundGenerator extends AbstractRoundGenerator {
         if (wi < winners.size()) {
           PlayerPair t = next.getTeamA();
           if (t == null || (t.getType() == PairType.QUALIFIER)) {
-            next.setTeamA(winners.get(wi++));
+            PlayerPair w = winners.get(wi++);
+            // Mark this team as a qualified entrant for the main draw
+            w.setType(PairType.QUALIFIER);
+            next.setTeamA(w);
             if (wi >= winners.size()) {
               break;
             }
@@ -235,7 +238,10 @@ public class QualifyMainRoundGenerator extends AbstractRoundGenerator {
         if (wi < winners.size()) {
           PlayerPair t = next.getTeamB();
           if (t == null || (t.getType() == PairType.QUALIFIER)) {
-            next.setTeamB(winners.get(wi++));
+            PlayerPair w = winners.get(wi++);
+            // Mark this team as a qualified entrant for the main draw
+            w.setType(PairType.QUALIFIER);
+            next.setTeamB(w);
             if (wi >= winners.size()) {
               break;
             }
