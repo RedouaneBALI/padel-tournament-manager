@@ -97,9 +97,36 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
   const mainDrawSize = (tournament as any)?.config?.mainDrawSize ?? (playerPairs?.length || 0);
   const matchesCount = Math.max(1, Math.floor((mainDrawSize || 0) / 2));
 
-  // Build a fixed-size slots array so empty positions are real drop targets
+  // Build a fixed-size slots array so empty positions are real drop targets.
+  // Prefer the saved order from the tournament's first bracket round (teamA/teamB per game),
+  // fall back to the raw playerPairs list otherwise.
   useEffect(() => {
     const size = matchesCount * 2;
+
+    // Try to derive slots from the first non-GROUPS round
+    const rounds = (tournament as any)?.rounds as Array<any> | undefined;
+    let derived: Array<PlayerPair | null> | null = null;
+    if (Array.isArray(rounds) && rounds.length > 0) {
+      const firstBracket = rounds.find((r) => r?.stage && r.stage !== 'GROUPS');
+      const games: Array<any> = firstBracket?.games || [];
+      if (games.length > 0) {
+        const next: Array<PlayerPair | null> = new Array(size).fill(null);
+        for (let m = 0; m < Math.min(games.length, size / 2); m++) {
+          const g = games[m];
+          // Keep BYE objects as-is so they remain draggable; null remains null.
+          next[m * 2] = (g?.teamA ?? null) as PlayerPair | null;
+          next[m * 2 + 1] = (g?.teamB ?? null) as PlayerPair | null;
+        }
+        derived = next;
+      }
+    }
+
+    if (derived) {
+      setSlots(derived);
+      return;
+    }
+
+    // Fallback: seed from the flat playerPairs list
     const next: Array<PlayerPair | null> = new Array(size).fill(null);
     (playerPairs ?? []).forEach((p, i) => {
       if (i < size) next[i] = p;
