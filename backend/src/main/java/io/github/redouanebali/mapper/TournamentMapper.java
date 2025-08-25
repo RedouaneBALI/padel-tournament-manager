@@ -57,7 +57,7 @@ public interface TournamentMapper {
     // Display seed for UI
     String display;
     if (playerPair.isBye()) {
-      display = "BYE";
+      display = null;
     } else if (playerPair.isQualifier()) {
       display = "Q";
     } else {

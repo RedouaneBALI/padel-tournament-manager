@@ -1,5 +1,7 @@
+// src/components/admin/PlayerPairAssignmentLine.tsx
 import React from 'react';
 import { PlayerPair } from '@/src/types/playerPair';
+import TeamRow from '@/src/components/ui/TeamRow';
 
 interface LineProps {
   pair: PlayerPair | null;
@@ -33,17 +35,7 @@ export default function PlayerPairAssignmentLine({ pair, onDragStart, onDragOver
       >↓</button>
       <div className="flex-1">
         {pair ? (
-          <div className="flex items-center justify-between gap-3 w-full">
-            <div className="flex flex-col leading-tight">
-              <span className="text-sm font-medium">{pair.player1Name}</span>
-              {pair.player2Name ? <span className="text-sm">{pair.player2Name}</span> : null}
-            </div>
-            {pair?.displaySeed ? (
-              <span className="text-xs text-muted-foreground font-medium self-center px-2">({pair.displaySeed})</span>
-            ) : (
-              <span className="text-xs text-muted-foreground font-medium self-center px-2" />
-            )}
-          </div>
+          <TeamRow team={pair} winnerSide={undefined} />
         ) : (
           <div className="flex items-center justify-between gap-3 w-full">
             <div className="text-xs text-muted-foreground italic">BYE</div>

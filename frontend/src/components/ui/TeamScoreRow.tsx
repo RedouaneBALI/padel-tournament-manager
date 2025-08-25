@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { PlayerPair } from '@/src/types/playerPair';
+import TeamRow from '@/src/components/ui/TeamRow';
 
 function focusByTabIndex(nextIndex: number) {
   const el = document.querySelector<HTMLInputElement>(`input[tabindex="${nextIndex}"]`);
@@ -49,18 +50,7 @@ export default function TeamScoreRow({
 
   return (
     <div className="flex items-center px-4 h-[60px]">
-      <div className={`flex flex-1 items-center ${winnerSide === teamIndex ? 'font-bold' : ''}`}>
-        <div className={`flex flex-col ${winnerSide !== undefined && winnerSide !== teamIndex ? 'text-muted-foreground' : ''}`}>
-          <span className="text-sm">{team?.player1Name || ''}</span>
-          <span className="text-sm">{team?.player2Name || ''}</span>
-        </div>
-
-        {team?.displaySeed && (
-          <span className="text-xs text-muted-foreground font-medium self-center px-2">
-            ({team.displaySeed})
-          </span>
-        )}
-      </div>
+      <TeamRow team={team} winnerSide={winnerSide} teamIndex={teamIndex} />
 
       <div className="text-center ml-4">
         {editing ? (

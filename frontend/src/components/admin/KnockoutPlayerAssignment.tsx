@@ -61,15 +61,6 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
   const mainDrawSize = (tournament as any)?.config?.mainDrawSize ?? (playerPairs?.length || 0);
   const matchesCount = Math.max(1, Math.floor((mainDrawSize || 0) / 2));
 
-  const suffixOf = (p?: PlayerPair) => {
-    if (!p) return '';
-    if (p.seed != null) return ` (TS ${p.seed})`;
-    if (p.displaySeed) {
-      return p.displaySeed.startsWith('(') ? ` ${p.displaySeed}` : ` (${p.displaySeed})`;
-    }
-    return '';
-  };
-
   // Build a fixed-size slots array so empty positions are real drop targets
   useEffect(() => {
     const size = matchesCount * 2;
@@ -82,13 +73,14 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
 
   return (
     <div className="min-h-[200px]">
+      <p className="text-sm text-center text-tab-inactive m-2">Faites glisser les équipes pour les ordonner.</p>
+
       <div className="flex items-center">
         <div className="h-px flex-1 bg-border my-2" />
           <h3 className="text-s sm:text-sm uppercase tracking-wider text-muted-foreground select-none">{`R${matchesCount}`}</h3>
         <div className="h-px flex-1 bg-border" />
       </div>
 
-      <p className="text-sm text-tab-inactive mb-4">Faites glisser les équipes pour les ordonner manuellement.</p>
 
       <div className="rounded-md border border-border bg-card divide-y">
         {Array.from({ length: matchesCount }).map((_, m) => {
@@ -107,14 +99,14 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
                 onDragOver: onDragOver(iA),
                 onDrop: onDrop(iA),
                 onMoveUp: onKeyReorder(iA, -1),
-                onMoveDown: onKeyReorder(iA, 1),
+                onMoveDown: onKeyReorder(iA, 1)
               }}
               handlersB={{
                 onDragStart: pairB ? onDragStart(iB) : undefined,
                 onDragOver: onDragOver(iB),
                 onDrop: onDrop(iB),
                 onMoveUp: onKeyReorder(iB, -1),
-                onMoveDown: onKeyReorder(iB, 1),
+                onMoveDown: onKeyReorder(iB, 1)
               }}
             />
           );

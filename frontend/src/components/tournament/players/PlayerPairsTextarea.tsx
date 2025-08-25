@@ -10,9 +10,10 @@ interface Props {
   tournamentId: string;
   onPairsChange?: (pairs: PlayerPair[]) => void; // OK dans interface
   hasStarted?: boolean;
+  onSaveSuccess?: () => void;
 }
 
-export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasStarted }: Props) {
+export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasStarted, onSaveSuccess }: Props) {
   const [text, setText] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -70,6 +71,10 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
     }
 
     await fetchUpdatedPairs();
+
+    if (onSaveSuccess) {
+      onSaveSuccess();
+    }
   };
 
   return (

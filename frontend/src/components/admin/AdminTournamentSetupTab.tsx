@@ -92,6 +92,9 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
     };
   }, [tournamentId]);
 
+  const showGenerateButton = !tournamentStarted && !loadingTournament && !loadingPairs && (
+    (!manual) || (manual && activeTab === 'assignment')
+  );
 
   return (
     <div className="container mx-auto max-w-3xl">
@@ -133,7 +136,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
                   onClick={() => setActiveTab('players')}
                   className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'players' ? 'border-primary text-foreground' : 'border-transparent text-tab-inactive'}`}
                 >
-                  Joueurs
+                  Import
                 </button>
                 <button
                   type="button"
@@ -162,6 +165,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
                       onPairsChange={setPairs}
                       tournamentId={tournamentId}
                       hasStarted={tournamentStarted}
+                      onSaveSuccess={() => setActiveTab('assignment')}
                     />
                   </>
                 )
@@ -170,7 +174,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
               )}
             </>
           )}
-          {!tournamentStarted && !loadingTournament && !loadingPairs && (
+          {showGenerateButton && (
             <>
               <hr className="my-2 border-t border-border" />
               <div className="flex flex-col sm:flex-row sm:justify-center sm:items-end gap-4 mt-4">
