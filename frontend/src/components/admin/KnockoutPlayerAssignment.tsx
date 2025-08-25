@@ -36,13 +36,11 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
     if (from === -1) return;
 
     setSlots((prev) => {
-      const next = prev.slice();
-      const moved = next[from] ?? null;
-      if (moved == null) return prev; // nothing to move
       if (from === index) return prev;
-      const dest = next[index];
-      next[from] = dest ?? null; // swap if dest occupied, else leave null
-      next[index] = moved;
+      const next = prev.slice();
+      const tmp = next[index] ?? null;
+      next[index] = next[from] ?? null;
+      next[from] = tmp;
       return next;
     });
     setDragIndex(null);
@@ -50,6 +48,7 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
   };
 
   const onDrop = (index: number) => (e: React.DragEvent<HTMLLIElement>) => {
+    e.stopPropagation();
     performDrop(index, e);
   };
 
@@ -66,6 +65,7 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
   };
 
   const onMatchDrop = (m: number) => (e: React.DragEvent<HTMLDivElement>) => {
+    e.stopPropagation();
     const el = matchRefs.current[m];
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -102,7 +102,18 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
       if (i < size) next[i] = p;
     });
     setSlots(next);
-  }, [tournament, playerPairs]);
+  }, [tournament, playerPairs, matchesCount]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('knockout:pairs-reordered', {
+        detail: {
+          tournamentId: (tournament as any)?.id,
+          slots,
+        },
+      }));
+    }
+  }, [slots, tournament]);
 
   return (
     <div className="min-h-[200px]">
@@ -134,14 +145,14 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
                 pairA={pairA}
                 pairB={pairB}
                 handlersA={{
-                  onDragStart: pairA ? onDragStart(iA) : undefined,
+                  onDragStart: onDragStart(iA),
                   onDragOver: onDragOver(iA),
                   onDrop: onDrop(iA),
                   onMoveUp: onKeyReorder(iA, -1),
                   onMoveDown: onKeyReorder(iA, 1)
                 }}
                 handlersB={{
-                  onDragStart: pairB ? onDragStart(iB) : undefined,
+                  onDragStart: onDragStart(iB),
                   onDragOver: onDragOver(iB),
                   onDrop: onDrop(iB),
                   onMoveUp: onKeyReorder(iB, -1),

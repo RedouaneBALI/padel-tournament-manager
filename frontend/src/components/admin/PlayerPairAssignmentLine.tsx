@@ -20,8 +20,8 @@ export default function PlayerPairAssignmentLine({ pair, onDragStart, onDragOver
       className={`flex items-center gap-3 px-3 py-3 rounded select-none cursor-grab active:cursor-grabbing border transition-colors ${
         isActive ? 'bg-primary/5 border-primary/40' : isOver ? 'bg-primary/10 border-primary' : 'border-transparent hover:border-border'
       }`}
-      draggable={!!pair}
-      onDragStart={pair ? onDragStart : undefined}
+      draggable
+      onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
