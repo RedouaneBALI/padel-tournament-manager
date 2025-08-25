@@ -16,9 +16,13 @@ interface Props {
   pairB: PlayerPair | null;
   handlersA: Handlers;
   handlersB: Handlers;
+  isActiveA?: boolean;
+  isActiveB?: boolean;
+  isOverA?: boolean;
+  isOverB?: boolean;
 }
 
-export default function GameAssignmentBloc({ title, pairA, pairB, handlersA, handlersB }: Props) {
+export default function GameAssignmentBloc({ title, pairA, pairB, handlersA, handlersB, isActiveA, isActiveB, isOverA, isOverB }: Props) {
   return (
     <div className="p-2">
       <div className="flex items-center justify-between mb-2">
@@ -28,8 +32,8 @@ export default function GameAssignmentBloc({ title, pairA, pairB, handlersA, han
         )}
       </div>
       <ul className="space-y-1">
-        <PlayerPairAssignmentLine pair={pairA} {...handlersA} />
-        <PlayerPairAssignmentLine pair={pairB} {...handlersB} />
+        <PlayerPairAssignmentLine pair={pairA} isActive={isActiveA} isOver={isOverA} {...handlersA} />
+        <PlayerPairAssignmentLine pair={pairB} isActive={isActiveB} isOver={isOverB} {...handlersB} />
       </ul>
     </div>
   );

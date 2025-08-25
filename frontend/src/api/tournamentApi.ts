@@ -1,3 +1,4 @@
+// src/api/tournamentApi.ts
 // API shape for Game coming from backend (snake_case via @JsonNaming)
 import { toast } from 'react-toastify';
 import type { Round } from '@/src/types/round';
@@ -7,10 +8,10 @@ import type { MatchFormat } from '@/src/types/matchFormat';
 import type { Score } from '@/src/types/score';
 import { fetchWithAuth } from "./fetchWithAuth";
 
-export const BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').replace(/\/$/, '');
+const api = (path: string) => `/api${path}`;
 
 export async function fetchTournament(tournamentId: string): Promise<Tournament> {
-  const res = await fetch(`${BASE_URL}/tournaments/${tournamentId}`, { method: 'GET' });
+  const res = await fetch(api(`/tournaments/${tournamentId}`), { method: 'GET' });
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     toast.error(`Erreur lors de la récupération du tournoi (${res.status})`);
@@ -20,7 +21,7 @@ export async function fetchTournament(tournamentId: string): Promise<Tournament>
 }
 
 export async function fetchTournamentAdmin(tournamentId: string): Promise<Tournament> {
-  const res = await fetchWithAuth(`${BASE_URL}/tournaments/${tournamentId}`, {
+  const res = await fetchWithAuth(api(`/tournaments/${tournamentId}`), {
     method: "GET",
   });
 
@@ -35,7 +36,7 @@ export async function fetchTournamentAdmin(tournamentId: string): Promise<Tourna
 
 export async function fetchMyTournaments(scope: 'mine' | 'all' = 'mine'): Promise<Tournament[]> {
   const qs = scope && scope !== 'mine' ? `?scope=${encodeURIComponent(scope)}` : '';
-  const res = await fetchWithAuth(`${BASE_URL}/admin/tournaments${qs}`, { method: 'GET' });
+  const res = await fetchWithAuth(api(`/admin/tournaments${qs}`), { method: 'GET' });
 
   if (res.status === 401) {
     throw new Error('UNAUTHORIZED');
@@ -53,7 +54,7 @@ export async function fetchMyTournaments(scope: 'mine' | 'all' = 'mine'): Promis
 }
 
 export async function fetchRounds(tournamentId: string): Promise<Round[]> {
-  const response = await fetch(`${BASE_URL}/tournaments/${tournamentId}/rounds`);
+  const response = await fetch(api(`/tournaments/${tournamentId}/rounds`));
   if (!response.ok) {
     toast.error('Erreur lors du chargement des rounds.');
     throw new Error('Erreur de récupération des rounds');
@@ -62,7 +63,7 @@ export async function fetchRounds(tournamentId: string): Promise<Round[]> {
 }
 
 export async function fetchPairs(tournamentId: string): Promise<PlayerPair[]> {
-  const response = await fetch(`${BASE_URL}/tournaments/${tournamentId}/pairs`);
+  const response = await fetch(api(`/tournaments/${tournamentId}/pairs`));
   if (!response.ok) {
     throw new Error('Erreur de récupération des PlayerPair');
   }
@@ -70,7 +71,7 @@ export async function fetchPairs(tournamentId: string): Promise<PlayerPair[]> {
 }
 
 export async function fetchMatchFormat(tournamentId: string, currentStage: string): Promise<MatchFormat> {
-  const response = await fetch(`${BASE_URL}/tournaments/${tournamentId}/rounds/${currentStage}/match-format`);
+  const response = await fetch(api(`/tournaments/${tournamentId}/rounds/${currentStage}/match-format`));
   if (!response.ok) {
     toast.error('Erreur lors du chargement du format.');
     throw new Error('Erreur de récupération du MatchFormat');
@@ -79,7 +80,7 @@ export async function fetchMatchFormat(tournamentId: string, currentStage: strin
 }
 
 export async function updateGameDetails(tournamentId: string, gameId: string, scorePayload: Score, court: string, scheduledTime: string) {
-  const response = await fetchWithAuth(`${BASE_URL}/admin/tournaments/${tournamentId}/games/${gameId}`, {
+  const response = await fetchWithAuth(api(`/admin/tournaments/${tournamentId}/games/${gameId}`), {
     method: 'PUT',
     body: JSON.stringify({
       score: scorePayload,
@@ -96,7 +97,7 @@ export async function updateGameDetails(tournamentId: string, gameId: string, sc
 }
 
 export async function updateMatchFormat(tournamentId: string, stage: string, matchFormat: MatchFormat) {
-  const response = await fetchWithAuth(`${BASE_URL}/admin/tournaments/${tournamentId}/rounds/${stage}/match-format`, {
+  const response = await fetchWithAuth(api(`/admin/tournaments/${tournamentId}/rounds/${stage}/match-format`), {
     method: 'PUT',
     body: JSON.stringify(matchFormat),
   });
@@ -117,7 +118,7 @@ export async function updateMatchFormat(tournamentId: string, stage: string, mat
  * @param idToken id_token Google (JWT) à mettre dans Authorization (Bearer)
  */
 export async function createTournament(payload: Tournament) {
-  const res = await fetchWithAuth(`${BASE_URL}/admin/tournaments`, {
+  const res = await fetchWithAuth(api(`/admin/tournaments`), {
     method: "POST",
     body: JSON.stringify(payload),
   });
@@ -131,7 +132,7 @@ export async function createTournament(payload: Tournament) {
 }
 
 export async function deleteTournament(tournamentId: string | number): Promise<void> {
-  const res = await fetchWithAuth(`${BASE_URL}/admin/tournaments/${tournamentId}`, {
+  const res = await fetchWithAuth(api(`/admin/tournaments/${tournamentId}`), {
     method: 'DELETE',
   });
 
@@ -147,7 +148,7 @@ export async function deleteTournament(tournamentId: string | number): Promise<v
 }
 
 export async function updateTournament(tournamentId: string, updatedTournament: Tournament) {
-  const response = await fetchWithAuth(`${BASE_URL}/admin/tournaments/${tournamentId}`, {
+  const response = await fetchWithAuth(api(`/admin/tournaments/${tournamentId}`), {
     method: 'PUT',
     body: JSON.stringify(updatedTournament),
   });
@@ -162,7 +163,7 @@ export async function updateTournament(tournamentId: string, updatedTournament: 
 }
 
 export async function savePlayerPairs(tournamentId: string, pairs: PlayerPair[]) {
-  const response = await fetchWithAuth(`${BASE_URL}/admin/tournaments/${tournamentId}/pairs`, {
+  const response = await fetchWithAuth(api(`/admin/tournaments/${tournamentId}/pairs`), {
     method: 'POST',
     body: JSON.stringify(pairs),
   });
@@ -177,7 +178,7 @@ export async function savePlayerPairs(tournamentId: string, pairs: PlayerPair[])
 }
 
 export async function generateDraw(tournamentId: string, manual: boolean) {
-  const response = await fetchWithAuth(`${BASE_URL}/admin/tournaments/${tournamentId}/draw?manual=${manual}`, {
+  const response = await fetchWithAuth(api(`/admin/tournaments/${tournamentId}/draw?manual=${manual}`), {
     method: 'POST',
   });
 
@@ -195,7 +196,7 @@ export async function updatePlayerPair(
   pairId: string | number,
   payload: { player1Name?: string; player2Name?: string; seed?: number }
 ): Promise<void> {
-  const res = await fetchWithAuth(`${BASE_URL}/admin/tournaments/${tournamentId}/pairs/${pairId}`, {
+  const res = await fetchWithAuth(api(`/admin/tournaments/${tournamentId}/pairs/${pairId}`), {
     method: 'PATCH',
     body: JSON.stringify(payload),
   });

@@ -43,8 +43,14 @@ public class SecurityConfig {
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
     config.setAllowedOriginPatterns(List.of(
+        // Local dev (desktop)
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        // Local dev (phone hitting your machine on LAN)
+        "http://192.168.1.12:3000",
+        // (Optionnel) toute IP privée en 192.168.x.x
+        "http://192.168.*.*:3000",
+        // Hosting prod/staging
         "https://*.web.app",
         "https://*.firebaseapp.com",
         "https://*.a.run.app"

@@ -32,5 +32,5 @@ export default function GoogleLoginButton({
       <img src="/google-logo.svg" alt="Google" className="w-5 h-5" />
       <span className="text-foreground">Se connecter avec Google</span>
     </button>
-  );
+ );
 }

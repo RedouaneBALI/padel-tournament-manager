@@ -12,9 +12,13 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
   // Local, fixed-size slots array (PlayerPair | null)
   const [slots, setSlots] = useState<Array<PlayerPair | null>>([]);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  const matchRefs = React.useRef<Array<HTMLDivElement | null>>([]);
 
   const onDragStart = (index: number) => (e: React.DragEvent<HTMLLIElement>) => {
     setDragIndex(index);
+    setHoveredIndex(null);
     // For Firefox compatibility
     e.dataTransfer.setData('text/plain', String(index));
     e.dataTransfer.effectAllowed = 'move';
@@ -23,9 +27,10 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
   const onDragOver = (index: number) => (e: React.DragEvent<HTMLLIElement>) => {
     e.preventDefault(); // allow drop
     e.dataTransfer.dropEffect = 'move';
+    setHoveredIndex(index);
   };
 
-  const onDrop = (index: number) => (e: React.DragEvent<HTMLLIElement>) => {
+  const performDrop = (index: number, e: React.DragEvent) => {
     e.preventDefault();
     const from = dragIndex ?? parseInt(e.dataTransfer.getData('text/plain') || '-1', 10);
     if (from === -1) return;
@@ -41,6 +46,34 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
       return next;
     });
     setDragIndex(null);
+    setHoveredIndex(null);
+  };
+
+  const onDrop = (index: number) => (e: React.DragEvent<HTMLLIElement>) => {
+    performDrop(index, e);
+  };
+
+  const onMatchDragOver = (m: number) => (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const el = matchRefs.current[m];
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    const iA = m * 2;
+    const iB = iA + 1;
+    setHoveredIndex(e.clientY <= midY ? iA : iB);
+  };
+
+  const onMatchDrop = (m: number) => (e: React.DragEvent<HTMLDivElement>) => {
+    const el = matchRefs.current[m];
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    const iA = m * 2;
+    const iB = iA + 1;
+    const targetIndex = e.clientY <= midY ? iA : iB;
+    performDrop(targetIndex, e);
   };
 
   const onKeyReorder = (index: number, dir: -1 | 1) => () => {
@@ -89,26 +122,37 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
           const pairA = slots[iA];
           const pairB = slots[iB];
           return (
-            <GameAssignmentBloc
+            <div
               key={`match-${m}`}
-              title={`Match ${m + 1}/${matchesCount}`}
-              pairA={pairA}
-              pairB={pairB}
-              handlersA={{
-                onDragStart: pairA ? onDragStart(iA) : undefined,
-                onDragOver: onDragOver(iA),
-                onDrop: onDrop(iA),
-                onMoveUp: onKeyReorder(iA, -1),
-                onMoveDown: onKeyReorder(iA, 1)
-              }}
-              handlersB={{
-                onDragStart: pairB ? onDragStart(iB) : undefined,
-                onDragOver: onDragOver(iB),
-                onDrop: onDrop(iB),
-                onMoveUp: onKeyReorder(iB, -1),
-                onMoveDown: onKeyReorder(iB, 1)
-              }}
-            />
+              ref={(el) => (matchRefs.current[m] = el)}
+              onDragOver={onMatchDragOver(m)}
+              onDrop={onMatchDrop(m)}
+              className="relative"
+            >
+              <GameAssignmentBloc
+                title={`Match ${m + 1}/${matchesCount}`}
+                pairA={pairA}
+                pairB={pairB}
+                handlersA={{
+                  onDragStart: pairA ? onDragStart(iA) : undefined,
+                  onDragOver: onDragOver(iA),
+                  onDrop: onDrop(iA),
+                  onMoveUp: onKeyReorder(iA, -1),
+                  onMoveDown: onKeyReorder(iA, 1)
+                }}
+                handlersB={{
+                  onDragStart: pairB ? onDragStart(iB) : undefined,
+                  onDragOver: onDragOver(iB),
+                  onDrop: onDrop(iB),
+                  onMoveUp: onKeyReorder(iB, -1),
+                  onMoveDown: onKeyReorder(iB, 1)
+                }}
+                isActiveA={dragIndex === iA}
+                isActiveB={dragIndex === iB}
+                isOverA={hoveredIndex === iA}
+                isOverB={hoveredIndex === iB}
+              />
+            </div>
           );
         })}
       </div>

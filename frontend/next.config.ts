@@ -11,7 +11,21 @@ const nextConfig: NextConfig = {
   trailingSlash: false,
   generateBuildId: async () => {
     return 'build-' + Date.now();
-  }
+  },
+  async rewrites() {
+    return [
+      // Do NOT proxy NextAuth routes; they must be handled by Next.js
+      {
+        source: '/api/auth/:path*',
+        destination: '/api/auth/:path*',
+      },
+      // Proxy all other /api requests to the Spring backend
+      {
+        source: '/api/:path((?!auth).*)', // negative lookahead to exclude auth
+        destination: 'http://localhost:8080/:path',
+      },
+    ];
+  },
 };
 
 export default nextConfig;
