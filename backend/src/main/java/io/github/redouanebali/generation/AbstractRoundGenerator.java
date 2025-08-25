@@ -9,6 +9,7 @@ import io.github.redouanebali.model.Tournament;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -57,31 +58,30 @@ public abstract class AbstractRoundGenerator implements RoundGenerator {
     return r;
   }
 
-  protected Round createManualRound(Stage stage,
-                                    List<PlayerPair> pairs) {
-    Round r = createEmptyRound(stage, pairs.size() / 2);
-    for (int i = 0; i < pairs.size(); i++) {
-      io.github.redouanebali.model.Game g = r.getGames().get(i / 2);
-      if (i % 2 == 0) {
-        g.setTeamA(pairs.get(i));
-      } else {
-        g.setTeamB(pairs.get(i));
-      }
-    }
-    return r;
-  }
+  public List<Round> buildEmptyStructure(Tournament t) {
+    int   startTeams = t.getConfig().getMainDrawSize();
+    Stage start      = Stage.fromNbTeams(startTeams);
 
-  protected List<Game> createEmptyGames(int nbTeams, MatchFormat format) {
-    int bracket = 1;
-    while (bracket < nbTeams) {
-      bracket <<= 1;
+    LinkedList<Round> rounds         = new LinkedList<>();
+    Stage             stage          = start;
+    int               teamsThisStage = startTeams;
+    while (stage != null && stage != Stage.WINNER) {
+      Round       r  = new Round(stage);
+      MatchFormat mf = r.getMatchFormat();
+      if (mf != null && mf.getId() == null) {
+        r.setMatchFormat(mf);
+      }
+      int        nbMatches  = Math.max(teamsThisStage / 2, 0);
+      List<Game> emptyGames = new ArrayList<>(nbMatches);
+      for (int i = 0; i < nbMatches; i++) {
+        emptyGames.add(new Game(r.getMatchFormat()));
+      }
+      r.addGames(emptyGames);
+      rounds.add(r);
+      teamsThisStage = Math.max(teamsThisStage / 2, 0);
+      stage          = stage.next();
     }
-    int        nbGames = bracket / 2;
-    List<Game> list    = new ArrayList<>(nbGames);
-    for (int i = 0; i < nbGames; i++) {
-      list.add(new Game(format));
-    }
-    return list;
+    return rounds;
   }
 
   protected int log2Safe(int n) {
@@ -204,5 +204,5 @@ public abstract class AbstractRoundGenerator implements RoundGenerator {
 
     return result;
   }
-  
+
 }

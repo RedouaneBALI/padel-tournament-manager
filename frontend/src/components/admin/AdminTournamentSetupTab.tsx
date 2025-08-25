@@ -74,10 +74,12 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
                   };
                 });
 
+                console.log("tournament");
+                console.log(tournament);
                 const payload: InitializeDrawRequest = {
                   rounds: [
                     {
-                      stage: 'QUARTERS', // @todo to fix
+                      stage: (tournament?.rounds?.[0]?.stage) ?? undefined as any,
                       games,
                     },
                   ],

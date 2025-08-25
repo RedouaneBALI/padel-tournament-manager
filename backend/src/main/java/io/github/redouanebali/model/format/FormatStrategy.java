@@ -1,5 +1,6 @@
 package io.github.redouanebali.model.format;
 
+import io.github.redouanebali.dto.request.InitializeDrawRequest;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
@@ -19,10 +20,12 @@ public interface FormatStrategy {
    */
   List<Round> initializeRounds(Tournament t, List<PlayerPair> pairs, boolean manual);
 
+  void applyManualInitialization(Tournament t, InitializeDrawRequest req);
+
   /**
    * Propage les vainqueurs du tournoi selon la logique du format (optionnel). Implémentation par défaut: no-op.
    */
   default void propagateWinners(Tournament t) {
-    // no-op by default
+
   }
 }

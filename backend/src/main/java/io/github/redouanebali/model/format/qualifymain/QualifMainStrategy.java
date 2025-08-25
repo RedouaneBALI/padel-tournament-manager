@@ -1,5 +1,6 @@
 package io.github.redouanebali.model.format.qualifymain;
 
+import io.github.redouanebali.dto.request.InitializeDrawRequest;
 import io.github.redouanebali.generation.QualifyMainRoundGenerator;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
@@ -53,6 +54,11 @@ public class QualifMainStrategy implements FormatStrategy {
     );
     return manual ? generator.generateManualRounds(pairs)
                   : generator.generateAlgorithmicRounds(pairs);
+  }
+
+  @Override
+  public void applyManualInitialization(final Tournament t, final InitializeDrawRequest req) {
+    
   }
 
   @Override

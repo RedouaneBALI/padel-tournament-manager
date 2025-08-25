@@ -1,6 +1,9 @@
 package io.github.redouanebali.model.format.knockout;
 
+import io.github.redouanebali.dto.request.InitializeDrawRequest;
+import io.github.redouanebali.dto.request.PlayerPairRequest;
 import io.github.redouanebali.generation.KnockoutRoundGenerator;
+import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
@@ -31,14 +34,54 @@ public class KnockoutStrategy implements FormatStrategy {
   @Override
   public List<Round> initializeRounds(Tournament t, List<PlayerPair> pairs, boolean manual) {
     KnockoutRoundGenerator generator = new KnockoutRoundGenerator(t.getConfig().getNbSeeds());
-    //  List<Round>            rounds    = generator.createRoundsStructure(t);
-    //  t.getRounds().clear();
-    //  t.getRounds().addAll(rounds);
-    if (manual) {
-      return generator.generateManualRounds(pairs);
-    } else {
+    if (!manual) {
       return generator.generateAlgorithmicRounds(pairs);
     }
+
+    // Manual: build structure only (empty games), do not auto-assign pairs.
+    return generator.buildEmptyStructure(t);
+  }
+
+  @Override
+  public void applyManualInitialization(final Tournament tournament, final InitializeDrawRequest req) {
+    if (req == null || req.getRounds() == null || req.getRounds().isEmpty()) {
+      return; // nothing to apply
+    }
+
+    // Knockout has no group stage: the first round is the first bracket round
+    List<Round> rounds = tournament.getRounds();
+    if (rounds == null || rounds.isEmpty()) {
+      return; // nothing to apply
+    }
+    Round firstBracket = rounds.get(0);
+
+    var providedFirst = req.getRounds().get(0);
+
+    // Replace games with the ones provided
+    firstBracket.getGames().clear();
+    providedFirst.getGames().forEach(gReq -> {
+      Game g = new Game(firstBracket.getMatchFormat());
+      g.setTeamA(resolveTeamSlot(tournament, gReq.getTeamA()));
+      g.setTeamB(resolveTeamSlot(tournament, gReq.getTeamB()));
+      g.setScore(null);
+      firstBracket.getGames().add(g);
+    });
+    this.propagateWinners(tournament);
+  }
+
+  private PlayerPair resolveTeamSlot(final Tournament t, final PlayerPairRequest slot) {
+    if (slot == null) {
+      return null;
+    }
+    if (slot.getPairId() != null) {
+      for (PlayerPair p : t.getPlayerPairs()) {
+        if (slot.getPairId().equals(p.getId())) {
+          return p; // reuse existing entity so names/seeds are present
+        }
+      }
+    }
+    // BYE / QUALIFIER (or PAIR not found) -> let the domain factory create the placeholder
+    return PlayerPair.fromRequest(slot);
   }
 
   @Override
@@ -46,4 +89,6 @@ public class KnockoutStrategy implements FormatStrategy {
     KnockoutRoundGenerator generator = new KnockoutRoundGenerator(t.getConfig().getNbSeeds());
     generator.propagateWinners(t);
   }
+
+
 }

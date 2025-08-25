@@ -1,5 +1,6 @@
 package io.github.redouanebali.model.format.groupsko;
 
+import io.github.redouanebali.dto.request.InitializeDrawRequest;
 import io.github.redouanebali.generation.GroupRoundGenerator;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
@@ -67,6 +68,11 @@ public class GroupsKoStrategy implements FormatStrategy {
     );
     return manual ? generator.generateManualRounds(pairs)
                   : generator.generateAlgorithmicRounds(pairs);
+  }
+
+  @Override
+  public void applyManualInitialization(final Tournament t, final InitializeDrawRequest req) {
+    
   }
 
   @Override
