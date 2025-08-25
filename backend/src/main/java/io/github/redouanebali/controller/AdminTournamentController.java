@@ -1,6 +1,7 @@
 package io.github.redouanebali.controller;
 
 import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
+import io.github.redouanebali.dto.request.InitializeDrawRequest;
 import io.github.redouanebali.dto.request.UpdateGameRequest;
 import io.github.redouanebali.dto.request.UpdatePlayerPairRequest;
 import io.github.redouanebali.dto.request.UpdateTournamentRequest;
@@ -114,6 +115,16 @@ public class AdminTournamentController {
                                     @RequestParam(defaultValue = "false") boolean manual) {
     checkOwnership(id);
     return tournamentMapper.toDTO(tournamentService.generateDraw(id, manual));
+  }
+
+  /**
+   * Initialize the draw with a bracket structure provided by the client (manual construction). Replaces the tournament rounds with the provided ones
+   * as-is (light sanity checks in service).
+   */
+  @PostMapping(path = "/{id}/draw/initialize", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public TournamentDTO initializeDraw(@PathVariable Long id, @RequestBody @Valid InitializeDrawRequest request) {
+    checkOwnership(id);
+    return tournamentMapper.toDTO(tournamentService.initializeDraw(id, request));
   }
 
   @PutMapping(path = "/{id}/rounds/{stage}/match-format", consumes = MediaType.APPLICATION_JSON_VALUE)

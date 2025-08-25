@@ -1,5 +1,6 @@
 package io.github.redouanebali.service;
 
+import io.github.redouanebali.dto.request.InitializeDrawRequest;
 import io.github.redouanebali.dto.request.UpdateTournamentRequest;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Round;
@@ -111,6 +112,29 @@ public class TournamentService {
       throw new AccessDeniedException("You are not allowed to generate the draw for this tournament");
     }
     return applyEditable(drawGenerationService.generateDraw(tournament, manual));
+  }
+
+  /**
+   * Initialize the draw with a bracket structure provided by the client (manual construction). This replaces the current tournament rounds with the
+   * provided ones as-is (after light sanity checks), without auto-seeding or random assignment.
+   */
+  @Transactional
+  public Tournament initializeDraw(Long tournamentId, InitializeDrawRequest request) {
+    if (request == null || request.getRounds() == null) {
+      throw new IllegalArgumentException("InitializeDrawRequest cannot be null");
+    }
+
+    Tournament tournament = getTournamentById(tournamentId);
+
+    // Security
+    String      me          = SecurityUtil.currentUserId();
+    Set<String> superAdmins = securityProps.getSuperAdmins();
+    if (!superAdmins.contains(me) && !me.equals(tournament.getOwnerId())) {
+      throw new AccessDeniedException("You are not allowed to initialize the draw for this tournament");
+    }
+
+    Tournament saved = drawGenerationService.initializeManualDraw(tournament, request);
+    return applyEditable(saved);
   }
 
   public Set<Game> getGamesByTournamentAndStage(Long tournamentId, Stage stage) {

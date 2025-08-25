@@ -7,6 +7,7 @@ import type { Tournament } from '@/src/types/tournament';
 import type { MatchFormat } from '@/src/types/matchFormat';
 import type { Score } from '@/src/types/score';
 import { fetchWithAuth } from "./fetchWithAuth";
+import type { InitializeDrawRequest } from '@/src/types/api/InitializeDrawRequest';
 
 const api = (path: string) => `/api${path}`;
 
@@ -188,6 +189,23 @@ export async function generateDraw(tournamentId: string, manual: boolean) {
   }
 
   toast.success('Tirage généré !');
+  return await response.json();
+}
+
+export async function initializeDraw(tournamentId: string, payload: InitializeDrawRequest) {
+  console.log(payload);
+  const response = await fetchWithAuth(api(`/admin/tournaments/${tournamentId}/draw/initialize`), {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    toast.error("Erreur lors de l'initialisation manuelle du tirage.");
+    throw new Error(`Erreur lors de l'initialisation du tirage (${response.status}) ${text}`);
+  }
+
+  toast.success('Tirage initialisé !');
   return await response.json();
 }
 

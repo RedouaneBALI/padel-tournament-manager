@@ -1,6 +1,7 @@
 package io.github.redouanebali.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.github.redouanebali.dto.request.PlayerPairRequest;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -83,6 +84,16 @@ public class PlayerPair {
     qPair.setSeed(Integer.MAX_VALUE - 1); // ou un code spécial
     qPair.setType(PairType.QUALIFIER);
     return qPair;
+  }
+
+  public static PlayerPair fromRequest(PlayerPairRequest req) {
+    if (req == null) {
+      return null;
+    }
+    PlayerPair p = new PlayerPair();
+    p.setId(req.getPairId());
+    p.setType(PairType.valueOf(req.getType()));
+    return p;
   }
 
   public boolean isBye() {

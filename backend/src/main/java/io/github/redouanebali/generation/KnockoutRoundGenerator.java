@@ -40,7 +40,6 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
     return generateRounds(pairs, true);
   }
 
-
   /**
    * Build full bracket rounds from the given starting stage down to (but excluding) WINNER.
    *

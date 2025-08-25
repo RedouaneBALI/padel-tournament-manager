@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tournament } from '@/src/types/tournament';
 import { PlayerPair } from '@/src/types/playerPair';
 import KnockoutPlayerAssignment from '@/src/components/admin/KnockoutPlayerAssignment';

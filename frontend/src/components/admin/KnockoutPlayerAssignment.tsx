@@ -15,6 +15,9 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const matchRefs = React.useRef<Array<HTMLDivElement | null>>([]);
+  const scrollRef = React.useRef<HTMLDivElement | null>(null);
+  const autoScrollRAF = React.useRef<number | null>(null);
+  const autoScrollDir = React.useRef<0 | 1 | -1>(0);
 
   const onDragStart = (index: number) => (e: React.DragEvent<HTMLLIElement>) => {
     setDragIndex(index);
@@ -115,8 +118,83 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
     }
   }, [slots, tournament]);
 
+  const cancelAutoScroll = () => {
+    if (autoScrollRAF.current != null) {
+      cancelAnimationFrame(autoScrollRAF.current);
+      autoScrollRAF.current = null;
+    }
+    autoScrollDir.current = 0;
+  };
+
+  const startAutoScroll = (dy: number) => {
+    const container = scrollRef.current;
+    const step = () => {
+      if (container && container.scrollHeight > container.clientHeight) {
+        container.scrollTop += dy;
+      } else {
+        window.scrollBy(0, dy);
+      }
+      autoScrollRAF.current = requestAnimationFrame(step);
+    };
+    autoScrollRAF.current = requestAnimationFrame(step);
+  };
+
+  const onRootDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const container = scrollRef.current;
+
+    // Wider trigger zone and faster min speed for easier activation
+    const threshold = 180;  // px near top/bottom to trigger scroll
+    const maxSpeed = 28;    // px per frame (capped)
+
+    const rect = container ? container.getBoundingClientRect() : { top: 0, bottom: window.innerHeight } as any;
+    const y = e.clientY;
+    const distTop = y - rect.top;
+    const distBottom = rect.bottom - y;
+
+    const speedFromDist = (d: number) => {
+      if (d > threshold) return 0;
+      const ratio = (threshold - d) / threshold; // 0..1
+      return Math.max(6, Math.floor(ratio * maxSpeed));
+    };
+
+    const up = speedFromDist(distTop);
+    const down = speedFromDist(distBottom);
+
+    let dir: 0 | 1 | -1 = 0;
+    let speed = 0;
+    if (up > 0) { dir = -1; speed = up; }
+    else if (down > 0) { dir = 1; speed = down; }
+
+    if (dir === 0) {
+      // Leave the zone
+      cancelAutoScroll();
+      return;
+    }
+
+    // If direction changed, restart the RAF with the new speed
+    const desiredDy = dir * speed;
+    const currentDir = autoScrollDir.current;
+
+    if (autoScrollRAF.current == null || currentDir !== dir) {
+      cancelAutoScroll();
+      autoScrollDir.current = dir;
+      startAutoScroll(desiredDy);
+    }
+  };
+
+  const onRootDragEnd = () => {
+    cancelAutoScroll();
+  };
+
   return (
-    <div className="min-h-[200px]">
+    <div
+      ref={scrollRef}
+      className="min-h-[200px] max-h-[80vh] overflow-auto"
+      onDragOver={onRootDragOver}
+      onDrop={onRootDragEnd}
+      onDragEnd={onRootDragEnd}
+    >
       <p className="text-sm text-center text-tab-inactive m-2">Faites glisser les équipes pour les ordonner.</p>
 
       <div className="flex items-center">

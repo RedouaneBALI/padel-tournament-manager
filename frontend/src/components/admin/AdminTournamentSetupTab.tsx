@@ -6,7 +6,8 @@ import PlayerPairsTextarea from '@/src/components/tournament/players/PlayerPairs
 import PlayerPairsList from '@/src/components/tournament/players/PlayerPairsList';
 import { useRouter } from 'next/navigation';
 import { confirmAlert } from 'react-confirm-alert';
-import { generateDraw } from '@/src/api/tournamentApi';
+import { generateDraw, initializeDraw } from '@/src/api/tournamentApi';
+import type { InitializeDrawRequest } from '@/src/types/api/InitializeDrawRequest';
 import { FileText } from 'lucide-react';
 import { PlayerPair } from '@/src/types/playerPair';
 import { Tournament } from '@/src/types/tournament';
@@ -30,6 +31,10 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
 
   const [activeTab, setActiveTab] = useState<'players' | 'assignment'>('players');
 
+  const [assignedSlots, setAssignedSlots] = useState<Array<PlayerPair | null>>([]);
+  const mainDrawSize = (tournament as any)?.config?.mainDrawSize ?? (pairs?.length || 0);
+  const matchesCount = Math.max(1, Math.floor((mainDrawSize || 0) / 2));
+
   const manual = (tournament?.config as any)?.drawMode === 'MANUAL';
   const handleDraw = () => {
     confirmAlert({
@@ -43,7 +48,45 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
             setIsGenerating(true);
             try {
               const manual = (tournament?.config as any)?.drawMode === 'MANUAL';
-              await generateDraw(tournamentId, manual);
+              if (manual) {
+                // Build a single Round from the current assignment slots
+                const size = matchesCount * 2;
+                const slots = (assignedSlots.length === size ? assignedSlots : ((): Array<PlayerPair | null> => {
+                  const next: Array<PlayerPair | null> = new Array(size).fill(null);
+                  (pairs ?? []).forEach((p, i) => { if (i < size) next[i] = p; });
+                  return next;
+                })());
+
+                const games = Array.from({ length: matchesCount }).map((_, m) => {
+                  const iA = m * 2;
+                  const iB = iA + 1;
+                  const a = slots[iA];
+                  const b = slots[iB];
+
+                  const toTeamSlot = (p: PlayerPair | null) => {
+                    if (!p) return { type: 'BYE' } as const;
+                    return { type: 'NORMAL', pairId: p.id } as const;
+                  };
+
+                  return {
+                    teamA: toTeamSlot(a),
+                    teamB: toTeamSlot(b),
+                  };
+                });
+
+                const payload: InitializeDrawRequest = {
+                  rounds: [
+                    {
+                      stage: 'QUARTERS', // @todo to fix
+                      games,
+                    },
+                  ],
+                };
+
+                await initializeDraw(tournamentId, payload);
+              } else {
+                await generateDraw(tournamentId, false);
+              }
               router.push(`/admin/tournament/${tournamentId}/bracket`);
             } finally {
               setIsGenerating(false);
@@ -91,6 +134,22 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
       cancelled = true;
     };
   }, [tournamentId]);
+
+  useEffect(() => {
+    const onReorder = (e: any) => {
+      if (!e?.detail) return;
+      // Optionally, check tournament id
+      setAssignedSlots(e.detail.slots || []);
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('knockout:pairs-reordered', onReorder as any);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('knockout:pairs-reordered', onReorder as any);
+      }
+    };
+  }, []);
 
   const showGenerateButton = !tournamentStarted && !loadingTournament && !loadingPairs && (
     (!manual) || (manual && activeTab === 'assignment')
