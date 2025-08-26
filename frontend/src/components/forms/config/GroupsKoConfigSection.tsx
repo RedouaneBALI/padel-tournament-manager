@@ -17,7 +17,6 @@ export default function GroupsKoConfigSection({
   const cfg = formData.config as any;
 
   useEffect(() => {
-    console.log("useEffect");
     handleInputChange({
       target: {
         name: 'config.nbSeeds',

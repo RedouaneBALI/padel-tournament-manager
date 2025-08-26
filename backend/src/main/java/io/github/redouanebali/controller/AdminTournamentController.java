@@ -124,7 +124,8 @@ public class AdminTournamentController {
   @PostMapping(path = "/{id}/draw/initialize", consumes = MediaType.APPLICATION_JSON_VALUE)
   public TournamentDTO initializeDraw(@PathVariable Long id, @RequestBody @Valid InitializeDrawRequest request) {
     checkOwnership(id);
-    return tournamentMapper.toDTO(tournamentService.initializeDraw(id, request));
+    Tournament tournament = tournamentService.initializeDraw(id, request);
+    return tournamentMapper.toDTO(tournament);
   }
 
   @PutMapping(path = "/{id}/rounds/{stage}/match-format", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -159,6 +160,13 @@ public class AdminTournamentController {
         "authorities", a == null ? null : a.getAuthorities(),
         "details", a
     );
+  }
+
+  @PostMapping(path = "/{id}/pairs/sort-manual")
+  public TournamentDTO sortManualPairs(@PathVariable Long id) {
+    checkOwnership(id);
+    Tournament tournament = playerPairService.sortManualPairs(id);
+    return tournamentMapper.toDTO(tournament);
   }
 
   private void checkOwnership(Long tournamentId) {

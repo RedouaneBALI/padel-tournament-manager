@@ -178,8 +178,8 @@ public class Game {
   public String toString() {
     return String.format(
         "%s vs %s",
-        teamA != null ? teamA.toString() : "Unknown Team A",
-        teamB != null ? teamB.toString() : "Unknown Team B"
+        teamA != null ? teamA.toString() : "?",
+        teamB != null ? teamB.toString() : "?"
     );
   }
 

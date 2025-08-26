@@ -49,8 +49,8 @@ public class PublicTournamentController {
 
   @PermitAll
   @GetMapping("/{id}/pairs")
-  public List<PlayerPairDTO> getPairs(@PathVariable Long id) {
-    return tournamentMapper.toDTOPlayerPairList(playerPairService.getPairsByTournamentId(id));
+  public List<PlayerPairDTO> getPairs(@PathVariable Long id, boolean includeByes) {
+    return tournamentMapper.toDTOPlayerPairList(playerPairService.getPairsByTournamentId(id, includeByes));
   }
 
   @GetMapping("/{id}/rounds")

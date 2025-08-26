@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Tournament } from '@/src/types/tournament';
 import { PlayerPair } from '@/src/types/playerPair';
 import GameAssignmentBloc from '@/src/components/admin/GameAssignmentBloc';
+import { fetchGamesByStage } from '@/src/api/tournamentApi';
 
 interface Props {
   tournament: Tournament;
@@ -9,7 +10,6 @@ interface Props {
 }
 
 export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Props) {
-  // Local, fixed-size slots array (PlayerPair | null)
   const [slots, setSlots] = useState<Array<PlayerPair | null>>([]);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -97,6 +97,16 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
   const mainDrawSize = (tournament as any)?.config?.mainDrawSize ?? (playerPairs?.length || 0);
   const matchesCount = Math.max(1, Math.floor((mainDrawSize || 0) / 2));
 
+  // Determine the first non-GROUPS round's stage name for display
+  const rounds = (tournament as any)?.rounds as Array<any> | undefined;
+  let firstRoundStageName = `R${matchesCount}`;
+  if (Array.isArray(rounds) && rounds.length > 0) {
+    const firstBracket = rounds.find((r) => r?.stage && r.stage !== 'GROUPS');
+    if (firstBracket && firstBracket.stage) {
+      firstRoundStageName = firstBracket.stage;
+    }
+  }
+
   // Build a fixed-size slots array so empty positions are real drop targets.
   // Prefer the saved order from the tournament's first bracket round (teamA/teamB per game),
   // fall back to the raw playerPairs list otherwise.
@@ -104,7 +114,6 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
     const size = matchesCount * 2;
 
     // Try to derive slots from the first non-GROUPS round
-    const rounds = (tournament as any)?.rounds as Array<any> | undefined;
     let derived: Array<PlayerPair | null> | null = null;
     if (Array.isArray(rounds) && rounds.length > 0) {
       const firstBracket = rounds.find((r) => r?.stage && r.stage !== 'GROUPS');
@@ -132,7 +141,7 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
       if (i < size) next[i] = p;
     });
     setSlots(next);
-  }, [tournament, playerPairs, matchesCount]);
+  }, [tournament, playerPairs, matchesCount, rounds]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -226,7 +235,7 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
 
       <div className="flex items-center">
         <div className="h-px flex-1 bg-border my-2" />
-          <h3 className="text-s sm:text-sm uppercase tracking-wider text-muted-foreground select-none">{`R${matchesCount}`}</h3>
+          <h3 className="text-s sm:text-sm uppercase tracking-wider text-muted-foreground select-none">{firstRoundStageName}</h3>
         <div className="h-px flex-1 bg-border" />
       </div>
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { PlayerPair } from '@/src/types/playerPair';
 import { toast } from 'react-toastify';
-import { fetchPairs, savePlayerPairs } from '@/src/api/tournamentApi';
+import { fetchPairs, savePlayerPairs, sortManualPairs } from '@/src/api/tournamentApi';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
 
 interface Props {
@@ -21,7 +21,7 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
   const fetchUpdatedPairs = async () => {
     setIsLoading(true);
     try {
-      const data = await fetchPairs(tournamentId);
+      const data = await fetchPairs(tournamentId, false);
       setText(data.map(pair => `${pair.player1Name},${pair.player2Name},${pair.displaySeed}`).join('\n'));
       if (onPairsChange) onPairsChange(data);
     } catch (e: any) {
@@ -64,6 +64,7 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
       });
 
       await savePlayerPairs(tournamentId, pairs);
+      await sortManualPairs(tournamentId);
     } catch {
       return;
     } finally {
@@ -71,10 +72,6 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
     }
 
     await fetchUpdatedPairs();
-
-    if (onSaveSuccess) {
-      onSaveSuccess();
-    }
   };
 
   return (

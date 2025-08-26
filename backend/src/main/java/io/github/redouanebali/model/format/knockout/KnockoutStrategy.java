@@ -2,6 +2,7 @@ package io.github.redouanebali.model.format.knockout;
 
 import io.github.redouanebali.dto.request.InitializeDrawRequest;
 import io.github.redouanebali.dto.request.PlayerPairRequest;
+import io.github.redouanebali.dto.request.RoundRequest;
 import io.github.redouanebali.generation.KnockoutRoundGenerator;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
@@ -55,7 +56,7 @@ public class KnockoutStrategy implements FormatStrategy {
     }
     Round firstBracket = rounds.get(0);
 
-    var providedFirst = req.getRounds().get(0);
+    RoundRequest providedFirst = req.getRounds().get(0);
 
     // Replace games with the ones provided
     firstBracket.getGames().clear();
@@ -77,6 +78,15 @@ public class KnockoutStrategy implements FormatStrategy {
       for (PlayerPair p : t.getPlayerPairs()) {
         if (slot.getPairId().equals(p.getId())) {
           return p; // reuse existing entity so names/seeds are present
+        }
+      }
+    }
+    // For BYE/QUALIFIER: try to find a matching managed one in the tournament, otherwise create new
+    if ((slot.isBye() || slot.isQualifier()) && slot.getPairId() == null) {
+      for (PlayerPair p : t.getPlayerPairs()) {
+        if (p.getId() != null && ((slot.isBye() && p.isBye()) || (slot.isQualifier() && p.isQualifier()))) {
+          // Optionally, match on additional fields, but BYE/QUALIFIER is enough for uniqueness in this context
+          return p;
         }
       }
     }

@@ -1,12 +1,12 @@
 package io.github.redouanebali.service;
 
 import io.github.redouanebali.dto.request.InitializeDrawRequest;
-import io.github.redouanebali.generation.KnockoutRoundGenerator;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.FormatStrategy;
 import io.github.redouanebali.model.format.TournamentFormat;
+import io.github.redouanebali.repository.PlayerPairRepository;
 import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
@@ -26,6 +26,7 @@ public class DrawGenerationService {
 
   private final TournamentRepository tournamentRepository;
   private final SecurityProps        securityProps;
+  private final PlayerPairRepository playerPairRepository;
 
   public static List<PlayerPair> capPairsToMax(Tournament tournament) {
     List<PlayerPair> pairs    = tournament.getPlayerPairs();
@@ -78,10 +79,14 @@ public class DrawGenerationService {
       throw new IllegalArgumentException("InitializeDrawRequest.rounds must contain at least one round");
     }
 
-    // Pad with BYEs to reach the main draw size before building structure
-    int                    mainDrawSize = tournament.getConfig().getMainDrawSize();
-    KnockoutRoundGenerator generator    = new KnockoutRoundGenerator(tournament.getConfig().getNbSeeds());
-    generator.addMissingByePairsToReachPowerOfTwo(tournament.getPlayerPairs(), tournament.getPlayerPairs().size());
+    // Persist any BYE/QUALIFIER pairs that haven't been persisted yet (id==null)
+    // (in case they are present in the manual assignment)
+    List<PlayerPair> specialPairs = tournament.getPlayerPairs().stream()
+                                              .filter(pp -> (pp.isBye() || pp.isQualifier()) && pp.getId() == null)
+                                              .toList();
+    if (!specialPairs.isEmpty()) {
+      playerPairRepository.saveAll(specialPairs);
+    }
 
     // Build the whole structure (manual = true keeps first round empty/placeholder)
     buildStructure(tournament);

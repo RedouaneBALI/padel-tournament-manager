@@ -92,7 +92,7 @@ public class PlayerPair {
     }
     PlayerPair p = new PlayerPair();
     p.setId(req.getPairId());
-    p.setType(PairType.valueOf(req.getType()));
+    p.setType(req.getType());
     return p;
   }
 

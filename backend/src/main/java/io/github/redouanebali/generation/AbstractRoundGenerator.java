@@ -22,14 +22,80 @@ public abstract class AbstractRoundGenerator implements RoundGenerator {
 
   private final int nbSeeds;
 
+  /**
+   * Compute recursively the positions of the seeds in a tournament
+   *
+   * @param nbTeams total number of teams
+   * @param nbSeeds number of seeds teams
+   * @return list of the positions of the seeds
+   */
+  public static List<Integer> getSeedsPositions(int nbTeams, int nbSeeds) {
+    List<Integer> allPositions = generateAllSeedPositions(nbTeams);
+    return allPositions.subList(0, Math.min(nbSeeds, allPositions.size()));
+  }
+
+  /**
+   * Generate all the possible position recursively from the bracket structure
+   */
+  private static List<Integer> generateAllSeedPositions(int nbTeams) {
+    if (nbTeams <= 1) {
+      return Collections.singletonList(0);
+    }
+
+    int powerOfTwo = 1;
+    while (powerOfTwo < nbTeams) {
+      powerOfTwo *= 2;
+    }
+
+    List<Integer> fullPositions = generatePerfectSeedPositions(powerOfTwo);
+
+    return fullPositions.subList(0, nbTeams);
+  }
+
+  /**
+   * Génère les positions des seeds pour un bracket parfait (nbTeams doit être une puissance de 2)
+   */
+  private static List<Integer> generatePerfectSeedPositions(int nbTeams) {
+    if (nbTeams == 1) {
+      return Collections.singletonList(0);
+    }
+
+    List<Integer> prev   = generatePerfectSeedPositions(nbTeams / 2);
+    List<Integer> result = new ArrayList<>();
+
+    for (int i = 0; i < prev.size(); i++) {
+      int pos = prev.get(i);
+      if (i % 2 == 0) {
+        // Pour les indices pairs, on met la position en première moitié
+        result.add(pos);
+        result.add(nbTeams - 1 - pos);
+      } else {
+        // Pour les indices impairs, on inverse l'ordre
+        result.add(nbTeams - 1 - pos);
+        result.add(pos);
+      }
+    }
+
+    return result;
+  }
+
   public void addMissingByePairsToReachPowerOfTwo(List<PlayerPair> pairs, int currentSize) {
     int powerOfTwo = 1;
     while (powerOfTwo < currentSize) {
       powerOfTwo *= 2;
     }
     int missing = powerOfTwo - currentSize;
-    for (int i = 0; i < missing; i++) {
-      pairs.add(PlayerPair.bye());
+    if (missing <= 0) {
+      return;
+    }
+    // Get the positions where BYEs should be inserted, using the same logic as for seeds.
+    List<Integer> byePositions = getSeedsPositions(powerOfTwo, missing);
+    // Insert BYEs at the computed positions.
+    // Since inserting at index shifts subsequent indices, sort in descending order.
+    byePositions = new ArrayList<>(byePositions);
+    byePositions.sort(Collections.reverseOrder());
+    for (int pos : byePositions) {
+      pairs.add(pos, PlayerPair.bye());
     }
   }
 
@@ -144,63 +210,6 @@ public abstract class AbstractRoundGenerator implements RoundGenerator {
              .filter(p -> !seeds.contains(p) && !byeTeams.contains(p))
              .toList()
     );
-  }
-
-  /**
-   * Compute recursively the positions of the seeds in a tournament
-   *
-   * @param nbTeams total number of teams
-   * @param nbSeeds number of seeds teams
-   * @return list of the positions of the seeds
-   */
-  public List<Integer> getSeedsPositions(int nbTeams, int nbSeeds) {
-    List<Integer> allPositions = generateAllSeedPositions(nbTeams);
-    return allPositions.subList(0, Math.min(nbSeeds, allPositions.size()));
-  }
-
-  /**
-   * Generate all the possible position recursively from the bracket structure
-   */
-  private List<Integer> generateAllSeedPositions(int nbTeams) {
-    if (nbTeams <= 1) {
-      return Collections.singletonList(0);
-    }
-
-    int powerOfTwo = 1;
-    while (powerOfTwo < nbTeams) {
-      powerOfTwo *= 2;
-    }
-
-    List<Integer> fullPositions = generatePerfectSeedPositions(powerOfTwo);
-
-    return fullPositions.subList(0, nbTeams);
-  }
-
-  /**
-   * Génère les positions des seeds pour un bracket parfait (nbTeams doit être une puissance de 2)
-   */
-  private List<Integer> generatePerfectSeedPositions(int nbTeams) {
-    if (nbTeams == 1) {
-      return Collections.singletonList(0);
-    }
-
-    List<Integer> prev   = generatePerfectSeedPositions(nbTeams / 2);
-    List<Integer> result = new ArrayList<>();
-
-    for (int i = 0; i < prev.size(); i++) {
-      int pos = prev.get(i);
-      if (i % 2 == 0) {
-        // Pour les indices pairs, on met la position en première moitié
-        result.add(pos);
-        result.add(nbTeams - 1 - pos);
-      } else {
-        // Pour les indices impairs, on inverse l'ordre
-        result.add(nbTeams - 1 - pos);
-        result.add(pos);
-      }
-    }
-
-    return result;
   }
 
 }

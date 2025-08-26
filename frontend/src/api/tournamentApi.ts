@@ -63,8 +63,8 @@ export async function fetchRounds(tournamentId: string): Promise<Round[]> {
   return await response.json();
 }
 
-export async function fetchPairs(tournamentId: string): Promise<PlayerPair[]> {
-  const response = await fetch(api(`/tournaments/${tournamentId}/pairs`));
+export async function fetchPairs(tournamentId: string, includeByes: boolean = false): Promise<PlayerPair[]> {
+  const response = await fetch(api(`/tournaments/${tournamentId}/pairs?includeByes=${includeByes}`));
   if (!response.ok) {
     throw new Error('Erreur de récupération des PlayerPair');
   }
@@ -193,19 +193,37 @@ export async function generateDraw(tournamentId: string, manual: boolean) {
 }
 
 export async function initializeDraw(tournamentId: string, payload: InitializeDrawRequest) {
-  console.log(payload);
+  var json = JSON.stringify(payload);
+  console.log(json);
   const response = await fetchWithAuth(api(`/admin/tournaments/${tournamentId}/draw/initialize`), {
     method: 'POST',
     body: JSON.stringify(payload),
   });
-
+  console.log(response);
   if (!response.ok) {
     const text = await response.text().catch(() => '');
     toast.error("Erreur lors de l'initialisation manuelle du tirage.");
+    console.log("Erreur lors de l'initialisation manuelle du tirage.");
     throw new Error(`Erreur lors de l'initialisation du tirage (${response.status}) ${text}`);
+    console.log(`Erreur lors de l'initialisation du tirage (${response.status}) ${text}`);
   }
 
   toast.success('Tirage initialisé !');
+  return await response.json();
+}
+
+export async function sortManualPairs(tournamentId: string) {
+  const response = await fetchWithAuth(api(`/admin/tournaments/${tournamentId}/pairs/sort-manual`), {
+    method: 'POST',
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    toast.error("Erreur lors du tri manuel des paires.");
+    throw new Error(`Erreur lors du tri manuel des paires (${response.status}) ${text}`);
+  }
+
+  toast.success('Paires triées manuellement avec succès.');
   return await response.json();
 }
 
@@ -226,4 +244,14 @@ export async function updatePlayerPair(
     throw new Error(`HTTP_${res.status} ${text}`);
   }
   // 200 OK with no body expected
+}
+
+export async function fetchGamesByStage(tournamentId: string, stage: string) {
+  console.log(`Fetching games for tournament ${tournamentId}, stage ${stage}`);
+  const response = await fetch(api(`/tournaments/${tournamentId}/rounds/${stage}/games`));
+  if (!response.ok) {
+    toast.error('Erreur lors du chargement des matchs.');
+    throw new Error('Erreur lors du chargement des matchs.');
+  }
+  return await response.json();
 }

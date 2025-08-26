@@ -6,7 +6,7 @@ import PlayerPairsTextarea from '@/src/components/tournament/players/PlayerPairs
 import PlayerPairsList from '@/src/components/tournament/players/PlayerPairsList';
 import { useRouter } from 'next/navigation';
 import { confirmAlert } from 'react-confirm-alert';
-import { generateDraw, initializeDraw } from '@/src/api/tournamentApi';
+import { generateDraw, initializeDraw, sortManualPairs } from '@/src/api/tournamentApi';
 import type { InitializeDrawRequest } from '@/src/types/api/InitializeDrawRequest';
 import { FileText } from 'lucide-react';
 import { PlayerPair } from '@/src/types/playerPair';
@@ -74,12 +74,10 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
                   };
                 });
 
-                console.log("tournament");
-                console.log(tournament);
                 const payload: InitializeDrawRequest = {
                   rounds: [
                     {
-                      stage: (tournament?.rounds?.[0]?.stage) ?? undefined as any,
+                      stage: tournament?.rounds?.[0]?.stage ?? undefined as any,
                       games,
                     },
                   ],
@@ -125,7 +123,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
     async function loadPairs() {
       setLoadingPairs(true);
       try {
-        const data = await fetchPairs(tournamentId);
+        const data = await fetchPairs(tournamentId, false);
         if (!cancelled) setPairs(data);
       } finally {
         if (!cancelled) setLoadingPairs(false);
@@ -152,6 +150,11 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
       }
     };
   }, []);
+
+  // Handle save success: only switch to assignment tab
+  async function handleSaveSuccess() {
+    setActiveTab('assignment');
+  }
 
   const showGenerateButton = !tournamentStarted && !loadingTournament && !loadingPairs && (
     (!manual) || (manual && activeTab === 'assignment')
@@ -226,12 +229,12 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
                       onPairsChange={setPairs}
                       tournamentId={tournamentId}
                       hasStarted={tournamentStarted}
-                      onSaveSuccess={() => setActiveTab('assignment')}
+                      onSaveSuccess={handleSaveSuccess}
                     />
                   </>
                 )
               ) : (
-                <AdminTournamentPlayerAssignment tournament={tournament} playerPairs={pairs} />
+                <AdminTournamentPlayerAssignment tournament={tournament} />
               )}
             </>
           )}
