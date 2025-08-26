@@ -22,16 +22,14 @@ public abstract class AbstractRoundGenerator implements RoundGenerator {
 
   private final int nbSeeds;
 
-  public void addMissingByePairsToReachPowerOfTwo(List<PlayerPair> pairs, int originalSize) {
+  public void addMissingByePairsToReachPowerOfTwo(List<PlayerPair> pairs, int currentSize) {
     int powerOfTwo = 1;
-    while (powerOfTwo < originalSize) {
+    while (powerOfTwo < currentSize) {
       powerOfTwo *= 2;
     }
-    int missing = powerOfTwo - originalSize;
-
+    int missing = powerOfTwo - currentSize;
     for (int i = 0; i < missing; i++) {
-      PlayerPair bye = PlayerPair.bye();
-      pairs.add(bye);
+      pairs.add(PlayerPair.bye());
     }
   }
 

@@ -17,8 +17,7 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
   }
 
   public List<Round> generateRounds(List<PlayerPair> pairs, boolean manual) {
-    int originalSize = pairs.size();
-    addMissingByePairsToReachPowerOfTwo(pairs, originalSize);
+    addMissingByePairsToReachPowerOfTwo(pairs, pairs.size());
     Stage       start  = Stage.fromNbTeams(pairs.size());
     List<Round> rounds = buildBracketFrom(start, pairs.size());
     Round       first  = rounds.getFirst();

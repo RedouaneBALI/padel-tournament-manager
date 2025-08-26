@@ -1,6 +1,7 @@
 package io.github.redouanebali.service;
 
 import io.github.redouanebali.dto.request.InitializeDrawRequest;
+import io.github.redouanebali.generation.KnockoutRoundGenerator;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
@@ -76,6 +77,11 @@ public class DrawGenerationService {
     if (request == null || request.getRounds() == null || request.getRounds().isEmpty()) {
       throw new IllegalArgumentException("InitializeDrawRequest.rounds must contain at least one round");
     }
+
+    // Pad with BYEs to reach the main draw size before building structure
+    int                    mainDrawSize = tournament.getConfig().getMainDrawSize();
+    KnockoutRoundGenerator generator    = new KnockoutRoundGenerator(tournament.getConfig().getNbSeeds());
+    generator.addMissingByePairsToReachPowerOfTwo(tournament.getPlayerPairs(), tournament.getPlayerPairs().size());
 
     // Build the whole structure (manual = true keeps first round empty/placeholder)
     buildStructure(tournament);
