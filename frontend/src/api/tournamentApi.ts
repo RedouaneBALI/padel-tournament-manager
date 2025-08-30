@@ -194,18 +194,14 @@ export async function generateDraw(tournamentId: string, manual: boolean) {
 
 export async function initializeDraw(tournamentId: string, payload: InitializeDrawRequest) {
   var json = JSON.stringify(payload);
-  console.log(json);
   const response = await fetchWithAuth(api(`/admin/tournaments/${tournamentId}/draw/initialize`), {
     method: 'POST',
     body: JSON.stringify(payload),
   });
-  console.log(response);
   if (!response.ok) {
     const text = await response.text().catch(() => '');
     toast.error("Erreur lors de l'initialisation manuelle du tirage.");
-    console.log("Erreur lors de l'initialisation manuelle du tirage.");
     throw new Error(`Erreur lors de l'initialisation du tirage (${response.status}) ${text}`);
-    console.log(`Erreur lors de l'initialisation du tirage (${response.status}) ${text}`);
   }
 
   toast.success('Tirage initialisé !');
@@ -223,7 +219,6 @@ export async function sortManualPairs(tournamentId: string) {
     throw new Error(`Erreur lors du tri manuel des paires (${response.status}) ${text}`);
   }
 
-  toast.success('Paires triées manuellement avec succès.');
   return await response.json();
 }
 

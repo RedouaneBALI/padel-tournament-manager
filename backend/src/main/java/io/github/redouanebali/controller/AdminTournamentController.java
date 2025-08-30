@@ -14,6 +14,7 @@ import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
+import io.github.redouanebali.service.DrawGenerationService;
 import io.github.redouanebali.service.GameService;
 import io.github.redouanebali.service.MatchFormatService;
 import io.github.redouanebali.service.PlayerPairService;
@@ -51,12 +52,13 @@ import org.springframework.web.bind.annotation.RestController;
 @PreAuthorize("isAuthenticated()")
 public class AdminTournamentController {
 
-  private final TournamentService  tournamentService;
-  private final PlayerPairService  playerPairService;
-  private final GameService        gameService;
-  private final MatchFormatService matchFormatService;
-  private final SecurityProps      securityProps;
-  private final TournamentMapper   tournamentMapper;
+  private final TournamentService     tournamentService;
+  private final PlayerPairService     playerPairService;
+  private final DrawGenerationService drawGenerationService;
+  private final GameService           gameService;
+  private final MatchFormatService    matchFormatService;
+  private final SecurityProps         securityProps;
+  private final TournamentMapper      tournamentMapper;
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<TournamentDTO> createTournament(@RequestBody @Valid Tournament tournament) {
@@ -165,7 +167,7 @@ public class AdminTournamentController {
   @PostMapping(path = "/{id}/pairs/sort-manual")
   public TournamentDTO sortManualPairs(@PathVariable Long id) {
     checkOwnership(id);
-    Tournament tournament = playerPairService.sortManualPairs(id);
+    Tournament tournament = drawGenerationService.sortManualPairs(id);
     return tournamentMapper.toDTO(tournament);
   }
 
