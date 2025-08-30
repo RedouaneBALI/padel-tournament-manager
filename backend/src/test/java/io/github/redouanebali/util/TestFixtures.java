@@ -12,7 +12,11 @@ import io.github.redouanebali.model.SetScore;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -36,6 +40,20 @@ public final class TestFixtures {
     List<PlayerPair> pairs = new ArrayList<>();
     IntStream.rangeClosed(1, count).forEach(seed -> pairs.add(buildPairWithSeed(seed)));
     return pairs;
+  }
+
+  /**
+   * Utility to build a round with nbTeams/2 empty games.
+   *
+   * @param nbTeams total number of teams (power of two)
+   * @return a Round containing nbTeams/2 empty Game instances
+   */
+  public static Round buildEmptyRound(int nbTeams) {
+    Round round = new Round();
+    for (int i = 0; i < nbTeams / 2; i++) {
+      round.getGames().add(new Game());
+    }
+    return round;
   }
 
   /**
@@ -147,8 +165,8 @@ public final class TestFixtures {
     }
   }
 
-  public static java.util.Set<PlayerPair> teamsInRound(Round r) {
-    java.util.Set<PlayerPair> teams = new java.util.HashSet<>();
+  public static Set<PlayerPair> teamsInRound(Round r) {
+    Set<PlayerPair> teams = new HashSet<>();
     for (Game g : r.getGames()) {
       if (g.getTeamA() != null) {
         teams.add(g.getTeamA());
@@ -158,5 +176,19 @@ public final class TestFixtures {
       }
     }
     return teams;
+  }
+
+  public static List<Stage> parseStages(String stagesCsv) {
+    return Arrays.stream(stagesCsv.split(";"))
+                 .map(String::trim)
+                 .map(Stage::valueOf)
+                 .collect(Collectors.toList());
+  }
+
+  public static List<Integer> parseInts(String csv) {
+    return Arrays.stream(csv.split(";"))
+                 .map(String::trim)
+                 .map(Integer::parseInt)
+                 .collect(Collectors.toList());
   }
 }

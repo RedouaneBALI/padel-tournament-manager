@@ -1,15 +1,17 @@
 package io.github.redouanebali.generationV2;
 
+import static io.github.redouanebali.util.TestFixtures.buildEmptyRound;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.DrawMode;
 import io.github.redouanebali.model.format.TournamentFormatConfig;
 import io.github.redouanebali.util.TestFixtures;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -60,11 +62,11 @@ public class KnockoutPhaseTests {
     );
 
     // Act
-    Tournament initialized = phase.initialize(t);
+    List<Round> initialized = phase.initialize(t);
 
     // Assert
     List<String> expectedStages = Arrays.asList(expectedStagesStr.split(";"));
-    List<String> actualStages = initialized.getRounds().stream()
+    List<String> actualStages = initialized.stream()
                                            .map(r -> r.getStage().name())
                                            .toList();
 
@@ -76,7 +78,7 @@ public class KnockoutPhaseTests {
                                           .map(Integer::parseInt)
                                           .toList();
 
-    List<Integer> actualMatches = initialized.getRounds().stream()
+    List<Integer> actualMatches = initialized.stream()
                                              .map(r -> r.getGames() == null ? 0 : r.getGames().size())
                                              .toList();
 
@@ -137,11 +139,8 @@ public class KnockoutPhaseTests {
       "16, 4"
   })
   void testPlaceSeedTeamsMapping(int nbTeams, int nbSeeds) {
-    // Arrange: build empty games (nbTeams/2 matches)
-    List<Game> games = new ArrayList<>(nbTeams / 2);
-    for (int i = 0; i < nbTeams / 2; i++) {
-      games.add(new Game());
-    }
+    // Arrange: build a round with nbTeams/2 empty games
+    Round round = buildEmptyRound(nbTeams);
 
     // Build pairs sorted by ascending seed
     List<PlayerPair> pairs = TestFixtures.createPairs(nbTeams);
@@ -154,8 +153,8 @@ public class KnockoutPhaseTests {
         DrawMode.SEEDED
     );
 
-    // Act: place seeds into the game list
-    knockoutPhase.placeSeedTeams(games, pairs, nbSeeds);
+    // Act: place seeds into the round
+    knockoutPhase.placeSeedTeams(round, pairs, nbSeeds);
 
     // Oracle: use getSeedsPositions for the slot indices, then check the mapping slot -> (game, side)
     List<Integer> seedSlots = knockoutPhase.getSeedsPositions(nbTeams, nbSeeds);
@@ -166,7 +165,7 @@ public class KnockoutPhaseTests {
       int     gameIndex = slot / 2;
       boolean left      = (slot % 2 == 0);
 
-      Game       g            = games.get(gameIndex);
+      Game       g            = round.getGames().get(gameIndex);
       PlayerPair expectedPair = pairs.get(i); // i-th best seed
 
       if (left) {
@@ -184,7 +183,7 @@ public class KnockoutPhaseTests {
       }
       int     gameIndex = slot / 2;
       boolean left      = (slot % 2 == 0);
-      Game    g         = games.get(gameIndex);
+      Game    g         = round.getGames().get(gameIndex);
       if (left) {
         assertNull(g.getTeamA(), "Non-seed slot should be empty on TEAM_A of game " + gameIndex);
       } else {
@@ -221,10 +220,7 @@ public class KnockoutPhaseTests {
   })
   void testPlaceSeedTeamsDoesNothingWhenNoSeeds(int nbTeams) {
     // Arrange
-    List<Game> games = new ArrayList<>(nbTeams / 2);
-    for (int i = 0; i < nbTeams / 2; i++) {
-      games.add(new Game());
-    }
+    Round            round = buildEmptyRound(nbTeams);
     List<PlayerPair> pairs = TestFixtures.createPairs(nbTeams);
 
     int nbRounds = (int) (Math.log(nbTeams) / Math.log(2));
@@ -236,13 +232,100 @@ public class KnockoutPhaseTests {
     );
 
     // Act
-    knockoutPhase.placeSeedTeams(games, pairs, 0);
+    knockoutPhase.placeSeedTeams(round, pairs, 0);
 
     // Assert: every slot remains empty (no seed was placed)
-    for (Game g : games) {
+    for (Game g : round.getGames()) {
       assertNull(g.getTeamA(), "TEAM_A should be empty when nbSeeds=0");
       assertNull(g.getTeamB(), "TEAM_B should be empty when nbSeeds=0");
     }
   }
 
+
+  @ParameterizedTest(name = "placeByeTeams AUTO: drawSize={0}, nbSeeds={1}, totalPairs={2}")
+  @CsvSource({
+      // drawSize, nbSeeds, totalPairs
+      "32, 16, 24",
+      "32, 8, 20"
+  })
+  void testPlaceByeTeams_AutoSeeds(int drawSize, int nbSeeds, int totalPairs) {
+    // Arrange: build empty round and create seeded pairs
+    Round            round = buildEmptyRound(drawSize);
+    List<PlayerPair> pairs = TestFixtures.createPairs(drawSize);
+    pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
+
+    KnockoutPhase phase = new KnockoutPhase(drawSize, nbSeeds, PhaseType.MAIN_DRAW, DrawMode.SEEDED);
+
+    // Place seeds automatically (auto mode)
+    phase.placeSeedTeams(round, pairs, nbSeeds);
+
+    // Act: place BYEs based on the number of registered pairs
+    phase.placeByeTeams(round, totalPairs, drawSize, nbSeeds);
+
+    // Assert: BYE count
+    int expectedByes = drawSize - totalPairs;
+    long actualByes = round.getGames().stream()
+                           .flatMap(g -> java.util.stream.Stream.of(g.getTeamA(), g.getTeamB()))
+                           .filter(p -> p != null && p.isBye())
+                           .count();
+    assertEquals(expectedByes, actualByes, "Unexpected BYE count in AUTO mode");
+
+    // BYEs should face the top seeds, in order, until BYEs are exhausted
+    List<Integer> seedSlots = phase.getSeedsPositions(drawSize, nbSeeds);
+    for (int i = 0; i < Math.min(expectedByes, seedSlots.size()); i++) {
+      int     slot      = seedSlots.get(i);
+      int     gameIndex = slot / 2;
+      boolean left      = (slot % 2 == 0);
+      Game    g         = round.getGames().get(gameIndex);
+      if (left) {
+        assertTrue(g.getTeamB() != null && g.getTeamB().isBye(), "BYE must face seed#" + (i + 1));
+      } else {
+        assertTrue(g.getTeamA() != null && g.getTeamA().isBye(), "BYE must face seed#" + (i + 1));
+      }
+    }
+  }
+
+  @ParameterizedTest(name = "placeByeTeams MANUAL(declared seeds, none placed): drawSize={0}, nbSeeds={1}, totalPairs={2}")
+  @CsvSource({
+      // drawSize, nbSeeds, totalPairs
+      "32, 16, 24",  // 8 BYEs opposite top 8 seed slots
+      "64, 16, 40",  // 24 BYEs; start opposite seeds then remaining distribution
+      "64, 32, 48"   // 16 BYEs opposite 32 seed slots (first 16 covered)
+  })
+  void testPlaceByeTeams_ManualDeclaredSeedsButNotPlaced(int drawSize, int nbSeeds, int totalPairs) {
+    // Arrange: round is empty; admin declared seeds count, but hasn't placed teams yet
+    Round         round = buildEmptyRound(drawSize);
+    KnockoutPhase phase = new KnockoutPhase(drawSize, nbSeeds, PhaseType.MAIN_DRAW, DrawMode.SEEDED);
+
+    // Act
+    phase.placeByeTeams(round, totalPairs, drawSize, nbSeeds);
+
+    // Assert: BYE count
+    int expectedByes = drawSize - totalPairs;
+    long actualByes = round.getGames().stream()
+                           .flatMap(g -> java.util.stream.Stream.of(g.getTeamA(), g.getTeamB()))
+                           .filter(p -> p != null && p.isBye())
+                           .count();
+    assertEquals(expectedByes, actualByes, "Unexpected BYE count in MANUAL declared-seeds mode");
+
+    // BYEs must be opposite to the first min(expectedByes, nbSeeds) theoretical seed slots
+    List<Integer> seedSlots = phase.getSeedsPositions(drawSize, nbSeeds);
+    for (int i = 0; i < Math.min(expectedByes, seedSlots.size()); i++) {
+      int     slot      = seedSlots.get(i);
+      int     gameIndex = slot / 2;
+      boolean left      = (slot % 2 == 0);
+      Game    g         = round.getGames().get(gameIndex);
+      if (left) {
+        // seed would be on TEAM_A; BYE must appear on TEAM_B
+        assertTrue(g.getTeamB() != null && g.getTeamB().isBye(), "BYE must face seed slot #" + (i + 1));
+        // and seed slot remains empty for the admin to fill later
+        assertTrue(g.getTeamA() == null || g.getTeamA().isBye(),
+                   "Seed slot should be empty or BYE (staggered entries may create BYE vs BYE)");
+      } else {
+        assertTrue(g.getTeamA() != null && g.getTeamA().isBye(), "BYE must face seed slot #" + (i + 1));
+        assertTrue(g.getTeamB() == null || g.getTeamB().isBye(),
+                   "Seed slot should be empty or BYE (staggered entries may create BYE vs BYE)");
+      }
+    }
+  }
 }

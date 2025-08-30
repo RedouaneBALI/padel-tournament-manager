@@ -66,6 +66,19 @@ public class Round {
     this.games.addAll(games);
   }
 
+  /**
+   * Replace the current list of games, preserving the same List instance (JPA-friendly). This method clears the existing collection and appends the
+   * provided games in order.
+   *
+   * @param games the games to assign (null is treated as empty)
+   */
+  public void replaceGames(List<Game> games) {
+    this.games.clear();
+    if (games != null && !games.isEmpty()) {
+      this.games.addAll(games);
+    }
+  }
+
   public void addPools(List<Pool> pools) {
     this.pools.addAll(pools);
   }

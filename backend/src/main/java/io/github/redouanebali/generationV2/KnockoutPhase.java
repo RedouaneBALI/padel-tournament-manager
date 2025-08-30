@@ -23,7 +23,12 @@ public class KnockoutPhase implements TournamentPhase {
 
 
   @Override
-  public Tournament initialize(final Tournament t) {
+  public List<String> validate(final Tournament tournament) {
+    return List.of();
+  }
+
+  @Override
+  public List<Round> initialize(final Tournament t) {
     // 0) Sanity
     if (t == null) {
       throw new IllegalArgumentException("tournament is null");
@@ -42,33 +47,29 @@ public class KnockoutPhase implements TournamentPhase {
         if (nbQualifiers <= 0 || (nbQualifiers & (nbQualifiers - 1)) != 0 || nbQualifiers > drawSize) {
           throw new IllegalArgumentException("nbQualifiers must be a power of two in (0, drawSize]");
         }
-        // 2) build Q1..Qn
-        int slots  = drawSize; // preQual draw size
+        // 2) build Q1..Qn, stop at Q3 or when games==nbQualifiers
+        int slots  = drawSize; // pre-qual draw size
         int qIndex = 1;
-        while (slots / 2 >= nbQualifiers) { // stop when games==nbQualifiers
-          rounds.add(buildRound(qualifStage(qIndex), slots / 2));
+        // Stop when games == nbQualifiers OR when reaching Q3 as per specs
+        while (slots / 2 >= nbQualifiers && qIndex <= 3) {
+          rounds.add(buildRound(Stage.fromQualifIndex(qIndex), slots / 2));
           slots /= 2;
           qIndex++;
         }
       }
       case MAIN_DRAW -> {
-        // build R64 / R32 / ... / FINALE
-        int   slots = drawSize;
-        Stage stage = stageForSlots(slots); // R64/R32/R16/QUARTERS/SEMIS/FINALE
+        // Build R64 / R32 / ... / FINAL using enum mapping
+        int slots = drawSize;
         while (slots >= 2) {
+          Stage stage = Stage.fromNbTeams(slots);
           rounds.add(buildRound(stage, slots / 2));
           slots /= 2;
-          stage = stageForSlots(slots); // next stage label
         }
       }
       default -> throw new IllegalStateException("Unsupported phaseType: " + phaseType);
     }
 
-    // 3) attach to tournament (append or set depending on your model)
-    //    If your Tournament already has a list of rounds per phase,
-    //    either t.getRounds().addAll(rounds) or set them on a phase object.
-    t.getRounds().addAll(rounds);
-    return t;
+    return rounds;
   }
 
   private Round buildRound(Stage stage, int nbGames) {
@@ -78,40 +79,20 @@ public class KnockoutPhase implements TournamentPhase {
     for (int i = 0; i < nbGames; i++) {
       games.add(new Game()); // empty teams, empty score
     }
-    r.getGames().clear();
-    r.getGames().addAll(games); // si tu n’as pas de setter, utilise le builder/all-args
+    // Replace games using Round helper (keeps the same JPA-backed collection instance)
+    r.replaceGames(games);
     return r;
   }
 
-  private Stage qualifStage(int qIndex) {
-    return switch (qIndex) {
-      case 1 -> Stage.Q1;
-      case 2 -> Stage.Q2;
-      case 3 -> Stage.Q3;
-      default -> throw new IllegalArgumentException("App supports up to Q3 as per specs");
-    };
-  }
-
-  private Stage stageForSlots(int slots) {
-    return switch (slots) {
-      case 64 -> Stage.R64;
-      case 32 -> Stage.R32;
-      case 16 -> Stage.R16;
-      case 8 -> Stage.QUARTERS;
-      case 4 -> Stage.SEMIS;
-      case 2 -> Stage.FINAL;
-      case 1 -> Stage.WINNER;
-      default -> throw new IllegalArgumentException("Unsupported slots: " + slots);
-    };
-  }
 
   @Override
-  public Round placeSeedTeams(final List<Game> games, final List<PlayerPair> playerPairs, final int nbSeedsArg) {
-    if (games == null || playerPairs == null) {
-      throw new IllegalArgumentException("games and playerPairs must not be null");
+  public void placeSeedTeams(final Round round, final List<PlayerPair> playerPairs, final int nbSeedsArg) {
+    if (round == null || round.getGames() == null || playerPairs == null) {
+      throw new IllegalArgumentException("round/games and playerPairs must not be null");
     }
 
-    final int drawSlots = games.size() * 2;
+    final List<Game> games     = round.getGames();
+    final int        drawSlots = games.size() * 2;
     if (this.drawSize != 0 && this.drawSize != drawSlots) {
       throw new IllegalStateException("Configured drawSize=" + this.drawSize + " but games provide drawSlots=" + drawSlots);
     }
@@ -148,12 +129,6 @@ public class KnockoutPhase implements TournamentPhase {
         }
       }
     }
-
-    // Return a Round containing these games (reuse existing if present)
-    Round r = new Round();
-    r.getGames().clear();
-    r.getGames().addAll(games);
-    return r;
   }
 
 
@@ -164,13 +139,163 @@ public class KnockoutPhase implements TournamentPhase {
   }
 
   @Override
-  public Round placeByeTeams(final List<Game> games, final int totalPairs, final int drawSize, final int nbSeeds) {
-    return null;
+  public void placeByeTeams(final Round round,
+                            final int totalPairs,
+                            final int drawSize,
+                            final int nbSeeds) {
+    if (round == null || round.getGames() == null) {
+      throw new IllegalArgumentException("round/games must not be null");
+    }
+
+    final List<Game> games = round.getGames();
+
+    // Sanity checks
+    final int slots = games.size() * 2;
+    if (slots != drawSize) {
+      throw new IllegalStateException("Round games do not match drawSize: games*2=" + slots + ", drawSize=" + drawSize);
+    }
+    if (drawSize <= 0 || (drawSize & (drawSize - 1)) != 0) {
+      throw new IllegalArgumentException("drawSize must be a power of two");
+    }
+    if (totalPairs > drawSize) {
+      throw new IllegalArgumentException("totalPairs cannot exceed drawSize");
+    }
+
+    // Count how many BYEs are already present in the round to avoid overfilling
+    int existingByes = 0;
+    for (Game g : games) {
+      if (g.getTeamA() != null && g.getTeamA().isBye()) {
+        existingByes++;
+      }
+      if (g.getTeamB() != null && g.getTeamB().isBye()) {
+        existingByes++;
+      }
+    }
+
+    int byesToPlace = Math.max(0, drawSize - totalPairs - existingByes);
+    if (byesToPlace == 0) {
+      return; // nothing to do
+    }
+
+    // Fallback: if no seeds are considered (manual mode), distribute BYEs opposite already placed teams first
+    final int nbSeedsToConsider = Math.max(0, Math.min(nbSeeds, drawSize));
+    if (nbSeedsToConsider == 0) {
+      // Pass 1: for each game with exactly one non-BYE team already placed, put a BYE on the opposite side
+      for (Game g : games) {
+        if (byesToPlace == 0) {
+          break;
+        }
+        boolean aOccupied = g.getTeamA() != null && !g.getTeamA().isBye();
+        boolean bOccupied = g.getTeamB() != null && !g.getTeamB().isBye();
+        if (aOccupied ^ bOccupied) {
+          if (!aOccupied && g.getTeamA() == null) {
+            g.setTeamA(PlayerPair.bye());
+            byesToPlace--;
+          } else if (!bOccupied && g.getTeamB() == null) {
+            g.setTeamB(PlayerPair.bye());
+            byesToPlace--;
+          }
+        }
+      }
+      if (byesToPlace == 0) {
+        return;
+      }
+
+      // Pass 2: fill any remaining empty slots (BYE vs BYE is allowed as last resort)
+      for (Game g : games) {
+        if (byesToPlace == 0) {
+          break;
+        }
+        if (g.getTeamA() == null) {
+          g.setTeamA(PlayerPair.bye());
+          byesToPlace--;
+          if (byesToPlace == 0) {
+            break;
+          }
+        }
+        if (g.getTeamB() == null) {
+          g.setTeamB(PlayerPair.bye());
+          byesToPlace--;
+        }
+      }
+      if (byesToPlace > 0) {
+        throw new IllegalStateException("Not enough empty slots to place all BYEs (manual mode): remaining=" + byesToPlace);
+      }
+      return;
+    }
+    // 1) Prefer placing BYEs opposite to seeded teams (TS1 first, then TS2, ...)
+    final List<Integer> seedSlots = getSeedsPositions(drawSize, nbSeedsToConsider);
+
+    for (int i = 0; i < seedSlots.size() && byesToPlace > 0; i++) {
+      int     slot      = seedSlots.get(i);
+      int     gameIndex = slot / 2;
+      boolean left      = (slot % 2 == 0);
+      Game    g         = games.get(gameIndex);
+
+      if (left) {
+        if (g.getTeamB() == null) {
+          g.setTeamB(PlayerPair.bye());
+          byesToPlace--;
+        }
+      } else {
+        if (g.getTeamA() == null) {
+          g.setTeamA(PlayerPair.bye());
+          byesToPlace--;
+        }
+      }
+    }
+
+    if (byesToPlace == 0) {
+      return;
+    }
+
+    // 2) Fill matches where exactly one side is already occupied (avoid BYE vs BYE when possible)
+    for (Game g : games) {
+      if (byesToPlace == 0) {
+        break;
+      }
+      boolean aEmpty = (g.getTeamA() == null);
+      boolean bEmpty = (g.getTeamB() == null);
+      if (aEmpty ^ bEmpty) { // exactly one empty side
+        if (aEmpty) {
+          g.setTeamA(PlayerPair.bye());
+        } else {
+          g.setTeamB(PlayerPair.bye());
+        }
+        byesToPlace--;
+      }
+    }
+
+    if (byesToPlace == 0) {
+      return;
+    }
+
+    // 3) As a last resort, allow BYE vs BYE to satisfy staggered entries
+    for (Game g : games) {
+      if (byesToPlace == 0) {
+        break;
+      }
+      if (g.getTeamA() == null) {
+        g.setTeamA(PlayerPair.bye());
+        byesToPlace--;
+        if (byesToPlace == 0) {
+          break;
+        }
+      }
+      if (g.getTeamB() == null) {
+        g.setTeamB(PlayerPair.bye());
+        byesToPlace--;
+      }
+    }
+
+    if (byesToPlace > 0) {
+      throw new IllegalStateException("Not enough empty slots to place all BYEs: remaining=" + byesToPlace);
+    }
   }
 
   @Override
-  public Round placeRemainingTeamsRandomly(final List<Game> g, final List<PlayerPair> remainingTeams) {
-    return null;
+  public void placeRemainingTeamsRandomly(final Round round, final List<PlayerPair> remainingTeams) {
+    // TODO implement random placement of remaining teams
   }
 
   @Override

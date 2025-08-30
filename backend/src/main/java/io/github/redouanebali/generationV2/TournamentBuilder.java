@@ -1,28 +1,33 @@
 package io.github.redouanebali.generationV2;
 
+import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class TournamentBuilder {
 
-  public Tournament buildQualifKO(Tournament t) {
-    var cfg = t.getConfig();
+  public List<Round> buildQualifKO(Tournament t) {
+    var         cfg    = t.getConfig();
+    List<Round> rounds = new ArrayList<>();
 
     if (cfg.getPreQualDrawSize() > 0 && cfg.getNbQualifiers() > 0) {
-      t = new KnockoutPhase(
+      List<Round> qualifRounds = new KnockoutPhase(
           cfg.getPreQualDrawSize(),
           cfg.getNbSeedsQualify(),
           PhaseType.QUALIFS,
           cfg.getDrawMode()
       ).initialize(t);
+      rounds.addAll(qualifRounds);
     }
 
-    t = new KnockoutPhase(
+    List<Round> mainDrawRounds = new KnockoutPhase(
         cfg.getMainDrawSize(),
         cfg.getNbSeeds(),
         PhaseType.MAIN_DRAW,
         cfg.getDrawMode()
     ).initialize(t);
-
-    return t;
+    rounds.addAll(mainDrawRounds);
+    return rounds;
   }
 }
