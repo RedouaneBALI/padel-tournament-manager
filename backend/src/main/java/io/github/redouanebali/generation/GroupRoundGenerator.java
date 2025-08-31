@@ -83,9 +83,9 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
     }
     rounds.add(round);
 
-    // finale phase
-    int   nbTeamsInFinaleBracket = this.nbPools * this.nbQualifiedByPool;
-    Stage current                = Stage.fromNbTeams(nbTeamsInFinaleBracket);
+    // FINAL phase
+    int   nbTeamsInFINALBracket = this.nbPools * this.nbQualifiedByPool;
+    Stage current                = Stage.fromNbTeams(nbTeamsInFINALBracket);
     while (current != null && current != Stage.WINNER) {
       round = new Round(current);
 
@@ -190,10 +190,10 @@ public class GroupRoundGenerator extends AbstractRoundGenerator implements Round
   }
 
   private List<Round> createFinalRoundsStructure() {
-    List<Round> finals                 = new ArrayList<>();
-    int         nbTeamsInFinaleBracket = this.nbPools * this.nbQualifiedByPool;
-    Stage       current                = Stage.fromNbTeams(nbTeamsInFinaleBracket);
-    while (current != null && current != Stage.WINNER) {
+    List<Round> finals                = new ArrayList<>();
+    int         nbTeamsInFINALBracket = this.nbPools * this.nbQualifiedByPool;
+    Stage       current               = Stage.fromNbTeams(nbTeamsInFINALBracket);
+    while (current != null && current != Stage.FINAL) {
       Round r = new Round(current);
 
       MatchFormat matchFormat = r.getMatchFormat();

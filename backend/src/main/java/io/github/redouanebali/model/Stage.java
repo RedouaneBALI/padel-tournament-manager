@@ -11,13 +11,12 @@ public enum Stage {
   Q1("Qualifications 1", 0, true, 1),
   Q2("Qualifications 2", 0, true, 2),
   Q3("Qualifications 3", 0, true, 3),
-  R64("1/32 de finale", 64, false, 4),
-  R32("1/16 de finale", 32, false, 5),
-  R16("1/8 de finale", 16, false, 6),
-  QUARTERS("Quart de finale", 8, false, 7),
-  SEMIS("Demi-finale", 4, false, 8),
-  FINAL("Finale", 2, false, 9),
-  WINNER("Vainqueur", 1, false, 10);
+  R64("1/32 de FINAL", 64, false, 4),
+  R32("1/16 de FINAL", 32, false, 5),
+  R16("1/8 de FINAL", 16, false, 6),
+  QUARTERS("Quart de FINAL", 8, false, 7),
+  SEMIS("Demi-FINAL", 4, false, 8),
+  FINAL("FINAL", 2, false, 9);
 
   private final String  label;
   private final int     nbTeams;

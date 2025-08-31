@@ -67,12 +67,12 @@ public interface TournamentPhase {
   void placeRemainingTeamsRandomly(Round round, List<PlayerPair> remainingTeams);
 
   /**
-   * Propagate winners of completed games into the next round of the tournament.
+   * Propagate winners of completed games into the next round of the tournament. This method mutates the provided tournament in place (rounds/games
+   * are updated) and does not return a value.
    *
-   * @param tournament the tournament with results to propagate
-   * @return the updated tournament with winners advanced
+   * @param tournament the tournament whose winners should be advanced to subsequent rounds
    */
-  Tournament propagateWinners(Tournament tournament);
+  void propagateWinners(Tournament tournament);
 
   /**
    * Replace or initialize games for a given round, used in manual mode.

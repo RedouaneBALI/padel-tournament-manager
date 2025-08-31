@@ -49,7 +49,7 @@ public class KnockoutRoundGenerator extends AbstractRoundGenerator {
     LinkedList<Round> rounds         = new LinkedList<>();
     Stage             cur            = start;
     int               teamsThisStage = startNbTeams; // e.g., 8 teams -> 4 matches for QUARTERS
-    while (cur != null && cur != Stage.WINNER) {
+    while (cur != null && cur != Stage.FINAL) {
       Round       r  = new Round(cur);
       MatchFormat mf = r.getMatchFormat();
       if (mf != null && mf.getId() == null) {

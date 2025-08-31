@@ -7,27 +7,42 @@ import java.util.List;
 
 public final class TournamentBuilder {
 
+  private final List<TournamentPhase> phases = new ArrayList<>();
+
   public List<Round> buildQualifKO(Tournament t) {
     var         cfg    = t.getConfig();
     List<Round> rounds = new ArrayList<>();
+    phases.clear();
 
     if (cfg.getPreQualDrawSize() > 0 && cfg.getNbQualifiers() > 0) {
-      List<Round> qualifRounds = new KnockoutPhase(
+      TournamentPhase qualifs = new KnockoutPhase(
           cfg.getPreQualDrawSize(),
           cfg.getNbSeedsQualify(),
           PhaseType.QUALIFS,
           cfg.getDrawMode()
-      ).initialize(t);
-      rounds.addAll(qualifRounds);
+      );
+      rounds.addAll(qualifs.initialize(t));
+      phases.add(qualifs);
     }
 
-    List<Round> mainDrawRounds = new KnockoutPhase(
+    TournamentPhase mainDraw = new KnockoutPhase(
         cfg.getMainDrawSize(),
         cfg.getNbSeeds(),
         PhaseType.MAIN_DRAW,
         cfg.getDrawMode()
-    ).initialize(t);
-    rounds.addAll(mainDrawRounds);
+    );
+    rounds.addAll(mainDraw.initialize(t));
+    phases.add(mainDraw);
+
     return rounds;
+  }
+
+  /**
+   * Propagate winners across all phases sequentially.
+   */
+  public void propagateWinners(Tournament t) {
+    for (TournamentPhase phase : phases) {
+      phase.propagateWinners(t);
+    }
   }
 }

@@ -129,7 +129,7 @@ public abstract class AbstractRoundGenerator implements RoundGenerator {
     LinkedList<Round> rounds         = new LinkedList<>();
     Stage             stage          = start;
     int               teamsThisStage = startTeams;
-    while (stage != null && stage != Stage.WINNER) {
+    while (stage != null && stage != Stage.FINAL) {
       Round       r  = new Round(stage);
       MatchFormat mf = r.getMatchFormat();
       if (mf != null && mf.getId() == null) {

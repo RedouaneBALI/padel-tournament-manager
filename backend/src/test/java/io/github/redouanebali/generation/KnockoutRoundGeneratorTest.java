@@ -55,7 +55,7 @@ public class KnockoutRoundGeneratorTest {
       "64, 60, 32, true",
       "64, 64, 32, true"
   })
-  public void testFullKnockoutStagesUntilFinale(int mainDrawSize, int nbPlayerPairs, int nbSeeds, boolean manualMode) {
+  public void testFullKnockoutStagesUntilFINAL(int mainDrawSize, int nbPlayerPairs, int nbSeeds, boolean manualMode) {
     int nbByePairs = mainDrawSize - nbPlayerPairs;
     generator = new KnockoutRoundGenerator(nbSeeds);
 
@@ -115,7 +115,7 @@ public class KnockoutRoundGeneratorTest {
     Round semis = tournament.getRoundByStage(Stage.SEMIS);
     assertNotNull(semis, "Le round SEMIS doit exister");
     long nullCount = countNullTeams(semis);
-    assertEquals(1, nullCount, "Un seul slot en demi-finale doit rester vide suite au match non terminé");
+    assertEquals(1, nullCount, "Un seul slot en demi-FINAL doit rester vide suite au match non terminé");
   }
 
   @Test
@@ -150,7 +150,7 @@ public class KnockoutRoundGeneratorTest {
     Round semis = tournament.getRoundByStage(Stage.SEMIS);
     assertNotNull(semis, "Le round SEMIS doit exister");
     long semisNullSlots = countNullTeams(semis);
-    assertEquals(0, semisNullSlots, "Tous les slots des demi-finales doivent être déterminés après propagation");
+    assertEquals(0, semisNullSlots, "Tous les slots des demi-FINALs doivent être déterminés après propagation");
 
     // Le round GROUPS ne doit pas contenir d'équipes injectées
     // assertEquals(0, groups.getGames().size(), "Le round GROUPS ne doit pas être peuplé par la propagation KO");
@@ -187,7 +187,7 @@ public class KnockoutRoundGeneratorTest {
   private void validateWinnersForNextRound(Tournament tournament, Stage currentStage, List<PlayerPair> winners) {
     // Si c'est le dernier stage, pas de stage suivant
     Stage nextStage = currentStage.next();
-    if (nextStage == null || nextStage == Stage.WINNER) {
+    if (nextStage == null || nextStage == Stage.FINAL) {
       return;
     }
 
@@ -328,7 +328,7 @@ public class KnockoutRoundGeneratorTest {
     List<PlayerPair> pairs = TestFixtures.createPairs(nbTeams);
     pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
     generator = new KnockoutRoundGenerator(nbSeeds);
-    List<Integer> seedPositions = generator.getSeedsPositions(nbTeams, nbSeeds);
+    List<Integer> seedPositions = AbstractRoundGenerator.getSeedsPositions(nbTeams, nbSeeds);
     for (int i = 0; i < expectedSeedIndices.length; i++) {
       int expectedIdx = expectedSeedIndices[i];
       int actualIdx   = seedPositions.get(i);

@@ -582,7 +582,7 @@ public class QualifyMainRoundGeneratorTest {
                                .filter(Objects::isNull)
                                .count();
     assertEquals(nbQualifiers, nullBefore,
-                 "Avant propagation finale, le premier round doit comporter nbQualifiers emplacements vides");
+                 "Avant propagation FINAL, le premier round doit comporter nbQualifiers emplacements vides");
 
     // Play all Q rounds to completion, collecting winners from the **last** qualification round
     List<PlayerPair> current      = new ArrayList<>(preQualPairs);

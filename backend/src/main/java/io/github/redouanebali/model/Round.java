@@ -112,6 +112,18 @@ public class Round {
     return true;
   }
 
+  public boolean isPairPresent(PlayerPair pair) {
+    if (pair == null) {
+      return false;
+    }
+    for (Game g : this.games) {
+      if (pair.equals(g.getTeamA()) || pair.equals(g.getTeamB())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   public int hashCode() {
     return stage != null ? stage.hashCode() : 0;

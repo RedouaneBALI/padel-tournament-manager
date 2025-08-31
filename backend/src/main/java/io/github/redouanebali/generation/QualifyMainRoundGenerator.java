@@ -118,7 +118,7 @@ public class QualifyMainRoundGenerator extends AbstractRoundGenerator {
       // Add remaining main rounds (QUARTERS, SEMIS, FINAL...)
       int   teams = main / 2;
       Stage cur   = stage.next();
-      while (cur != null && cur != Stage.WINNER) {
+      while (cur != null && cur != Stage.FINAL) {
         Round r = createEmptyRound(cur, teams / 2);
         rounds.add(r);
         teams >>= 1;
@@ -137,7 +137,7 @@ public class QualifyMainRoundGenerator extends AbstractRoundGenerator {
 
     List<Round> rounds = tournament.getRounds();
 
-    // Identifier les rounds de préqualification et de phase finale
+    // Identifier les rounds de préqualification et de phase FINAL
     List<Round> qualifyingRounds = new ArrayList<>();
     List<Round> finalRounds      = new ArrayList<>();
 
@@ -159,7 +159,7 @@ public class QualifyMainRoundGenerator extends AbstractRoundGenerator {
       propagateWinnersBetweenRounds(currentRound, nextRound);
     }
 
-    // Étape 2 : Injecter les vainqueurs du dernier round de qualification dans la phase finale
+    // Étape 2 : Injecter les vainqueurs du dernier round de qualification dans la phase FINAL
     if (!qualifyingRounds.isEmpty() && !finalRounds.isEmpty()) {
       // Check if all qualifying rounds are finished
       if (!qualifyingRounds.stream().allMatch(Round::isFinished)) {
@@ -540,7 +540,7 @@ public class QualifyMainRoundGenerator extends AbstractRoundGenerator {
       // Add remaining main rounds (QUARTERS, SEMIS, FINAL...)
       int   teams = main / 2;
       Stage cur   = stage.next();
-      while (cur != null && cur != Stage.WINNER) {
+      while (cur != null && cur != Stage.FINAL) {
         Round r = createEmptyRound(cur, teams / 2);
         rounds.add(r);
         teams >>= 1;

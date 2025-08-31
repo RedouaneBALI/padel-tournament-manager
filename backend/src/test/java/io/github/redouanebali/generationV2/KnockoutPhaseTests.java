@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.DrawMode;
 import io.github.redouanebali.model.format.TournamentFormatConfig;
@@ -16,9 +17,11 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvFileSource;
 import org.junit.jupiter.params.provider.CsvSource;
 
 public class KnockoutPhaseTests {
@@ -327,5 +330,121 @@ public class KnockoutPhaseTests {
                    "Seed slot should be empty or BYE (staggered entries may create BYE vs BYE)");
       }
     }
+  }
+
+  /**
+   * CSV-driven test for propagateWinners. For each row in src/test/resources/tournament_scenarios.csv, this test: - builds a minimal tournament with
+   * the current round (Total pairs slots) and the next round (half as many games) - populates the current round according to the CSV semantics:
+   * DefaultQualif -> create Team vs BYE (auto-qualify) Matches      -> create TeamA vs TeamB and set an explicit winner (TeamA) via a score BYE
+   *    -> assign remaining BYE entries as BYE vs BYE so they do not produce a winner - calls KnockoutPhase.propagateWinners(t) - asserts that the
+   * number of non-null teams in the next round equals (Matches + DefaultQualif) FINAL rows are ignored (no subsequent round). Stage is resolved via
+   * Stage.valueOf(roundName.toUpperCase()).
+   */
+  @ParameterizedTest(name = "CSV propagateWinners: {0} – round={7}")
+  @CsvFileSource(resources = "/tournament_scenarios.csv", numLinesToSkip = 1)
+  void testPropagateWinners_FromCsvRow(String tournamentId,
+                                       int nbPlayerPairs,
+                                       int preQualDrawSize,
+                                       int nbQualifiers,
+                                       int mainDrawSize,
+                                       int nbSeeds,
+                                       boolean staggeredEntry,
+                                       String roundName,
+                                       String qualifFrom,
+                                       int fromPreviousRound,
+                                       int newTeams,
+                                       int bye,
+                                       int defaultQualif,
+                                       int totalPairs,
+                                       int pairsNonBye,
+                                       int pairsPlaying,
+                                       int matches) {
+    // Skip FINAL rows using Stage enum: no next round to receive propagation
+    Stage currentStageEnum = Stage.valueOf(roundName.toUpperCase());
+    if (currentStageEnum == Stage.FINAL) {
+      return; // No next round after FINAL, nothing to propagate
+    }
+    // Build Tournament and attach config using the first 6 parameters
+    TournamentFormatConfig cfg = TournamentFormatConfig.builder()
+                                                       .preQualDrawSize(preQualDrawSize)
+                                                       .nbQualifiers(nbQualifiers)
+                                                       .mainDrawSize(mainDrawSize)
+                                                       .nbSeeds(nbSeeds)
+                                                       .build();
+    Tournament t = new Tournament();
+    t.setConfig(cfg);
+
+    // Arrange: build a minimal tournament with a single current round and its next round
+    Round currentRound = buildEmptyRound(totalPairs); // totalPairs is the draw size for this row
+    currentRound.setStage(currentStageEnum);
+
+    // Next round has half as many games in a standard knockout
+    Round nextRound = buildEmptyRound(totalPairs / 2);
+    t.getRounds().add(currentRound);
+    t.getRounds().add(nextRound);
+
+    // Fill current round according to the CSV semantics
+    // 1) DefaultQualif: Team vs BYE (auto-qualify)
+    int placedDefaults = 0;
+    int gameIndex      = 0;
+    while (placedDefaults < defaultQualif && gameIndex < currentRound.getGames().size()) {
+      Game g = currentRound.getGames().get(gameIndex++);
+      if (g.getTeamA() == null && g.getTeamB() == null) {
+        g.setTeamA(TestFixtures.buildPairWithSeed(1000 + placedDefaults));
+        g.setTeamB(PlayerPair.bye());
+        placedDefaults++;
+      }
+    }
+
+    // 2) Played matches: A vs B with an explicit winner
+    int placedPlayed = 0;
+    while (placedPlayed < matches && gameIndex < currentRound.getGames().size()) {
+      Game g = currentRound.getGames().get(gameIndex++);
+      if (g.getTeamA() == null && g.getTeamB() == null) {
+        PlayerPair A = TestFixtures.buildPairWithSeed(2000 + placedPlayed * 2);
+        PlayerPair B = TestFixtures.buildPairWithSeed(2000 + placedPlayed * 2 + 1);
+        g.setTeamA(A);
+        g.setTeamB(B);
+        g.setFormat(TestFixtures.createSimpleFormat(1));
+        g.setScore(TestFixtures.createScoreWithWinner(g, A)); // TEAM_A always wins
+        placedPlayed++;
+      }
+    }
+
+    // 3) Remaining BYEs (if any): fill as BYE vs BYE so they do not produce winners
+    int usedByes      = defaultQualif; // one BYE consumed per defaultQualif game
+    int remainingByes = Math.max(0, bye - usedByes);
+    gameIndex = 0;
+    while (remainingByes > 1 && gameIndex < currentRound.getGames().size()) {
+      Game g = currentRound.getGames().get(gameIndex++);
+      if (g.getTeamA() == null && g.getTeamB() == null) {
+        g.setTeamA(PlayerPair.bye());
+        g.setTeamB(PlayerPair.bye());
+        remainingByes -= 2;
+      }
+    }
+    if (remainingByes == 1) {
+      // Put the last odd BYE on one side if needed (won't generate a winner until an opponent arrives)
+      for (Game g : currentRound.getGames()) {
+        if (g.getTeamA() == null && g.getTeamB() == null) {
+          g.setTeamA(PlayerPair.bye());
+          break;
+        }
+      }
+    }
+
+    // Act
+    KnockoutPhase phase = new KnockoutPhase(totalPairs, nbSeeds, PhaseType.MAIN_DRAW, DrawMode.SEEDED);
+    phase.propagateWinners(t);
+
+    // Assert: number of teams propagated to next round equals matches + defaultQualif
+    int expectedWinners = matches + defaultQualif;
+    long actualNonNullTeams = nextRound.getGames().stream()
+                                       .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                       .filter(Objects::nonNull)
+                                       .count();
+
+    assertEquals(expectedWinners, actualNonNullTeams,
+                 "Propagation mismatch for " + tournamentId + " at round " + roundName);
   }
 }

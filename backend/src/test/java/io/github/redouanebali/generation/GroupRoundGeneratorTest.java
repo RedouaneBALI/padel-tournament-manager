@@ -101,11 +101,11 @@ public class GroupRoundGeneratorTest {
   @ParameterizedTest
   @CsvSource({
       // nbPools, nbPairsPerPool, nbQualifiedByPool, expectedTeamsInNextRound, expectedMatchesInNextRound
-      "4,4,1,4,2",  // 4 poules de 4 avec 1 qualifié -> 4 teams -> 2 matches (demi-finales)
+      "4,4,1,4,2",  // 4 poules de 4 avec 1 qualifié -> 4 teams -> 2 matches (demi-FINALs)
       "4,4,2,8,4",  // 4 poules de 4 avec 2 qualifiés -> 8 teams -> 4 matches (quarts)
-      "2,4,1,2,1",  // 2 poules de 4 avec 1 qualifié -> 2 teams -> 1 match (finale)
-      "2,4,2,4,2",  // 2 poules de 4 avec 2 qualifiés -> 4 teams -> 2 matches (demi-finales)
-      "2,3,1,2,1",  // 2 poules de 3 avec 1 qualifié -> 2 teams -> 1 match (finale)
+      "2,4,1,2,1",  // 2 poules de 4 avec 1 qualifié -> 2 teams -> 1 match (FINAL)
+      "2,4,2,4,2",  // 2 poules de 4 avec 2 qualifiés -> 4 teams -> 2 matches (demi-FINALs)
+      "2,3,1,2,1",  // 2 poules de 3 avec 1 qualifié -> 2 teams -> 1 match (FINAL)
       "8,3,1,8,4"   // 8 poules de 3 avec 1 qualifié -> 8 teams -> 4 matches (huitièmes)
   })
   void testPropagateWinners_param(int nbPools, int nbPairsPerPool, int nbQualifiedByPool,
@@ -225,7 +225,7 @@ public class GroupRoundGeneratorTest {
     groups.addGames(java.util.Arrays.asList(a_g1, a_g2, a_g3, b_g1, b_g2, b_g3));
     tournament.getRounds().add(groups);
 
-    // --- Act: recalc classements & propager en finale ---
+    // --- Act: recalc classements & propager en FINAL ---
     GroupRoundGenerator gen = new GroupRoundGenerator(0, 2, 3, 1);
     gen.propagateWinners(tournament);
 
@@ -242,7 +242,7 @@ public class GroupRoundGeneratorTest {
     assertEquals(b5, bDetails.get(1).getPlayerPair(), "Pool B: B2 = BOUKHARI/ALAOUI");
     assertEquals(b2, bDetails.get(2).getPlayerPair(), "Pool B: B3 = EL GHALI/ZOUAOUI");
 
-    // --- Assert: Finale = A1 vs B1 ---
+    // --- Assert: FINAL = A1 vs B1 ---
     Stage finalStage = Stage.fromNbTeams(2);
     Round finalRound = tournament.getRounds().stream()
                                  .filter(r -> r.getStage() == finalStage)
