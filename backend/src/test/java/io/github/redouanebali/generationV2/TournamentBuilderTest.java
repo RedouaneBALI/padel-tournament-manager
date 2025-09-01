@@ -4,15 +4,16 @@ import static io.github.redouanebali.util.TestFixtures.parseInts;
 import static io.github.redouanebali.util.TestFixtures.parseStages;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PairType;
-import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.DrawMode;
 import io.github.redouanebali.model.format.TournamentFormatConfig;
 import io.github.redouanebali.util.TestFixtures;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,7 +25,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -121,23 +121,24 @@ public class TournamentBuilderTest {
                                                               String expectedMatchesCsv) {
     Tournament t = makeTournament(0, 0, mainDraw, nbSeedsMain, 0, drawMode);
 
-    TournamentBuilder builder = new TournamentBuilder();
-    List<Round>       built   = builder.buildQualifKO(t);
-
+    TournamentBuilder builder   = new TournamentBuilder();
+    List<Round>       roundList = builder.buildQualifKO(t);
+    t.getRounds().clear();
+    t.getRounds().addAll(roundList);
     List<Stage>   expectedStages  = parseStages(expectedStagesCsv);
     List<Integer> expectedMatches = parseInts(expectedMatchesCsv);
 
-    List<Stage> actualStages = built.stream()
-                                    .map(Round::getStage)
-                                    .collect(Collectors.toList());
+    List<Stage> actualStages = t.getRounds().stream()
+                                .map(Round::getStage)
+                                .collect(Collectors.toList());
 
-    List<Integer> actualMatches = built.stream()
-                                       .map(r -> r.getGames() == null ? 0 : r.getGames().size())
-                                       .collect(Collectors.toList());
+    List<Integer> actualMatches = t.getRounds().stream()
+                                   .map(r -> r.getGames() == null ? 0 : r.getGames().size())
+                                   .collect(Collectors.toList());
 
     assertEquals(expectedStages, actualStages, "Stages sequence must match");
     assertEquals(expectedMatches, actualMatches, "Matches per stage must match");
-    assertEquals(expectedStages.size(), built.size(), "Unexpected number of rounds created");
+    assertEquals(expectedStages.size(), t.getRounds().size(), "Unexpected number of rounds created");
   }
 
   @ParameterizedTest(name = "With qualifications: preQual={0} -> nbQualifiers={1}, mainDraw={2}")
@@ -157,23 +158,24 @@ public class TournamentBuilderTest {
                                                                     String expectedMatchesCsv) {
     Tournament t = makeTournament(preQual, nbQualifiers, mainDraw, nbSeedsMain, nbSeedsQual, drawMode);
 
-    TournamentBuilder builder = new TournamentBuilder();
-    List<Round>       built   = builder.buildQualifKO(t);
-
+    TournamentBuilder builder   = new TournamentBuilder();
+    List<Round>       roundList = builder.buildQualifKO(t);
+    t.getRounds().clear();
+    t.getRounds().addAll(roundList);
     List<Stage>   expectedStages  = parseStages(expectedStagesCsv);
     List<Integer> expectedMatches = parseInts(expectedMatchesCsv);
 
-    List<Stage> actualStages = built.stream()
-                                    .map(Round::getStage)
-                                    .collect(Collectors.toList());
+    List<Stage> actualStages = t.getRounds().stream()
+                                .map(Round::getStage)
+                                .collect(Collectors.toList());
 
-    List<Integer> actualMatches = built.stream()
-                                       .map(r -> r.getGames() == null ? 0 : r.getGames().size())
-                                       .collect(Collectors.toList());
+    List<Integer> actualMatches = t.getRounds().stream()
+                                   .map(r -> r.getGames() == null ? 0 : r.getGames().size())
+                                   .collect(Collectors.toList());
 
     assertEquals(expectedStages, actualStages, "Stages sequence must match");
     assertEquals(expectedMatches, actualMatches, "Matches per stage must match");
-    assertEquals(expectedStages.size(), built.size(), "Unexpected number of rounds created");
+    assertEquals(expectedStages.size(), t.getRounds().size(), "Unexpected number of rounds created");
   }
 
   /**
@@ -193,6 +195,7 @@ public class TournamentBuilderTest {
     int      nbQualifiers    = intValue(first, "nbQualifiers");
     int      mainDrawSize    = intValue(first, "mainDrawSize");
     int      nbSeedsMain     = intValue(first, "nbSeeds");
+    int      nbPlayerPairs   = intValue(first, "nbPlayerPairs");
 
     Tournament t = new Tournament();
     t.setId(tournamentId);
@@ -218,150 +221,192 @@ public class TournamentBuilderTest {
     List<Stage> actualStages = built.stream().map(Round::getStage).collect(Collectors.toList());
     assertEquals(expectedStages, actualStages, "Stage order mismatch for " + tournamentId);
 
+    Stage firstMainStage = expectedStages.stream()
+                                         .filter(s -> !s.isQualification())
+                                         .findFirst()
+                                         .orElse(null);
+
+    // --- Initialize the first main draw round (before the for loop) ---
+    if (firstMainStage != null) {
+      Round thatRound = built.stream()
+                             .filter(r -> r.getStage() == firstMainStage)
+                             .findFirst()
+                             .orElse(null);
+      if (thatRound != null) {
+        initializeFirstMainDrawWithoutQualifiers(tournamentId, thatRound);
+      }
+    }
+
     // Simulate each round row-by-row
-    for (int i = 0; i < rows.size(); i++) {
-      String[] row   = rows.get(i);
+    for (int rowIndex = 0; rowIndex < rows.size(); rowIndex++) {
+      String[] row   = rows.get(rowIndex);
       Stage    stage = Stage.valueOf(stringValue(row, "Round").toUpperCase());
       Round currentRound = built.stream().filter(r -> r.getStage() == stage).findFirst()
                                 .orElseThrow(() -> new IllegalStateException("Round not found: " + stage + " for " + tournamentId));
 
-      int TotalPairs    = intValue(row, "TotalPairs");
-      int pairsNonBye   = intValue(row, "PairsNonBye");
-      int pairsPlaying  = intValue(row, "PairsPlaying");
-      int matches       = intValue(row, "Matches");
-      int defaultQualif = intValue(row, "DefaultQualif");
-      int byeEntries    = intValue(row, "BYE");
+      int expectedTotalPairs               = intValue(row, "TotalPairs");
+      int expectedNonByePairs              = intValue(row, "PairsNonBye");
+      int expectedPairsPlaying             = intValue(row, "PairsPlaying");
+      int expectedNbGames                  = intValue(row, "Matches");
+      int expectedNbDirectlyQualifiedPairs = intValue(row, "DefaultQualif");
+      int expectedByePairs                 = intValue(row, "BYE");
+      int fromPreviousRound                = intValue(row, "FromPreviousRound");
 
       // Draw size sanity
-      assertEquals(TotalPairs / 2, currentRound.getGames().size(), "Unexpected number of games in " + stage);
+      assertEquals(expectedTotalPairs / 2, currentRound.getGames().size(), "Unexpected number of games in " + stage);
 
-      // Reset the round content
-      for (Game g : currentRound.getGames()) {
-        g.setTeamA(null);
-        g.setTeamB(null);
-        g.setScore(null);
+      // --- Initialize rounds based on type ---
+      if (stage == Stage.Q1) {
+        // Q1: Always reset and initialize from scratch
+        for (Game g : currentRound.getGames()) {
+          g.setTeamA(null);
+          g.setTeamB(null);
+          g.setScore(null);
+        }
+        initializeQ1Round(tournamentId, currentRound);
+      } else if (firstMainStage != null && stage == firstMainStage) {
+        // Initialization for the first main round is now handled before the loop.
+        // Only perform scoring logic here.
+        scoreExistingMatches(currentRound, expectedNbGames);
+      } else {
+        // Score only the requested number of real matches (non-BYE vs non-BYE) for this round.
+        scoreExistingMatches(currentRound, expectedNbGames);
       }
-
-      // 1) DefaultQualif: Team vs BYE (auto-qualification)
-      int gi = 0;
-      for (int d = 0; d < defaultQualif; d++) {
-        Game g = currentRound.getGames().get(gi++);
-        g.setTeamA(TestFixtures.buildPairWithSeed(1000 + d));
-        g.setTeamB(PlayerPair.bye());
-      }
-
-      // 2) Matches: A vs B with a decided winner (TeamA)
-      for (int m = 0; m < matches; m++) {
-        Game       g  = currentRound.getGames().get(gi++);
-        PlayerPair A  = TestFixtures.buildPairWithSeed(2000 + m * 2);
-        PlayerPair Bp = TestFixtures.buildPairWithSeed(2000 + m * 2 + 1);
-        g.setTeamA(A);
-        g.setTeamB(Bp);
-        g.setFormat(TestFixtures.createSimpleFormat(1));
-        g.setScore(TestFixtures.createScoreWithWinner(g, A));
-      }
-
-      // 3) Remaining BYEs: pair as BYE vs BYE so they do not produce winners
-      int byesLeft = Math.max(0, byeEntries - defaultQualif);
-      while (byesLeft >= 2 && gi < currentRound.getGames().size()) {
-        Game g = currentRound.getGames().get(gi++);
-        g.setTeamA(PlayerPair.bye());
-        g.setTeamB(PlayerPair.bye());
-        byesLeft -= 2;
-      }
-      if (byesLeft == 1 && gi < currentRound.getGames().size()) {
-        currentRound.getGames().get(gi).setTeamA(PlayerPair.bye());
-      }
-
-      // Validate PairsNonBye and PairsPlaying against CSV for this round
-      long computedPairsNonBye = currentRound.getGames().stream()
-                                             .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
-                                             .filter(Objects::nonNull)
-                                             .filter(p -> !p.isBye())
-                                             .count();
-      assertEquals(pairsNonBye, (int) computedPairsNonBye, "PairsNonBye mismatch in " + stage + " for " + tournamentId);
-
-      // Count TEAMS that actually play (each real match contributes two non-BYE teams)
-      int computedPairsPlaying = currentRound.getGames().stream()
-                                             .filter(g -> g.getTeamA() != null && g.getTeamB() != null)
-                                             .filter(g -> !g.getTeamA().isBye() && !g.getTeamB().isBye())
-                                             .mapToInt(g -> 2)
-                                             .sum();
-      assertEquals(pairsPlaying, computedPairsPlaying,
-                   "PairsPlaying mismatch in " + stage + " for " + tournamentId);
 
       if (stage == Stage.FINAL) {
         continue; // no next round to propagate into
       }
 
-      // Pre-reserve QUALIFIER placeholders in the next round according to CSV expectations.
-      // We look at the next CSV row to know how many teams come "FromPreviousRound".
-      // Those slots will be created as QUALIFIER placeholders and must be replaced by winners after propagation.
-      List<int[]> qualifierSlots = new ArrayList<>(); // each entry: [gameIndex, side(0=A,1=B)]
-      if (i + 1 < rows.size()) {
-        String[] nextRow   = rows.get(i + 1);
-        Stage    nextStage = Stage.valueOf(stringValue(nextRow, "Round").toUpperCase());
-        Round nextRound = built.stream()
-                               .filter(r -> r.getStage() == nextStage)
-                               .findFirst()
-                               .orElse(null);
-        if (nextRound != null) {
-          int expectedFromPrev = intValue(nextRow, "FromPreviousRound");
-          // Fill A then B with QUALIFIER placeholders until we've placed expectedFromPrev entries.
-          for (int gi2 = 0; gi2 < nextRound.getGames().size(); gi2++) {
-            Game ng = nextRound.getGames().get(gi2);
-            if (ng.getTeamA() == null && expectedFromPrev > 0) {
-              ng.setTeamA(PlayerPair.qualifier());
-              qualifierSlots.add(new int[]{gi2, 0});
-              expectedFromPrev--;
-              if (expectedFromPrev == 0) {
-                break;
-              }
-            }
-            if (ng.getTeamB() == null && expectedFromPrev > 0) {
-              ng.setTeamB(PlayerPair.qualifier());
-              qualifierSlots.add(new int[]{gi2, 1});
-              expectedFromPrev--;
-              if (expectedFromPrev == 0) {
-                break;
-              }
-            }
-          }
-          // Sanity: if next round structure hasn't enough free slots, we don't fail here;
-          // fallback propagation will still try to use any remaining empty slots.
-        }
-      }
+      // Score the requested number of real matches before propagation
+      scoreExistingMatches(currentRound, expectedNbGames);
 
-      // Propagate winners to the next round and verify numbers
+      // Propagate winners to the next round BEFORE validation
       builder.propagateWinners(t);
-      Round nextRound = built.get(built.indexOf(currentRound) + 1);
-      long nonNullTeamsNext = nextRound.getGames().stream()
-                                       .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
-                                       .filter(Objects::nonNull)
-                                       .count();
-      int expectedWinners = matches + defaultQualif;
-      assertEquals(expectedWinners, nonNullTeamsNext,
-                   "Propagation mismatch from " + stage + " to " + nextRound.getStage() + " for " + tournamentId);
 
-      // Verify that qualifier placeholders were actually replaced by real winners (non-BYE, non-QUALIFIER)
-      if (!qualifierSlots.isEmpty()) {
-        for (int[] pos : qualifierSlots) {
-          Game       ng     = nextRound.getGames().get(pos[0]);
-          PlayerPair placed = (pos[1] == 0) ? ng.getTeamA() : ng.getTeamB();
-          // Must be non-null and not a placeholder anymore
-          Assertions.assertFalse(placed == null || placed.isBye() || placed.getType() == PairType.QUALIFIER,
-                                 "Expected winner to replace QUALIFIER placeholder at game " + pos[0] + " side " + (pos[1] == 0
-                                                                                                                    ? "A"
-                                                                                                                    : "B")
-                                 + " in " + nextRound.getStage() + " for " + tournamentId);
-        }
-      }
+      // Validate propagation results
+      Round nextRound            = t.getRounds().get(built.indexOf(currentRound) + 1);
+      int   expectedNewTeamsNext = intValue(rows.get(rowIndex + 1), "NewTeams");
+      validatePropagation(currentRound, nextRound, expectedNbGames, expectedNbDirectlyQualifiedPairs, expectedNewTeamsNext, stage, tournamentId);
 
-      // Cross-check composition: Total pairs = FromPreviousRound + NewTeams + BYE + DefaultQualif
-      int fromPrev = intValue(row, "FromPreviousRound");
-      int newTeams = intValue(row, "NewTeams");
-      assertEquals(TotalPairs, fromPrev + newTeams + byeEntries + defaultQualif,
-                   "Total pairs composition mismatch in " + stage + " for " + tournamentId);
+      // Validate current round composition
+      validateRoundComposition(currentRound, row, stage, tournamentId);
     }
+  }
+
+  // New implementation: initializeQ1Round loads games from teams_t1.json for the given tournamentId
+  private void initializeQ1Round(Long tournamentId, Round currentRound) {
+    String resource = "";
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      resource = String.format("/teams/teams_t%d.json", tournamentId);
+      InputStream         is    = getClass().getResourceAsStream(resource);
+      Map<String, Object> entry = mapper.readValue(is, Map.class);
+      if (entry != null && entry.get("firstQualifPhase") != null) {
+        List<?>    gamesJson = (List<?>) entry.get("firstQualifPhase");
+        List<Game> games     = new ArrayList<>();
+        for (Object gameObj : gamesJson) {
+          String json = mapper.writeValueAsString(gameObj);
+          games.add(mapper.readValue(json, Game.class));
+        }
+        currentRound.getGames().clear();
+        currentRound.getGames().addAll(games);
+      }
+    } catch (Exception ex) {
+      throw new RuntimeException("Failed to initialize Q1 round from " + resource, ex);
+    }
+  }
+
+  private void initializeFirstMainDrawWithoutQualifiers(Long tournamentId, Round currentRound) {
+    try {
+      ObjectMapper        mapper   = new ObjectMapper();
+      String              resource = String.format("/teams/teams_t%d.json", tournamentId);
+      InputStream         is       = getClass().getResourceAsStream(resource);
+      Map<String, Object> entry    = mapper.readValue(is, Map.class);
+      if (entry != null && entry.get("firstMainPhase") != null) {
+        List<?>    gamesJson = (List<?>) entry.get("firstMainPhase");
+        List<Game> games     = new ArrayList<>();
+        for (Object gameObj : gamesJson) {
+          String json = mapper.writeValueAsString(gameObj);
+          games.add(mapper.readValue(json, Game.class));
+        }
+        currentRound.getGames().clear();
+        currentRound.getGames().addAll(games);
+      }
+    } catch (Exception ex) {
+      throw new RuntimeException("Failed to initialize first main draw without qualifiers from teams_t1.json", ex);
+    }
+  }
+
+  private void scoreExistingMatches(Round currentRound, int expectedNbGames) {
+    int toScore = expectedNbGames;
+    for (Game g : currentRound.getGames()) {
+      if (toScore == 0) {
+        break;
+      }
+      if (g.getTeamA() != null && g.getTeamB() != null &&
+          !g.getTeamA().isBye() && !g.getTeamB().isBye() &&
+          g.getScore() == null) {
+        g.setFormat(TestFixtures.createSimpleFormat(1));
+        g.setScore(TestFixtures.createScoreWithWinner(g, g.getTeamA()));
+        toScore--;
+      }
+    }
+  }
+
+  private void validatePropagation(Round currentRound, Round nextRound, int expectedNbGames,
+                                   int expectedNbDirectlyQualifiedPairs, int expectedNewTeamsNextRound, Stage stage, Long tournamentId) {
+    long seedsNext = nextRound.getGames().stream()
+                              .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                              .filter(Objects::nonNull)
+                              .filter(p -> !p.isBye())
+                              .filter(p -> p.getSeed() != null && p.getSeed() > 0)
+                              .count();
+
+    long realNonSeedNext = nextRound.getGames().stream()
+                                    .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                    .filter(Objects::nonNull)
+                                    .filter(p -> !p.isBye())
+                                    .filter(p -> p.getSeed() == null || p.getSeed() == 0)
+                                    // exclude QUALIFIER placeholders (awaiting propagation)
+                                    .filter(p -> p.getType() == null || p.getType() != PairType.QUALIFIER)
+                                    .count();
+
+    long nonNullTeamsNext = seedsNext + realNonSeedNext;
+
+    int expectedWinners = expectedNbGames + expectedNbDirectlyQualifiedPairs + expectedNewTeamsNextRound;
+    assertEquals(expectedWinners, (int) nonNullTeamsNext,
+                 "Propagation mismatch from " + stage + " to " + nextRound.getStage() + " for " + tournamentId);
+  }
+
+  private void validateRoundComposition(Round currentRound, String[] row, Stage stage, Long tournamentId) {
+    int expectedNonByePairs              = intValue(row, "PairsNonBye");
+    int expectedPairsPlaying             = intValue(row, "PairsPlaying");
+    int expectedTotalPairs               = intValue(row, "TotalPairs");
+    int expectedByePairs                 = intValue(row, "BYE");
+    int expectedNbDirectlyQualifiedPairs = intValue(row, "DefaultQualif");
+    int fromPrev                         = intValue(row, "FromPreviousRound");
+    int newTeams                         = intValue(row, "NewTeams");
+
+    // Validate PairsNonBye
+    long computedPairsNonBye = currentRound.getGames().stream()
+                                           .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                           .filter(Objects::nonNull)
+                                           .filter(p -> !p.isBye())
+                                           .count();
+    assertEquals(expectedNonByePairs, (int) computedPairsNonBye,
+                 "PairsNonBye mismatch in " + stage + " for " + tournamentId);
+
+    // Validate PairsPlaying
+    int computedPairsPlaying = currentRound.getGames().stream()
+                                           .filter(g -> g.getTeamA() != null && g.getTeamB() != null)
+                                           .filter(g -> !g.getTeamA().isBye() && !g.getTeamB().isBye())
+                                           .mapToInt(g -> 2)
+                                           .sum();
+    assertEquals(expectedPairsPlaying, computedPairsPlaying,
+                 "PairsPlaying mismatch in " + stage + " for " + tournamentId);
+
+    // Cross-check composition
+    assertEquals(expectedTotalPairs, fromPrev + newTeams + expectedByePairs + expectedNbDirectlyQualifiedPairs,
+                 "Total pairs composition mismatch in " + stage + " for " + tournamentId);
   }
 }

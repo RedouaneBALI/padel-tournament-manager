@@ -139,7 +139,7 @@ public class Game {
       return teamA;
     }
     if (aBye && bBye) {
-      return null;
+      return this.getTeamA();
     }
 
     if (!isFinished()) {

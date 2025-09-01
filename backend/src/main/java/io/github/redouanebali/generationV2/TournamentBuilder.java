@@ -41,8 +41,9 @@ public final class TournamentBuilder {
    * Propagate winners across all phases sequentially.
    */
   public void propagateWinners(Tournament t) {
-    for (TournamentPhase phase : phases) {
-      phase.propagateWinners(t);
+    if (t == null || phases.isEmpty()) {
+      return;
     }
+    phases.getFirst().propagateWinners(t);
   }
 }

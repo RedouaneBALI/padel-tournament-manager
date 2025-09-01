@@ -1,0 +1,617 @@
+{
+  "tournamentId": 3,
+  "firstQualifPhase": [
+    {
+      "teamA": {
+        "player1": {
+          "name": "Team1A"
+        },
+        "player2": {
+          "name": "Team1B"
+        }
+      },
+      "teamB": {
+        "player1": {
+          "name": "BYE"
+        },
+        "player2": {
+          "name": "BYE"
+        },
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Team2A"
+        },
+        "player2": {
+          "name": "Team2B"
+        }
+      },
+      "teamB": {
+        "player1": {
+          "name": "BYE"
+        },
+        "player2": {
+          "name": "BYE"
+        },
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Team3A"
+        },
+        "player2": {
+          "name": "Team3B"
+        }
+      },
+      "teamB": {
+        "player1": {
+          "name": "BYE"
+        },
+        "player2": {
+          "name": "BYE"
+        },
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Team4A"
+        },
+        "player2": {
+          "name": "Team4B"
+        }
+      },
+      "teamB": {
+        "player1": {
+          "name": "BYE"
+        },
+        "player2": {
+          "name": "BYE"
+        },
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Team5A"
+        },
+        "player2": {
+          "name": "Team5B"
+        }
+      },
+      "teamB": {
+        "player1": {
+          "name": "BYE"
+        },
+        "player2": {
+          "name": "BYE"
+        },
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Team6A"
+        },
+        "player2": {
+          "name": "Team6B"
+        }
+      },
+      "teamB": {
+        "player1": {
+          "name": "BYE"
+        },
+        "player2": {
+          "name": "BYE"
+        },
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Team7A"
+        },
+        "player2": {
+          "name": "Team7B"
+        }
+      },
+      "teamB": {
+        "player1": {
+          "name": "BYE"
+        },
+        "player2": {
+          "name": "BYE"
+        },
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Team8A"
+        },
+        "player2": {
+          "name": "Team8B"
+        }
+      },
+      "teamB": {
+        "player1": {
+          "name": "BYE"
+        },
+        "player2": {
+          "name": "BYE"
+        },
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Team9A"
+        },
+        "player2": {
+          "name": "Team9B"
+        }
+      },
+      "teamB": {
+        "player1": {
+          "name": "BYE"
+        },
+        "player2": {
+          "name": "BYE"
+        },
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Team10A"
+        },
+        "player2": {
+          "name": "Team10B"
+        }
+      },
+      "teamB": {
+        "player1": {
+          "name": "BYE"
+        },
+        "player2": {
+          "name": "BYE"
+        },
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Team11A"
+        },
+        "player2": {
+          "name": "Team11B"
+        }
+      },
+      "teamB": {
+        "player1": {
+          "name": "Team12A"
+        },
+        "player2": {
+          "name": "Team12B"
+        }
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Team13A"
+        },
+        "player2": {
+          "name": "Team13B"
+        }
+      },
+      "teamB": {
+        "player1": {
+          "name": "Team14A"
+        },
+        "player2": {
+          "name": "Team14B"
+        }
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Team15A"
+        },
+        "player2": {
+          "name": "Team15B"
+        }
+      },
+      "teamB": {
+        "player1": {
+          "name": "Team16A"
+        },
+        "player2": {
+          "name": "Team16B"
+        }
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Team17A"
+        },
+        "player2": {
+          "name": "Team17B"
+        }
+      },
+      "teamB": {
+        "player1": {
+          "name": "Team18A"
+        },
+        "player2": {
+          "name": "Team18B"
+        }
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Team19A"
+        },
+        "player2": {
+          "name": "Team19B"
+        }
+      },
+      "teamB": {
+        "player1": {
+          "name": "Team20A"
+        },
+        "player2": {
+          "name": "Team20B"
+        }
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Team21A"
+        },
+        "player2": {
+          "name": "Team21B"
+        }
+      },
+      "teamB": {
+        "player1": {
+          "name": "Team22A"
+        },
+        "player2": {
+          "name": "Team22B"
+        }
+      }
+    }
+  ],
+  "firstMainPhase": [
+    {
+      "teamA": {
+        "player1": {
+          "name": "Seed1A"
+        },
+        "player2": {
+          "name": "Seed1B"
+        },
+        "seed": 1
+      },
+      "teamB": {
+        "player1": {
+          "name": "Qualifier1A"
+        },
+        "player2": {
+          "name": "Qualifier1B"
+        },
+        "type": "QUALIFIER"
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Seed2A"
+        },
+        "player2": {
+          "name": "Seed2B"
+        },
+        "seed": 2
+      },
+      "teamB": {
+        "player1": {
+          "name": "Qualifier2A"
+        },
+        "player2": {
+          "name": "Qualifier2B"
+        },
+        "type": "QUALIFIER"
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Seed3A"
+        },
+        "player2": {
+          "name": "Seed3B"
+        },
+        "seed": 3
+      },
+      "teamB": {
+        "player1": {
+          "name": "Qualifier3A"
+        },
+        "player2": {
+          "name": "Qualifier3B"
+        },
+        "type": "QUALIFIER"
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Seed4A"
+        },
+        "player2": {
+          "name": "Seed4B"
+        },
+        "seed": 4
+      },
+      "teamB": {
+        "player1": {
+          "name": "Qualifier4A"
+        },
+        "player2": {
+          "name": "Qualifier4B"
+        },
+        "type": "QUALIFIER"
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Seed5A"
+        },
+        "player2": {
+          "name": "Seed5B"
+        },
+        "seed": 5
+      },
+      "teamB": {
+        "player1": {
+          "name": "Qualifier5A"
+        },
+        "player2": {
+          "name": "Qualifier5B"
+        },
+        "type": "QUALIFIER"
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Seed6A"
+        },
+        "player2": {
+          "name": "Seed6B"
+        },
+        "seed": 6
+      },
+      "teamB": {
+        "player1": {
+          "name": "Qualifier6A"
+        },
+        "player2": {
+          "name": "Qualifier6B"
+        },
+        "type": "QUALIFIER"
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Seed7A"
+        },
+        "player2": {
+          "name": "Seed7B"
+        },
+        "seed": 7
+      },
+      "teamB": {
+        "player1": {
+          "name": "Qualifier7A"
+        },
+        "player2": {
+          "name": "Qualifier7B"
+        },
+        "type": "QUALIFIER"
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Seed8A"
+        },
+        "player2": {
+          "name": "Seed8B"
+        },
+        "seed": 8
+      },
+      "teamB": {
+        "player1": {
+          "name": "Qualifier8A"
+        },
+        "player2": {
+          "name": "Qualifier8B"
+        },
+        "type": "QUALIFIER"
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Seed9A"
+        },
+        "player2": {
+          "name": "Seed9B"
+        },
+        "seed": 9
+      },
+      "teamB": {
+        "player1": {
+          "name": "MainTeam1A"
+        },
+        "player2": {
+          "name": "MainTeam1B"
+        }
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Seed10A"
+        },
+        "player2": {
+          "name": "Seed10B"
+        },
+        "seed": 10
+      },
+      "teamB": {
+        "player1": {
+          "name": "MainTeam2A"
+        },
+        "player2": {
+          "name": "MainTeam2B"
+        }
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Seed11A"
+        },
+        "player2": {
+          "name": "Seed11B"
+        },
+        "seed": 11
+      },
+      "teamB": {
+        "player1": {
+          "name": "MainTeam3A"
+        },
+        "player2": {
+          "name": "MainTeam3B"
+        }
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Seed12A"
+        },
+        "player2": {
+          "name": "Seed12B"
+        },
+        "seed": 12
+      },
+      "teamB": {
+        "player1": {
+          "name": "MainTeam4A"
+        },
+        "player2": {
+          "name": "MainTeam4B"
+        }
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Seed13A"
+        },
+        "player2": {
+          "name": "Seed13B"
+        },
+        "seed": 13
+      },
+      "teamB": {
+        "player1": {
+          "name": "MainTeam5A"
+        },
+        "player2": {
+          "name": "MainTeam5B"
+        }
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Seed14A"
+        },
+        "player2": {
+          "name": "Seed14B"
+        },
+        "seed": 14
+      },
+      "teamB": {
+        "player1": {
+          "name": "MainTeam6A"
+        },
+        "player2": {
+          "name": "MainTeam6B"
+        }
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Seed15A"
+        },
+        "player2": {
+          "name": "Seed15B"
+        },
+        "seed": 15
+      },
+      "teamB": {
+        "player1": {
+          "name": "MainTeam7A"
+        },
+        "player2": {
+          "name": "MainTeam7B"
+        }
+      }
+    },
+    {
+      "teamA": {
+        "player1": {
+          "name": "Seed16A"
+        },
+        "player2": {
+          "name": "Seed16B"
+        },
+        "seed": 16
+      },
+      "teamB": {
+        "player1": {
+          "name": "MainTeam8A"
+        },
+        "player2": {
+          "name": "MainTeam8B"
+        }
+      }
+    }
+  ]
+}

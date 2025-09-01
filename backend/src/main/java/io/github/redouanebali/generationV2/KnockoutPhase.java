@@ -68,6 +68,20 @@ public class KnockoutPhase implements TournamentPhase {
     return false;
   }
 
+  /**
+   * Checks by reference (==) if the winner is already assigned anywhere in nextGames. This avoids false positives when equals()/seed values collide
+   * with unrelated pairs.
+   */
+  private static boolean isAlreadyAssignedInNextByReference(List<Game> nextGames, PlayerPair winner) {
+    for (Game g : nextGames) {
+      if (g.getTeamA() == winner || g.getTeamB() == winner) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+
   @Override
   public List<String> validate(final Tournament tournament) {
     return List.of();
@@ -346,68 +360,73 @@ public class KnockoutPhase implements TournamentPhase {
     if (t == null || t.getRounds() == null || t.getRounds().size() < 2) {
       return;
     }
-
     final List<Round> rounds = t.getRounds();
+    // Process every boundary left-to-right so earlier rounds feed later ones in the same call
+    for (int i = 0; i < rounds.size() - 1; i++) {
+      propagateFromIndex(t, i);
+    }
+  }
 
-    for (int roundIndex = 0; roundIndex < rounds.size() - 1; roundIndex++) {
-      final Round currentRound = rounds.get(roundIndex);
-      final Round nextRound    = rounds.get(roundIndex + 1);
-      if (currentRound == null || nextRound == null) {
-        continue;
-      }
+  private void propagateFromIndex(final Tournament t, final int roundIndex) {
+    final List<Round> rounds = t.getRounds();
+    if (roundIndex >= rounds.size() - 1) {
+      return; // base case: no next round
+    }
 
-      final List<Game> curGames  = currentRound.getGames();
-      final List<Game> nextGames = nextRound.getGames();
-      if (curGames == null || nextGames == null || nextGames.isEmpty()) {
-        continue;
-      }
+    final Round currentRound = rounds.get(roundIndex);
+    final Round nextRound    = rounds.get(roundIndex + 1);
+    if (currentRound == null || nextRound == null) {
+      return;
+    }
 
-      // If current round is entirely empty (no teams set), skip propagation
-      final boolean currentEmpty = curGames.stream().allMatch(g -> g.getTeamA() == null && g.getTeamB() == null);
-      if (currentEmpty) {
-        continue;
-      }
+    final List<Game> curGames  = currentRound.getGames();
+    final List<Game> nextGames = nextRound.getGames();
+    if (curGames == null || nextGames == null || nextGames.isEmpty()) {
+      return;
+    }
+
+    // Skip empty rounds (no teams set at all)
+    final boolean currentEmpty = curGames.stream().allMatch(g -> g.getTeamA() == null && g.getTeamB() == null);
+    if (!currentEmpty) {
+      final boolean classicRatio  = (nextGames.size() == curGames.size() / 2);
+      final boolean sameSizeRatio = (nextGames.size() == curGames.size());
+      final boolean expandedRatio = (nextGames.size() > curGames.size());
 
       for (int i = 0; i < curGames.size(); i++) {
-        final Game       currentGame = curGames.get(i);
-        final PlayerPair winner      = currentGame.getWinner();
+        final Game currentGame = curGames.get(i);
+        PlayerPair winner      = currentGame.getWinner();
         if (winner == null) {
           continue; // nothing to propagate yet
         }
-        if (nextRound.isPairPresent(winner)) {
-          continue; // avoid any duplicate placement
+
+        // Avoid duplicate placement only if the *same instance* is already assigned in next round.
+        // Using reference identity prevents false positives when different pairs share seed/labels.
+        if (!winner.isBye() && isAlreadyAssignedInNextByReference(nextGames, winner)) {
+          continue;
         }
 
-        // Case A: classic KO ratio (next has half as many games)
-        if (nextGames.size() == curGames.size() / 2) {
+        boolean placed = false;
+
+        if (classicRatio) {
           int idx = i / 2;
           if (idx < nextGames.size()) {
-            Game nextGame = nextGames.get(idx);
-            // even index -> TEAM_A, odd -> TEAM_B
-            boolean placed = assignWinnerToSlot(nextGame, (i % 2 == 0), winner);
-            if (placed) {
-              continue; // placed via classic mapping
-            }
+            Game ng = nextGames.get(idx);
+            placed = assignWinnerToSlot(ng, (i % 2 == 0), winner);
           }
-        }
-
-        // Case B: qualif -> main draw ratio (same number of games)
-        if (nextGames.size() == curGames.size()) {
+        } else if (sameSizeRatio) {
           if (i < nextGames.size()) {
-            Game nextGame = nextGames.get(i);
-            // Prefer A then B at same index; both allow QUALIFIER overwrite
-            boolean placed = assignWinnerToSlot(nextGame, true, winner);
-            if (!placed) {
-              placed = assignWinnerToSlot(nextGame, false, winner);
-            }
-            if (placed) {
-              continue; // placed at same index
-            }
+            Game ng = nextGames.get(i);
+            placed = assignWinnerToSlot(ng, true, winner) || assignWinnerToSlot(ng, false, winner);
           }
+        } else if (expandedRatio) {
+          // Staggered entry (e.g., Q2 -> R64). Prefer QUALIFIER placeholders, then first null slot.
+          placed = placeBySingleScan(nextGames, winner);
         }
 
-        // Fallback: single scan (prefer QUALIFIER placeholders, then first null)
-        placeBySingleScan(nextGames, winner);
+        if (!placed) {
+          // Final fallback for any unusual layout: single scan
+          placeBySingleScan(nextGames, winner);
+        }
       }
     }
   }
