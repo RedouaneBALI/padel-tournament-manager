@@ -425,7 +425,7 @@ public class KnockoutPhase implements TournamentPhase {
 
         if (!placed) {
           // Final fallback for any unusual layout: single scan
-          placeBySingleScan(nextGames, winner);
+          //  placeBySingleScan(nextGames, winner);
         }
       }
     }

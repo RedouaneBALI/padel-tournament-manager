@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -277,6 +278,28 @@ public class TournamentBuilderTest {
         continue; // no next round to propagate into
       }
 
+      // Vérifie le nombre total d'équipes réelles uniques présentes dans tout le tournoi
+      // (non null, non BYE, et pas des placeholders QUALIFIER)
+      long distinctRealTeams = t.getRounds().stream()
+                                .flatMap(r -> r.getGames().stream())
+                                .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                .filter(Objects::nonNull)
+                                .filter(p -> !p.isBye())
+                                // exclure les slots de type QUALIFIER (placeholders avant propagation)
+                                .filter(p -> p.getType() == null || p.getType() != PairType.QUALIFIER)
+                                // créer une "signature" stable pour dédupliquer une paire (par noms joueurs si dispo, sinon par seed)
+                                .map(p -> {
+                                  String p1   = p.getPlayer1().getName();
+                                  String p2   = p.getPlayer2().getName();
+                                  int    sd   = p.getSeed();
+                                  String base = (p1 != null ? p1 : "?") + "/" + (p2 != null ? p2 : "?");
+                                  return base + "#seed=" + sd;
+                                })
+                                .distinct()
+                                .count();
+
+      assertEquals(nbPlayerPairs, (int) distinctRealTeams,
+                   "Distinct real teams mismatch (non-BYE, non-QUALIFIER) for tournament " + tournamentId);
       // Score the requested number of real matches before propagation
       scoreExistingMatches(currentRound, expectedNbGames);
 
@@ -286,7 +309,7 @@ public class TournamentBuilderTest {
       // Validate propagation results
       Round nextRound            = t.getRounds().get(built.indexOf(currentRound) + 1);
       int   expectedNewTeamsNext = intValue(rows.get(rowIndex + 1), "NewTeams");
-      validatePropagation(currentRound, nextRound, expectedNbGames, expectedNbDirectlyQualifiedPairs, expectedNewTeamsNext, stage, tournamentId);
+      validatePropagation(currentRound, row);
 
       // Validate current round composition
       validateRoundComposition(currentRound, row, stage, tournamentId);
@@ -299,8 +322,8 @@ public class TournamentBuilderTest {
     try {
       ObjectMapper mapper = new ObjectMapper();
       resource = String.format("/teams/teams_t%d.json", tournamentId);
-      InputStream         is    = getClass().getResourceAsStream(resource);
-      Map<String, Object> entry = mapper.readValue(is, Map.class);
+      InputStream is    = getClass().getResourceAsStream(resource);
+      Map         entry = mapper.readValue(is, Map.class);
       if (entry != null && entry.get("firstQualifPhase") != null) {
         List<?>    gamesJson = (List<?>) entry.get("firstQualifPhase");
         List<Game> games     = new ArrayList<>();
@@ -344,7 +367,8 @@ public class TournamentBuilderTest {
         break;
       }
       if (g.getTeamA() != null && g.getTeamB() != null &&
-          !g.getTeamA().isBye() && !g.getTeamB().isBye() &&
+          (g.getTeamA().getType() == null || g.getTeamA().getType() != PairType.BYE) &&
+          (g.getTeamB().getType() == null || g.getTeamB().getType() != PairType.BYE) &&
           g.getScore() == null) {
         g.setFormat(TestFixtures.createSimpleFormat(1));
         g.setScore(TestFixtures.createScoreWithWinner(g, g.getTeamA()));
@@ -353,29 +377,38 @@ public class TournamentBuilderTest {
     }
   }
 
-  private void validatePropagation(Round currentRound, Round nextRound, int expectedNbGames,
-                                   int expectedNbDirectlyQualifiedPairs, int expectedNewTeamsNextRound, Stage stage, Long tournamentId) {
-    long seedsNext = nextRound.getGames().stream()
-                              .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
-                              .filter(Objects::nonNull)
-                              .filter(p -> !p.isBye())
-                              .filter(p -> p.getSeed() != null && p.getSeed() > 0)
-                              .count();
+  private void validatePropagation(Round round, String[] row) {
+    for (Game game : round.getGames()) {
+      Assertions.assertNotNull(game.getTeamA(), "teamA should not be null in round " + round.getStage());
+      Assertions.assertNotNull(game.getTeamB(), "teamB should not be null in round " + round.getStage());
+    }
 
-    long realNonSeedNext = nextRound.getGames().stream()
-                                    .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
-                                    .filter(Objects::nonNull)
-                                    .filter(p -> !p.isBye())
-                                    .filter(p -> p.getSeed() == null || p.getSeed() == 0)
-                                    // exclude QUALIFIER placeholders (awaiting propagation)
-                                    .filter(p -> p.getType() == null || p.getType() != PairType.QUALIFIER)
-                                    .count();
+    int expectedTotalPairs               = intValue(row, "TotalPairs");
+    int expectedNonByePairs              = intValue(row, "PairsNonBye");
+    int expectedPairsPlaying             = intValue(row, "PairsPlaying");
+    int expectedNbGames                  = intValue(row, "Matches");
+    int expectedNbDirectlyQualifiedPairs = intValue(row, "DefaultQualif");
+    int expectedByePairs                 = intValue(row, "BYE");
+    int fromPreviousRound                = intValue(row, "FromPreviousRound");
 
-    long nonNullTeamsNext = seedsNext + realNonSeedNext;
+    int actualTotalPairs = round.getGames().size() * 2;
+    Assertions.assertEquals(expectedTotalPairs, actualTotalPairs, "Mismatch in total pairs for " + round.getStage());
 
-    int expectedWinners = expectedNbGames + expectedNbDirectlyQualifiedPairs + expectedNewTeamsNextRound;
-    assertEquals(expectedWinners, (int) nonNullTeamsNext,
-                 "Propagation mismatch from " + stage + " to " + nextRound.getStage() + " for " + tournamentId);
+    long actualNonByePairs = round.getGames().stream()
+                                  .flatMap(game -> Stream.of(game.getTeamA(), game.getTeamB()))
+                                  .filter(team -> !team.isBye())
+                                  .count();
+    Assertions.assertEquals(expectedNonByePairs, actualNonByePairs, "Mismatch in non-BYE pairs for " + round.getStage());
+
+    long actualPairsPlaying = round.getGames().stream()
+                                   .filter(game -> !game.getTeamA().isBye() && !game.getTeamB().isBye())
+                                   .count() * 2;
+    Assertions.assertEquals(expectedPairsPlaying, actualPairsPlaying, "Mismatch in pairs playing for " + round.getStage());
+
+    long actualGames = round.getGames().stream()
+                            .filter(game -> !game.getTeamA().isBye() && !game.getTeamB().isBye())
+                            .count();
+    Assertions.assertEquals(expectedNbGames, actualGames, "Mismatch in number of games for " + round.getStage());
   }
 
   private void validateRoundComposition(Round currentRound, String[] row, Stage stage, Long tournamentId) {
@@ -404,6 +437,26 @@ public class TournamentBuilderTest {
                                            .sum();
     assertEquals(expectedPairsPlaying, computedPairsPlaying,
                  "PairsPlaying mismatch in " + stage + " for " + tournamentId);
+
+    // Vérification : chaque équipe réelle apparaît exactement une fois dans le round (pas de doublon, pas d’oubli)
+    List<String> teamSignatures = currentRound.getGames().stream()
+                                              .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                              .filter(Objects::nonNull)
+                                              // On ignore les paires BYE/BYE (type BYE ou les deux joueurs nommés "BYE")
+                                              .filter(p -> !(p.isBye() ||
+                                                             (p.getPlayer1() != null && "BYE".equals(p.getPlayer1().getName()) &&
+                                                              p.getPlayer2() != null && "BYE".equals(p.getPlayer2().getName()))))
+                                              .map(p -> {
+                                                String p1   = p.getPlayer1() != null ? p.getPlayer1().getName() : "?";
+                                                String p2   = p.getPlayer2() != null ? p.getPlayer2().getName() : "?";
+                                                int    seed = p.getSeed();
+                                                return p1 + "/" + p2 + "#seed=" + seed;
+                                              })
+                                              .collect(Collectors.toList());
+
+    long uniqueTeams = teamSignatures.stream().distinct().count();
+    assertEquals(teamSignatures.size(), uniqueTeams,
+                 "Doublon ou oubli d'équipe réelle dans le round " + stage + " du tournoi " + tournamentId);
 
     // Cross-check composition
     assertEquals(expectedTotalPairs, fromPrev + newTeams + expectedByePairs + expectedNbDirectlyQualifiedPairs,
