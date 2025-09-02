@@ -12,22 +12,24 @@ import lombok.Setter;
 @JsonDeserialize(builder = TournamentFormatConfig.TournamentFormatConfigBuilder.class)
 public class TournamentFormatConfig {
 
-  // Commun à tous les formats
-  private Integer mainDrawSize; // Ex: 32, 64
-  private Integer nbSeeds;      // Ex: 8, 16
-
   @Builder.Default
-  private DrawMode drawMode = DrawMode.SEEDED;
-  
-  // Pour GROUPS_KO
-  private Integer nbPools;             // Ex: 4, 8
-  private Integer nbPairsPerPool;      // Ex: 3, 4
-  private Integer nbQualifiedByPool;   // Ex: 1, 2
-
-  // Pour QUALIF_KNOCKOUT
-  private Integer preQualDrawSize;     // Ex: 16
-  private Integer nbQualifiers;        // Ex: 4
-  private Integer nbSeedsQualify;      // Ex: 8
+  private Integer  mainDrawSize      = 0;
+  @Builder.Default
+  private Integer  nbSeeds           = 0;
+  @Builder.Default
+  private DrawMode drawMode          = DrawMode.SEEDED;
+  @Builder.Default
+  private Integer  nbPools           = 0;
+  @Builder.Default
+  private Integer  nbPairsPerPool    = 0;
+  @Builder.Default
+  private Integer  nbQualifiedByPool = 0;
+  @Builder.Default
+  private Integer  preQualDrawSize   = 0;
+  @Builder.Default
+  private Integer  nbQualifiers      = 0;
+  @Builder.Default
+  private Integer  nbSeedsQualify    = 0;
 
   // @todo add constructors wihth TournamentFormat to set defaults
 

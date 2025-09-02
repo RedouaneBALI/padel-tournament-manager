@@ -70,4 +70,19 @@ public enum Stage {
   public int getOrder() {
     return order;
   }
+
+  /**
+   * Indique si ce stage correspond au premier tour du tableau principal du tournoi.
+   *
+   * @param mainDrawSize la taille du tableau principal (ex: 32, 64)
+   * @return true si ce stage est le premier tour du tableau principal
+   */
+  public boolean isMainDraw(int mainDrawSize) {
+    try {
+      Stage mainDrawStage = fromNbTeams(mainDrawSize);
+      return this == mainDrawStage;
+    } catch (IllegalArgumentException e) {
+      return false;
+    }
+  }
 }

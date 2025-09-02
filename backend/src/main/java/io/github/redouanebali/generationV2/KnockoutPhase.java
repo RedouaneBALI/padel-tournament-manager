@@ -352,7 +352,24 @@ public class KnockoutPhase implements TournamentPhase {
 
   @Override
   public void placeRemainingTeamsRandomly(final Round round, final List<PlayerPair> remainingTeams) {
-    // TODO implement random placement of remaining teams
+    if (round == null || round.getGames() == null || remainingTeams == null || remainingTeams.isEmpty()) {
+      return;
+    }
+    List<PlayerPair> shuffled = new ArrayList<>(remainingTeams);
+    Collections.shuffle(shuffled);
+
+    int index = 0;
+    for (Game game : round.getGames()) {
+      if (game.getTeamA() == null && index < shuffled.size()) {
+        game.setTeamA(shuffled.get(index++));
+      }
+      if (game.getTeamB() == null && index < shuffled.size()) {
+        game.setTeamB(shuffled.get(index++));
+      }
+      if (index >= shuffled.size()) {
+        break;
+      }
+    }
   }
 
   @Override

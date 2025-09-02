@@ -335,9 +335,9 @@ public class KnockoutPhaseTests {
   /**
    * CSV-driven test for propagateWinners. For each row in src/test/resources/tournament_scenarios.csv, this test: - builds a minimal tournament with
    * the current round (Total pairs slots) and the next round (half as many games) - populates the current round according to the CSV semantics:
-   * DefaultQualif -> create Team vs BYE (auto-qualify) Matches      -> create TeamA vs TeamB and set an explicit winner (TeamA) via a score BYE
-   *    -> assign remaining BYE entries as BYE vs BYE so they do not produce a winner - calls KnockoutPhase.propagateWinners(t) - asserts that the
-   * number of non-null teams in the next round equals (Matches + DefaultQualif) FINAL rows are ignored (no subsequent round). Stage is resolved via
+   * DefaultQualif -> create Team vs BYE (auto-qualify) Matches      -> create TeamA vs TeamB and set an explicit winner (TeamA) via a score BYE ->
+   * assign remaining BYE entries as BYE vs BYE so they do not produce a winner - calls KnockoutPhase.propagateWinners(t) - asserts that the number of
+   * non-null teams in the next round equals (Matches + DefaultQualif) FINAL rows are ignored (no subsequent round). Stage is resolved via
    * Stage.valueOf(roundName.toUpperCase()).
    */
   @ParameterizedTest(name = "CSV propagateWinners: {0} – round={7}")
@@ -372,6 +372,7 @@ public class KnockoutPhaseTests {
                                                        .nbSeeds(nbSeeds)
                                                        .build();
     Tournament t = new Tournament();
+    t.setId(Long.valueOf(tournamentId));
     t.setConfig(cfg);
 
     // Arrange: build a minimal tournament with a single current round and its next round
@@ -384,67 +385,52 @@ public class KnockoutPhaseTests {
     t.getRounds().add(nextRound);
 
     // Fill current round according to the CSV semantics
-    // 1) DefaultQualif: Team vs BYE (auto-qualify)
-    int placedDefaults = 0;
-    int gameIndex      = 0;
-    while (placedDefaults < defaultQualif && gameIndex < currentRound.getGames().size()) {
-      Game g = currentRound.getGames().get(gameIndex++);
-      if (g.getTeamA() == null && g.getTeamB() == null) {
-        g.setTeamA(TestFixtures.buildPairWithSeed(1000 + placedDefaults));
-        g.setTeamB(PlayerPair.bye());
-        placedDefaults++;
-      }
-    }
+    KnockoutPhase phase = new KnockoutPhase(totalPairs, nbSeeds, PhaseType.MAIN_DRAW, DrawMode.SEEDED);
 
-    // 2) Played matches: A vs B with an explicit winner
-    int placedPlayed = 0;
-    while (placedPlayed < matches && gameIndex < currentRound.getGames().size()) {
-      Game g = currentRound.getGames().get(gameIndex++);
-      if (g.getTeamA() == null && g.getTeamB() == null) {
-        PlayerPair A = TestFixtures.buildPairWithSeed(2000 + placedPlayed * 2);
-        PlayerPair B = TestFixtures.buildPairWithSeed(2000 + placedPlayed * 2 + 1);
-        g.setTeamA(A);
-        g.setTeamB(B);
-        g.setFormat(TestFixtures.createSimpleFormat(1));
-        g.setScore(TestFixtures.createScoreWithWinner(g, A)); // TEAM_A always wins
-        placedPlayed++;
-      }
-    }
+    // Place seeds if needed (simulate admin placement for test)
+    List<PlayerPair> allPairs = TestFixtures.createPairs(pairsNonBye);
+    phase.placeSeedTeams(currentRound, allPairs, nbSeeds);
 
-    // 3) Remaining BYEs (if any): fill as BYE vs BYE so they do not produce winners
-    int usedByes      = defaultQualif; // one BYE consumed per defaultQualif game
-    int remainingByes = Math.max(0, bye - usedByes);
-    gameIndex = 0;
-    while (remainingByes > 1 && gameIndex < currentRound.getGames().size()) {
-      Game g = currentRound.getGames().get(gameIndex++);
-      if (g.getTeamA() == null && g.getTeamB() == null) {
-        g.setTeamA(PlayerPair.bye());
-        g.setTeamB(PlayerPair.bye());
-        remainingByes -= 2;
+    // Place BYEs according to the scenario
+    phase.placeByeTeams(currentRound, pairsNonBye, totalPairs, nbSeeds);
+
+    // Place remaining teams randomly (uniquement les paires non déjà placées)
+    Set<PlayerPair> alreadyPlaced = new HashSet<>();
+    for (Game g : currentRound.getGames()) {
+      if (g.getTeamA() != null && !g.getTeamA().isBye()) {
+        alreadyPlaced.add(g.getTeamA());
+      }
+      if (g.getTeamB() != null && !g.getTeamB().isBye()) {
+        alreadyPlaced.add(g.getTeamB());
       }
     }
-    if (remainingByes == 1) {
-      // Put the last odd BYE on one side if needed (won't generate a winner until an opponent arrives)
-      for (Game g : currentRound.getGames()) {
-        if (g.getTeamA() == null && g.getTeamB() == null) {
-          g.setTeamA(PlayerPair.bye());
-          break;
-        }
+    List<PlayerPair> remainingPairs = allPairs.stream()
+                                              .filter(p -> !alreadyPlaced.contains(p))
+                                              .toList();
+
+    phase.placeRemainingTeamsRandomly(currentRound, remainingPairs);
+
+    for (Game game : currentRound.getGames()) {
+      if (game.getTeamA() != null && game.getTeamB() != null
+          && !game.getTeamA().isBye() && !game.getTeamB().isBye()) {
+        game.setFormat(TestFixtures.createSimpleFormat(1));
+        game.setScore(TestFixtures.createScoreWithWinner(game, game.getTeamA())); // TEAM_A always wins
       }
     }
 
     // Act
-    KnockoutPhase phase = new KnockoutPhase(totalPairs, nbSeeds, PhaseType.MAIN_DRAW, DrawMode.SEEDED);
     phase.propagateWinners(t);
 
     // Assert: number of teams propagated to next round equals matches + defaultQualif
-    int expectedWinners = matches + defaultQualif;
-    long actualNonNullTeams = nextRound.getGames().stream()
-                                       .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
-                                       .filter(Objects::nonNull)
-                                       .count();
+    int expectedQualified = matches + defaultQualif;
+    long actualNonNullNonByeTeams = nextRound.getGames().stream()
+                                             .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                             .filter(Objects::nonNull)
+                                             .filter(p -> !p.isBye())
+                                             .count();
 
-    assertEquals(expectedWinners, actualNonNullTeams,
+    assertEquals(expectedQualified, actualNonNullNonByeTeams,
                  "Propagation mismatch for " + tournamentId + " at round " + roundName);
   }
 }
+

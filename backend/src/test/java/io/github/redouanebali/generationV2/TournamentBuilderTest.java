@@ -66,7 +66,7 @@ public class TournamentBuilderTest {
     if (lines.size() <= 1) {
       throw new IllegalStateException("CSV appears empty");
     }
-    buildHeaderIndex(lines.get(0));
+    buildHeaderIndex(lines.getFirst());
 
     Map<String, List<String[]>> byTid = new LinkedHashMap<>();
     for (int r = 1; r < lines.size(); r++) {
@@ -123,7 +123,7 @@ public class TournamentBuilderTest {
     Tournament t = makeTournament(0, 0, mainDraw, nbSeedsMain, 0, drawMode);
 
     TournamentBuilder builder   = new TournamentBuilder();
-    List<Round>       roundList = builder.buildQualifKO(t);
+    List<Round>       roundList = builder.buildQualifKOStructure(t);
     t.getRounds().clear();
     t.getRounds().addAll(roundList);
     List<Stage>   expectedStages  = parseStages(expectedStagesCsv);
@@ -160,7 +160,7 @@ public class TournamentBuilderTest {
     Tournament t = makeTournament(preQual, nbQualifiers, mainDraw, nbSeedsMain, nbSeedsQual, drawMode);
 
     TournamentBuilder builder   = new TournamentBuilder();
-    List<Round>       roundList = builder.buildQualifKO(t);
+    List<Round>       roundList = builder.buildQualifKOStructure(t);
     t.getRounds().clear();
     t.getRounds().addAll(roundList);
     List<Stage>   expectedStages  = parseStages(expectedStagesCsv);
@@ -191,7 +191,7 @@ public class TournamentBuilderTest {
   @MethodSource("tournamentsFromCsv")
   void testBuildAndPropagate_FullTournament_FromCsv(Long tournamentId, List<String[]> rows) {
     // Build tournament config from the first row (first 6 CSV inputs)
-    String[] first           = rows.get(0);
+    String[] first           = rows.getFirst();
     int      preQualDrawSize = intValue(first, "preQualDrawSize");
     int      nbQualifiers    = intValue(first, "nbQualifiers");
     int      mainDrawSize    = intValue(first, "mainDrawSize");
@@ -211,7 +211,7 @@ public class TournamentBuilderTest {
     t.setConfig(cfg);
 
     TournamentBuilder builder = new TournamentBuilder();
-    List<Round>       built   = builder.buildQualifKO(t);
+    List<Round>       built   = builder.buildQualifKOStructure(t);
     t.getRounds().addAll(built);
 
     // Stage order must match CSV order
@@ -229,13 +229,9 @@ public class TournamentBuilderTest {
 
     // --- Initialize the first main draw round (before the for loop) ---
     if (firstMainStage != null) {
-      Round thatRound = built.stream()
-                             .filter(r -> r.getStage() == firstMainStage)
-                             .findFirst()
-                             .orElse(null);
-      if (thatRound != null) {
-        initializeFirstMainDrawWithoutQualifiers(tournamentId, thatRound);
-      }
+      built.stream()
+           .filter(r -> r.getStage() == firstMainStage)
+           .findFirst().ifPresent(thatRound -> initializeFirstMainDrawWithoutQualifiers(tournamentId, thatRound));
     }
 
     // Simulate each round row-by-row
@@ -383,13 +379,10 @@ public class TournamentBuilderTest {
       Assertions.assertNotNull(game.getTeamB(), "teamB should not be null in round " + round.getStage());
     }
 
-    int expectedTotalPairs               = intValue(row, "TotalPairs");
-    int expectedNonByePairs              = intValue(row, "PairsNonBye");
-    int expectedPairsPlaying             = intValue(row, "PairsPlaying");
-    int expectedNbGames                  = intValue(row, "Matches");
-    int expectedNbDirectlyQualifiedPairs = intValue(row, "DefaultQualif");
-    int expectedByePairs                 = intValue(row, "BYE");
-    int fromPreviousRound                = intValue(row, "FromPreviousRound");
+    int expectedTotalPairs   = intValue(row, "TotalPairs");
+    int expectedNonByePairs  = intValue(row, "PairsNonBye");
+    int expectedPairsPlaying = intValue(row, "PairsPlaying");
+    int expectedNbGames      = intValue(row, "Matches");
 
     int actualTotalPairs = round.getGames().size() * 2;
     Assertions.assertEquals(expectedTotalPairs, actualTotalPairs, "Mismatch in total pairs for " + round.getStage());
@@ -452,7 +445,7 @@ public class TournamentBuilderTest {
                                                 int    seed = p.getSeed();
                                                 return p1 + "/" + p2 + "#seed=" + seed;
                                               })
-                                              .collect(Collectors.toList());
+                                              .toList();
 
     long uniqueTeams = teamSignatures.stream().distinct().count();
     assertEquals(teamSignatures.size(), uniqueTeams,
