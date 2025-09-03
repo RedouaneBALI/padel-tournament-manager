@@ -1,4 +1,4 @@
-package io.github.redouanebali.generationV2;
+package io.github.redouanebali.generation;
 
 public enum PhaseType {
   QUALIFS,

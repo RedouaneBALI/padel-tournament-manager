@@ -7,7 +7,6 @@ import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.TournamentRepository;
-import io.github.redouanebali.service.strategy.StrategyResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,8 +14,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class GameService {
 
-  private final TournamentRepository tournamentRepository;
-  private final TournamentService    tournamentService;
+  private final TournamentRepository  tournamentRepository;
+  private final TournamentService     tournamentService;
+  private final DrawGenerationService drawGenerationService;
+
 
   public UpdateScoreDTO updateGameScore(Long tournamentId, Long gameId, Score score) {
     Tournament tournament = tournamentService.getTournamentById(tournamentId);
@@ -41,7 +42,7 @@ public class GameService {
 
     TeamSide winner = null;
     if (game.isFinished()) {
-      StrategyResolver.resolve(tournament.getFormat()).propagateWinners(tournament);
+      drawGenerationService.propagateWinners(tournament);
       winner = game.getWinner().equals(game.getTeamA()) ? TeamSide.TEAM_A : TeamSide.TEAM_B;
     }
 

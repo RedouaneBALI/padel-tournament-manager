@@ -1,6 +1,6 @@
 package io.github.redouanebali.service;
 
-import io.github.redouanebali.dto.request.InitializeDrawRequest;
+import io.github.redouanebali.dto.request.RoundRequest;
 import io.github.redouanebali.dto.request.UpdateTournamentRequest;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Round;
@@ -11,7 +11,6 @@ import io.github.redouanebali.model.format.TournamentFormatConfig;
 import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
-import io.github.redouanebali.service.builder.TournamentRoundBuilder;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,8 +30,6 @@ public class TournamentService {
 
   private final DrawGenerationService drawGenerationService;
 
-  private final TournamentRoundBuilder roundBuilder;
-
   public Tournament getTournamentById(Long id) {
     return tournamentRepository.findById(id)
                                .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
@@ -45,7 +42,7 @@ public class TournamentService {
       throw new IllegalArgumentException("Tournament cannot be null");
     }
     if (tournament.getFormat() != null && tournament.getConfig() != null) {
-      roundBuilder.validateAndBuild(tournament);
+      drawGenerationService.validate(tournament);
     }
     tournament.setOwnerId(SecurityUtil.currentUserId());
 
@@ -91,7 +88,7 @@ public class TournamentService {
       TournamentFormat format = existing.getFormat();
       existing.setFormat(format);
       TournamentFormatConfig config = existing.getConfig();
-      roundBuilder.validateAndBuild(existing);
+      // roundBuilder.validateAndBuild(existing);
     }
 
     return applyEditable(tournamentRepository.save(existing));
@@ -101,40 +98,31 @@ public class TournamentService {
    * Call generator.generate() and dispatch all the players into games from the created round
    *
    * @param tournamentId the id of the tournament
-   * @param manual flag indicating manual draw generation
    * @return the new Tournament
    */
-  public Tournament generateDraw(Long tournamentId, boolean manual) {
+  public Tournament generateDrawAuto(Long tournamentId) {
     Tournament  tournament  = getTournamentById(tournamentId);
     String      me          = SecurityUtil.currentUserId();
     Set<String> superAdmins = securityProps.getSuperAdmins();
     if (!superAdmins.contains(me) && !me.equals(tournament.getOwnerId())) {
       throw new AccessDeniedException("You are not allowed to generate the draw for this tournament");
     }
-    return applyEditable(drawGenerationService.generateDraw(tournament, manual));
+    return applyEditable(drawGenerationService.generateDrawAuto(tournament));
   }
 
   /**
-   * Initialize the draw with a bracket structure provided by the client (manual construction). This replaces the current tournament rounds with the
-   * provided ones as-is (after light sanity checks), without auto-seeding or random assignment.
+   * Manually set the draw with the provided pairs for qualifs and main draw. This replaces the current tournament rounds with the provided ones as-is
+   * (after light sanity checks), without auto-seeding or random assignment.
    */
   @Transactional
-  public Tournament initializeDraw(Long tournamentId, InitializeDrawRequest request) {
-    if (request == null || request.getRounds() == null) {
-      throw new IllegalArgumentException("InitializeDrawRequest cannot be null");
-    }
-
-    Tournament tournament = getTournamentById(tournamentId);
-
-    // Security
+  public Tournament generateDrawManual(Long tournamentId, List<RoundRequest> initialRounds) {
+    Tournament  tournament  = getTournamentById(tournamentId);
     String      me          = SecurityUtil.currentUserId();
     Set<String> superAdmins = securityProps.getSuperAdmins();
     if (!superAdmins.contains(me) && !me.equals(tournament.getOwnerId())) {
-      throw new AccessDeniedException("You are not allowed to initialize the draw for this tournament");
+      throw new AccessDeniedException("You are not allowed to generate the draw for this tournament");
     }
-
-    Tournament saved = drawGenerationService.initializeManualDraw(tournament, request);
-    return applyEditable(saved);
+    return applyEditable(drawGenerationService.generateDrawManual(tournament, initialRounds));
   }
 
   public Set<Game> getGamesByTournamentAndStage(Long tournamentId, Stage stage) {

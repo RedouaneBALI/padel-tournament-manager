@@ -40,35 +40,21 @@ public enum Stage {
   }
 
   /**
-   * Map a power-of-two number of teams to the corresponding main-draw stage. Qualification stages (Q1..Q3) and GROUPS are not handled here.
+   * Retourne le stage du tableau principal correspondant au nombre d'équipes, ou le stage juste au-dessus si le nombre ne correspond pas exactement à
+   * une borne. Qualification stages (Q1..Q3) et GROUPS ne sont pas gérés ici.
    *
-   * @param teams a power of two (64, 32, 16, 8, 4, 2)
-   * @return the corresponding Stage (R64..FINAL)
-   * @throws IllegalArgumentException if the value is not supported
+   * @param teams nombre d'équipes
+   * @return le stage correspondant ou le stage juste au-dessus
+   * @throws IllegalArgumentException si aucun stage n'est trouvé
    */
   public static Stage fromNbTeams(int teams) {
-    return switch (teams) {
-      case 64 -> R64;
-      case 32 -> R32;
-      case 16 -> R16;
-      case 8 -> QUARTERS;
-      case 4 -> SEMIS;
-      case 2 -> FINAL;
-      default -> throw new IllegalArgumentException("Unsupported number of teams for main draw: " + teams);
-    };
-  }
-
-  public Stage next() {
-    int     ordinal = this.ordinal();
-    Stage[] values  = Stage.values();
-    if (ordinal < values.length - 1) {
-      return values[ordinal + 1];
+    // Parcourir les stages du plus grand au plus petit
+    for (Stage stage : new Stage[]{FINAL, SEMIS, QUARTERS, R16, R32, R64}) {
+      if (teams <= stage.nbTeams && stage.nbTeams > 0) {
+        return stage;
+      }
     }
-    return null; // or throw an exception if needed
-  }
-
-  public int getOrder() {
-    return order;
+    throw new IllegalArgumentException("Unsupported number of teams for main draw: " + teams);
   }
 
   /**

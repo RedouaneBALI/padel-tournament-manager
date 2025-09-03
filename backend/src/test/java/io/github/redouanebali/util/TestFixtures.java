@@ -1,6 +1,9 @@
 package io.github.redouanebali.util;
 
 
+import io.github.redouanebali.dto.request.GameRequest;
+import io.github.redouanebali.dto.request.PlayerPairRequest;
+import io.github.redouanebali.dto.request.RoundRequest;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.Player;
@@ -17,7 +20,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Shared test data builders to avoid duplication across tests.
@@ -34,11 +36,15 @@ public final class TestFixtures {
   }
 
   /**
-   * Create a deterministic list of PlayerPair with seeds 1..count.
+   * Create a deterministic list of PlayerPair with seeds 1..count and ids 1..count.
    */
   public static List<PlayerPair> createPairs(int count) {
     List<PlayerPair> pairs = new ArrayList<>();
-    IntStream.rangeClosed(1, count).forEach(seed -> pairs.add(buildPairWithSeed(seed)));
+    for (int seed = 1; seed <= count; seed++) {
+      PlayerPair pair = buildPairWithSeed(seed);
+      pair.setId((long) seed); // id incrémental
+      pairs.add(pair);
+    }
     return pairs;
   }
 
@@ -190,5 +196,30 @@ public final class TestFixtures {
                  .map(String::trim)
                  .map(Integer::parseInt)
                  .collect(Collectors.toList());
+  }
+
+  /**
+   * Helper pour créer une liste de RoundRequest en mode manuel (1v2, 3v4, ...).
+   *
+   * @param stage le stage du round (ex: SEMIS, FINALE, etc.)
+   * @param pairs la liste des équipes à placer
+   * @return liste contenant un seul RoundRequest rempli
+   */
+  public static List<RoundRequest> createManualRoundRequestsFromPairs(Stage stage, List<PlayerPair> pairs) {
+    RoundRequest roundRequest = new RoundRequest();
+    roundRequest.setStage(stage.name());
+    List<GameRequest> gameRequests = new ArrayList<>();
+    for (int i = 0; i < pairs.size(); i += 2) {
+      GameRequest gReq = new GameRequest();
+      gReq.setTeamA(PlayerPairRequest.fromModel(pairs.get(i)));
+      if (i + 1 < pairs.size()) {
+        gReq.setTeamB(PlayerPairRequest.fromModel(pairs.get(i + 1)));
+      }
+      gameRequests.add(gReq);
+    }
+    roundRequest.setGames(gameRequests);
+    List<RoundRequest> result = new ArrayList<>();
+    result.add(roundRequest);
+    return result;
   }
 }

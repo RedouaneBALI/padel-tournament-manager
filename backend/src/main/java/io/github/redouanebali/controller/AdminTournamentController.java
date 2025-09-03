@@ -1,7 +1,7 @@
 package io.github.redouanebali.controller;
 
 import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
-import io.github.redouanebali.dto.request.InitializeDrawRequest;
+import io.github.redouanebali.dto.request.RoundRequest;
 import io.github.redouanebali.dto.request.UpdateGameRequest;
 import io.github.redouanebali.dto.request.UpdatePlayerPairRequest;
 import io.github.redouanebali.dto.request.UpdateTournamentRequest;
@@ -109,27 +109,17 @@ public class AdminTournamentController {
     return ResponseEntity.ok().build();
   }
 
-  /**
-   * @param manual if true players order is preserved, otherwise algorithm shuffles
-   */
-  @PostMapping(path = "/{id}/draw")
-  public TournamentDTO generateDraw(@PathVariable Long id,
-                                    @RequestParam(defaultValue = "false") boolean manual) {
-    checkOwnership(id);
-    return tournamentMapper.toDTO(tournamentService.generateDraw(id, manual));
-  }
 
   /**
    * Initialize the draw with a bracket structure provided by the client (manual construction). Replaces the tournament rounds with the provided ones
    * as-is (light sanity checks in service).
    */
-  @PostMapping(path = "/{id}/draw/initialize", consumes = MediaType.APPLICATION_JSON_VALUE)
+/*  @PostMapping(path = "/{id}/draw/initialize", consumes = MediaType.APPLICATION_JSON_VALUE)
   public TournamentDTO initializeDraw(@PathVariable Long id, @RequestBody @Valid InitializeDrawRequest request) {
     checkOwnership(id);
-    Tournament tournament = tournamentService.initializeDraw(id, request);
+    Tournament tournament = tournamentService.initializeBack(id, request);
     return tournamentMapper.toDTO(tournament);
-  }
-
+  } */
   @PutMapping(path = "/{id}/rounds/{stage}/match-format", consumes = MediaType.APPLICATION_JSON_VALUE)
   public MatchFormat updateMatchFormat(@PathVariable Long id,
                                        @PathVariable Stage stage,
@@ -164,11 +154,31 @@ public class AdminTournamentController {
     );
   }
 
+  /*
   @PostMapping(path = "/{id}/pairs/sort-manual")
   public TournamentDTO sortManualPairs(@PathVariable Long id) {
     checkOwnership(id);
     Tournament tournament = drawGenerationService.sortManualPairs(id);
     return tournamentMapper.toDTO(tournament);
+  } */
+
+  /**
+   * Génère le tirage au sort automatique (algorithme).
+   */
+  @PostMapping(path = "/{id}/draw/auto")
+  public TournamentDTO generateDrawAuto(@PathVariable Long id) {
+    checkOwnership(id);
+    return tournamentMapper.toDTO(tournamentService.generateDrawAuto(id));
+  }
+
+  /**
+   * Génère le tirage au sort manuel (ordre fourni par le client).
+   */
+  @PostMapping(path = "/{id}/draw/manual")
+  public TournamentDTO generateDrawManual(@PathVariable Long id,
+                                          @RequestBody(required = false) List<RoundRequest> initialRounds) {
+    checkOwnership(id);
+    return tournamentMapper.toDTO(tournamentService.generateDrawManual(id, initialRounds));
   }
 
   private void checkOwnership(Long tournamentId) {

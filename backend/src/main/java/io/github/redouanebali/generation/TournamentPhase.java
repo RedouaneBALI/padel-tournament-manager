@@ -1,4 +1,4 @@
-package io.github.redouanebali.generationV2;
+package io.github.redouanebali.generation;
 
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;

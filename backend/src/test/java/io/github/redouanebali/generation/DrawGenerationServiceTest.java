@@ -10,6 +10,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.github.redouanebali.dto.request.RoundRequest;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
@@ -85,15 +86,18 @@ class DrawGenerationServiceTest {
   void generateDraw_manual_knockout_populatesSemis_andSaves() {
     Tournament tournament = baseTournamentKO(4, 0);
 
-    Tournament updated = drawGenerationService.generateDraw(tournament, true); // manual
+    // Utilise la méthode helper pour créer les RoundRequest manuels
+    List<PlayerPair>   pairs        = new ArrayList<>(tournament.getPlayerPairs());
+    List<RoundRequest> manualRounds = TestFixtures.createManualRoundRequestsFromPairs(Stage.SEMIS, pairs);
+
+    Tournament updated = drawGenerationService.generateDrawManual(tournament, manualRounds);
     assertSame(tournament, updated);
     Round semis = updated.getRoundByStage(Stage.SEMIS);
     assertNotNull(semis);
     assertEquals(2, semis.getGames().size());
     // Manual draw must keep original order (1v2, 3v4 with sequential fill A then B)
-    List<PlayerPair> pairs = new ArrayList<>(tournament.getPlayerPairs());
-    Game             g1    = semis.getGames().get(0);
-    Game             g2    = semis.getGames().get(1);
+    Game g1 = semis.getGames().get(0);
+    Game g2 = semis.getGames().get(1);
     assertSame(pairs.get(0), g1.getTeamA());
     assertSame(pairs.get(1), g1.getTeamB());
     assertSame(pairs.get(2), g2.getTeamA());
@@ -103,7 +107,7 @@ class DrawGenerationServiceTest {
   @Test
   void generateDraw_algorithmic_knockout_populatesSemis_andSaves() {
     Tournament tournament = baseTournamentKO(4, 0);
-    Tournament updated    = drawGenerationService.generateDraw(tournament, false); // algorithmic
+    Tournament updated    = drawGenerationService.generateDrawAuto(tournament); // algorithmic
     assertSame(tournament, updated);
     Round semis = updated.getRoundByStage(Stage.SEMIS);
     assertNotNull(semis);
@@ -118,46 +122,32 @@ class DrawGenerationServiceTest {
 
   @Test
   void generateDraw_denied_whenNotOwnerOrSuperAdmin() {
-    // current user is bali.redouane@gmail.com (set in setUp), set owner to someone else
     Tournament tournament = baseTournamentKO(4, 0);
     tournament.setOwnerId("not.me@example.com");
-    assertThrows(AccessDeniedException.class, () -> drawGenerationService.generateDraw(tournament, true));
+    List<PlayerPair>   pairs        = new ArrayList<>(tournament.getPlayerPairs());
+    List<RoundRequest> manualRounds = TestFixtures.createManualRoundRequestsFromPairs(Stage.SEMIS, pairs);
+    assertThrows(AccessDeniedException.class,
+                 () -> drawGenerationService.generateDrawManual(tournament, manualRounds));
   }
 
   @Test
   void generateDraw_allowed_forSuperAdmin_evenIfNotOwner() {
-    // make current user a super-admin
     when(securityProps.getSuperAdmins()).thenReturn(Set.of("bali.redouane@gmail.com"));
     Tournament tournament = baseTournamentKO(4, 0);
-    tournament.setOwnerId("someone@else"); // not owner, but super-admin
-    Tournament updated = drawGenerationService.generateDraw(tournament, true);
+    tournament.setOwnerId("someone@else");
+    List<PlayerPair>   pairs        = new ArrayList<>(tournament.getPlayerPairs());
+    List<RoundRequest> manualRounds = TestFixtures.createManualRoundRequestsFromPairs(Stage.SEMIS, pairs);
+    Tournament         updated      = drawGenerationService.generateDrawManual(tournament, manualRounds);
     assertSame(tournament, updated);
   }
 
   @Test
   void generateDraw_savesTournament_once() {
-    Tournament tournament = baseTournamentKO(4, 0);
-    drawGenerationService.generateDraw(tournament, true);
+    Tournament         tournament   = baseTournamentKO(4, 0);
+    List<PlayerPair>   pairs        = new ArrayList<>(tournament.getPlayerPairs());
+    List<RoundRequest> manualRounds = TestFixtures.createManualRoundRequestsFromPairs(Stage.SEMIS, pairs);
+    drawGenerationService.generateDrawManual(tournament, manualRounds);
     verify(tournamentRepository, times(1)).save(tournament);
-  }
-
-  @Test
-  void generateDraw_respectsNbMaxPairs_limit_manual() {
-    Tournament t = baseTournamentKO(4, 0);
-    t.getPlayerPairs().clear();
-    t.getPlayerPairs().addAll(TestFixtures.createPairs(6)); // 6 registered, should use first 4
-    Tournament updated = drawGenerationService.generateDraw(t, true); // manual uses order
-    Round      semis   = updated.getRoundByStage(Stage.SEMIS);
-    assertNotNull(semis);
-    assertEquals(2, semis.getGames().size());
-    List<PlayerPair> pairs = new ArrayList<>(t.getPlayerPairs());
-    Game             g1    = semis.getGames().get(0);
-    Game             g2    = semis.getGames().get(1);
-    // only first 4 pairs should be used in order
-    assertSame(pairs.get(0), g1.getTeamA());
-    assertSame(pairs.get(1), g1.getTeamB());
-    assertSame(pairs.get(2), g2.getTeamA());
-    assertSame(pairs.get(3), g2.getTeamB());
   }
 
   // -------------------- helpers --------------------

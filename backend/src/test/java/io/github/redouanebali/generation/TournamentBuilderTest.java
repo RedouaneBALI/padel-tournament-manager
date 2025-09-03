@@ -1,4 +1,4 @@
-package io.github.redouanebali.generationV2;
+package io.github.redouanebali.generation;
 
 import static io.github.redouanebali.util.TestFixtures.parseInts;
 import static io.github.redouanebali.util.TestFixtures.parseStages;

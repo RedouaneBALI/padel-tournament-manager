@@ -30,9 +30,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 public class GameServiceTest {
 
-  private TournamentRepository tournamentRepository;
-  private TournamentService    tournamentService;
-  private GameService          gameService;
+  private TournamentRepository  tournamentRepository;
+  private TournamentService     tournamentService;
+  private DrawGenerationService drawGenerationService;
+  private GameService           gameService;
 
   @BeforeEach
   void setUp() {
@@ -40,9 +41,10 @@ public class GameServiceTest {
     SecurityContextHolder.getContext().setAuthentication(
         new UsernamePasswordAuthenticationToken("bali.redouane@gmail.com", null, List.of())
     );
-    tournamentRepository = mock(TournamentRepository.class);
-    tournamentService    = mock(TournamentService.class);
-    gameService          = new GameService(tournamentRepository, tournamentService);
+    tournamentRepository  = mock(TournamentRepository.class);
+    tournamentService     = mock(TournamentService.class);
+    drawGenerationService = mock(DrawGenerationService.class);
+    gameService           = new GameService(tournamentRepository, tournamentService, drawGenerationService);
   }
 
 

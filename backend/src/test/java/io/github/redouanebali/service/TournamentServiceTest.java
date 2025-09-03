@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -18,10 +19,11 @@ import io.github.redouanebali.model.format.TournamentFormat;
 import io.github.redouanebali.model.format.TournamentFormatConfig;
 import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.security.SecurityProps;
-import io.github.redouanebali.service.builder.TournamentRoundBuilder;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,11 +32,10 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 
 public class TournamentServiceTest {
 
-  private TournamentService      tournamentService;
-  private SecurityProps          securityProps;
-  private TournamentRepository   tournamentRepository;
-  private DrawGenerationService  drawGenerationService;
-  private TournamentRoundBuilder roundBuilder;
+  private TournamentService     tournamentService;
+  private SecurityProps         securityProps;
+  private TournamentRepository  tournamentRepository;
+  private DrawGenerationService drawGenerationService;
 
   @BeforeEach
   void setUp() {
@@ -50,29 +51,27 @@ public class TournamentServiceTest {
     securityProps        = mock(SecurityProps.class);
     lenient().when(securityProps.getSuperAdmins()).thenReturn(Collections.emptySet());
     drawGenerationService = mock(DrawGenerationService.class);
-    roundBuilder          = org.mockito.Mockito.spy(new TournamentRoundBuilder());
     lenient().when(tournamentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
     tournamentService = new TournamentService(
         tournamentRepository,
         securityProps,
-        drawGenerationService,
-        roundBuilder
+        drawGenerationService
     );
   }
 
   @Test
-  void testGenerateDraw_shouldDelegateToDrawGenerationService() {
+  void testGenerateDraw_shouldDelegateToDrawManualGenerationService() {
     Tournament tournament = new Tournament();
     tournament.setId(1L);
     tournament.setOwnerId("bali.redouane@gmail.com");
 
     when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
-    when(drawGenerationService.generateDraw(tournament, false)).thenReturn(tournament);
+    when(drawGenerationService.generateDrawAuto(tournament)).thenReturn(tournament);
 
-    Tournament result = tournamentService.generateDraw(1L, false);
+    Tournament result = tournamentService.generateDrawAuto(1L);
 
-    verify(drawGenerationService, times(1)).generateDraw(tournament, false);
+    verify(drawGenerationService, times(1)).generateDrawAuto(tournament);
     assertEquals(tournament, result);
   }
 
@@ -95,6 +94,8 @@ public class TournamentServiceTest {
   }
 
   @Test
+  @Disabled
+    // no initialization before generation
   void testCreateTournament_initializesStructure_whenConfigProvided() {
     Tournament t = new Tournament();
     t.setFormat(TournamentFormat.KNOCKOUT);
@@ -125,6 +126,14 @@ public class TournamentServiceTest {
     t.setFormat(TournamentFormat.KNOCKOUT);
     // invalid: mainDrawSize not power of two and seeds > size
     t.setConfig(TournamentFormatConfig.builder().mainDrawSize(12).nbSeeds(16).build());
+
+    // Mock the drawGenerationService to return validation errors instead of throwing exception
+    List<String> expectedErrors = List.of(
+        "mainDrawSize must be a power of 2, got: 12",
+        "nbSeeds (16) cannot exceed mainDrawSize (12)"
+    );
+    doThrow(new IllegalArgumentException("Invalid tournament configuration: " + String.join(", ", expectedErrors)))
+        .when(drawGenerationService).validate(any(Tournament.class));
 
     assertThrows(IllegalArgumentException.class, () -> tournamentService.createTournament(t));
   }

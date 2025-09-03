@@ -9,6 +9,7 @@ import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
 import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.format.TournamentFormatConfig;
 import io.github.redouanebali.repository.TournamentRepository;
 import java.util.Collections;
 import java.util.List;
@@ -58,6 +59,7 @@ public class PlayerPairServiceTest {
     Tournament tournament = new Tournament();
     tournament.setId(1L);
     tournament.setOwnerId("bali.redouane@gmail.com");
+    tournament.setConfig(TournamentFormatConfig.builder().mainDrawSize(2).build());
 
     CreatePlayerPairRequest       pp1   = new CreatePlayerPairRequest("Alice", "Bob", 1);
     CreatePlayerPairRequest       pp2   = new CreatePlayerPairRequest("Charlie", "Dave", 2);
