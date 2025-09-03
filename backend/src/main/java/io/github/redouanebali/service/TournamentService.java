@@ -30,12 +30,26 @@ public class TournamentService {
 
   private final DrawGenerationService drawGenerationService;
 
+  /**
+   * Retrieves a tournament by its ID.
+   *
+   * @param id the tournament ID
+   * @return the tournament entity
+   * @throws IllegalArgumentException if the tournament is not found
+   */
   public Tournament getTournamentById(Long id) {
     return tournamentRepository.findById(id)
                                .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
   }
 
-
+  /**
+   * Creates a new tournament and validates its configuration. If format and config are provided, validates the tournament structure. Sets the current
+   * user as the tournament owner.
+   *
+   * @param tournament the tournament to create
+   * @return the created tournament with editable flag set
+   * @throws IllegalArgumentException if tournament is null or configuration is invalid
+   */
   @Transactional
   public Tournament createTournament(final Tournament tournament) {
     if (tournament == null) {
@@ -51,6 +65,13 @@ public class TournamentService {
     return applyEditable(savedTournament);
   }
 
+  /**
+   * Deletes a tournament if the current user is the owner or a super admin.
+   *
+   * @param tournamentId the ID of the tournament to delete
+   * @throws IllegalArgumentException if tournament is not found
+   * @throws AccessDeniedException if user lacks deletion rights
+   */
   @Transactional
   public void deleteTournament(Long tournamentId) {
     Tournament  existing    = getTournamentById(tournamentId);
@@ -63,6 +84,16 @@ public class TournamentService {
     log.info("Deleted tournament with id {}", tournamentId);
   }
 
+  /**
+   * Updates an existing tournament with new information. Only the owner or super admins can update tournaments. Rebuilds tournament structure if
+   * format and config are provided.
+   *
+   * @param tournamentId the ID of the tournament to update
+   * @param updatedTournament the new tournament data
+   * @return the updated tournament with editable flag set
+   * @throws IllegalArgumentException if tournament is not found
+   * @throws AccessDeniedException if user lacks update rights
+   */
   @Transactional
   public Tournament updateTournament(Long tournamentId, UpdateTournamentRequest updatedTournament) {
     Tournament  existing    = getTournamentById(tournamentId);
@@ -95,10 +126,13 @@ public class TournamentService {
   }
 
   /**
-   * Call generator.generate() and dispatch all the players into games from the created round
+   * Generates an automatic draw using seeding algorithm. Places teams based on their seeds and fills remaining positions randomly. Only the owner or
+   * super admins can generate draws.
    *
-   * @param tournamentId the id of the tournament
-   * @return the new Tournament
+   * @param tournamentId the tournament ID
+   * @return the tournament with generated draw and editable flag set
+   * @throws IllegalArgumentException if tournament is not found
+   * @throws AccessDeniedException if user lacks generation rights
    */
   public Tournament generateDrawAuto(Long tournamentId) {
     Tournament  tournament  = getTournamentById(tournamentId);
@@ -111,8 +145,14 @@ public class TournamentService {
   }
 
   /**
-   * Manually set the draw with the provided pairs for qualifs and main draw. This replaces the current tournament rounds with the provided ones as-is
-   * (after light sanity checks), without auto-seeding or random assignment.
+   * Generates a manual draw using user-provided initial rounds configuration. Replaces existing rounds with the provided structure. Only the owner or
+   * super admins can generate draws.
+   *
+   * @param tournamentId the tournament ID
+   * @param initialRounds optional list of initial rounds provided by user
+   * @return the tournament with generated draw and editable flag set
+   * @throws IllegalArgumentException if tournament is not found
+   * @throws AccessDeniedException if user lacks generation rights
    */
   @Transactional
   public Tournament generateDrawManual(Long tournamentId, List<RoundRequest> initialRounds) {
@@ -125,6 +165,14 @@ public class TournamentService {
     return applyEditable(drawGenerationService.generateDrawManual(tournament, initialRounds));
   }
 
+  /**
+   * Retrieves all games for a specific tournament stage.
+   *
+   * @param tournamentId the tournament ID
+   * @param stage the tournament stage to get games from
+   * @return set of games for the specified stage
+   * @throws IllegalArgumentException if tournament or stage round is not found
+   */
   public Set<Game> getGamesByTournamentAndStage(Long tournamentId, Stage stage) {
     Tournament tournament = getTournamentById(tournamentId);
 
@@ -136,10 +184,23 @@ public class TournamentService {
     return new LinkedHashSet<>(round.getGames());
   }
 
+  /**
+   * Retrieves a tournament for the current user with editable flag properly set.
+   *
+   * @param id the tournament ID
+   * @return the tournament with editable flag indicating if current user can modify it
+   * @throws IllegalArgumentException if tournament is not found
+   */
   public Tournament getTournamentForCurrentUser(Long id) {
     return applyEditable(getTournamentById(id));
   }
 
+  /**
+   * Sets the editable flag based on current user's ownership rights. Tournament is editable if user is owner or super admin.
+   *
+   * @param t the tournament to process
+   * @return the tournament with updated editable flag
+   */
   private Tournament applyEditable(Tournament t) {
     String      me          = SecurityUtil.currentUserId();
     Set<String> superAdmins = securityProps.getSuperAdmins();
@@ -147,10 +208,21 @@ public class TournamentService {
     return t;
   }
 
+  /**
+   * Retrieves all tournaments owned by a specific user.
+   *
+   * @param ownerId the owner's user ID
+   * @return list of tournaments owned by the user
+   */
   public List<Tournament> listByOwner(String ownerId) {
     return tournamentRepository.findAllByOwnerId(ownerId);
   }
 
+  /**
+   * Retrieves all tournaments in the system. Typically used by super admins.
+   *
+   * @return list of all tournaments
+   */
   public List<Tournament> listAll() {
     return tournamentRepository.findAll();
   }

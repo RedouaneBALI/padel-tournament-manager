@@ -1,6 +1,7 @@
 package io.github.redouanebali.mapper;
 
 import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
+import io.github.redouanebali.dto.request.CreateTournamentRequest;
 import io.github.redouanebali.dto.response.GameDTO;
 import io.github.redouanebali.dto.response.MatchFormatDTO;
 import io.github.redouanebali.dto.response.PlayerPairDTO;
@@ -132,4 +133,19 @@ public interface TournamentMapper {
     return SecurityUtil.isSuperAdmin(Set.of(me))
            || (tournament.getOwnerId() != null && tournament.getOwnerId().equals(me));
   }
+
+  /**
+   * Converts a CreateTournamentRequest DTO to a Tournament entity. Maps only the fields that can be set during creation, excluding system-managed
+   * fields.
+   *
+   * @param request the tournament creation request
+   * @return a new Tournament entity with mapped fields
+   */
+  @Mapping(target = "id", ignore = true)
+  @Mapping(target = "ownerId", ignore = true)
+  @Mapping(target = "editable", ignore = true)
+  @Mapping(target = "rounds", ignore = true)
+  @Mapping(target = "playerPairs", ignore = true)
+  @Mapping(target = "pools", ignore = true)
+  Tournament toEntity(CreateTournamentRequest request);
 }

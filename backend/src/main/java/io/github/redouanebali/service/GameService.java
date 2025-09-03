@@ -19,6 +19,15 @@ public class GameService {
   private final DrawGenerationService drawGenerationService;
 
 
+  /**
+   * Updates the score of a specific game and propagates winners if the game is finished. Saves the tournament after the update.
+   *
+   * @param tournamentId the tournament ID
+   * @param gameId the game ID to update
+   * @param score the new score to set
+   * @return update result containing finish status and winner information
+   * @throws IllegalArgumentException if tournament or game is not found
+   */
   public UpdateScoreDTO updateGameScore(Long tournamentId, Long gameId, Score score) {
     Tournament tournament = tournamentService.getTournamentById(tournamentId);
     Game       game       = findGameInTournament(tournament, gameId);
@@ -26,6 +35,16 @@ public class GameService {
     return updateScoreAndPropagate(game, tournament, score);
   }
 
+  /**
+   * Updates a game's complete information including score, scheduled time, and court. Propagates winners if the game becomes finished after the
+   * update.
+   *
+   * @param tournamentId the tournament ID
+   * @param gameId the game ID to update
+   * @param request the update request containing score, time, and court information
+   * @return update result containing finish status and winner information
+   * @throws IllegalArgumentException if tournament or game is not found
+   */
   public UpdateScoreDTO updateGame(Long tournamentId, Long gameId, UpdateGameRequest request) {
     Tournament tournament = tournamentService.getTournamentById(tournamentId);
     Game       game       = findGameInTournament(tournament, gameId);
@@ -37,6 +56,15 @@ public class GameService {
     return updateScoreAndPropagate(game, tournament, request.getScore());
   }
 
+  /**
+   * Updates a game's score and propagates winners through the tournament if the game is finished. This is a common method used by both score-only and
+   * full game updates.
+   *
+   * @param game the game to update
+   * @param tournament the tournament containing the game
+   * @param score the new score to set
+   * @return update result with finish status and winner side information
+   */
   private UpdateScoreDTO updateScoreAndPropagate(Game game, Tournament tournament, Score score) {
     game.setScore(score);
 
@@ -51,6 +79,14 @@ public class GameService {
   }
 
 
+  /**
+   * Finds a specific game within a tournament by its ID. Searches through all rounds and games in the tournament.
+   *
+   * @param tournament the tournament to search in
+   * @param gameId the ID of the game to find
+   * @return the found game
+   * @throws IllegalArgumentException if no game with the given ID is found
+   */
   private Game findGameInTournament(Tournament tournament, Long gameId) {
     return tournament.getRounds().stream()
                      .flatMap(round -> round.getGames().stream())

@@ -1,6 +1,7 @@
 package io.github.redouanebali.controller;
 
 import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
+import io.github.redouanebali.dto.request.CreateTournamentRequest;
 import io.github.redouanebali.dto.request.RoundRequest;
 import io.github.redouanebali.dto.request.UpdateGameRequest;
 import io.github.redouanebali.dto.request.UpdatePlayerPairRequest;
@@ -14,7 +15,6 @@ import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
-import io.github.redouanebali.service.DrawGenerationService;
 import io.github.redouanebali.service.GameService;
 import io.github.redouanebali.service.MatchFormatService;
 import io.github.redouanebali.service.PlayerPairService;
@@ -52,31 +52,52 @@ import org.springframework.web.bind.annotation.RestController;
 @PreAuthorize("isAuthenticated()")
 public class AdminTournamentController {
 
-  private final TournamentService     tournamentService;
-  private final PlayerPairService     playerPairService;
-  private final DrawGenerationService drawGenerationService;
-  private final GameService           gameService;
-  private final MatchFormatService    matchFormatService;
-  private final SecurityProps         securityProps;
-  private final TournamentMapper      tournamentMapper;
+  private final TournamentService  tournamentService;
+  private final PlayerPairService  playerPairService;
+  private final GameService        gameService;
+  private final MatchFormatService matchFormatService;
+  private final SecurityProps      securityProps;
+  private final TournamentMapper   tournamentMapper;
 
+  /**
+   * Creates a new tournament with the provided configuration. Validates the tournament structure if both format and config are provided.
+   *
+   * @param request the tournament creation request containing only allowed fields
+   * @return ResponseEntity containing the created tournament DTO with 201 status
+   */
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<TournamentDTO> createTournament(@RequestBody @Valid Tournament tournament) {
-    Tournament saved = tournamentService.createTournament(tournament);
+  public ResponseEntity<TournamentDTO> createTournament(@RequestBody @Valid CreateTournamentRequest request) {
+    log.info("Creating tournament '{}' for user: {}", request.getName(), SecurityUtil.currentUserId());
+    Tournament tournament = tournamentMapper.toEntity(request);
+    Tournament saved      = tournamentService.createTournament(tournament);
     return ResponseEntity
         .created(URI.create("/admin/tournaments/" + saved.getId()))
         .body(tournamentMapper.toDTO(saved));
   }
 
+  /**
+   * Deletes a tournament. Only the owner or super admins can delete a tournament.
+   *
+   * @param id the tournament ID to delete
+   * @return ResponseEntity with 204 No Content status
+   */
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteTournament(@PathVariable Long id) {
-    checkOwnership(id);                 // même règle que pour update/draw/etc.
+    log.info("User {} attempting to delete tournament {}", SecurityUtil.currentUserId(), id);
+    checkOwnership(id);
     tournamentService.deleteTournament(id);
-    return ResponseEntity.noContent().build(); // 204 No Content
+    return ResponseEntity.noContent().build();
   }
 
+  /**
+   * Lists tournaments based on the scope parameter. Returns all tournaments for super admins when scope='all', otherwise returns user's own
+   * tournaments.
+   *
+   * @param scope the scope filter - "all" for all tournaments (super admin only), "mine" for user's tournaments
+   * @return ResponseEntity containing list of tournament DTOs
+   */
   @GetMapping
-  public List<TournamentDTO> listMyTournaments(@RequestParam(defaultValue = "mine") String scope) {
+  public ResponseEntity<List<TournamentDTO>> listMyTournaments(@RequestParam(defaultValue = "mine") String scope) {
     String  me      = SecurityUtil.currentUserId();
     boolean isSuper = securityProps.getSuperAdmins().contains(me);
 
@@ -84,21 +105,43 @@ public class AdminTournamentController {
                             ? tournamentService.listAll()
                             : tournamentService.listByOwner(me);
 
-    return list.stream().map(tournamentMapper::toDTO).toList();
+    return ResponseEntity.ok(list.stream().map(tournamentMapper::toDTO).toList());
   }
 
+  /**
+   * Updates an existing tournament with new data. Only the owner or super admins can update a tournament.
+   *
+   * @param id the tournament ID to update
+   * @param updated the updated tournament data
+   * @return ResponseEntity containing the updated tournament DTO
+   */
   @PutMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public TournamentDTO updateTournament(@PathVariable Long id, @RequestBody @Valid UpdateTournamentRequest updated) {
+  public ResponseEntity<TournamentDTO> updateTournament(@PathVariable Long id, @RequestBody @Valid UpdateTournamentRequest updated) {
     checkOwnership(id);
-    return tournamentMapper.toDTO(tournamentService.updateTournament(id, updated));
+    return ResponseEntity.ok(tournamentMapper.toDTO(tournamentService.updateTournament(id, updated)));
   }
 
+  /**
+   * Adds player pairs to a tournament and clears existing game assignments. Automatically adds BYE pairs if needed to reach the main draw size.
+   *
+   * @param id the tournament ID
+   * @param players list of player pairs to add
+   * @return ResponseEntity containing the updated tournament DTO
+   */
   @PostMapping(path = "/{id}/pairs", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public TournamentDTO addPairs(@PathVariable Long id, @RequestBody @Valid List<CreatePlayerPairRequest> players) {
+  public ResponseEntity<TournamentDTO> addPairs(@PathVariable Long id, @RequestBody @Valid List<CreatePlayerPairRequest> players) {
     checkOwnership(id);
-    return tournamentMapper.toDTO(playerPairService.addPairs(id, players));
+    return ResponseEntity.ok(tournamentMapper.toDTO(playerPairService.addPairs(id, players)));
   }
 
+  /**
+   * Updates an existing player pair's information (names and seed). BYE pairs cannot be modified.
+   *
+   * @param id the tournament ID
+   * @param pairId the player pair ID to update
+   * @param req the update request containing new player names and/or seed
+   * @return ResponseEntity with 204 No Content status
+   */
   @PatchMapping(path = "/{id}/pairs/{pairId}", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updatePlayerPair(@PathVariable Long id,
                                                @PathVariable Long pairId,
@@ -106,81 +149,110 @@ public class AdminTournamentController {
     checkOwnership(id);
 
     playerPairService.updatePlayerPair(id, pairId, req.getPlayer1Name(), req.getPlayer2Name(), req.getSeed());
-    return ResponseEntity.ok().build();
+    return ResponseEntity.noContent().build();
   }
-
 
   /**
-   * Initialize the draw with a bracket structure provided by the client (manual construction). Replaces the tournament rounds with the provided ones
-   * as-is (light sanity checks in service).
+   * Updates the match format for a specific tournament round/stage. Only the owner or super admins can modify match formats.
+   *
+   * @param id the tournament ID
+   * @param stage the tournament stage/round
+   * @param newFormat the new match format configuration
+   * @return ResponseEntity containing the updated match format
    */
-/*  @PostMapping(path = "/{id}/draw/initialize", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public TournamentDTO initializeDraw(@PathVariable Long id, @RequestBody @Valid InitializeDrawRequest request) {
-    checkOwnership(id);
-    Tournament tournament = tournamentService.initializeBack(id, request);
-    return tournamentMapper.toDTO(tournament);
-  } */
   @PutMapping(path = "/{id}/rounds/{stage}/match-format", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public MatchFormat updateMatchFormat(@PathVariable Long id,
-                                       @PathVariable Stage stage,
-                                       @RequestBody @Valid MatchFormat newFormat) {
+  public ResponseEntity<MatchFormat> updateMatchFormat(@PathVariable Long id,
+                                                       @PathVariable Stage stage,
+                                                       @RequestBody @Valid MatchFormat newFormat) {
     checkOwnership(id);
-    return matchFormatService.updateMatchFormatForRound(id, stage, newFormat);
+    return ResponseEntity.ok(matchFormatService.updateMatchFormatForRound(id, stage, newFormat));
   }
 
+  /**
+   * Updates the score of a specific game and propagates winners if the game is finished. Only the tournament owner or super admins can update
+   * scores.
+   *
+   * @param tournamentId the tournament ID
+   * @param gameId the game ID to update
+   * @param score the new score
+   * @return ResponseEntity containing update result with finish status and winner information
+   */
   @PutMapping(path = "/{tournamentId}/games/{gameId}/score", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public UpdateScoreDTO updateScore(@PathVariable Long tournamentId,
-                                    @PathVariable Long gameId,
-                                    @RequestBody @Valid Score score) {
+  public ResponseEntity<UpdateScoreDTO> updateScore(@PathVariable Long tournamentId,
+                                                    @PathVariable Long gameId,
+                                                    @RequestBody @Valid Score score) {
     checkOwnership(tournamentId);
-    return gameService.updateGameScore(tournamentId, gameId, score);
+    return ResponseEntity.ok(gameService.updateGameScore(tournamentId, gameId, score));
   }
 
+  /**
+   * Updates a game's complete information including score, time, and court. Propagates winners if the game becomes finished after the update.
+   *
+   * @param tournamentId the tournament ID
+   * @param gameId the game ID to update
+   * @param request the update request containing score, time, and court information
+   * @return ResponseEntity containing update result with finish status and winner information
+   */
   @PutMapping(path = "/{tournamentId}/games/{gameId}", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public UpdateScoreDTO updateGame(@PathVariable Long tournamentId,
-                                   @PathVariable Long gameId,
-                                   @RequestBody @Valid UpdateGameRequest request) {
+  public ResponseEntity<UpdateScoreDTO> updateGame(@PathVariable Long tournamentId,
+                                                   @PathVariable Long gameId,
+                                                   @RequestBody @Valid UpdateGameRequest request) {
     checkOwnership(tournamentId);
-    return gameService.updateGame(tournamentId, gameId, request);
+    return ResponseEntity.ok(gameService.updateGame(tournamentId, gameId, request));
   }
 
-  @GetMapping("/admin/debug/auth")
-  public Map<String, Object> auth(Authentication a) {
-    return Map.of(
+  /**
+   * Debug endpoint that returns current authentication information. Useful for testing authentication and authorization.
+   *
+   * @param a the current authentication object
+   * @return ResponseEntity containing authentication details
+   */
+  @PreAuthorize("hasRole('SUPER_ADMIN') or authentication.name in @securityProps.superAdmins")
+  @GetMapping("/debug/auth")
+  public ResponseEntity<Map<String, Object>> auth(Authentication a) {
+    return ResponseEntity.ok(Map.of(
         "name", a == null ? null : a.getName(),
         "authenticated", a != null && a.isAuthenticated(),
         "authorities", a == null ? null : a.getAuthorities(),
         "details", a
-    );
+    ));
   }
 
-  /*
-  @PostMapping(path = "/{id}/pairs/sort-manual")
-  public TournamentDTO sortManualPairs(@PathVariable Long id) {
-    checkOwnership(id);
-    Tournament tournament = drawGenerationService.sortManualPairs(id);
-    return tournamentMapper.toDTO(tournament);
-  } */
-
   /**
-   * Génère le tirage au sort automatique (algorithme).
+   * Generates an automatic draw using seeding algorithm. Places teams based on their seeds and fills remaining positions randomly.
+   *
+   * @param id the tournament ID
+   * @return ResponseEntity containing the tournament DTO with generated draw
    */
   @PostMapping(path = "/{id}/draw/auto")
-  public TournamentDTO generateDrawAuto(@PathVariable Long id) {
+  public ResponseEntity<TournamentDTO> generateDrawAuto(@PathVariable Long id) {
+    log.info("Generating automatic draw for tournament {} by user {}", id, SecurityUtil.currentUserId());
     checkOwnership(id);
-    return tournamentMapper.toDTO(tournamentService.generateDrawAuto(id));
+    return ResponseEntity.ok(tournamentMapper.toDTO(tournamentService.generateDrawAuto(id)));
   }
 
   /**
-   * Génère le tirage au sort manuel (ordre fourni par le client).
+   * Generates a manual draw using user-provided initial rounds. Replaces the tournament structure with the provided rounds configuration.
+   *
+   * @param id the tournament ID
+   * @param initialRounds optional list of initial rounds provided by the user
+   * @return ResponseEntity containing the tournament DTO with generated draw
    */
   @PostMapping(path = "/{id}/draw/manual")
-  public TournamentDTO generateDrawManual(@PathVariable Long id,
-                                          @RequestBody(required = false) List<RoundRequest> initialRounds) {
+  public ResponseEntity<TournamentDTO> generateDrawManual(@PathVariable Long id,
+                                                          @RequestBody(required = false) List<RoundRequest> initialRounds) {
+    log.info("Generating manual draw for tournament {} by user {}", id, SecurityUtil.currentUserId());
     checkOwnership(id);
-    return tournamentMapper.toDTO(tournamentService.generateDrawManual(id, initialRounds));
+    return ResponseEntity.ok(tournamentMapper.toDTO(tournamentService.generateDrawManual(id, initialRounds)));
   }
 
+  /**
+   * Verifies that the current user has ownership rights over a tournament. Throws AccessDeniedException if the user is not the owner or a super
+   * admin.
+   *
+   * @param tournamentId the tournament ID to check ownership for
+   * @throws AccessDeniedException if the user lacks ownership rights
+   */
   private void checkOwnership(Long tournamentId) {
     String      me          = SecurityUtil.currentUserId();
     Tournament  tournament  = tournamentService.getTournamentById(tournamentId);
@@ -189,6 +261,5 @@ public class AdminTournamentController {
       throw new AccessDeniedException("You are not allowed to modify this tournament");
     }
   }
-
 
 }

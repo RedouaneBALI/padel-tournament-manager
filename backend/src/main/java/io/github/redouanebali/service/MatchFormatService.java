@@ -19,6 +19,14 @@ public class MatchFormatService {
   private final TournamentRepository tournamentRepository;
   private final SecurityProps        securityProps;
 
+  /**
+   * Retrieves the match format for a specific tournament round/stage.
+   *
+   * @param tournamentId the tournament ID
+   * @param stage the tournament stage to get the match format from
+   * @return the match format for the specified stage
+   * @throws IllegalArgumentException if tournament or stage round is not found
+   */
   public MatchFormat getMatchFormatForRound(Long tournamentId, Stage stage) {
     Tournament tournament = getTournamentById(tournamentId);
     return tournament.getRounds().stream()
@@ -28,6 +36,17 @@ public class MatchFormatService {
                      .orElseThrow(() -> new IllegalArgumentException("Round not found for stage: " + stage));
   }
 
+  /**
+   * Updates the match format for a specific tournament round/stage. Only the owner or super admins can modify match formats. Creates a new format if
+   * none exists, otherwise updates the existing one.
+   *
+   * @param tournamentId the tournament ID
+   * @param stage the tournament stage to update
+   * @param newFormat the new match format configuration
+   * @return the updated match format
+   * @throws IllegalArgumentException if tournament or stage round is not found
+   * @throws AccessDeniedException if user lacks modification rights
+   */
   public MatchFormat updateMatchFormatForRound(Long tournamentId, Stage stage, MatchFormat newFormat) {
     Tournament tournament = getTournamentById(tournamentId);
 
@@ -56,6 +75,13 @@ public class MatchFormatService {
     return newFormat;
   }
 
+  /**
+   * Retrieves a tournament by its ID. This is a helper method used internally by the service.
+   *
+   * @param id the tournament ID
+   * @return the tournament entity
+   * @throws IllegalArgumentException if tournament is not found
+   */
   private Tournament getTournamentById(Long id) {
     return tournamentRepository.findById(id)
                                .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
