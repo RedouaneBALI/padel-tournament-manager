@@ -1,12 +1,18 @@
 package io.github.redouanebali.generation;
 
-import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import java.util.List;
+import lombok.AllArgsConstructor;
 
+@AllArgsConstructor
 public class GroupPhase implements TournamentPhase {
+
+  private int nbPools;
+  private int nbPairsPerPool;
+  private int nbQualifiedByPool;
 
   @Override
   public List<String> validate(final Tournament tournament) {
@@ -15,12 +21,14 @@ public class GroupPhase implements TournamentPhase {
 
   @Override
   public List<Round> initialize(final Tournament tournament) {
-    return List.of();
+    Round round = new Round();
+    round.setStage(Stage.GROUPS);
+    return List.of(round);
   }
 
   @Override
   public void placeSeedTeams(final Round round, final List<PlayerPair> playerPairs, final int nbSeeds) {
-
+    // For groups, generally no seeds, so nothing to do
   }
 
   @Override
@@ -30,12 +38,26 @@ public class GroupPhase implements TournamentPhase {
 
   @Override
   public void placeByeTeams(final Round round, final int totalPairs, final int drawSize, final int nbSeeds) {
-
+    // For groups, generally no BYEs, so nothing to do
   }
 
   @Override
   public void placeRemainingTeamsRandomly(final Round round, final List<PlayerPair> remainingTeams) {
-
+    if (round == null || round.getGames() == null || remainingTeams == null || remainingTeams.isEmpty()) {
+      return;
+    }
+    int index = 0;
+    for (var game : round.getGames()) {
+      if (game.getTeamA() == null && index < remainingTeams.size()) {
+        game.setTeamA(remainingTeams.get(index++));
+      }
+      if (game.getTeamB() == null && index < remainingTeams.size()) {
+        game.setTeamB(remainingTeams.get(index++));
+      }
+      if (index >= remainingTeams.size()) {
+        break;
+      }
+    }
   }
 
   @Override
@@ -44,7 +66,7 @@ public class GroupPhase implements TournamentPhase {
   }
 
   @Override
-  public Round setRoundGames(final Round round, final List<Game> games) {
-    return null;
+  public Stage getInitialStage() {
+    return Stage.GROUPS;
   }
 }

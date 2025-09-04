@@ -23,6 +23,7 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -211,10 +212,10 @@ public class AdminTournamentController {
   @GetMapping("/debug/auth")
   public ResponseEntity<Map<String, Object>> auth(Authentication a) {
     return ResponseEntity.ok(Map.of(
-        "name", a == null ? null : a.getName(),
+        "name", a != null ? a.getName() : "anonymous",
         "authenticated", a != null && a.isAuthenticated(),
-        "authorities", a == null ? null : a.getAuthorities(),
-        "details", a
+        "authorities", a != null ? a.getAuthorities().toString() : "none",
+        "details", a != null ? a.getDetails() : "none"
     ));
   }
 
@@ -257,7 +258,7 @@ public class AdminTournamentController {
     String      me          = SecurityUtil.currentUserId();
     Tournament  tournament  = tournamentService.getTournamentById(tournamentId);
     Set<String> superAdmins = securityProps.getSuperAdmins();
-    if (!superAdmins.contains(me) && !me.equals(tournament.getOwnerId())) {
+    if (!superAdmins.contains(me) && !Objects.equals(me, tournament.getOwnerId())) {
       throw new AccessDeniedException("You are not allowed to modify this tournament");
     }
   }

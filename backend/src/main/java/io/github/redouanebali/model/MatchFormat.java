@@ -22,10 +22,10 @@ public class MatchFormat {
   private Long id;
 
   @Min(1)
-  private int     numberOfSetsToWin       = 2;        // Ex : 2 pour un match en 2 sets gagnants
+  private int     numberOfSetsToWin       = 2;        // Ex: 2 for a match with 2 winning sets
   @Min(1)
-  private int     gamesPerSet             = 6;             // Ex : 6 jeux pour gagner un set
-  private boolean superTieBreakInFinalSet = false; // true si le 3e set est un super tie-break
-  private boolean advantage               = true;             // true = jeu à l'avantage, false = no-ad
+  private int     gamesPerSet             = 6;        // Ex: 6 games to win a set
+  private boolean superTieBreakInFinalSet = false;    // true if the 3rd set is a super tie-break
+  private boolean advantage               = true;     // true = advantage game, false = no-ad
 
 }

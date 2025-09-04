@@ -10,7 +10,6 @@ import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.DrawMode;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import lombok.AllArgsConstructor;
 
@@ -154,11 +153,30 @@ public class KnockoutPhase implements TournamentPhase {
     if (this.drawSize != 0 && this.drawSize != drawSlots) {
       throw new IllegalStateException("Configured drawSize=" + this.drawSize + " but games provide drawSlots=" + drawSlots);
     }
-    final int nbSeedsToPlace = Math.min(nbSeedsArg, Math.min(this.nbSeeds, playerPairs.size()));
 
-    // Sort pairs by ascending seed (1 = best seed)
+    // Allow placing more teams than the original nbSeeds if needed (for BYE protection)
+    final int nbSeedsToPlace = Math.min(nbSeedsArg, playerPairs.size());
+
+    // Sort pairs: real seeds (1, 2, 3...) first, then non-seeds (seed <= 0) at the end
     final List<PlayerPair> sortedBySeed = new ArrayList<>(playerPairs);
-    sortedBySeed.sort(Comparator.comparingInt(PlayerPair::getSeed));
+    sortedBySeed.sort((pair1, pair2) -> {
+      int seed1 = pair1.getSeed();
+      int seed2 = pair2.getSeed();
+
+      // If both have real seeds (> 0), sort by ascending seed
+      if (seed1 > 0 && seed2 > 0) {
+        return Integer.compare(seed1, seed2);
+      }
+      // If one has real seed and other doesn't, real seed comes first
+      if (seed1 > 0) {
+        return -1;
+      }
+      if (seed2 > 0) {
+        return 1;
+      }
+      // If both have no real seed (both <= 0), maintain original order
+      return 0;
+    });
 
     // Theoretical seed positions in a bracket of size drawSlots
     final List<Integer> seedSlots = getSeedsPositions(drawSlots, nbSeedsToPlace);
@@ -218,7 +236,7 @@ public class KnockoutPhase implements TournamentPhase {
       throw new IllegalArgumentException("totalPairs cannot exceed drawSize");
     }
 
-    // Count how many BYEs are already present in the round to avoid overfilling
+    // Count how many BYES are already present in the round to avoid overfilling
     int existingByes = 0;
     for (Game g : games) {
       if (g.getTeamA() != null && g.getTeamA().isBye()) {
@@ -234,79 +252,32 @@ public class KnockoutPhase implements TournamentPhase {
       return; // nothing to do
     }
 
-    // Fallback: if no seeds are considered (manual mode), distribute BYEs opposite already placed teams first
+    // Only place BYES opposite to seeded teams (optimal tournament strategy)
     final int nbSeedsToConsider = Math.max(0, Math.min(nbSeeds, drawSize));
-    if (nbSeedsToConsider == 0) {
-      // Pass 1: for each game with exactly one non-BYE team already placed, put a BYE on the opposite side
-      for (Game g : games) {
-        if (byesToPlace == 0) {
-          break;
-        }
-        boolean aOccupied = g.getTeamA() != null && !g.getTeamA().isBye();
-        boolean bOccupied = g.getTeamB() != null && !g.getTeamB().isBye();
-        if (aOccupied ^ bOccupied) {
-          if (!aOccupied && g.getTeamA() == null) {
-            g.setTeamA(PlayerPair.bye());
-            byesToPlace--;
-          } else if (!bOccupied && g.getTeamB() == null) {
+    if (nbSeedsToConsider > 0) {
+      // Place BYEs opposite to seeded teams (TS1 first, then TS2, ...)
+      final List<Integer> seedSlots = getSeedsPositions(drawSize, nbSeedsToConsider);
+
+      for (int i = 0; i < seedSlots.size() && byesToPlace > 0; i++) {
+        int     slot      = seedSlots.get(i);
+        int     gameIndex = slot / 2;
+        boolean left      = (slot % 2 == 0);
+        Game    g         = games.get(gameIndex);
+
+        if (left) {
+          if (g.getTeamB() == null) {
             g.setTeamB(PlayerPair.bye());
             byesToPlace--;
           }
-        }
-      }
-      if (byesToPlace == 0) {
-        return;
-      }
-
-      // Pass 2: fill any remaining empty slots (BYE vs BYE is allowed as last resort)
-      for (Game g : games) {
-        if (byesToPlace == 0) {
-          break;
-        }
-        if (g.getTeamA() == null) {
-          g.setTeamA(PlayerPair.bye());
-          byesToPlace--;
-          if (byesToPlace == 0) {
-            break;
+        } else {
+          if (g.getTeamA() == null) {
+            g.setTeamA(PlayerPair.bye());
+            byesToPlace--;
           }
         }
-        if (g.getTeamB() == null) {
-          g.setTeamB(PlayerPair.bye());
-          byesToPlace--;
-        }
-      }
-      if (byesToPlace > 0) {
-        throw new IllegalStateException("Not enough empty slots to place all BYEs (manual mode): remaining=" + byesToPlace);
-      }
-      return;
-    }
-    // 1) Prefer placing BYEs opposite to seeded teams (TS1 first, then TS2, ...)
-    final List<Integer> seedSlots = getSeedsPositions(drawSize, nbSeedsToConsider);
-
-    for (int i = 0; i < seedSlots.size() && byesToPlace > 0; i++) {
-      int     slot      = seedSlots.get(i);
-      int     gameIndex = slot / 2;
-      boolean left      = (slot % 2 == 0);
-      Game    g         = games.get(gameIndex);
-
-      if (left) {
-        if (g.getTeamB() == null) {
-          g.setTeamB(PlayerPair.bye());
-          byesToPlace--;
-        }
-      } else {
-        if (g.getTeamA() == null) {
-          g.setTeamA(PlayerPair.bye());
-          byesToPlace--;
-        }
       }
     }
 
-    if (byesToPlace == 0) {
-      return;
-    }
-
-    // 2) Fill matches where exactly one side is already occupied (avoid BYE vs BYE when possible)
     for (Game g : games) {
       if (byesToPlace == 0) {
         break;
@@ -448,11 +419,6 @@ public class KnockoutPhase implements TournamentPhase {
     }
   }
 
-  @Override
-  public Round setRoundGames(final Round r, final List<Game> g) {
-    return null;
-  }
-
   /**
    * Generate seed positions for a perfect bracket (nbTeams must be a power of 2)
    */
@@ -496,6 +462,15 @@ public class KnockoutPhase implements TournamentPhase {
     List<Integer> fullPositions = generatePerfectSeedPositions(powerOfTwo);
 
     return fullPositions.subList(0, drawSize);
+  }
+
+  @Override
+  public Stage getInitialStage() {
+    return switch (phaseType) {
+      case QUALIFS -> Stage.Q1;
+      case MAIN_DRAW -> Stage.fromNbTeams(drawSize);
+      default -> throw new IllegalStateException("Unsupported phaseType: " + phaseType);
+    };
   }
 
 }

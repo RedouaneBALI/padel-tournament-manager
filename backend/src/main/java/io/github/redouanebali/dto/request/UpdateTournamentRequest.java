@@ -1,69 +1,32 @@
 package io.github.redouanebali.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import io.github.redouanebali.model.Gender;
-import io.github.redouanebali.model.TournamentLevel;
-import io.github.redouanebali.model.format.TournamentFormat;
-import io.github.redouanebali.model.format.TournamentFormatConfig;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
- * Whitelisted fields that are allowed to be updated on a Tournament. Keep this DTO minimal; pairs, rounds, and scores have their own endpoints.
+ * Request DTO for updating an existing tournament. Extends BaseTournamentRequest with update-specific validations. Whitelisted fields that are
+ * allowed to be updated on a Tournament. Keep this DTO minimal; pairs, rounds, and scores have their own endpoints.
  */
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = true)
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class UpdateTournamentRequest {
+public class UpdateTournamentRequest extends BaseTournamentRequest {
 
   /**
-   * Public tournament name.
+   * Tournament name is required for updates.
    */
-  @NotBlank
-  @Size(max = 255)
-  private String name;
+  @NotBlank(message = "Tournament name is required")
+  @Size(max = 255, message = "Tournament name must not exceed 255 characters")
+  @Override
+  public String getName() {
+    return super.getName();
+  }
 
-  /**
-   * Optional long description, shown on overview pages.
-   */
-  @Size(max = 1000)
-  private String description;
-
-  /**
-   * Optional city and club; used for filtering and display.
-   */
-  @Size(max = 50)
-  private String city;
-
-  @Size(max = 50)
-  private String club;
-
-  /**
-   * Classification fields.
-   */
-  private Gender           gender;
-  private TournamentLevel  level;
-  private TournamentFormat format;
-
-  /**
-   * Event dates (yyyy-MM-dd).
-   */
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-  private LocalDate startDate;
-
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-  private LocalDate endDate;
-
-  /**
-   * Flexible tournament configuration (stored as JSONB in DB). Example: nbSeeds, groupsKo, qualifyMain sizes, etc.
-   */
-  private TournamentFormatConfig config;
+  // Note: Pas de @FutureOrPresent sur startDate pour les mises à jour
+  // car on peut modifier des tournois existants même s'ils ont commencé
 }

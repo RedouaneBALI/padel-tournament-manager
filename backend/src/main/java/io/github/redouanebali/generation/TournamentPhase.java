@@ -1,8 +1,8 @@
 package io.github.redouanebali.generation;
 
-import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import java.util.List;
 
@@ -75,12 +75,10 @@ public interface TournamentPhase {
   void propagateWinners(Tournament tournament);
 
   /**
-   * Replace or initialize games for a given round, used in manual mode.
+   * Get the initial stage of this phase where players enter the tournament. For example: Q1 for qualifications, R64/R32/R16 for main draw, GROUPS for
+   * group phase.
    *
-   * @param round the round to update
-   * @param games list of games to set
-   * @return the updated round with provided games
+   * @return the stage representing the initial round of this phase
    */
-  Round setRoundGames(Round round, List<Game> games);
-
+  Stage getInitialStage();
 }

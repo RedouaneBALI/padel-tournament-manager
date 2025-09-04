@@ -2,10 +2,9 @@ package io.github.redouanebali.generation;
 
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.model.format.DrawMode;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import lombok.AllArgsConstructor;
 
@@ -28,6 +27,33 @@ public final class TournamentBuilder {
       );
       rounds.addAll(qualifs.initialize(t));
       phases.add(qualifs);
+    }
+
+    TournamentPhase mainDraw = new KnockoutPhase(
+        cfg.getMainDrawSize(),
+        cfg.getNbSeeds(),
+        PhaseType.MAIN_DRAW,
+        cfg.getDrawMode()
+    );
+    rounds.addAll(mainDraw.initialize(t));
+    phases.add(mainDraw);
+
+    return rounds;
+  }
+
+  public List<Round> buildGroupsKOStructure(Tournament t) {
+    var         cfg    = t.getConfig();
+    List<Round> rounds = new ArrayList<>();
+    phases.clear();
+
+    if (cfg.getNbPools() != null && cfg.getNbPairsPerPool() > 0 && cfg.getNbQualifiedByPool() > 0) {
+      TournamentPhase groupPhase = new GroupPhase(
+          cfg.getNbPools(),
+          cfg.getNbPairsPerPool(),
+          cfg.getNbQualifiedByPool()
+      );
+      rounds.addAll(groupPhase.initialize(t));
+      phases.add(groupPhase);
     }
 
     TournamentPhase mainDraw = new KnockoutPhase(
@@ -89,71 +115,62 @@ public final class TournamentBuilder {
   }
 
   /**
-   * Effectue le tirage au sort et remplit les premiers rounds (Q1 et premier round finale).
+   * Fills only the initial rounds of the tournament with the provided pairs, using each phase's logic (seeds, BYEs, etc.). This method only processes
+   * the first round of each phase (e.g., Q1 and R32, or GROUPS and R16).
    *
-   * @param tournament le tournoi à remplir
-   * @param allPairs la liste complète des équipes (triée par seed croissant)
+   * @param tournament the tournament to fill
+   * @param allPairs the complete list of pairs (sorted as needed)
    */
   public void drawLotsAndFillInitialRounds(Tournament tournament, List<PlayerPair> allPairs) {
-    // Récupère la config
-    var cfg             = tournament.getConfig();
-    int preQualDrawSize = cfg.getPreQualDrawSize();
-    int mainDrawSize    = cfg.getMainDrawSize();
-    int nbSeeds         = cfg.getNbSeeds();
-
-    // Trie les équipes par seed croissant (meilleurs d'abord)
-    List<PlayerPair> sortedPairs = new ArrayList<>(allPairs);
-    sortedPairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
-
-    // Sépare les équipes pour la qualif et la phase finale
-    List<PlayerPair> qualifPairs = new ArrayList<>();
-    List<PlayerPair> finalePairs = new ArrayList<>();
-
-    if (preQualDrawSize > 0) {
-      // Les moins bien classés jouent la qualif
-      qualifPairs.addAll(sortedPairs.subList(sortedPairs.size() - preQualDrawSize, sortedPairs.size()));
-      // Les mieux classés jouent la phase finale
-      finalePairs.addAll(sortedPairs.subList(0, sortedPairs.size() - preQualDrawSize));
-    } else {
-      // Pas de qualif, tout le monde en finale
-      finalePairs.addAll(sortedPairs);
+    if (tournament == null || allPairs == null || allPairs.isEmpty() || phases.isEmpty()) {
+      return;
     }
-
-    // Récupère les rounds
     List<Round> rounds = tournament.getRounds();
-
-    // 1. Remplir Q1 si elle existe
-    if (preQualDrawSize > 0 && !rounds.isEmpty()) {
-      Round         q1          = rounds.get(0);
-      KnockoutPhase qualifPhase = new KnockoutPhase(preQualDrawSize, 0, PhaseType.QUALIFS, DrawMode.SEEDED);
-      qualifPhase.placeSeedTeams(q1, qualifPairs, 0); // pas de seed en qualif
-      qualifPhase.placeByeTeams(q1, qualifPairs.size(), preQualDrawSize, 0);
-      qualifPhase.placeRemainingTeamsRandomly(q1, qualifPairs);
+    if (rounds == null || rounds.isEmpty()) {
+      return;
     }
 
-    // 2. Remplir le premier round de la phase finale
-    // Cherche le round de la phase finale (après les qualifs)
-    Round firstFinaleRound = null;
-    for (Round r : rounds) {
-      if (r.getStage().isMainDraw(mainDrawSize)) {
-        firstFinaleRound = r;
-        break;
+    for (TournamentPhase phase : phases) {
+      // Find the initial round using the phase's initial stage
+      Stage initialStage = phase.getInitialStage();
+      Round initialRound = rounds.stream()
+                                 .filter(r -> r.getStage() == initialStage)
+                                 .findFirst()
+                                 .orElse(null);
+
+      if (initialRound != null) {
+        int roundDrawSize   = initialRound.getGames().size() * 2;
+        int totalByesNeeded = roundDrawSize - allPairs.size();
+        int configuredSeeds = tournament.getConfig().getNbSeeds();
+
+        // Place the best teams (seeds + additional teams to match BYEs if needed)
+        // This ensures all teams that get BYEs are the best ranked teams
+        int teamsToProtectWithByes = Math.max(configuredSeeds, totalByesNeeded);
+
+        // Place only the configured number of seeds in their proper positions
+        phase.placeSeedTeams(initialRound, allPairs, teamsToProtectWithByes);
+
+        // Place BYEs opposite to the protected teams (using the larger number for BYE protection)
+        phase.placeByeTeams(initialRound, allPairs.size(), roundDrawSize, teamsToProtectWithByes);
+
+        // Filter out teams that are already placed (seeds and those protected with BYEs)
+        List<PlayerPair> remainingTeams = new ArrayList<>();
+        for (int i = teamsToProtectWithByes; i < allPairs.size(); i++) {
+          remainingTeams.add(allPairs.get(i));
+        }
+
+        // Place remaining teams in available slots
+        phase.placeRemainingTeamsRandomly(initialRound, remainingTeams);
       }
-    }
-    if (firstFinaleRound != null) {
-      KnockoutPhase finalePhase = new KnockoutPhase(mainDrawSize, nbSeeds, PhaseType.MAIN_DRAW, DrawMode.SEEDED);
-      finalePhase.placeSeedTeams(firstFinaleRound, finalePairs, nbSeeds);
-      finalePhase.placeByeTeams(firstFinaleRound, finalePairs.size(), mainDrawSize, nbSeeds);
-      finalePhase.placeRemainingTeamsRandomly(firstFinaleRound, finalePairs);
     }
   }
 
   /**
-   * Remplit les premiers rounds (Q1 et premier round du tableau principal) en mode manuel. Les rounds et les équipes sont déjà définis par
-   * l'utilisateur. Seuls les rounds Q1 et premier round du tableau principal sont remplacés, les autres restent inchangés.
+   * Fills the initial rounds (Q1 and first round of main draw) in manual mode. The rounds and teams are already defined by the user. Only the Q1 and
+   * first round of main draw are replaced, others remain unchanged.
    *
-   * @param tournament le tournoi à remplir
-   * @param initialRounds la liste des rounds à utiliser (Q1, puis premier round du tableau principal)
+   * @param tournament the tournament to fill
+   * @param initialRounds the list of rounds to use (Q1, then first round of main draw)
    */
   public void fillInitialRoundsManual(Tournament tournament, List<Round> initialRounds) {
     if (initialRounds == null || initialRounds.isEmpty()) {
@@ -164,18 +181,18 @@ public final class TournamentBuilder {
       return;
     }
 
-    // On suppose initialRounds[0] = Q1, initialRounds[1] = premier round main draw
+    // Assume initialRounds[0] = Q1, initialRounds[1] = first round of main draw
     int replaced = 0;
     for (int i = 0; i < rounds.size() && replaced < initialRounds.size(); i++) {
       Round r        = rounds.get(i);
       Round provided = initialRounds.get(replaced);
 
-      // Remplace Q1 si le stage correspond
+      // Replace Q1 if stage matches
       if (replaced == 0 && r.getStage().name().equals(provided.getStage().name())) {
         rounds.set(i, provided);
         replaced++;
       }
-      // Remplace le premier round du tableau principal
+      // Replace first round of main draw
       else if (replaced == 1 && r.getStage().name().equals(provided.getStage().name())) {
         rounds.set(i, provided);
         replaced++;

@@ -7,16 +7,16 @@ import lombok.Getter;
 @Getter
 public enum Stage {
 
-  GROUPS("Groupes", 0, false, 0),
+  GROUPS("Groups", 0, false, 0),
   Q1("Qualifications 1", 0, true, 1),
   Q2("Qualifications 2", 0, true, 2),
   Q3("Qualifications 3", 0, true, 3),
-  R64("1/32 de FINAL", 64, false, 4),
-  R32("1/16 de FINAL", 32, false, 5),
-  R16("1/8 de FINAL", 16, false, 6),
-  QUARTERS("Quart de FINAL", 8, false, 7),
-  SEMIS("Demi-FINAL", 4, false, 8),
-  FINAL("FINAL", 2, false, 9);
+  R64("Round of 64", 64, false, 4),
+  R32("Round of 32", 32, false, 5),
+  R16("Round of 16", 16, false, 6),
+  QUARTERS("Quarter-finals", 8, false, 7),
+  SEMIS("Semi-finals", 4, false, 8),
+  FINAL("Final", 2, false, 9);
 
   private final String  label;
   private final int     nbTeams;
@@ -40,15 +40,15 @@ public enum Stage {
   }
 
   /**
-   * Retourne le stage du tableau principal correspondant au nombre d'équipes, ou le stage juste au-dessus si le nombre ne correspond pas exactement à
-   * une borne. Qualification stages (Q1..Q3) et GROUPS ne sont pas gérés ici.
+   * Returns the main draw stage corresponding to the number of teams, or the stage just above if the number doesn't exactly match a boundary.
+   * Qualification stages (Q1..Q3) and GROUPS are not handled here.
    *
-   * @param teams nombre d'équipes
-   * @return le stage correspondant ou le stage juste au-dessus
-   * @throws IllegalArgumentException si aucun stage n'est trouvé
+   * @param teams number of teams
+   * @return the corresponding stage or the stage just above
+   * @throws IllegalArgumentException if no stage is found
    */
   public static Stage fromNbTeams(int teams) {
-    // Parcourir les stages du plus grand au plus petit
+    // Traverse stages from largest to smallest
     for (Stage stage : new Stage[]{FINAL, SEMIS, QUARTERS, R16, R32, R64}) {
       if (teams <= stage.nbTeams && stage.nbTeams > 0) {
         return stage;
@@ -58,10 +58,10 @@ public enum Stage {
   }
 
   /**
-   * Indique si ce stage correspond au premier tour du tableau principal du tournoi.
+   * Indicates if this stage corresponds to the first round of the tournament's main draw.
    *
-   * @param mainDrawSize la taille du tableau principal (ex: 32, 64)
-   * @return true si ce stage est le premier tour du tableau principal
+   * @param mainDrawSize the size of the main draw (e.g. 32, 64)
+   * @return true if this stage is the first round of the main draw
    */
   public boolean isMainDraw(int mainDrawSize) {
     try {

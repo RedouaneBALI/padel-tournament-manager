@@ -146,6 +146,5 @@ public interface TournamentMapper {
   @Mapping(target = "editable", ignore = true)
   @Mapping(target = "rounds", ignore = true)
   @Mapping(target = "playerPairs", ignore = true)
-  @Mapping(target = "pools", ignore = true)
   Tournament toEntity(CreateTournamentRequest request);
 }

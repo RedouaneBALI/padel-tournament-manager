@@ -381,4 +381,250 @@ public class TournamentMapperTest {
     assertEquals(TeamSide.TEAM_A, dto.getWinnerSide());
   }
 
+  @Test
+  void testTournamentDTOGetCurrentRoundStage_WithEmptyRounds() {
+    TournamentDTO dto = new TournamentDTO();
+    dto.setRounds(List.of());
+
+    assertNull(dto.getCurrentRoundStage());
+  }
+
+  @Test
+  void testTournamentDTOGetCurrentRoundStage_WithNullRounds() {
+    TournamentDTO dto = new TournamentDTO();
+    dto.setRounds(null);
+
+    assertNull(dto.getCurrentRoundStage());
+  }
+
+  @Test
+  void testTournamentDTOGetCurrentRoundStage_WithUnfinishedGames() {
+    // Création d'un jeu non terminé
+    GameDTO unfinishedGame = new GameDTO();
+    unfinishedGame.setId(1L);
+    unfinishedGame.setFinished(false);
+    unfinishedGame.setTeamA(new PlayerPairDTO("Player1", "Player2"));
+    unfinishedGame.setTeamB(new PlayerPairDTO("Player3", "Player4"));
+
+    // Création d'un round avec le jeu non terminé
+    RoundDTO semisRound = new RoundDTO();
+    semisRound.setId(1L);
+    semisRound.setStage(Stage.SEMIS);
+    semisRound.setGames(List.of(unfinishedGame));
+
+    TournamentDTO dto = new TournamentDTO();
+    dto.setRounds(List.of(semisRound));
+
+    assertEquals(Stage.SEMIS, dto.getCurrentRoundStage());
+  }
+
+  @Test
+  void testTournamentDTOGetCurrentRoundStage_WithAllGamesFinished() {
+    // Création d'un jeu terminé
+    GameDTO finishedGame = new GameDTO();
+    finishedGame.setId(1L);
+    finishedGame.setFinished(true);
+    finishedGame.setTeamA(new PlayerPairDTO("Player1", "Player2"));
+    finishedGame.setTeamB(new PlayerPairDTO("Player3", "Player4"));
+
+    // Création d'un round avec le jeu terminé
+    RoundDTO quartersRound = new RoundDTO();
+    quartersRound.setId(1L);
+    quartersRound.setStage(Stage.QUARTERS);
+    quartersRound.setGames(List.of(finishedGame));
+
+    TournamentDTO dto = new TournamentDTO();
+    dto.setRounds(List.of(quartersRound));
+
+    // Tous les jeux sont terminés, donc retourne le dernier stage utilisé
+    assertEquals(Stage.QUARTERS, dto.getCurrentRoundStage());
+  }
+
+  @Test
+  void testTournamentDTOGetCurrentRoundStage_WithMultipleRounds() {
+    // Création de jeux pour différents rounds
+    GameDTO finishedQuarterGame = new GameDTO();
+    finishedQuarterGame.setId(1L);
+    finishedQuarterGame.setFinished(true);
+    finishedQuarterGame.setTeamA(new PlayerPairDTO("Player1", "Player2"));
+    finishedQuarterGame.setTeamB(new PlayerPairDTO("Player3", "Player4"));
+
+    GameDTO unfinishedSemiGame = new GameDTO();
+    unfinishedSemiGame.setId(2L);
+    unfinishedSemiGame.setFinished(false);
+    unfinishedSemiGame.setTeamA(new PlayerPairDTO("Winner1", "Winner2"));
+    unfinishedSemiGame.setTeamB(new PlayerPairDTO("Winner3", "Winner4"));
+
+    // Création des rounds
+    RoundDTO quartersRound = new RoundDTO();
+    quartersRound.setId(1L);
+    quartersRound.setStage(Stage.QUARTERS);
+    quartersRound.setGames(List.of(finishedQuarterGame));
+
+    RoundDTO semisRound = new RoundDTO();
+    semisRound.setId(2L);
+    semisRound.setStage(Stage.SEMIS);
+    semisRound.setGames(List.of(unfinishedSemiGame));
+
+    TournamentDTO dto = new TournamentDTO();
+    dto.setRounds(List.of(quartersRound, semisRound));
+
+    // Le premier round avec des jeux non terminés
+    assertEquals(Stage.SEMIS, dto.getCurrentRoundStage());
+  }
+
+  @Test
+  void testTournamentDTOGetCurrentRoundStage_WithEmptyGames() {
+    // Round sans jeux
+    RoundDTO emptyRound = new RoundDTO();
+    emptyRound.setId(1L);
+    emptyRound.setStage(Stage.FINAL);
+    emptyRound.setGames(List.of());
+
+    TournamentDTO dto = new TournamentDTO();
+    dto.setRounds(List.of(emptyRound));
+
+    // Retourne le premier stage car aucun round utilisé
+    assertEquals(Stage.FINAL, dto.getCurrentRoundStage());
+  }
+
+  @Test
+  void testTournamentDTOGetCurrentRoundStage_WithNullTeams() {
+    // Jeu sans équipes assignées (placeholder)
+    GameDTO placeholderGame = new GameDTO();
+    placeholderGame.setId(1L);
+    placeholderGame.setFinished(false);
+    placeholderGame.setTeamA(null);
+    placeholderGame.setTeamB(null);
+
+    RoundDTO placeholderRound = new RoundDTO();
+    placeholderRound.setId(1L);
+    placeholderRound.setStage(Stage.R16);
+    placeholderRound.setGames(List.of(placeholderGame));
+
+    TournamentDTO dto = new TournamentDTO();
+    dto.setRounds(List.of(placeholderRound));
+
+    // Retourne le premier stage car pas d'équipes assignées
+    assertEquals(Stage.R16, dto.getCurrentRoundStage());
+  }
+
+  @Test
+  void testTournamentDTOGetCurrentRoundStage_ComplexScenario() {
+    // Scénario complexe avec plusieurs rounds et états différents
+
+    // Q1 avec jeux terminés
+    GameDTO finishedQ1Game = new GameDTO();
+    finishedQ1Game.setId(1L);
+    finishedQ1Game.setFinished(true);
+    finishedQ1Game.setTeamA(new PlayerPairDTO("Q1Team1", "Q1Team2"));
+    finishedQ1Game.setTeamB(new PlayerPairDTO("Q1Team3", "Q1Team4"));
+
+    RoundDTO q1Round = new RoundDTO();
+    q1Round.setId(1L);
+    q1Round.setStage(Stage.Q1);
+    q1Round.setGames(List.of(finishedQ1Game));
+
+    // Quarters avec un jeu non terminé
+    GameDTO unfinishedQuarterGame = new GameDTO();
+    unfinishedQuarterGame.setId(2L);
+    unfinishedQuarterGame.setFinished(false);
+    unfinishedQuarterGame.setTeamA(new PlayerPairDTO("Team1", "Team2"));
+    unfinishedQuarterGame.setTeamB(new PlayerPairDTO("Team3", "Team4"));
+
+    RoundDTO quartersRound = new RoundDTO();
+    quartersRound.setId(2L);
+    quartersRound.setStage(Stage.QUARTERS);
+    quartersRound.setGames(List.of(unfinishedQuarterGame));
+
+    // Final avec placeholder
+    GameDTO placeholderFinalGame = new GameDTO();
+    placeholderFinalGame.setId(3L);
+    placeholderFinalGame.setFinished(false);
+    placeholderFinalGame.setTeamA(null);
+    placeholderFinalGame.setTeamB(null);
+
+    RoundDTO finalRound = new RoundDTO();
+    finalRound.setId(3L);
+    finalRound.setStage(Stage.FINAL);
+    finalRound.setGames(List.of(placeholderFinalGame));
+
+    TournamentDTO dto = new TournamentDTO();
+    dto.setRounds(List.of(q1Round, quartersRound, finalRound));
+
+    // Doit retourner QUARTERS car c'est le premier round avec des jeux non terminés
+    assertEquals(Stage.QUARTERS, dto.getCurrentRoundStage());
+  }
+
+  @Test
+  void testTournamentDTOCompleteMapping() {
+    // Test complet du mapping TournamentDTO avec tous les champs
+    PlayerPairDTO pair1 = new PlayerPairDTO();
+    pair1.setId(1L);
+    pair1.setPlayer1Name("Alice");
+    pair1.setPlayer2Name("Bob");
+    pair1.setSeed(1);
+    pair1.setBye(false);
+
+    PlayerPairDTO pair2 = new PlayerPairDTO();
+    pair2.setId(2L);
+    pair2.setPlayer1Name("Charlie");
+    pair2.setPlayer2Name("Diana");
+    pair2.setSeed(2);
+    pair2.setBye(false);
+
+    GameDTO game = new GameDTO();
+    game.setId(1L);
+    game.setFinished(false);
+    game.setTeamA(pair1);
+    game.setTeamB(pair2);
+
+    RoundDTO round = new RoundDTO();
+    round.setId(1L);
+    round.setStage(Stage.FINAL);
+    round.setGames(List.of(game));
+
+    TournamentDTO dto = new TournamentDTO();
+    dto.setId(100L);
+    dto.setOwnerId("owner@test.com");
+    dto.setName("Test Championship");
+    dto.setDescription("A test tournament");
+    dto.setCity("Paris");
+    dto.setClub("Test Club");
+    dto.setGender(Gender.MIX);
+    dto.setLevel(TournamentLevel.P100);
+    dto.setFormat(io.github.redouanebali.model.format.TournamentFormat.KNOCKOUT);
+    dto.setStartDate(LocalDate.of(2025, 12, 1));
+    dto.setEndDate(LocalDate.of(2025, 12, 5));
+    dto.setEditable(true);
+    dto.setRounds(List.of(round));
+    dto.setPlayerPairs(List.of(pair1, pair2));
+
+    // Vérifications des champs
+    assertEquals(100L, dto.getId());
+    assertEquals("owner@test.com", dto.getOwnerId());
+    assertEquals("Test Championship", dto.getName());
+    assertEquals("A test tournament", dto.getDescription());
+    assertEquals("Paris", dto.getCity());
+    assertEquals("Test Club", dto.getClub());
+    assertEquals(Gender.MIX, dto.getGender());
+    assertEquals(TournamentLevel.P100, dto.getLevel());
+    assertEquals(io.github.redouanebali.model.format.TournamentFormat.KNOCKOUT, dto.getFormat());
+    assertEquals(LocalDate.of(2025, 12, 1), dto.getStartDate());
+    assertEquals(LocalDate.of(2025, 12, 5), dto.getEndDate());
+    assertTrue(dto.isEditable());
+
+    // Vérifications des collections
+    assertNotNull(dto.getRounds());
+    assertEquals(1, dto.getRounds().size());
+    assertEquals(Stage.FINAL, dto.getRounds().get(0).getStage());
+
+    assertNotNull(dto.getPlayerPairs());
+    assertEquals(2, dto.getPlayerPairs().size());
+    assertEquals("Alice", dto.getPlayerPairs().get(0).getPlayer1Name());
+    assertEquals("Charlie", dto.getPlayerPairs().get(1).getPlayer1Name());
+
+    // Test de la méthode getCurrentRoundStage
+    assertEquals(Stage.FINAL, dto.getCurrentRoundStage());
+  }
 }
