@@ -501,6 +501,37 @@ public class TournamentBuilderTest {
                               .filter(p -> !p.isBye() && p.getSeed() > 0 && p.getSeed() <= 8)
                               .count();
     assertEquals(8, seedsInR32, "All 8 seeds should be placed in R32");
+
+    // Additional checks for BYE placement and seed distribution
+    long byesInR32 = r32Round.getGames().stream()
+                             .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                             .filter(Objects::nonNull)
+                             .filter(PlayerPair::isBye)
+                             .count();
+    assertEquals(12, byesInR32, "R32 should have 12 BYEs (32 - 20 teams)");
+
+    // Verify no duplicate teams
+    List<String> teamSignatures = r32Round.getGames().stream()
+                                          .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                          .filter(Objects::nonNull)
+                                          .filter(p -> !p.isBye())
+                                          .map(p -> p.getPlayer1().getName() + "/" + p.getPlayer2().getName())
+                                          .toList();
+    long uniqueTeams = teamSignatures.stream().distinct().count();
+    assertEquals(teamSignatures.size(), uniqueTeams, "No duplicate teams should exist in R32");
+
+    // Verify seed positioning - seeds should be placed in specific theoretical positions
+    List<Integer> seedPositions = new ArrayList<>();
+    for (int i = 0; i < r32Round.getGames().size(); i++) {
+      Game g = r32Round.getGames().get(i);
+      if (g.getTeamA() != null && !g.getTeamA().isBye() && g.getTeamA().getSeed() > 0) {
+        seedPositions.add(i * 2); // Team A position
+      }
+      if (g.getTeamB() != null && !g.getTeamB().isBye() && g.getTeamB().getSeed() > 0) {
+        seedPositions.add(i * 2 + 1); // Team B position
+      }
+    }
+    assertEquals(8, seedPositions.size(), "Should have exactly 8 seeded positions");
   }
 
   @Test

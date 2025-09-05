@@ -140,27 +140,75 @@ public final class TournamentBuilder {
 
       if (initialRound != null) {
         int roundDrawSize   = initialRound.getGames().size() * 2;
-        int totalByesNeeded = roundDrawSize - allPairs.size();
         int configuredSeeds = tournament.getConfig().getNbSeeds();
+        int totalByesNeeded;
+        int teamsToProtectWithByes;
 
-        // Place the best teams (seeds + additional teams to match BYEs if needed)
-        // This ensures all teams that get BYEs are the best ranked teams
-        int teamsToProtectWithByes = Math.max(configuredSeeds, totalByesNeeded);
+        // Different logic for qualifications vs main draw
+        if (initialStage.isQualification()) {
+          // For qualifications: need to handle seeds, BYEs, and participants properly
+          int qualifDrawSize = roundDrawSize; // Q1 draw size (e.g., 32 for 16 games)
+          int nbSeedsQualif  = tournament.getConfig().getNbSeedsQualify();
 
-        // Place only the configured number of seeds in their proper positions
-        phase.placeSeedTeams(initialRound, allPairs, teamsToProtectWithByes);
+          // Calculate how many teams participate in qualifs vs direct entry to main draw
+          int totalSlotsInMainDraw    = tournament.getConfig().getMainDrawSize();
+          int nbQualifiers            = tournament.getConfig().getNbQualifiers();
+          int directEntriesToMainDraw = totalSlotsInMainDraw - nbQualifiers;
 
-        // Place BYEs opposite to the protected teams (using the larger number for BYE protection)
-        phase.placeByeTeams(initialRound, allPairs.size(), roundDrawSize, teamsToProtectWithByes);
+          // Teams that go directly to main draw (best ranked)
+          int teamsNotInQualifs = Math.min(directEntriesToMainDraw, allPairs.size());
 
-        // Filter out teams that are already placed (seeds and those protected with BYEs)
-        List<PlayerPair> remainingTeams = new ArrayList<>();
-        for (int i = teamsToProtectWithByes; i < allPairs.size(); i++) {
-          remainingTeams.add(allPairs.get(i));
+          // Remaining teams compete in qualifs, but we may need BYEs to fill the qualif draw
+          int teamsAvailableForQualifs = Math.max(0, allPairs.size() - teamsNotInQualifs);
+          int byesNeededInQualifs      = Math.max(0, qualifDrawSize - teamsAvailableForQualifs);
+
+          // Determine teams to protect with BYEs in qualifs (usually the best among qualif participants)
+          int teamsToProtectInQualifs = Math.max(nbSeedsQualif, byesNeededInQualifs);
+
+          // Get teams that participate in qualifs (after direct entries are excluded)
+          List<PlayerPair> qualifParticipants = new ArrayList<>();
+          int              startIndex         = Math.max(0, allPairs.size() - teamsAvailableForQualifs);
+          for (int i = startIndex; i < allPairs.size(); i++) {
+            qualifParticipants.add(allPairs.get(i));
+          }
+
+          // Place seeds in qualifs (among qualif participants only)
+          if (nbSeedsQualif > 0 && !qualifParticipants.isEmpty()) {
+            phase.placeSeedTeams(initialRound, qualifParticipants, teamsToProtectInQualifs);
+          }
+
+          // Place BYEs in qualifs if needed
+          if (byesNeededInQualifs > 0) {
+            phase.placeByeTeams(initialRound, teamsAvailableForQualifs, qualifDrawSize, teamsToProtectInQualifs);
+          }
+
+          // Place remaining qualif participants randomly
+          List<PlayerPair> remainingQualifTeams = new ArrayList<>();
+          for (int i = teamsToProtectInQualifs; i < qualifParticipants.size(); i++) {
+            remainingQualifTeams.add(qualifParticipants.get(i));
+          }
+          phase.placeRemainingTeamsRandomly(initialRound, remainingQualifTeams);
+
+        } else {
+          // For main draw: calculate BYEs normally
+          totalByesNeeded        = roundDrawSize - allPairs.size();
+          teamsToProtectWithByes = Math.max(configuredSeeds, totalByesNeeded);
+
+          // Place only the configured number of seeds in their proper positions
+          phase.placeSeedTeams(initialRound, allPairs, teamsToProtectWithByes);
+
+          // Place BYEs opposite to the protected teams (using the larger number for BYE protection)
+          phase.placeByeTeams(initialRound, allPairs.size(), roundDrawSize, teamsToProtectWithByes);
+
+          // Filter out teams that are already placed (seeds and those protected with BYEs)
+          List<PlayerPair> remainingTeams = new ArrayList<>();
+          for (int i = teamsToProtectWithByes; i < allPairs.size(); i++) {
+            remainingTeams.add(allPairs.get(i));
+          }
+
+          // Place remaining teams in available slots
+          phase.placeRemainingTeamsRandomly(initialRound, remainingTeams);
         }
-
-        // Place remaining teams in available slots
-        phase.placeRemainingTeamsRandomly(initialRound, remainingTeams);
       }
     }
   }
