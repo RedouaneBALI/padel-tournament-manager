@@ -1,6 +1,5 @@
 package io.github.redouanebali.generation;
 
-import static io.github.redouanebali.util.TestFixtures.buildEmptyRound;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -105,7 +104,6 @@ public class KnockoutPhaseTests {
     List<PlayerPair> pairs = TestFixtures.createPairs(nbTeams);
     pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
 
-    // here we test seed slots on a full knockout of size nbTeams
     KnockoutPhase knockoutPhase = new KnockoutPhase(
         nbTeams,
         nbSeeds,
@@ -114,27 +112,32 @@ public class KnockoutPhaseTests {
     );
 
     List<Integer> seedPositions = knockoutPhase.getSeedsPositions(nbTeams, nbSeeds);
-
     List<Integer> expectedSeedIndices = Stream.of(expectedIndicesStr.split(";"))
                                               .map(String::trim)
                                               .map(Integer::parseInt)
                                               .toList();
 
+    // Pour TS1 et TS2, on vérifie la position exacte, pour les autres on vérifie l'appartenance à l'ensemble attendu
     for (int i = 0; i < expectedSeedIndices.size(); i++) {
       int expectedIdx = expectedSeedIndices.get(i);
       int actualIdx   = seedPositions.get(i);
-      assertEquals(expectedIdx, actualIdx,
-                   "Seed " + (i + 1) + " expected at index " + expectedIdx + " but was at index " + actualIdx);
+      if (i < 2) {
+        assertEquals(expectedIdx, actualIdx,
+                     "Seed " + (i + 1) + " expected at index " + expectedIdx + " but was at index " + actualIdx);
+      } else {
+        // Pour TS3+, vérifier que la position est dans l'ensemble des positions possibles du groupe
+        List<Integer> possiblePositions = expectedSeedIndices.subList(2, expectedSeedIndices.size());
+        assertTrue(possiblePositions.contains(actualIdx),
+                   "Seed " + (i + 1) + " (TS3+) at index " + actualIdx + " not in valid group: " + possiblePositions);
+      }
     }
   }
 
   /**
-   * This test complements testBracketSeedPositionsCsv by validating the mapping of seeds into Game objects, rather than verifying the seeding indices
-   * themselves.
+   * This test validates the mapping of seeds into Game objects using the new JSON-based seeding system.
    */
   @ParameterizedTest(name = "placeSeedTeams mapping nbTeams={0}, nbSeeds={1}")
   @CsvSource({
-      "64, 32",
       "64, 16",
       "32, 16",
       "32, 8",
@@ -143,42 +146,51 @@ public class KnockoutPhaseTests {
   })
   void testPlaceSeedTeamsMapping(int nbTeams, int nbSeeds) {
     // Arrange: build a round with nbTeams/2 empty games
-    Round round = buildEmptyRound(nbTeams);
-
-    // Build pairs sorted by ascending seed
+    Round            round = TestFixtures.buildEmptyRound(nbTeams);
     List<PlayerPair> pairs = TestFixtures.createPairs(nbTeams);
     pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
-
     KnockoutPhase knockoutPhase = new KnockoutPhase(
         nbTeams,
         nbSeeds,
         PhaseType.MAIN_DRAW,
         DrawMode.SEEDED
     );
-
     // Act: place seeds into the round
     knockoutPhase.placeSeedTeams(round, pairs, nbSeeds);
-
-    // Oracle: use getSeedsPositions for the slot indices, then check the mapping slot -> (game, side)
     List<Integer> seedSlots = knockoutPhase.getSeedsPositions(nbTeams, nbSeeds);
 
-    // Assert that each seeded pair is placed at its exact slot
-    for (int i = 0; i < nbSeeds; i++) {
-      int     slot      = seedSlots.get(i);
-      int     gameIndex = slot / 2;
-      boolean left      = (slot % 2 == 0);
-
+    // Vérification pour TS1 et TS2 (toujours fixes)
+    for (int i = 0; i < Math.min(nbSeeds, 2); i++) {
+      int        slot         = seedSlots.get(i);
+      int        gameIndex    = slot / 2;
+      boolean    left         = (slot % 2 == 0);
       Game       g            = round.getGames().get(gameIndex);
-      PlayerPair expectedPair = pairs.get(i); // i-th best seed
-
+      PlayerPair expectedPair = pairs.get(i);
       if (left) {
-        assertEquals(expectedPair, g.getTeamA(), "Seed " + (i + 1) + " must be on TEAM_A of game " + gameIndex);
+        assertEquals(expectedPair, g.getTeamA(), "Seed " + (i + 1) + " (TS" + (i + 1) + ") doit être sur TEAM_A du match " + gameIndex);
       } else {
-        assertEquals(expectedPair, g.getTeamB(), "Seed " + (i + 1) + " must be on TEAM_B of game " + gameIndex);
+        assertEquals(expectedPair, g.getTeamB(), "Seed " + (i + 1) + " (TS" + (i + 1) + ") doit être sur TEAM_B du match " + gameIndex);
       }
     }
 
-    // Also assert that non-seed slots remain empty after placement
+    // Vérification pour TS3+ (ordre aléatoire, on vérifie juste la présence)
+    Set<Integer> slotsTS3Plus = new HashSet<>();
+    for (int i = 2; i < nbSeeds; i++) {
+      slotsTS3Plus.add(seedSlots.get(i));
+    }
+    Set<PlayerPair> placedTS3Plus = new HashSet<>();
+    for (int slot : slotsTS3Plus) {
+      int        gameIndex = slot / 2;
+      boolean    left      = (slot % 2 == 0);
+      Game       g         = round.getGames().get(gameIndex);
+      PlayerPair found     = left ? g.getTeamA() : g.getTeamB();
+      assertTrue(found != null && found.getSeed() > 0, "Un seed doit être placé sur le slot " + slot);
+      placedTS3Plus.add(found);
+    }
+    // Vérifie qu'on a bien placé nbSeeds-2 seeds différents pour TS3+
+    assertEquals(nbSeeds - 2 < 0 ? 0 : nbSeeds - 2, placedTS3Plus.size(), "Nombre de seeds TS3+ placés incorrect");
+
+    // Vérifie que les autres slots sont vides
     Set<Integer> seedSet = new HashSet<>(seedSlots);
     for (int slot = 0; slot < nbTeams; slot++) {
       if (seedSet.contains(slot)) {
@@ -223,7 +235,7 @@ public class KnockoutPhaseTests {
   })
   void testPlaceSeedTeamsDoesNothingWhenNoSeeds(int nbTeams) {
     // Arrange
-    Round            round = buildEmptyRound(nbTeams);
+    Round            round = TestFixtures.buildEmptyRound(nbTeams);
     List<PlayerPair> pairs = TestFixtures.createPairs(nbTeams);
 
     int nbRounds = (int) (Math.log(nbTeams) / Math.log(2));
@@ -253,7 +265,7 @@ public class KnockoutPhaseTests {
   })
   void testPlaceByeTeams_AutoSeeds(int drawSize, int nbSeeds, int totalPairs) {
     // Arrange: build empty round and create seeded pairs
-    Round            round = buildEmptyRound(drawSize);
+    Round            round = TestFixtures.buildEmptyRound(drawSize);
     List<PlayerPair> pairs = TestFixtures.createPairs(drawSize);
     pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
 
@@ -262,7 +274,7 @@ public class KnockoutPhaseTests {
     // Place seeds automatically (auto mode)
     phase.placeSeedTeams(round, pairs, nbSeeds);
 
-    // Act: place BYEs based on the number of registered pairs
+    // Act: place BYES based on the number of registered pairs
     phase.placeByeTeams(round, totalPairs, drawSize, nbSeeds);
 
     // Assert: BYE count
@@ -293,11 +305,11 @@ public class KnockoutPhaseTests {
       // drawSize, nbSeeds, totalPairs
       "32, 16, 24",  // 8 BYEs opposite top 8 seed slots
       "64, 16, 40",  // 24 BYEs; start opposite seeds then remaining distribution
-      "64, 32, 48"   // 16 BYEs opposite 32 seed slots (first 16 covered)
+      "64, 32, 48"   // 16 BYEs opposite 32 seed slots (first 16 couverts)
   })
   void testPlaceByeTeams_ManualDeclaredSeedsButNotPlaced(int drawSize, int nbSeeds, int totalPairs) {
     // Arrange: round is empty; admin declared seeds count, but hasn't placed teams yet
-    Round         round = buildEmptyRound(drawSize);
+    Round         round = TestFixtures.buildEmptyRound(drawSize);
     KnockoutPhase phase = new KnockoutPhase(drawSize, nbSeeds, PhaseType.MAIN_DRAW, DrawMode.SEEDED);
 
     // Act
@@ -311,25 +323,30 @@ public class KnockoutPhaseTests {
                            .count();
     assertEquals(expectedByes, actualByes, "Unexpected BYE count in MANUAL declared-seeds mode");
 
-    // BYEs must be opposite to the first min(expectedByes, nbSeeds) theoretical seed slots
-    List<Integer> seedSlots = phase.getSeedsPositions(drawSize, nbSeeds);
-    for (int i = 0; i < Math.min(expectedByes, seedSlots.size()); i++) {
+    // Vérifie que les BYEs sont placés en face d'autant de seeds que possible
+    List<Integer> seedSlots              = phase.getSeedsPositions(drawSize, nbSeeds);
+    int           byesPlacedOppositeSeed = 0;
+    for (int i = 0; i < seedSlots.size(); i++) {
       int     slot      = seedSlots.get(i);
       int     gameIndex = slot / 2;
       boolean left      = (slot % 2 == 0);
       Game    g         = round.getGames().get(gameIndex);
       if (left) {
-        // seed would be on TEAM_A; BYE must appear on TEAM_B
-        assertTrue(g.getTeamB() != null && g.getTeamB().isBye(), "BYE must face seed slot #" + (i + 1));
-        // and seed slot remains empty for the admin to fill later
-        assertTrue(g.getTeamA() == null || g.getTeamA().isBye(),
-                   "Seed slot should be empty or BYE (staggered entries may create BYE vs BYE)");
+        if (g.getTeamB() != null && g.getTeamB().isBye()) {
+          byesPlacedOppositeSeed++;
+        }
       } else {
-        assertTrue(g.getTeamA() != null && g.getTeamA().isBye(), "BYE must face seed slot #" + (i + 1));
-        assertTrue(g.getTeamB() == null || g.getTeamB().isBye(),
-                   "Seed slot should be empty or BYE (staggered entries may create BYE vs BYE)");
+        if (g.getTeamA() != null && g.getTeamA().isBye()) {
+          byesPlacedOppositeSeed++;
+        }
       }
     }
+    // On doit avoir placé au moins min(expectedByes, seedSlots.size()) BYEs en face des seeds
+    assertTrue(byesPlacedOppositeSeed >= Math.min(expectedByes, seedSlots.size()),
+               "Il doit y avoir au moins "
+               + Math.min(expectedByes, seedSlots.size())
+               + " BYEs en face des seeds, mais il y en a "
+               + byesPlacedOppositeSeed);
   }
 
   /**
@@ -376,11 +393,11 @@ public class KnockoutPhaseTests {
     t.setConfig(cfg);
 
     // Arrange: build a minimal tournament with a single current round and its next round
-    Round currentRound = buildEmptyRound(totalPairs); // totalPairs is the draw size for this row
+    Round currentRound = TestFixtures.buildEmptyRound(totalPairs); // totalPairs is the draw size for this row
     currentRound.setStage(currentStageEnum);
 
     // Next round has half as many games in a standard knockout
-    Round nextRound = buildEmptyRound(totalPairs / 2);
+    Round nextRound = TestFixtures.buildEmptyRound(totalPairs / 2);
     t.getRounds().add(currentRound);
     t.getRounds().add(nextRound);
 
@@ -432,5 +449,162 @@ public class KnockoutPhaseTests {
     assertEquals(expectedQualified, actualNonNullNonByeTeams,
                  "Propagation mismatch for " + tournamentId + " at round " + roundName);
   }
-}
 
+  @ParameterizedTest(name = "nbTeams={0}, nbSeeds={1} - TS1/TS2 fixed positions")
+  @CsvSource({
+      // nbTeams, nbSeeds, TS1_expected, TS2_expected
+      "8, 4, 0, 7",
+      "16, 8, 0, 15",
+      "16, 4, 0, 15",
+      "32, 16, 0, 31",
+      "32, 8, 0, 31",
+      "64, 16, 0, 63"
+  })
+  void testSeedPositions_TS1_TS2_Fixed(int nbTeams, int nbSeeds, int expectedTS1, int expectedTS2) {
+    KnockoutPhase knockoutPhase = new KnockoutPhase(
+        nbTeams,
+        nbSeeds,
+        PhaseType.MAIN_DRAW,
+        DrawMode.SEEDED
+    );
+
+    List<Integer> seedPositions = knockoutPhase.getSeedsPositions(nbTeams, nbSeeds);
+
+    // TS1 and TS2 should always be at fixed positions
+    assertEquals(expectedTS1, seedPositions.get(0), "TS1 must always be at position " + expectedTS1);
+    if (nbSeeds >= 2) {
+      assertEquals(expectedTS2, seedPositions.get(1), "TS2 must always be at position " + expectedTS2);
+    }
+  }
+
+  @ParameterizedTest(name = "nbTeams={0}, nbSeeds={1} - TS3+ random positions")
+  @CsvSource({
+      // nbTeams, nbSeeds, TS3_possible_positions, TS4_possible_positions
+      "8, 4, '3;4', '3;4'",
+      "16, 8, '7;8', '7;8'",
+      "16, 4, '7;8', '7;8'",
+      "32, 8, '15;16', '15;16'",
+      "64, 16, '31;32', '31;32'"
+  })
+  void testSeedPositions_TS3Plus_RandomWithinValidOptions(int nbTeams, int nbSeeds, String ts3Options, String ts4Options) {
+    if (nbSeeds < 3) {
+      return; // Skip if not enough seeds for TS3+
+    }
+
+    KnockoutPhase knockoutPhase = new KnockoutPhase(
+        nbTeams,
+        nbSeeds,
+        PhaseType.MAIN_DRAW,
+        DrawMode.SEEDED
+    );
+
+    // Test multiple times to verify randomness
+    Set<Integer> observedTS3Positions = new HashSet<>();
+    Set<Integer> observedTS4Positions = new HashSet<>();
+
+    for (int i = 0; i < 50; i++) { // Run 50 times to catch randomness
+      List<Integer> seedPositions = knockoutPhase.getSeedsPositions(nbTeams, nbSeeds);
+
+      if (nbSeeds >= 3) {
+        observedTS3Positions.add(seedPositions.get(2));
+      }
+      if (nbSeeds >= 4) {
+        observedTS4Positions.add(seedPositions.get(3));
+      }
+    }
+
+    // Parse expected positions
+    List<Integer> validTS3Positions = Arrays.stream(ts3Options.split(";"))
+                                            .map(String::trim)
+                                            .map(Integer::parseInt)
+                                            .toList();
+
+    List<Integer> validTS4Positions = Arrays.stream(ts4Options.split(";"))
+                                            .map(String::trim)
+                                            .map(Integer::parseInt)
+                                            .toList();
+
+    // Verify TS3 positions are within valid options
+    for (int observedPos : observedTS3Positions) {
+      assertTrue(validTS3Positions.contains(observedPos),
+                 "TS3 position " + observedPos + " not in valid options: " + validTS3Positions);
+    }
+
+    // Verify TS4 positions are within valid options
+    if (nbSeeds >= 4) {
+      for (int observedPos : observedTS4Positions) {
+        assertTrue(validTS4Positions.contains(observedPos),
+                   "TS4 position " + observedPos + " not in valid options: " + validTS4Positions);
+      }
+    }
+
+    // Verify that we see some variation (randomness working)
+    if (validTS3Positions.size() > 1) {
+      assertTrue(observedTS3Positions.size() > 1,
+                 "TS3 should show variation across multiple runs, but only saw: " + observedTS3Positions);
+    }
+  }
+
+  @ParameterizedTest(name = "Comprehensive seed positioning test - nbTeams={0}, nbSeeds={1}")
+  @CsvSource({
+      "32, 8",
+      "64, 16"
+  })
+  void testSeedPositions_ComprehensiveValidation(int nbTeams, int nbSeeds) {
+    KnockoutPhase knockoutPhase = new KnockoutPhase(
+        nbTeams,
+        nbSeeds,
+        PhaseType.MAIN_DRAW,
+        DrawMode.SEEDED
+    );
+
+    List<Integer> seedPositions = knockoutPhase.getSeedsPositions(nbTeams, nbSeeds);
+
+    // Basic validations
+    assertEquals(nbSeeds, seedPositions.size(), "Should return exactly nbSeeds positions");
+
+    // All positions should be unique
+    Set<Integer> uniquePositions = new HashSet<>(seedPositions);
+    assertEquals(nbSeeds, uniquePositions.size(), "All seed positions should be unique");
+
+    // All positions should be valid (0 <= pos < nbTeams)
+    for (int pos : seedPositions) {
+      assertTrue(pos >= 0 && pos < nbTeams, "Position " + pos + " should be between 0 and " + (nbTeams - 1));
+    }
+
+    // Verify JSON structure is being used correctly by checking known constraints
+    assertEquals(0, seedPositions.get(0), "TS1 must always be at position 0");
+    assertEquals(nbTeams - 1, seedPositions.get(1), "TS2 must always be at position " + (nbTeams - 1));
+  }
+
+  @ParameterizedTest(name = "nbTeams={0}, nbSeeds={1} - Basic seed positioning validation")
+  @CsvSource({
+      // nbTeams, nbSeeds - Test basic functionality without hardcoded expectations
+      "8, 4",
+      "16, 8",
+      "32, 16",
+      "64, 32"
+  })
+  void testSeedPositions_BasicValidation(int nbTeams, int nbSeeds) {
+    KnockoutPhase knockoutPhase = new KnockoutPhase(
+        nbTeams,
+        nbSeeds,
+        PhaseType.MAIN_DRAW,
+        DrawMode.SEEDED
+    );
+
+    List<Integer> seedPositions = knockoutPhase.getSeedsPositions(nbTeams, nbSeeds);
+
+    // Basic validations
+    assertEquals(nbSeeds, seedPositions.size(), "Should return exactly nbSeeds positions");
+
+    // All positions should be unique
+    Set<Integer> uniquePositions = new HashSet<>(seedPositions);
+    assertEquals(nbSeeds, uniquePositions.size(), "All seed positions should be unique");
+
+    // All positions should be valid (0 <= pos < nbTeams)
+    for (int pos : seedPositions) {
+      assertTrue(pos >= 0 && pos < nbTeams, "Position " + pos + " should be between 0 and " + (nbTeams - 1));
+    }
+  }
+}

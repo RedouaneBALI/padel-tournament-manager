@@ -1,5 +1,7 @@
 package io.github.redouanebali.generation;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PairType;
 import io.github.redouanebali.model.PlayerPair;
@@ -8,8 +10,10 @@ import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.DrawMode;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import lombok.AllArgsConstructor;
 
@@ -79,7 +83,6 @@ public class KnockoutPhase implements TournamentPhase {
     }
     return false;
   }
-
 
   @Override
   public List<String> validate(final Tournament tournament) {
@@ -155,7 +158,15 @@ public class KnockoutPhase implements TournamentPhase {
     }
 
     // Allow placing more teams than the original nbSeeds if needed (for BYE protection)
-    final int nbSeedsToPlace = Math.min(nbSeedsArg, playerPairs.size());
+    int nbSeedsToPlace;
+    if (playerPairs.size() < nbSeedsArg) {
+      nbSeedsToPlace = io.github.redouanebali.model.format.DrawMath.largestPowerOfTwoLE(playerPairs.size());
+    } else {
+      nbSeedsToPlace = nbSeedsArg;
+    }
+    if (nbSeedsToPlace == 0) {
+      return;
+    }
 
     // Sort pairs: real seeds (1, 2, 3...) first, then non-seeds (seed <= 0) at the end
     final List<PlayerPair> sortedBySeed = new ArrayList<>(playerPairs);
@@ -209,8 +220,87 @@ public class KnockoutPhase implements TournamentPhase {
 
   @Override
   public List<Integer> getSeedsPositions(int drawSize, int nbSeeds) {
-    List<Integer> allPositions = generateAllSeedPositions(drawSize);
-    return allPositions.subList(0, Math.min(nbSeeds, allPositions.size()));
+    if (nbSeeds == 0) {
+      return new ArrayList<>();
+    }
+
+    return loadSeedPositionsFromJson(drawSize, nbSeeds);
+  }
+
+  /**
+   * Load seed positions from JSON file and randomly assign positions for each seed group. TS1 and TS2 are fixed, TS3+ are randomly selected from
+   * available positions.
+   */
+  private List<Integer> loadSeedPositionsFromJson(int drawSize, int nbSeeds) {
+    try {
+      // Load JSON from resources
+      InputStream inputStream = getClass().getResourceAsStream("/seed_positions.json");
+      if (inputStream == null) {
+        throw new IllegalStateException("seed_positions.json not found in resources");
+      }
+
+      ObjectMapper mapper   = new ObjectMapper();
+      JsonNode     rootNode = mapper.readTree(inputStream);
+
+      // Navigate to the correct drawSize and nbSeeds
+      JsonNode drawSizeNode = rootNode.get(String.valueOf(drawSize));
+      if (drawSizeNode == null) {
+        throw new IllegalArgumentException("DrawSize " + drawSize + " not supported in seed_positions.json");
+      }
+
+      JsonNode nbSeedsNode = drawSizeNode.get(String.valueOf(nbSeeds));
+      if (nbSeedsNode == null) {
+        throw new IllegalArgumentException("NbSeeds " + nbSeeds + " not supported for drawSize " + drawSize);
+      }
+
+      List<Integer> positions = new ArrayList<>();
+
+      // Process seed groups in order: TS1, TS2, TS3-4, TS5-8, etc.
+      Iterator<String> fieldNames   = nbSeedsNode.fieldNames();
+      List<String>     sortedFields = new ArrayList<>();
+      fieldNames.forEachRemaining(sortedFields::add);
+
+      // Sort to ensure proper order: TS1, TS2, TS3-4, TS5-8, TS9-16, TS17-32
+      sortedFields.sort((a, b) -> {
+        if (a.equals("TS1")) {
+          return -1;
+        }
+        if (b.equals("TS1")) {
+          return 1;
+        }
+        if (a.equals("TS2")) {
+          return -1;
+        }
+        if (b.equals("TS2")) {
+          return 1;
+        }
+        return a.compareTo(b);
+      });
+
+      for (String groupKey : sortedFields) {
+        JsonNode      positionsArray = nbSeedsNode.get(groupKey);
+        List<Integer> groupPositions = new ArrayList<>();
+
+        // Collect all positions for this group
+        for (JsonNode posNode : positionsArray) {
+          groupPositions.add(posNode.asInt());
+        }
+
+        // For TS1 and TS2, use the fixed position
+        if ("TS1".equals(groupKey) || "TS2".equals(groupKey)) {
+          positions.addAll(groupPositions);
+        } else {
+          // For TS3+, shuffle the positions to simulate random draw
+          Collections.shuffle(groupPositions);
+          positions.addAll(groupPositions);
+        }
+      }
+
+      return positions.subList(0, Math.min(nbSeeds, positions.size()));
+
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to load seed positions from JSON", e);
+    }
   }
 
   @Override
@@ -383,13 +473,25 @@ public class KnockoutPhase implements TournamentPhase {
       for (int i = 0; i < curGames.size(); i++) {
         final Game currentGame = curGames.get(i);
         PlayerPair winner      = currentGame.getWinner();
+
+        // Skip if no winner determined
         if (winner == null) {
-          continue; // nothing to propagate yet
+          continue;
+        }
+
+        // Special case: BYE vs BYE should propagate a BYE
+        boolean teamABye   = currentGame.getTeamA() != null && currentGame.getTeamA().isBye();
+        boolean teamBBye   = currentGame.getTeamB() != null && currentGame.getTeamB().isBye();
+        boolean isByeVsBye = teamABye && teamBBye;
+
+        // Skip BYE winners unless it's from a BYE vs BYE match
+        if (winner.isBye() && !isByeVsBye) {
+          continue;
         }
 
         // Avoid duplicate placement only if the *same instance* is already assigned in next round.
         // Using reference identity prevents false positives when different pairs share seed/labels.
-        if (!winner.isBye() && isAlreadyAssignedInNextByReference(nextGames, winner)) {
+        if (isAlreadyAssignedInNextByReference(nextGames, winner)) {
           continue;
         }
 
@@ -413,55 +515,10 @@ public class KnockoutPhase implements TournamentPhase {
 
         if (!placed) {
           // Final fallback for any unusual layout: single scan
-          //  placeBySingleScan(nextGames, winner);
+          placeBySingleScan(nextGames, winner);
         }
       }
     }
-  }
-
-  /**
-   * Generate seed positions for a perfect bracket (nbTeams must be a power of 2)
-   */
-  private List<Integer> generatePerfectSeedPositions(int nbTeams) {
-    if (nbTeams == 1) {
-      return Collections.singletonList(0);
-    }
-
-    List<Integer> prev   = generatePerfectSeedPositions(nbTeams / 2);
-    List<Integer> result = new ArrayList<>();
-
-    for (int i = 0; i < prev.size(); i++) {
-      int pos = prev.get(i);
-      if (i % 2 == 0) {
-        // For even indices, place the position in the first half
-        result.add(pos);
-        result.add(nbTeams - 1 - pos);
-      } else {
-        // For odd indices, invert the order
-        result.add(nbTeams - 1 - pos);
-        result.add(pos);
-      }
-    }
-
-    return result;
-  }
-
-  /**
-   * Generate all the possible position recursively from the bracket structure
-   */
-  private List<Integer> generateAllSeedPositions(int drawSize) {
-    if (drawSize <= 1) {
-      return Collections.singletonList(0);
-    }
-
-    int powerOfTwo = 1;
-    while (powerOfTwo < drawSize) {
-      powerOfTwo *= 2;
-    }
-
-    List<Integer> fullPositions = generatePerfectSeedPositions(powerOfTwo);
-
-    return fullPositions.subList(0, drawSize);
   }
 
   @Override
@@ -472,5 +529,4 @@ public class KnockoutPhase implements TournamentPhase {
       default -> throw new IllegalStateException("Unsupported phaseType: " + phaseType);
     };
   }
-
 }

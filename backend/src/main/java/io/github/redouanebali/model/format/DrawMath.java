@@ -23,4 +23,15 @@ public final class DrawMath {
     }
     return power;
   }
+
+  public static int largestPowerOfTwoLE(int n) {
+    if (n < 1) {
+      return 0;
+    }
+    int res = 1;
+    while (res * 2 <= n) {
+      res *= 2;
+    }
+    return res;
+  }
 }

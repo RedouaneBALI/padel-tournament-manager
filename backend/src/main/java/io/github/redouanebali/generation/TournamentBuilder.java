@@ -1,11 +1,14 @@
 package io.github.redouanebali.generation;
 
+import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -195,17 +198,25 @@ public final class TournamentBuilder {
           teamsToProtectWithByes = Math.max(configuredSeeds, totalByesNeeded);
 
           // Place only the configured number of seeds in their proper positions
-          phase.placeSeedTeams(initialRound, allPairs, teamsToProtectWithByes);
+          int seedsToPlace = Math.min(configuredSeeds, io.github.redouanebali.model.format.DrawMath.largestPowerOfTwoLE(allPairs.size()));
+          phase.placeSeedTeams(initialRound, allPairs, seedsToPlace);
 
-          // Place BYEs opposite to the protected teams (using the larger number for BYE protection)
-          phase.placeByeTeams(initialRound, allPairs.size(), roundDrawSize, teamsToProtectWithByes);
+          // Place BYEs opposite to the protected teams (using the number of seeds réellement placés)
+          phase.placeByeTeams(initialRound, allPairs.size(), roundDrawSize, seedsToPlace);
 
           // Filter out teams that are already placed (seeds and those protected with BYEs)
-          List<PlayerPair> remainingTeams = new ArrayList<>();
-          for (int i = teamsToProtectWithByes; i < allPairs.size(); i++) {
-            remainingTeams.add(allPairs.get(i));
+          Set<PlayerPair> alreadyPlaced = new HashSet<>();
+          for (Game g : initialRound.getGames()) {
+            if (g.getTeamA() != null && !g.getTeamA().isBye()) {
+              alreadyPlaced.add(g.getTeamA());
+            }
+            if (g.getTeamB() != null && !g.getTeamB().isBye()) {
+              alreadyPlaced.add(g.getTeamB());
+            }
           }
-
+          List<PlayerPair> remainingTeams = allPairs.stream()
+                                                    .filter(p -> !alreadyPlaced.contains(p))
+                                                    .toList();
           // Place remaining teams in available slots
           phase.placeRemainingTeamsRandomly(initialRound, remainingTeams);
         }

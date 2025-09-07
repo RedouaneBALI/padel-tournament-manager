@@ -354,6 +354,16 @@ public class TournamentBuilderTest {
         }
         currentRound.getGames().clear();
         currentRound.getGames().addAll(games);
+
+        // Validate and clean up any null teams in loaded games
+        for (Game g : currentRound.getGames()) {
+          if (g.getTeamA() == null) {
+            g.setTeamA(PlayerPair.bye());
+          }
+          if (g.getTeamB() == null) {
+            g.setTeamB(PlayerPair.bye());
+          }
+        }
       }
     } catch (Exception ex) {
       throw new RuntimeException("Failed to initialize first main draw without qualifiers from teams_t1.json", ex);
@@ -367,8 +377,7 @@ public class TournamentBuilderTest {
         break;
       }
       if (g.getTeamA() != null && g.getTeamB() != null &&
-          (g.getTeamA().getType() == null || g.getTeamA().getType() != PairType.BYE) &&
-          (g.getTeamB().getType() == null || g.getTeamB().getType() != PairType.BYE) &&
+          !g.getTeamA().isBye() && !g.getTeamB().isBye() &&
           g.getScore() == null) {
         g.setFormat(TestFixtures.createSimpleFormat(1));
         g.setScore(TestFixtures.createScoreWithWinner(g, g.getTeamA()));
