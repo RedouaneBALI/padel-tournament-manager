@@ -177,12 +177,12 @@ public final class TournamentBuilder {
 
           // Place seeds in qualifs (among qualif participants only)
           if (nbSeedsQualif > 0 && !qualifParticipants.isEmpty()) {
-            phase.placeSeedTeams(initialRound, qualifParticipants, teamsToProtectInQualifs);
+            phase.placeSeedTeams(initialRound, qualifParticipants);
           }
 
           // Place BYEs in qualifs if needed
           if (byesNeededInQualifs > 0) {
-            phase.placeByeTeams(initialRound, teamsAvailableForQualifs, qualifDrawSize, teamsToProtectInQualifs);
+            phase.placeByeTeams(initialRound, teamsAvailableForQualifs);
           }
 
           // Place remaining qualif participants randomly
@@ -199,10 +199,10 @@ public final class TournamentBuilder {
 
           // Place only the configured number of seeds in their proper positions
           int seedsToPlace = Math.min(configuredSeeds, io.github.redouanebali.model.format.DrawMath.largestPowerOfTwoLE(allPairs.size()));
-          phase.placeSeedTeams(initialRound, allPairs, seedsToPlace);
+          phase.placeSeedTeams(initialRound, allPairs);
 
           // Place BYEs opposite to the protected teams (using the number of seeds réellement placés)
-          phase.placeByeTeams(initialRound, allPairs.size(), roundDrawSize, seedsToPlace);
+          phase.placeByeTeams(initialRound, allPairs.size());
 
           // Filter out teams that are already placed (seeds and those protected with BYEs)
           Set<PlayerPair> alreadyPlaced = new HashSet<>();

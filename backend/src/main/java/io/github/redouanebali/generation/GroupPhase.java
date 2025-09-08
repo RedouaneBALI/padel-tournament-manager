@@ -27,17 +27,17 @@ public class GroupPhase implements TournamentPhase {
   }
 
   @Override
-  public void placeSeedTeams(final Round round, final List<PlayerPair> playerPairs, final int nbSeeds) {
+  public void placeSeedTeams(final Round round, final List<PlayerPair> playerPairs) {
     // For groups, generally no seeds, so nothing to do
   }
 
   @Override
-  public List<Integer> getSeedsPositions(final int drawSize, final int nbSeeds) {
+  public List<Integer> getSeedsPositions() {
     return List.of();
   }
 
   @Override
-  public void placeByeTeams(final Round round, final int totalPairs, final int drawSize, final int nbSeeds) {
+  public void placeByeTeams(final Round round, final int totalPairs) {
     // For groups, generally no BYEs, so nothing to do
   }
 

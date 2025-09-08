@@ -34,18 +34,15 @@ public interface TournamentPhase {
    *
    * @param round the round whose games will be updated
    * @param playerPairs the list of all player pairs with seed values (the first nbSeeds by seed rank are considered)
-   * @param nbSeeds number of seeds to place
    */
-  void placeSeedTeams(Round round, List<PlayerPair> playerPairs, int nbSeeds);
+  void placeSeedTeams(Round round, List<PlayerPair> playerPairs);
 
   /**
-   * Compute recursively the positions of the seeds in a tournament
+   * Renvoie la liste des positions des seeds (utilise les propriétés internes de la classe).
    *
-   * @param drawSize size of the bracket
-   * @param nbSeeds number of seeds teams
-   * @return list of the positions of the seeds
+   * @return liste des positions des seeds
    */
-  List<Integer> getSeedsPositions(int drawSize, int nbSeeds);
+  List<Integer> getSeedsPositions();
 
   /**
    * Insert BYE teams into the bracket if the draw is not full. Ensures seeded players can advance automatically when required. This method mutates
@@ -53,10 +50,8 @@ public interface TournamentPhase {
    *
    * @param round the round whose games will be updated
    * @param totalPairs total number of pairs registered
-   * @param drawSize the size of the draw (power of 2)
-   * @param nbSeeds number of seeds
    */
-  void placeByeTeams(Round round, int totalPairs, int drawSize, int nbSeeds);
+  void placeByeTeams(Round round, int totalPairs);
 
   /**
    * Randomly assign remaining non-seeded teams into the empty slots of the draw. This method mutates the round's games in place.

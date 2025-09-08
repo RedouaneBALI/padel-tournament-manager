@@ -146,7 +146,7 @@ public class KnockoutPhase implements TournamentPhase {
   }
 
   @Override
-  public void placeSeedTeams(final Round round, final List<PlayerPair> playerPairs, final int nbSeedsArg) {
+  public void placeSeedTeams(final Round round, final List<PlayerPair> playerPairs) {
     if (round == null || round.getGames() == null || playerPairs == null) {
       throw new IllegalArgumentException("round/games and playerPairs must not be null");
     }
@@ -157,60 +157,57 @@ public class KnockoutPhase implements TournamentPhase {
       throw new IllegalStateException("Configured drawSize=" + this.drawSize + " but games provide drawSlots=" + drawSlots);
     }
 
-    // Allow placing more teams than the original nbSeeds if needed (for BYE protection)
-    int nbSeedsToPlace;
-    if (playerPairs.size() < nbSeedsArg) {
-      nbSeedsToPlace = io.github.redouanebali.model.format.DrawMath.largestPowerOfTwoLE(playerPairs.size());
-    } else {
-      nbSeedsToPlace = nbSeedsArg;
-    }
-    if (nbSeedsToPlace == 0) {
+    // Calculate how many BYEs will be needed
+    int byesToPlace = Math.max(0, this.drawSize - playerPairs.size());
+
+    // Determine how many teams we need to place at theoretical positions
+    // This includes official seeds + additional teams at theoretical positions for BYEs
+    int teamsToPlaceAtSeedPositions = Math.max(this.nbSeeds, byesToPlace);
+
+    // Don't exceed the number of available teams
+    teamsToPlaceAtSeedPositions = Math.min(teamsToPlaceAtSeedPositions, playerPairs.size());
+
+    if (teamsToPlaceAtSeedPositions == 0) {
       return;
     }
 
-    // Sort pairs: real seeds (1, 2, 3...) first, then non-seeds (seed <= 0) at the end
     final List<PlayerPair> sortedBySeed = new ArrayList<>(playerPairs);
     sortedBySeed.sort((pair1, pair2) -> {
       int seed1 = pair1.getSeed();
       int seed2 = pair2.getSeed();
-
-      // If both have real seeds (> 0), sort by ascending seed
       if (seed1 > 0 && seed2 > 0) {
         return Integer.compare(seed1, seed2);
       }
-      // If one has real seed and other doesn't, real seed comes first
       if (seed1 > 0) {
         return -1;
       }
       if (seed2 > 0) {
         return 1;
       }
-      // If both have no real seed (both <= 0), maintain original order
       return 0;
     });
 
-    // Theoretical seed positions in a bracket of size drawSlots
-    final List<Integer> seedSlots = getSeedsPositions(drawSlots, nbSeedsToPlace);
+    // Get theoretical positions for the extended number of teams
+    final List<Integer> seedSlots = getSeedsPositions(this.drawSize, teamsToPlaceAtSeedPositions);
 
-    // Placement: slot -> (gameIndex, side)
-    for (int i = 0; i < nbSeedsToPlace; i++) {
+    // Place teams at theoretical positions (TS1, TS2, ..., TS_n)
+    for (int i = 0; i < teamsToPlaceAtSeedPositions && i < sortedBySeed.size() && i < seedSlots.size(); i++) {
       int      slot      = seedSlots.get(i);
       int      gameIndex = slot / 2;
       TeamSide side      = (slot % 2 == 0) ? TeamSide.TEAM_A : TeamSide.TEAM_B;
 
       Game       g        = games.get(gameIndex);
-      PlayerPair seedPair = sortedBySeed.get(i);
+      PlayerPair teamPair = sortedBySeed.get(i);
 
-      // Place the pair on the correct side, without overwriting any existing assignment
       if (side == TeamSide.TEAM_A) {
         if (g.getTeamA() == null) {
-          g.setTeamA(seedPair);
+          g.setTeamA(teamPair);
         } else {
           throw new IllegalStateException("Seed slot already occupied: game=" + gameIndex + ", side=TEAM_A");
         }
-      } else { // TEAM_B
+      } else {
         if (g.getTeamB() == null) {
-          g.setTeamB(seedPair);
+          g.setTeamB(teamPair);
         } else {
           throw new IllegalStateException("Seed slot already occupied: game=" + gameIndex + ", side=TEAM_B");
         }
@@ -219,13 +216,24 @@ public class KnockoutPhase implements TournamentPhase {
   }
 
   @Override
-  public List<Integer> getSeedsPositions(int drawSize, int nbSeeds) {
+  public List<Integer> getSeedsPositions() {
+    if (this.nbSeeds == 0) {
+      return new ArrayList<>();
+    }
+    return loadSeedPositionsFromJson(this.drawSize, this.nbSeeds);
+  }
+
+  /**
+   * Get seed positions for a specific number of seeds (used internally when nbSeedsToPlace differs from this.nbSeeds)
+   */
+  private List<Integer> getSeedsPositions(int drawSize, int nbSeeds) {
     if (nbSeeds == 0) {
       return new ArrayList<>();
     }
 
     return loadSeedPositionsFromJson(drawSize, nbSeeds);
   }
+
 
   /**
    * Load seed positions from JSON file and randomly assign positions for each seed group. TS1 and TS2 are fixed, TS3+ are randomly selected from
@@ -242,15 +250,23 @@ public class KnockoutPhase implements TournamentPhase {
       ObjectMapper mapper   = new ObjectMapper();
       JsonNode     rootNode = mapper.readTree(inputStream);
 
-      // Navigate to the correct drawSize and nbSeeds
+      // Navigate to the correct drawSize
       JsonNode drawSizeNode = rootNode.get(String.valueOf(drawSize));
       if (drawSizeNode == null) {
         throw new IllegalArgumentException("DrawSize " + drawSize + " not supported in seed_positions.json");
       }
 
-      JsonNode nbSeedsNode = drawSizeNode.get(String.valueOf(nbSeeds));
+      // If nbSeeds is not a power of 2, use the next power of 2 and return a sublist
+      int nbSeedsToUse = nbSeeds;
+      if (nbSeeds > 0 && (nbSeeds & (nbSeeds - 1)) != 0) {
+        // nbSeeds is not a power of 2, find the next power of 2
+        nbSeedsToUse = Integer.highestOneBit(nbSeeds) << 1; // Next power of 2
+        nbSeedsToUse = Math.min(nbSeedsToUse, drawSize); // Don't exceed drawSize
+      }
+
+      JsonNode nbSeedsNode = drawSizeNode.get(String.valueOf(nbSeedsToUse));
       if (nbSeedsNode == null) {
-        throw new IllegalArgumentException("NbSeeds " + nbSeeds + " not supported for drawSize " + drawSize);
+        throw new IllegalArgumentException("NbSeeds " + nbSeedsToUse + " not supported for drawSize " + drawSize);
       }
 
       List<Integer> positions = new ArrayList<>();
@@ -296,6 +312,7 @@ public class KnockoutPhase implements TournamentPhase {
         }
       }
 
+      // Return only the number of seeds requested (sublist if we used a higher power of 2)
       return positions.subList(0, Math.min(nbSeeds, positions.size()));
 
     } catch (Exception e) {
@@ -304,10 +321,7 @@ public class KnockoutPhase implements TournamentPhase {
   }
 
   @Override
-  public void placeByeTeams(final Round round,
-                            final int totalPairs,
-                            final int drawSize,
-                            final int nbSeeds) {
+  public void placeByeTeams(final Round round, final int totalPairs) {
     if (round == null || round.getGames() == null) {
       throw new IllegalArgumentException("round/games must not be null");
     }
@@ -316,13 +330,13 @@ public class KnockoutPhase implements TournamentPhase {
 
     // Sanity checks
     final int slots = games.size() * 2;
-    if (slots != drawSize) {
-      throw new IllegalStateException("Round games do not match drawSize: games*2=" + slots + ", drawSize=" + drawSize);
+    if (slots != this.drawSize) {
+      throw new IllegalStateException("Round games do not match drawSize: games*2=" + slots + ", drawSize=" + this.drawSize);
     }
-    if (drawSize <= 0 || (drawSize & (drawSize - 1)) != 0) {
+    if (this.drawSize <= 0 || (this.drawSize & (this.drawSize - 1)) != 0) {
       throw new IllegalArgumentException("drawSize must be a power of two");
     }
-    if (totalPairs > drawSize) {
+    if (totalPairs > this.drawSize) {
       throw new IllegalArgumentException("totalPairs cannot exceed drawSize");
     }
 
@@ -337,37 +351,50 @@ public class KnockoutPhase implements TournamentPhase {
       }
     }
 
-    int byesToPlace = Math.max(0, drawSize - totalPairs - existingByes);
+    int byesToPlace = Math.max(0, this.drawSize - totalPairs - existingByes);
     if (byesToPlace == 0) {
       return; // nothing to do
     }
 
-    // Only place BYES opposite to seeded teams (optimal tournament strategy)
-    final int nbSeedsToConsider = Math.max(0, Math.min(nbSeeds, drawSize));
-    if (nbSeedsToConsider > 0) {
-      // Place BYEs opposite to seeded teams (TS1 first, then TS2, ...)
-      final List<Integer> seedSlots = getSeedsPositions(drawSize, nbSeedsToConsider);
+    // Place BYEs opposite to the best qualified teams (seeds + next best teams)
+    // If we need more BYEs than declared seeds, extend to cover the next best teams
+    int teamsToProtectWithByes = Math.max(this.nbSeeds, byesToPlace);
 
-      for (int i = 0; i < seedSlots.size() && byesToPlace > 0; i++) {
-        int     slot      = seedSlots.get(i);
-        int     gameIndex = slot / 2;
-        boolean left      = (slot % 2 == 0);
-        Game    g         = games.get(gameIndex);
+    // Get seed positions for the number of teams we want to protect with BYEs
+    List<Integer> protectedSlots;
+    if (teamsToProtectWithByes <= this.nbSeeds) {
+      // Normal case: we have enough seeds to cover all BYEs
+      protectedSlots = getSeedsPositions();
+    } else {
+      // Extended case: we need more BYEs than declared seeds
+      // Use theoretical seed positions for the extended number
+      protectedSlots = getSeedsPositions(this.drawSize, teamsToProtectWithByes);
+    }
 
-        if (left) {
-          if (g.getTeamB() == null) {
-            g.setTeamB(PlayerPair.bye());
-            byesToPlace--;
-          }
-        } else {
-          if (g.getTeamA() == null) {
-            g.setTeamA(PlayerPair.bye());
-            byesToPlace--;
-          }
+    // Place BYEs opposite to the protected teams (TS1, TS2, ..., TS_n)
+    // But only if there's actually a real team in the protected position
+    for (int i = 0; i < protectedSlots.size() && byesToPlace > 0; i++) {
+      int     slot      = protectedSlots.get(i);
+      int     gameIndex = slot / 2;
+      boolean left      = (slot % 2 == 0);
+      Game    g         = games.get(gameIndex);
+
+      if (left) {
+        // Only place BYE if there's a real team on the left (teamA) and teamB is empty
+        if (g.getTeamA() != null && !g.getTeamA().isBye() && g.getTeamB() == null) {
+          g.setTeamB(PlayerPair.bye());
+          byesToPlace--;
+        }
+      } else {
+        // Only place BYE if there's a real team on the right (teamB) and teamA is empty
+        if (g.getTeamB() != null && !g.getTeamB().isBye() && g.getTeamA() == null) {
+          g.setTeamA(PlayerPair.bye());
+          byesToPlace--;
         }
       }
     }
 
+    // If there are still BYEs to place, use the fallback logic
     for (Game g : games) {
       if (byesToPlace == 0) {
         break;
@@ -384,25 +411,23 @@ public class KnockoutPhase implements TournamentPhase {
       }
     }
 
-    if (byesToPlace == 0) {
-      return;
-    }
-
-    // 3) As a last resort, allow BYE vs BYE to satisfy staggered entries
-    for (Game g : games) {
-      if (byesToPlace == 0) {
-        break;
-      }
-      if (g.getTeamA() == null) {
-        g.setTeamA(PlayerPair.bye());
-        byesToPlace--;
+    // As a last resort, allow BYE vs BYE if still needed
+    if (byesToPlace > 0) {
+      for (Game g : games) {
         if (byesToPlace == 0) {
           break;
         }
-      }
-      if (g.getTeamB() == null) {
-        g.setTeamB(PlayerPair.bye());
-        byesToPlace--;
+        if (g.getTeamA() == null) {
+          g.setTeamA(PlayerPair.bye());
+          byesToPlace--;
+          if (byesToPlace == 0) {
+            break;
+          }
+        }
+        if (g.getTeamB() == null) {
+          g.setTeamB(PlayerPair.bye());
+          byesToPlace--;
+        }
       }
     }
 
@@ -530,3 +555,4 @@ public class KnockoutPhase implements TournamentPhase {
     };
   }
 }
+
