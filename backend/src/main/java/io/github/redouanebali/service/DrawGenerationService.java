@@ -51,7 +51,7 @@ public class DrawGenerationService {
 
   public void initialize(Tournament tournament) {
     assertCanInitialize(tournament);
-    List<Round> emptyRounds = tournamentBuilder.buildQualifKOStructure(tournament);
+    List<Round> emptyRounds = tournamentBuilder.buildQualifKOStructure(tournament.getConfig());
     tournament.getRounds().clear();
     tournament.getRounds().addAll(emptyRounds);
   }

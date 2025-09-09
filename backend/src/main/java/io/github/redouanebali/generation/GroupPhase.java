@@ -5,6 +5,7 @@ import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.format.TournamentFormatConfig;
 import java.util.List;
 import lombok.AllArgsConstructor;
 
@@ -21,7 +22,7 @@ public class GroupPhase implements TournamentPhase {
   }
 
   @Override
-  public List<Round> initialize(final Tournament tournament) {
+  public List<Round> initialize(final TournamentFormatConfig config) {
     Round round = new Round();
     round.setStage(Stage.GROUPS);
     return List.of(round);

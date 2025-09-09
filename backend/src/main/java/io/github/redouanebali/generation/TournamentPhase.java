@@ -4,6 +4,7 @@ import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.format.TournamentFormatConfig;
 import java.util.List;
 
 /**
@@ -13,24 +14,24 @@ import java.util.List;
 public interface TournamentPhase {
 
   /**
-   * Validate the tournament configuration for this phase. Checks draw sizes (powers of two), number of seeds, number of qualifiers, compatibility
+   * Validates the tournament configuration for this phase. Checks draw sizes (powers of two), number of seeds, number of qualifiers, compatibility
    * between pre-qualification and main draw, and any phase-specific constraints.
    *
    * @param tournament the tournament whose configuration will be validated
-   * @return a list of human-readable validation errors; empty list means the configuration is valid
+   * @return a list of human-readable validation errors; an empty list means the configuration is valid
    */
   List<String> validate(Tournament tournament);
 
   /**
-   * Initialize the tournament phase by creating rounds and games based on the configuration.
+   * Initializes the tournament phase by creating rounds and games based on the configuration.
    *
-   * @param tournament the tournament to initialize
+   * @param config the configuration for the tournament phase
    * @return list of initialized rounds
    */
-  List<Round> initialize(Tournament tournament);
+  List<Round> initialize(TournamentFormatConfig config);
 
   /**
-   * Place seeded teams at their theoretical positions in the given round. This method mutates the round's games in place.
+   * Places seeded teams at their theoretical positions in the given round. This method mutates the round's games in place.
    *
    * @param round the round whose games will be updated
    * @param playerPairs the list of all player pairs with seed values (the first nbSeeds by seed rank are considered)
@@ -38,14 +39,14 @@ public interface TournamentPhase {
   void placeSeedTeams(Round round, List<PlayerPair> playerPairs);
 
   /**
-   * Renvoie la liste des positions des seeds (utilise les propriétés internes de la classe).
+   * Returns the list of seed positions (uses the internal properties of the class).
    *
-   * @return liste des positions des seeds
+   * @return list of seed positions
    */
   List<Integer> getSeedsPositions();
 
   /**
-   * Insert BYE teams into the bracket if the draw is not full. Ensures seeded players can advance automatically when required. This method mutates
+   * Inserts BYE teams into the bracket if the draw is not full. Ensures seeded players can advance automatically when required. This method mutates
    * the round's games in place.
    *
    * @param round the round whose games will be updated
@@ -54,7 +55,7 @@ public interface TournamentPhase {
   void placeByeTeams(Round round, int totalPairs);
 
   /**
-   * Randomly assign remaining non-seeded teams into the empty slots of the draw. This method mutates the round's games in place.
+   * Randomly assigns remaining non-seeded teams into the empty slots of the draw. This method mutates the round's games in place.
    *
    * @param round the round whose games will be updated
    * @param remainingTeams teams that are not seeded
@@ -62,7 +63,7 @@ public interface TournamentPhase {
   void placeRemainingTeamsRandomly(Round round, List<PlayerPair> remainingTeams);
 
   /**
-   * Propagate winners of completed games into the next round of the tournament. This method mutates the provided tournament in place (rounds/games
+   * Propagates winners of completed games into the next round of the tournament. This method mutates the provided tournament in place (rounds/games
    * are updated) and does not return a value.
    *
    * @param tournament the tournament whose winners should be advanced to subsequent rounds
@@ -70,8 +71,8 @@ public interface TournamentPhase {
   void propagateWinners(Tournament tournament);
 
   /**
-   * Get the initial stage of this phase where players enter the tournament. For example: Q1 for qualifications, R64/R32/R16 for main draw, GROUPS for
-   * group phase.
+   * Gets the initial stage of this phase where players enter the tournament. For example: Q1 for qualifications, R64/R32/R16 for main draw, GROUPS
+   * for group phase.
    *
    * @return the stage representing the initial round of this phase
    */

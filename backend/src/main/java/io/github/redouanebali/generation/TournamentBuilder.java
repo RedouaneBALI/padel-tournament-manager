@@ -1,6 +1,5 @@
 package io.github.redouanebali.generation;
 
-import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.TournamentFormatConfig;
@@ -13,22 +12,7 @@ public final class TournamentBuilder {
 
   private final List<TournamentPhase> phases = new ArrayList<>();
 
-  /**
-   * Creates the complete structure of a tournament (phases, rounds, empty matches) based on the configuration.
-   *
-   * @param config The tournament configuration.
-   * @param allPairs The list of registered pairs (only to know the number of participants).
-   * @return the created rounds that will be assigned to the tournament
-   */
-  public List<Round> buildStructure(TournamentFormatConfig config, List<PlayerPair> allPairs) {
-    // Logic to create phases (qualif, groups, main),
-    // rounds in each phase, and empty matches.
-    // ...
-    return null;
-  }
-
-  public List<Round> buildQualifKOStructure(Tournament t) {
-    var         cfg    = t.getConfig();
+  public List<Round> buildQualifKOStructure(TournamentFormatConfig cfg) {
     List<Round> rounds = new ArrayList<>();
     phases.clear();
 
@@ -36,27 +20,24 @@ public final class TournamentBuilder {
       TournamentPhase qualifs = new KnockoutPhase(
           cfg.getPreQualDrawSize(),
           cfg.getNbSeedsQualify(),
-          PhaseType.QUALIFS,
-          cfg.getDrawMode()
+          PhaseType.QUALIFS
       );
-      rounds.addAll(qualifs.initialize(t));
+      rounds.addAll(qualifs.initialize(cfg));
       phases.add(qualifs);
     }
 
     TournamentPhase mainDraw = new KnockoutPhase(
         cfg.getMainDrawSize(),
         cfg.getNbSeeds(),
-        PhaseType.MAIN_DRAW,
-        cfg.getDrawMode()
+        PhaseType.MAIN_DRAW
     );
-    rounds.addAll(mainDraw.initialize(t));
+    rounds.addAll(mainDraw.initialize(cfg));
     phases.add(mainDraw);
 
     return rounds;
   }
 
-  public List<Round> buildGroupsKOStructure(Tournament t) {
-    var         cfg    = t.getConfig();
+  public List<Round> buildGroupsKOStructure(TournamentFormatConfig cfg) {
     List<Round> rounds = new ArrayList<>();
     phases.clear();
 
@@ -66,17 +47,16 @@ public final class TournamentBuilder {
           cfg.getNbPairsPerPool(),
           cfg.getNbQualifiedByPool()
       );
-      rounds.addAll(groupPhase.initialize(t));
+      rounds.addAll(groupPhase.initialize(cfg));
       phases.add(groupPhase);
     }
 
     TournamentPhase mainDraw = new KnockoutPhase(
         cfg.getMainDrawSize(),
         cfg.getNbSeeds(),
-        PhaseType.MAIN_DRAW,
-        cfg.getDrawMode()
+        PhaseType.MAIN_DRAW
     );
-    rounds.addAll(mainDraw.initialize(t));
+    rounds.addAll(mainDraw.initialize(cfg));
     phases.add(mainDraw);
 
     return rounds;

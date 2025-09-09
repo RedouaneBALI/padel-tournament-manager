@@ -8,7 +8,6 @@ import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.model.format.DrawMode;
 import io.github.redouanebali.model.format.TournamentFormatConfig;
 import io.github.redouanebali.util.TestFixtures;
 import java.util.Arrays;
@@ -45,23 +44,22 @@ public class KnockoutPhaseTests {
                                 String expectedStagesStr,
                                 String expectedMatchesStr) {
     // Arrange
-    Tournament t = new Tournament();
+    Tournament tournament = new Tournament();
     TournamentFormatConfig cfg = TournamentFormatConfig.builder()
                                                        .preQualDrawSize(preQualDrawSize)
                                                        .nbQualifiers(nbQualifiers)
                                                        .mainDrawSize(mainDrawSize)
                                                        .build();
-    t.setConfig(cfg);
+    tournament.setConfig(cfg);
 
     KnockoutPhase phase = new KnockoutPhase(
         phaseType == PhaseType.MAIN_DRAW ? mainDrawSize : preQualDrawSize,
         0, // nbSeeds not important for structure tests
-        phaseType,
-        DrawMode.SEEDED
+        phaseType
     );
 
     // Act
-    List<Round> initialized = phase.initialize(t);
+    List<Round> initialized = phase.initialize(tournament.getConfig());
 
     // Assert
     List<String> expectedStages = Arrays.asList(expectedStagesStr.split(";"));
@@ -129,9 +127,9 @@ public class KnockoutPhaseTests {
 
     KnockoutPhase qualifPhase = null;
     if (preQualDrawSize > 0 && nbQualifiers > 0) {
-      qualifPhase = new KnockoutPhase(preQualDrawSize, nbQualifSeeds, PhaseType.QUALIFS, DrawMode.SEEDED);
+      qualifPhase = new KnockoutPhase(preQualDrawSize, nbQualifSeeds, PhaseType.QUALIFS);
     }
-    KnockoutPhase mainDrawPhase = new KnockoutPhase(mainDrawSize, nbSeeds, PhaseType.MAIN_DRAW, DrawMode.SEEDED);
+    KnockoutPhase mainDrawPhase = new KnockoutPhase(mainDrawSize, nbSeeds, PhaseType.MAIN_DRAW);
 
     // Prepare current round
     Round currentRound = TestFixtures.buildEmptyRound(totalPairs);

@@ -104,9 +104,9 @@ public class SeedPlacementUtil {
   }
 
   /**
-   * Comparator for sorting pairs by seed.
+   * Public comparator for sorting pairs by seed.
    */
-  private static Comparator<PlayerPair> getSeedComparator() {
+  public static Comparator<PlayerPair> getSeedComparator() {
     return (pair1, pair2) -> {
       int seed1 = pair1.getSeed();
       int seed2 = pair2.getSeed();
@@ -121,6 +121,32 @@ public class SeedPlacementUtil {
       }
       return 0;
     };
+  }
+
+  /**
+   * Place a list of teams at the given slots in the games list. If allowQualifierOverwrite is true, will overwrite QUALIFIER placeholders.
+   */
+  public static void placeTeamsAtSlots(List<Game> games, List<PlayerPair> teams, List<Integer> slots, boolean allowQualifierOverwrite) {
+    for (int i = 0; i < teams.size() && i < slots.size(); i++) {
+      int        slot      = slots.get(i);
+      int        gameIndex = slot / 2;
+      TeamSide   side      = (slot % 2 == 0) ? TeamSide.TEAM_A : TeamSide.TEAM_B;
+      Game       g         = games.get(gameIndex);
+      PlayerPair team      = teams.get(i);
+      if (side == TeamSide.TEAM_A) {
+        if (g.getTeamA() == null || (allowQualifierOverwrite && g.getTeamA().getType() == io.github.redouanebali.model.PairType.QUALIFIER)) {
+          g.setTeamA(team);
+        } else if (!allowQualifierOverwrite) {
+          throw new IllegalStateException("Seed slot already occupied: game=" + gameIndex + ", side=TEAM_A");
+        }
+      } else {
+        if (g.getTeamB() == null || (allowQualifierOverwrite && g.getTeamB().getType() == io.github.redouanebali.model.PairType.QUALIFIER)) {
+          g.setTeamB(team);
+        } else if (!allowQualifierOverwrite) {
+          throw new IllegalStateException("Seed slot already occupied: game=" + gameIndex + ", side=TEAM_B");
+        }
+      }
+    }
   }
 
   /**

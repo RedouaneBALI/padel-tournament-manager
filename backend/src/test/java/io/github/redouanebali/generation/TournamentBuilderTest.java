@@ -50,7 +50,7 @@ public class TournamentBuilderTest {
       int nbSeeds,
       int nbSeedsQualify,
       DrawMode drawMode) {
-    Tournament t = new Tournament();
+    Tournament tournament = new Tournament();
     TournamentFormatConfig cfg = TournamentFormatConfig.builder()
                                                        .preQualDrawSize(preQualDrawSize)
                                                        .nbQualifiers(nbQualifiers)
@@ -59,8 +59,8 @@ public class TournamentBuilderTest {
                                                        .nbSeedsQualify(nbSeedsQualify)
                                                        .drawMode(drawMode)
                                                        .build();
-    t.setConfig(cfg);
-    return t;
+    tournament.setConfig(cfg);
+    return tournament;
   }
 
   // --- Provider that groups CSV rows by TournamentId ---
@@ -127,26 +127,26 @@ public class TournamentBuilderTest {
                                                               DrawMode drawMode,
                                                               String expectedStagesCsv,
                                                               String expectedMatchesCsv) {
-    Tournament t = makeTournament(0, 0, mainDraw, nbSeedsMain, 0, drawMode);
+    Tournament tournament = makeTournament(0, 0, mainDraw, nbSeedsMain, 0, drawMode);
 
     TournamentBuilder builder   = new TournamentBuilder();
-    List<Round>       roundList = builder.buildQualifKOStructure(t);
-    t.getRounds().clear();
-    t.getRounds().addAll(roundList);
+    List<Round>       roundList = builder.buildQualifKOStructure(tournament.getConfig());
+    tournament.getRounds().clear();
+    tournament.getRounds().addAll(roundList);
     List<Stage>   expectedStages  = parseStages(expectedStagesCsv);
     List<Integer> expectedMatches = parseInts(expectedMatchesCsv);
 
-    List<Stage> actualStages = t.getRounds().stream()
-                                .map(Round::getStage)
-                                .collect(Collectors.toList());
+    List<Stage> actualStages = tournament.getRounds().stream()
+                                         .map(Round::getStage)
+                                         .collect(Collectors.toList());
 
-    List<Integer> actualMatches = t.getRounds().stream()
-                                   .map(r -> r.getGames() == null ? 0 : r.getGames().size())
-                                   .collect(Collectors.toList());
+    List<Integer> actualMatches = tournament.getRounds().stream()
+                                            .map(r -> r.getGames() == null ? 0 : r.getGames().size())
+                                            .collect(Collectors.toList());
 
     assertEquals(expectedStages, actualStages, "Stages sequence must match");
     assertEquals(expectedMatches, actualMatches, "Matches per stage must match");
-    assertEquals(expectedStages.size(), t.getRounds().size(), "Unexpected number of rounds created");
+    assertEquals(expectedStages.size(), tournament.getRounds().size(), "Unexpected number of rounds created");
   }
 
   @ParameterizedTest(name = "With qualifications: preQual={0} -> nbQualifiers={1}, mainDraw={2}")
@@ -164,26 +164,26 @@ public class TournamentBuilderTest {
                                                                     DrawMode drawMode,
                                                                     String expectedStagesCsv,
                                                                     String expectedMatchesCsv) {
-    Tournament t = makeTournament(preQual, nbQualifiers, mainDraw, nbSeedsMain, nbSeedsQual, drawMode);
+    Tournament tournament = makeTournament(preQual, nbQualifiers, mainDraw, nbSeedsMain, nbSeedsQual, drawMode);
 
     TournamentBuilder builder   = new TournamentBuilder();
-    List<Round>       roundList = builder.buildQualifKOStructure(t);
-    t.getRounds().clear();
-    t.getRounds().addAll(roundList);
+    List<Round>       roundList = builder.buildQualifKOStructure(tournament.getConfig());
+    tournament.getRounds().clear();
+    tournament.getRounds().addAll(roundList);
     List<Stage>   expectedStages  = parseStages(expectedStagesCsv);
     List<Integer> expectedMatches = parseInts(expectedMatchesCsv);
 
-    List<Stage> actualStages = t.getRounds().stream()
-                                .map(Round::getStage)
-                                .collect(Collectors.toList());
+    List<Stage> actualStages = tournament.getRounds().stream()
+                                         .map(Round::getStage)
+                                         .collect(Collectors.toList());
 
-    List<Integer> actualMatches = t.getRounds().stream()
-                                   .map(r -> r.getGames() == null ? 0 : r.getGames().size())
-                                   .collect(Collectors.toList());
+    List<Integer> actualMatches = tournament.getRounds().stream()
+                                            .map(r -> r.getGames() == null ? 0 : r.getGames().size())
+                                            .collect(Collectors.toList());
 
     assertEquals(expectedStages, actualStages, "Stages sequence must match");
     assertEquals(expectedMatches, actualMatches, "Matches per stage must match");
-    assertEquals(expectedStages.size(), t.getRounds().size(), "Unexpected number of rounds created");
+    assertEquals(expectedStages.size(), tournament.getRounds().size(), "Unexpected number of rounds created");
   }
 
   /**
@@ -205,8 +205,8 @@ public class TournamentBuilderTest {
     int      nbSeedsMain     = intValue(first, "nbSeeds");
     int      nbPlayerPairs   = intValue(first, "nbPlayerPairs");
 
-    Tournament t = new Tournament();
-    t.setId(tournamentId);
+    Tournament tournament = new Tournament();
+    tournament.setId(tournamentId);
     TournamentFormatConfig cfg = TournamentFormatConfig.builder()
                                                        .preQualDrawSize(preQualDrawSize)
                                                        .nbQualifiers(nbQualifiers)
@@ -215,11 +215,11 @@ public class TournamentBuilderTest {
                                                        .nbSeedsQualify(0)
                                                        .drawMode(DrawMode.SEEDED)
                                                        .build();
-    t.setConfig(cfg);
+    tournament.setConfig(cfg);
 
     TournamentBuilder builder = new TournamentBuilder();
-    List<Round>       built   = builder.buildQualifKOStructure(t);
-    t.getRounds().addAll(built);
+    List<Round>       built   = builder.buildQualifKOStructure(tournament.getConfig());
+    tournament.getRounds().addAll(built);
 
     // Stage order must match CSV order
     List<Stage> expectedStages = rows.stream()
@@ -283,23 +283,23 @@ public class TournamentBuilderTest {
 
       // Vérifie le nombre total d'équipes réelles uniques présentes dans tout le tournoi
       // (non null, non BYE, et pas des placeholders QUALIFIER)
-      long distinctRealTeams = t.getRounds().stream()
-                                .flatMap(r -> r.getGames().stream())
-                                .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
-                                .filter(Objects::nonNull)
-                                .filter(p -> !p.isBye())
-                                // exclure les slots de type QUALIFIER (placeholders avant propagation)
-                                .filter(p -> p.getType() == null || p.getType() != PairType.QUALIFIER)
-                                // créer une "signature" stable pour dédupliquer une paire (par noms joueurs si dispo, sinon par seed)
-                                .map(p -> {
-                                  String p1   = p.getPlayer1().getName();
-                                  String p2   = p.getPlayer2().getName();
-                                  int    sd   = p.getSeed();
-                                  String base = (p1 != null ? p1 : "?") + "/" + (p2 != null ? p2 : "?");
-                                  return base + "#seed=" + sd;
-                                })
-                                .distinct()
-                                .count();
+      long distinctRealTeams = tournament.getRounds().stream()
+                                         .flatMap(r -> r.getGames().stream())
+                                         .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                         .filter(Objects::nonNull)
+                                         .filter(p -> !p.isBye())
+                                         // exclure les slots de type QUALIFIER (placeholders avant propagation)
+                                         .filter(p -> p.getType() == null || p.getType() != PairType.QUALIFIER)
+                                         // créer une "signature" stable pour dédupliquer une paire (par noms joueurs si dispo, sinon par seed)
+                                         .map(p -> {
+                                           String p1   = p.getPlayer1().getName();
+                                           String p2   = p.getPlayer2().getName();
+                                           int    sd   = p.getSeed();
+                                           String base = (p1 != null ? p1 : "?") + "/" + (p2 != null ? p2 : "?");
+                                           return base + "#seed=" + sd;
+                                         })
+                                         .distinct()
+                                         .count();
 
       assertEquals(nbPlayerPairs, (int) distinctRealTeams,
                    "Distinct real teams mismatch (non-BYE, non-QUALIFIER) for tournament " + tournamentId);
@@ -307,10 +307,10 @@ public class TournamentBuilderTest {
       scoreExistingMatches(currentRound, expectedNbGames);
 
       // Propagate winners to the next round BEFORE validation
-      builder.propagateWinners(t);
+      builder.propagateWinners(tournament);
 
       // Validate propagation results
-      Round nextRound            = t.getRounds().get(built.indexOf(currentRound) + 1);
+      Round nextRound            = tournament.getRounds().get(built.indexOf(currentRound) + 1);
       int   expectedNewTeamsNext = intValue(rows.get(rowIndex + 1), "NewTeams");
       validatePropagation(currentRound, row);
 
@@ -479,7 +479,7 @@ public class TournamentBuilderTest {
     // Given: Tournament with main draw only (32 players, 8 seeds)
     Tournament        tournament = makeTournament(0, 0, 32, 8, 0, DrawMode.SEEDED);
     TournamentBuilder builder    = new TournamentBuilder();
-    List<Round>       rounds     = builder.buildQualifKOStructure(tournament);
+    List<Round>       rounds     = builder.buildQualifKOStructure(tournament.getConfig());
     tournament.getRounds().addAll(rounds);
 
     // Create 20 player pairs (less than draw size to test BYE placement)
@@ -552,7 +552,7 @@ public class TournamentBuilderTest {
     // Given: Tournament with qualifications (16 -> 4 qualifiers) + main draw (32 players, 8 seeds)
     Tournament        tournament = makeTournament(16, 4, 32, 8, 4, DrawMode.SEEDED);
     TournamentBuilder builder    = new TournamentBuilder();
-    List<Round>       rounds     = builder.buildQualifKOStructure(tournament);
+    List<Round>       rounds     = builder.buildQualifKOStructure(tournament.getConfig());
     tournament.getRounds().addAll(rounds);
 
     // Create 28 player pairs (16 for qualifs + 12 direct entry to main draw)
@@ -631,7 +631,7 @@ public class TournamentBuilderTest {
     // Given: Tournament with qualifications and main draw
     Tournament        tournament = makeTournament(32, 8, 64, 16, 8, DrawMode.SEEDED);
     TournamentBuilder builder    = new TournamentBuilder();
-    List<Round>       rounds     = builder.buildQualifKOStructure(tournament);
+    List<Round>       rounds     = builder.buildQualifKOStructure(tournament.getConfig());
     tournament.getRounds().addAll(rounds);
 
     List<PlayerPair> playerPairs = createTestPlayerPairs(48);
