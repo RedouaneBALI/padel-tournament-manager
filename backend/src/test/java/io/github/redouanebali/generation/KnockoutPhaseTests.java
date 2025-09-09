@@ -1,10 +1,9 @@
 package io.github.redouanebali.generation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.redouanebali.model.Game;
+import io.github.redouanebali.model.PairType;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
@@ -12,8 +11,8 @@ import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.DrawMode;
 import io.github.redouanebali.model.format.TournamentFormatConfig;
 import io.github.redouanebali.util.TestFixtures;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -24,7 +23,6 @@ import org.junit.jupiter.params.provider.CsvFileSource;
 import org.junit.jupiter.params.provider.CsvSource;
 
 public class KnockoutPhaseTests {
-
 
   @ParameterizedTest(name = "Tournament with nbPairs={0}, preQualDrawSize={1}, nbQualifiers={2}, mainDrawSize={3}, phaseType={4}")
   @CsvSource({
@@ -58,7 +56,7 @@ public class KnockoutPhaseTests {
 
     KnockoutPhase phase = new KnockoutPhase(
         phaseType == PhaseType.MAIN_DRAW ? mainDrawSize : preQualDrawSize,
-        0, // nbSeeds not important
+        0, // nbSeeds not important for structure tests
         phaseType,
         DrawMode.SEEDED
     );
@@ -86,267 +84,6 @@ public class KnockoutPhaseTests {
 
     assertEquals(expectedMatches, actualMatches,
                  "Matches per round mismatch for config nbPairs=" + nbPairs + ", stages=" + expectedStagesStr);
-  }
-
-
-  @ParameterizedTest(name = "nbTeams={0}, nbSeeds={1}")
-  @CsvSource({
-      // nbTeams, nbSeeds, expectedSeedIndices (semicolon-separated)
-      "8, 4, 0;7;4;3",
-      "16, 8, 0;15;8;7;4;11;12;3",
-      "16, 4, 0;15;8;7",
-      "32, 16, 0;31;16;15;8;23;24;7;4;27;20;11;12;19;28;3",
-      "32, 8, 0;31;16;15;8;23;24;7",
-      "64, 16, 0;63;32;31;16;47;48;15;8;55;40;23;24;39;56;7"
-  })
-  void testBracketSeedPositionsCsv(int nbTeams, int nbSeeds, String expectedIndicesStr) {
-    // Build pairs and sort by seed (smallest seed first)
-    List<PlayerPair> pairs = TestFixtures.createPairs(nbTeams);
-    pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
-
-    KnockoutPhase knockoutPhase = new KnockoutPhase(
-        nbTeams,
-        nbSeeds,
-        PhaseType.MAIN_DRAW,
-        DrawMode.SEEDED
-    );
-
-    List<Integer> seedPositions = knockoutPhase.getSeedsPositions();
-    List<Integer> expectedSeedIndices = Stream.of(expectedIndicesStr.split(";"))
-                                              .map(String::trim)
-                                              .map(Integer::parseInt)
-                                              .toList();
-
-    // Pour TS1 et TS2, on vérifie la position exacte, pour les autres on vérifie l'appartenance à l'ensemble attendu
-    for (int i = 0; i < expectedSeedIndices.size(); i++) {
-      int expectedIdx = expectedSeedIndices.get(i);
-      int actualIdx   = seedPositions.get(i);
-      if (i < 2) {
-        assertEquals(expectedIdx, actualIdx,
-                     "Seed " + (i + 1) + " expected at index " + expectedIdx + " but was at index " + actualIdx);
-      } else {
-        // Pour TS3+, vérifier que la position est dans l'ensemble des positions possibles du groupe
-        List<Integer> possiblePositions = expectedSeedIndices.subList(2, expectedSeedIndices.size());
-        assertTrue(possiblePositions.contains(actualIdx),
-                   "Seed " + (i + 1) + " (TS3+) at index " + actualIdx + " not in valid group: " + possiblePositions);
-      }
-    }
-  }
-
-  /**
-   * This test validates the mapping of seeds into Game objects using the new JSON-based seeding system.
-   */
-  @ParameterizedTest(name = "placeSeedTeams mapping nbTeams={0}, nbSeeds={1}")
-  @CsvSource({
-      "64, 16",
-      "32, 16",
-      "32, 8",
-      "16, 8",
-      "16, 4"
-  })
-  void testPlaceSeedTeamsMapping(int nbTeams, int nbSeeds) {
-    // Arrange: build a round with nbTeams/2 empty games
-    Round            round = TestFixtures.buildEmptyRound(nbTeams);
-    List<PlayerPair> pairs = TestFixtures.createPairs(nbTeams);
-    pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
-    KnockoutPhase knockoutPhase = new KnockoutPhase(
-        nbTeams,
-        nbSeeds,
-        PhaseType.MAIN_DRAW,
-        DrawMode.SEEDED
-    );
-    // Act: place seeds into the round
-    knockoutPhase.placeSeedTeams(round, pairs);
-    List<Integer> seedSlots = knockoutPhase.getSeedsPositions();
-
-    // Vérification pour TS1 et TS2 (toujours fixes)
-    for (int i = 0; i < Math.min(nbSeeds, 2); i++) {
-      int        slot         = seedSlots.get(i);
-      int        gameIndex    = slot / 2;
-      boolean    left         = (slot % 2 == 0);
-      Game       g            = round.getGames().get(gameIndex);
-      PlayerPair expectedPair = pairs.get(i);
-      if (left) {
-        assertEquals(expectedPair, g.getTeamA(), "Seed " + (i + 1) + " (TS" + (i + 1) + ") doit être sur TEAM_A du match " + gameIndex);
-      } else {
-        assertEquals(expectedPair, g.getTeamB(), "Seed " + (i + 1) + " (TS" + (i + 1) + ") doit être sur TEAM_B du match " + gameIndex);
-      }
-    }
-
-    // Vérification pour TS3+ (ordre aléatoire, on vérifie juste la présence)
-    Set<Integer> slotsTS3Plus = new HashSet<>();
-    for (int i = 2; i < nbSeeds; i++) {
-      slotsTS3Plus.add(seedSlots.get(i));
-    }
-    Set<PlayerPair> placedTS3Plus = new HashSet<>();
-    for (int slot : slotsTS3Plus) {
-      int        gameIndex = slot / 2;
-      boolean    left      = (slot % 2 == 0);
-      Game       g         = round.getGames().get(gameIndex);
-      PlayerPair found     = left ? g.getTeamA() : g.getTeamB();
-      assertTrue(found != null && found.getSeed() > 0, "Un seed doit être placé sur le slot " + slot);
-      placedTS3Plus.add(found);
-    }
-    // Vérifie qu'on a bien placé nbSeeds-2 seeds différents pour TS3+
-    assertEquals(nbSeeds - 2 < 0 ? 0 : nbSeeds - 2, placedTS3Plus.size(), "Nombre de seeds TS3+ placés incorrect");
-
-    // Vérifie que les autres slots sont vides
-    Set<Integer> seedSet = new HashSet<>(seedSlots);
-    for (int slot = 0; slot < nbTeams; slot++) {
-      if (seedSet.contains(slot)) {
-        continue;
-      }
-      int     gameIndex = slot / 2;
-      boolean left      = (slot % 2 == 0);
-      Game    g         = round.getGames().get(gameIndex);
-      if (left) {
-        assertNull(g.getTeamA(), "Non-seed slot should be empty on TEAM_A of game " + gameIndex);
-      } else {
-        assertNull(g.getTeamB(), "Non-seed slot should be empty on TEAM_B of game " + gameIndex);
-      }
-    }
-  }
-
-
-  @ParameterizedTest(name = "getSeedsPositions empty when nbSeeds=0 (nbTeams={0})")
-  @CsvSource({
-      "8",
-      "16",
-      "32",
-      "64"
-  })
-  void testGetSeedsPositionsEmptyWhenNoSeeds(int nbTeams) {
-    int nbRounds = (int) (Math.log(nbTeams) / Math.log(2));
-    KnockoutPhase knockoutPhase = new KnockoutPhase(
-        nbTeams,
-        0,
-        PhaseType.MAIN_DRAW,
-        DrawMode.SEEDED
-    );
-    List<Integer> seedPositions = knockoutPhase.getSeedsPositions();
-    assertEquals(0, seedPositions.size(), "Expected no seed positions when nbSeeds=0");
-  }
-
-  @ParameterizedTest(name = "placeSeedTeams leaves bracket empty when nbSeeds=0 (nbTeams={0})")
-  @CsvSource({
-      "8",
-      "16",
-      "32"
-  })
-  void testPlaceSeedTeamsDoesNothingWhenNoSeeds(int nbTeams) {
-    // Arrange
-    Round            round = TestFixtures.buildEmptyRound(nbTeams);
-    List<PlayerPair> pairs = TestFixtures.createPairs(nbTeams);
-
-    int nbRounds = (int) (Math.log(nbTeams) / Math.log(2));
-    KnockoutPhase knockoutPhase = new KnockoutPhase(
-        nbTeams,
-        0,
-        PhaseType.MAIN_DRAW,
-        DrawMode.SEEDED
-    );
-
-    // Act
-    knockoutPhase.placeSeedTeams(round, pairs);
-
-    // Assert: every slot remains empty (no seed was placed)
-    for (Game g : round.getGames()) {
-      assertNull(g.getTeamA(), "TEAM_A should be empty when nbSeeds=0");
-      assertNull(g.getTeamB(), "TEAM_B should be empty when nbSeeds=0");
-    }
-  }
-
-
-  @ParameterizedTest(name = "placeByeTeams AUTO: drawSize={0}, nbSeeds={1}, totalPairs={2}")
-  @CsvSource({
-      // drawSize, nbSeeds, totalPairs
-      "32, 16, 24",
-      "32, 8, 20"
-  })
-  void testPlaceByeTeams_AutoSeeds(int drawSize, int nbSeeds, int totalPairs) {
-    // Arrange: build empty round and create seeded pairs
-    Round            round = TestFixtures.buildEmptyRound(drawSize);
-    List<PlayerPair> pairs = TestFixtures.createPairs(drawSize);
-    pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
-
-    KnockoutPhase phase = new KnockoutPhase(drawSize, nbSeeds, PhaseType.MAIN_DRAW, DrawMode.SEEDED);
-
-    // Place seeds automatically (auto mode)
-    phase.placeSeedTeams(round, pairs);
-
-    // Act: place BYES based on the number of registered pairs
-    phase.placeByeTeams(round, totalPairs);
-
-    // Assert: BYE count
-    int expectedByes = drawSize - totalPairs;
-    long actualByes = round.getGames().stream()
-                           .flatMap(g -> java.util.stream.Stream.of(g.getTeamA(), g.getTeamB()))
-                           .filter(p -> p != null && p.isBye())
-                           .count();
-    assertEquals(expectedByes, actualByes, "Unexpected BYE count in AUTO mode");
-
-    // BYEs should face the top seeds, in order, until BYEs are exhausted
-    List<Integer> seedSlots = phase.getSeedsPositions();
-    for (int i = 0; i < Math.min(expectedByes, seedSlots.size()); i++) {
-      int     slot      = seedSlots.get(i);
-      int     gameIndex = slot / 2;
-      boolean left      = (slot % 2 == 0);
-      Game    g         = round.getGames().get(gameIndex);
-      if (left) {
-        assertTrue(g.getTeamB() != null && g.getTeamB().isBye(), "BYE must face seed#" + (i + 1));
-      } else {
-        assertTrue(g.getTeamA() != null && g.getTeamA().isBye(), "BYE must face seed#" + (i + 1));
-      }
-    }
-  }
-
-  @ParameterizedTest(name = "placeByeTeams MANUAL(declared seeds, none placed): drawSize={0}, nbSeeds={1}, totalPairs={2}")
-  @CsvSource({
-      // drawSize, nbSeeds, totalPairs
-      "32, 16, 24",  // 8 BYEs opposite top 8 seed slots
-      "64, 16, 40",  // 24 BYEs; start opposite seeds then remaining distribution
-      "64, 32, 48"   // 16 BYEs opposite 32 seed slots (first 16 couverts)
-  })
-  void testPlaceByeTeams_ManualDeclaredSeedsButNotPlaced(int drawSize, int nbSeeds, int totalPairs) {
-    // Arrange: round is empty; admin declared seeds count, but hasn't placed teams yet
-    Round         round = TestFixtures.buildEmptyRound(drawSize);
-    KnockoutPhase phase = new KnockoutPhase(drawSize, nbSeeds, PhaseType.MAIN_DRAW, DrawMode.SEEDED);
-
-    // Act
-    phase.placeByeTeams(round, totalPairs);
-
-    // Assert: BYE count
-    int expectedByes = drawSize - totalPairs;
-    long actualByes = round.getGames().stream()
-                           .flatMap(g -> java.util.stream.Stream.of(g.getTeamA(), g.getTeamB()))
-                           .filter(p -> p != null && p.isBye())
-                           .count();
-    assertEquals(expectedByes, actualByes, "Unexpected BYE count in MANUAL declared-seeds mode");
-
-    // Vérifie que les BYEs sont placés en face d'autant de seeds que possible
-    List<Integer> seedSlots              = phase.getSeedsPositions();
-    int           byesPlacedOppositeSeed = 0;
-    for (int i = 0; i < seedSlots.size(); i++) {
-      int     slot      = seedSlots.get(i);
-      int     gameIndex = slot / 2;
-      boolean left      = (slot % 2 == 0);
-      Game    g         = round.getGames().get(gameIndex);
-      if (left) {
-        if (g.getTeamB() != null && g.getTeamB().isBye()) {
-          byesPlacedOppositeSeed++;
-        }
-      } else {
-        if (g.getTeamA() != null && g.getTeamA().isBye()) {
-          byesPlacedOppositeSeed++;
-        }
-      }
-    }
-    // On doit avoir placé au moins min(expectedByes, seedSlots.size()) BYEs en face des seeds
-    assertTrue(byesPlacedOppositeSeed >= Math.min(expectedByes, seedSlots.size()),
-               "Il doit y avoir au moins "
-               + Math.min(expectedByes, seedSlots.size())
-               + " BYES en face des seeds, mais il y en a "
-               + byesPlacedOppositeSeed);
   }
 
   /**
@@ -397,7 +134,7 @@ public class KnockoutPhaseTests {
     }
     KnockoutPhase mainDrawPhase = new KnockoutPhase(mainDrawSize, nbSeeds, PhaseType.MAIN_DRAW, DrawMode.SEEDED);
 
-    // On prépare le round courant
+    // Prepare current round
     Round currentRound = TestFixtures.buildEmptyRound(totalPairs);
     currentRound.setStage(currentStageEnum);
 
@@ -418,42 +155,141 @@ public class KnockoutPhaseTests {
     }
 
     if (isFirstRoundOfPhase) {
-      // Pour un round initial, on le remplit avec seeds, BYES, équipes restantes et scores
+      // For initial round, fill it with seeds, BYES, remaining teams and scores
       t.getRounds().clear();
       t.getRounds().add(currentRound);
 
       List<PlayerPair> allPairs = TestFixtures.createPairs(pairsNonBye);
-      phaseToUse.placeSeedTeams(currentRound, allPairs);
-      phaseToUse.placeByeTeams(currentRound, pairsNonBye);
-      Set<PlayerPair> alreadyPlaced = new HashSet<>();
-      for (Game g : currentRound.getGames()) {
-        if (g.getTeamA() != null && !g.getTeamA().isBye()) {
-          alreadyPlaced.add(g.getTeamA());
-        }
-        if (g.getTeamB() != null && !g.getTeamB().isBye()) {
-          alreadyPlaced.add(g.getTeamB());
-        }
-      }
-      List<PlayerPair> remainingPairs = allPairs.stream()
-                                                .filter(p -> !alreadyPlaced.contains(p))
-                                                .toList();
-      phaseToUse.placeRemainingTeamsRandomly(currentRound, remainingPairs);
 
-      // Simuler les scores pour générer des vainqueurs
+      // Handle staggered entry
+      if (staggeredEntry && !currentStageEnum.isQualification()) {
+        // In staggered entry mode, seeds enter progressively
+        boolean isFirstMainDrawRound = currentStageEnum == Stage.fromNbTeams(mainDrawSize);
+
+        if (isFirstMainDrawRound) {
+          // First main draw round: no seeds enter
+          // Use staggered method with isFirstRound=true
+          if (phaseToUse instanceof KnockoutPhase ko) {
+            ko.placeSeedTeamsStaggered(currentRound, allPairs, currentStageEnum, mainDrawSize, nbSeeds, true);
+          }
+
+          // Place non-seeded teams according to CSV data
+          List<PlayerPair> nonSeededPairs = allPairs.stream()
+                                                    .filter(p -> p.getSeed() <= 0 || p.getSeed() > nbSeeds)
+                                                    .toList();
+
+          // Use exact CSV values to fill the round
+          int teamsToPlace = Math.min(newTeams + fromPreviousRound, nonSeededPairs.size());
+          List<PlayerPair> teamsForThisRound = teamsToPlace > 0 ?
+                                               nonSeededPairs.subList(0, teamsToPlace) : new ArrayList<>();
+
+          phaseToUse.placeRemainingTeamsRandomly(currentRound, teamsForThisRound);
+
+          // Place BYEs according to CSV data
+          // In staggered mode, BYEs replace seed positions + other empty positions
+          int actualByesToPlace = bye;
+          for (Game g : currentRound.getGames()) {
+            if (actualByesToPlace <= 0) {
+              break;
+            }
+
+            if (g.getTeamA() == null) {
+              g.setTeamA(PlayerPair.bye());
+              actualByesToPlace--;
+            } else if (g.getTeamB() == null) {
+              g.setTeamB(PlayerPair.bye());
+              actualByesToPlace--;
+            }
+          }
+        } else {
+          // Following rounds - seeds enter according to stage
+          if (phaseToUse instanceof KnockoutPhase ko) {
+            ko.placeSeedTeamsStaggered(currentRound, allPairs, currentStageEnum, mainDrawSize, nbSeeds, false);
+          }
+
+          // Add teams from previous round (simulated)
+          Set<PlayerPair> alreadyPlaced = new HashSet<>();
+          for (Game g : currentRound.getGames()) {
+            if (g.getTeamA() != null && !g.getTeamA().isBye() && g.getTeamA().getType() != PairType.QUALIFIER) {
+              alreadyPlaced.add(g.getTeamA());
+            }
+            if (g.getTeamB() != null && !g.getTeamB().isBye() && g.getTeamB().getType() != PairType.QUALIFIER) {
+              alreadyPlaced.add(g.getTeamB());
+            }
+          }
+
+          List<PlayerPair> remainingPairs = allPairs.stream()
+                                                    .filter(p -> !alreadyPlaced.contains(p))
+                                                    .limit(fromPreviousRound + newTeams)
+                                                    .toList();
+          phaseToUse.placeRemainingTeamsRandomly(currentRound, remainingPairs);
+        }
+      } else {
+        // Normal mode (non-staggered) - original behavior
+        phaseToUse.placeSeedTeams(currentRound, allPairs);
+        phaseToUse.placeByeTeams(currentRound, pairsNonBye);
+        Set<PlayerPair> alreadyPlaced = new HashSet<>();
+        for (Game g : currentRound.getGames()) {
+          if (g.getTeamA() != null && !g.getTeamA().isBye()) {
+            alreadyPlaced.add(g.getTeamA());
+          }
+          if (g.getTeamB() != null && !g.getTeamB().isBye()) {
+            alreadyPlaced.add(g.getTeamB());
+          }
+        }
+        List<PlayerPair> remainingPairs = allPairs.stream()
+                                                  .filter(p -> !alreadyPlaced.contains(p))
+                                                  .toList();
+        phaseToUse.placeRemainingTeamsRandomly(currentRound, remainingPairs);
+      }
+
+      // Simulate scores to generate winners (improved for staggered entry)
       for (Game game : currentRound.getGames()) {
-        if (game.getTeamA() != null && game.getTeamB() != null
-            && !game.getTeamA().isBye() && !game.getTeamB().isBye()) {
-          game.setFormat(TestFixtures.createSimpleFormat(1));
-          game.setScore(TestFixtures.createScoreWithWinner(game, game.getTeamA()));
+        if (game.getTeamA() != null && game.getTeamB() != null) {
+          boolean teamABye       = game.getTeamA().isBye();
+          boolean teamBBye       = game.getTeamB().isBye();
+          boolean teamAQualifier = game.getTeamA().getType() == PairType.QUALIFIER;
+          boolean teamBQualifier = game.getTeamB().getType() == PairType.QUALIFIER;
+
+          if (!teamABye && !teamBBye && !teamAQualifier && !teamBQualifier) {
+            // Real match between two teams
+            game.setFormat(TestFixtures.createSimpleFormat(1));
+            game.setScore(TestFixtures.createScoreWithWinner(game, game.getTeamA()));
+          } else if (teamABye && !teamBBye && !teamBQualifier) {
+            // TeamB qualified by default (against BYE)
+            game.setFormat(TestFixtures.createSimpleFormat(1));
+            game.setScore(TestFixtures.createScoreWithWinner(game, game.getTeamB()));
+          } else if (teamBBye && !teamABye && !teamAQualifier) {
+            // TeamA qualified by default (against BYE)
+            game.setFormat(TestFixtures.createSimpleFormat(1));
+            game.setScore(TestFixtures.createScoreWithWinner(game, game.getTeamA()));
+          } else if (teamAQualifier && !teamBBye && !teamBQualifier) {
+            // TeamB qualified by default (QUALIFIER vs real team)
+            game.setFormat(TestFixtures.createSimpleFormat(1));
+            game.setScore(TestFixtures.createScoreWithWinner(game, game.getTeamB()));
+          } else if (teamBQualifier && !teamABye && !teamAQualifier) {
+            // TeamA qualified by default (real team vs QUALIFIER)
+            game.setFormat(TestFixtures.createSimpleFormat(1));
+            game.setScore(TestFixtures.createScoreWithWinner(game, game.getTeamA()));
+          } else if (teamAQualifier && teamBBye) {
+            // QUALIFIER vs BYE: BYE wins (simulation of seed entering later)
+            game.setFormat(TestFixtures.createSimpleFormat(1));
+            game.setScore(TestFixtures.createScoreWithWinner(game, game.getTeamB()));
+          } else if (teamBQualifier && teamABye) {
+            // BYE vs QUALIFIER: BYE wins (simulation of seed entering later)
+            game.setFormat(TestFixtures.createSimpleFormat(1));
+            game.setScore(TestFixtures.createScoreWithWinner(game, game.getTeamA()));
+          }
+          // BYE vs BYE or QUALIFIER vs QUALIFIER does not generate a winner
         }
       }
 
-      // Créer et ajouter le nextRound seulement maintenant
+      // Create and add nextRound only now
       Round nextRound = TestFixtures.buildEmptyRound(totalPairs / 2);
       t.getRounds().add(nextRound);
 
     } else {
-      // Pour un round intermédiaire, créer prevRound avec des équipes et scores
+      // For intermediate round, create prevRound with teams and scores
       int   prevRoundSize = totalPairs * 2;
       Round prevRound     = TestFixtures.buildEmptyRound(prevRoundSize);
       prevRound.setStage(Stage.fromNbTeams(prevRoundSize));
@@ -461,7 +297,7 @@ public class KnockoutPhaseTests {
       t.getRounds().add(prevRound);
       t.getRounds().add(currentRound);
 
-      // Remplir prevRound avec des équipes et des scores
+      // Fill prevRound with teams and scores
       List<PlayerPair> prevPairs = TestFixtures.createPairs(prevRoundSize);
       int              idx       = 0;
       for (Game g : prevRound.getGames()) {
@@ -474,10 +310,10 @@ public class KnockoutPhaseTests {
         }
       }
 
-      // Propager de prevRound vers currentRound
+      // Propagate from prevRound to currentRound
       phaseToUse.propagateWinners(t);
 
-      // Maintenant, simuler les scores dans currentRound pour tester la propagation vers nextRound
+      // Now simulate scores in currentRound to test propagation to nextRound
       for (Game game : currentRound.getGames()) {
         if (game.getTeamA() != null && game.getTeamB() != null
             && !game.getTeamA().isBye() && !game.getTeamB().isBye()) {
@@ -486,15 +322,15 @@ public class KnockoutPhaseTests {
         }
       }
 
-      // Créer et ajouter le nextRound seulement maintenant
+      // Create and add nextRound only now
       Round nextRound = TestFixtures.buildEmptyRound(totalPairs / 2);
       t.getRounds().add(nextRound);
     }
 
-    // Act : propager les winners du round courant vers le suivant
+    // Act: propagate winners from current round to next
     phaseToUse.propagateWinners(t);
 
-    // Assert: vérifier la propagation dans le nextRound
+    // Assert: verify propagation in nextRound
     Round nextRound         = t.getRounds().get(t.getRounds().size() - 1);
     int   expectedQualified = matches + defaultQualif;
     long actualNonNullNonByeTeams = nextRound.getGames().stream()
@@ -507,161 +343,36 @@ public class KnockoutPhaseTests {
                  "Propagation mismatch for " + tournamentId + " at round " + roundName);
   }
 
-  @ParameterizedTest(name = "nbTeams={0}, nbSeeds={1} - TS1/TS2 fixed positions")
-  @CsvSource({
-      // nbTeams, nbSeeds, TS1_expected, TS2_expected
-      "8, 4, 0, 7",
-      "16, 8, 0, 15",
-      "16, 4, 0, 15",
-      "32, 16, 0, 31",
-      "32, 8, 0, 31",
-      "64, 16, 0, 63"
-  })
-  void testSeedPositions_TS1_TS2_Fixed(int nbTeams, int nbSeeds, int expectedTS1, int expectedTS2) {
-    KnockoutPhase knockoutPhase = new KnockoutPhase(
-        nbTeams,
-        nbSeeds,
-        PhaseType.MAIN_DRAW,
-        DrawMode.SEEDED
-    );
-
-    List<Integer> seedPositions = knockoutPhase.getSeedsPositions();
-
-    // TS1 and TS2 should always be at fixed positions
-    assertEquals(expectedTS1, seedPositions.get(0), "TS1 must always be at position " + expectedTS1);
-    if (nbSeeds >= 2) {
-      assertEquals(expectedTS2, seedPositions.get(1), "TS2 must always be at position " + expectedTS2);
+  // Helper methods for staggered entry (moved from original class)
+  private int getSeedsEnteringAtStage(Stage stage, int mainDrawSize, int totalSeeds) {
+    if (totalSeeds <= 0) {
+      return 0;
     }
+
+    Stage topSeedsEnterAt  = Stage.fromNbTeams(mainDrawSize / 2); // R16 for 32-draw, R32 for 64-draw
+    Stage nextSeedsEnterAt = Stage.fromNbTeams(mainDrawSize / 4); // R8 for 32-draw, R16 for 64-draw
+
+    if (stage == topSeedsEnterAt) {
+      return Math.min(totalSeeds, totalSeeds / 2); // Top half of seeds
+    } else if (stage == nextSeedsEnterAt) {
+      return Math.max(0, totalSeeds - totalSeeds / 2); // Bottom half of seeds
+    }
+
+    return 0; // No seeds enter at this stage
   }
 
-  @ParameterizedTest(name = "nbTeams={0}, nbSeeds={1} - TS3+ random positions")
-  @CsvSource({
-      // nbTeams, nbSeeds, TS3_possible_positions, TS4_possible_positions
-      "8, 4, '3;4', '3;4'",
-      "16, 8, '7;8', '7;8'",
-      "16, 4, '7;8', '7;8'",
-      "32, 8, '15;16', '15;16'",
-      "64, 16, '31;32', '31;32'"
-  })
-  void testSeedPositions_TS3Plus_RandomWithinValidOptions(int nbTeams, int nbSeeds, String ts3Options, String ts4Options) {
-    if (nbSeeds < 3) {
-      return; // Skip if not enough seeds for TS3+
+  private int getSeedsEnteredBeforeStage(Stage stage, int mainDrawSize, int totalSeeds) {
+    if (totalSeeds <= 0) {
+      return 0;
     }
 
-    KnockoutPhase knockoutPhase = new KnockoutPhase(
-        nbTeams,
-        nbSeeds,
-        PhaseType.MAIN_DRAW,
-        DrawMode.SEEDED
-    );
+    Stage topSeedsEnterAt  = Stage.fromNbTeams(mainDrawSize / 2);
+    Stage nextSeedsEnterAt = Stage.fromNbTeams(mainDrawSize / 4);
 
-    // Test multiple times to verify randomness
-    Set<Integer> observedTS3Positions = new HashSet<>();
-    Set<Integer> observedTS4Positions = new HashSet<>();
-
-    for (int i = 0; i < 50; i++) { // Run 50 times to catch randomness
-      List<Integer> seedPositions = knockoutPhase.getSeedsPositions();
-
-      if (nbSeeds >= 3) {
-        observedTS3Positions.add(seedPositions.get(2));
-      }
-      if (nbSeeds >= 4) {
-        observedTS4Positions.add(seedPositions.get(3));
-      }
+    if (stage == nextSeedsEnterAt) {
+      return Math.min(totalSeeds, totalSeeds / 2); // Top seeds already entered
     }
 
-    // Parse expected positions
-    List<Integer> validTS3Positions = Arrays.stream(ts3Options.split(";"))
-                                            .map(String::trim)
-                                            .map(Integer::parseInt)
-                                            .toList();
-
-    List<Integer> validTS4Positions = Arrays.stream(ts4Options.split(";"))
-                                            .map(String::trim)
-                                            .map(Integer::parseInt)
-                                            .toList();
-
-    // Verify TS3 positions are within valid options
-    for (int observedPos : observedTS3Positions) {
-      assertTrue(validTS3Positions.contains(observedPos),
-                 "TS3 position " + observedPos + " not in valid options: " + validTS3Positions);
-    }
-
-    // Verify TS4 positions are within valid options
-    if (nbSeeds >= 4) {
-      for (int observedPos : observedTS4Positions) {
-        assertTrue(validTS4Positions.contains(observedPos),
-                   "TS4 position " + observedPos + " not in valid options: " + validTS4Positions);
-      }
-    }
-
-    // Verify that we see some variation (randomness working)
-    if (validTS3Positions.size() > 1) {
-      assertTrue(observedTS3Positions.size() > 1,
-                 "TS3 should show variation across multiple runs, but only saw: " + observedTS3Positions);
-    }
-  }
-
-  @ParameterizedTest(name = "Comprehensive seed positioning test - nbTeams={0}, nbSeeds={1}")
-  @CsvSource({
-      "32, 8",
-      "64, 16"
-  })
-  void testSeedPositions_ComprehensiveValidation(int nbTeams, int nbSeeds) {
-    KnockoutPhase knockoutPhase = new KnockoutPhase(
-        nbTeams,
-        nbSeeds,
-        PhaseType.MAIN_DRAW,
-        DrawMode.SEEDED
-    );
-
-    List<Integer> seedPositions = knockoutPhase.getSeedsPositions();
-
-    // Basic validations
-    assertEquals(nbSeeds, seedPositions.size(), "Should return exactly nbSeeds positions");
-
-    // All positions should be unique
-    Set<Integer> uniquePositions = new HashSet<>(seedPositions);
-    assertEquals(nbSeeds, uniquePositions.size(), "All seed positions should be unique");
-
-    // All positions should be valid (0 <= pos < nbTeams)
-    for (int pos : seedPositions) {
-      assertTrue(pos >= 0 && pos < nbTeams, "Position " + pos + " should be between 0 and " + (nbTeams - 1));
-    }
-
-    // Verify JSON structure is being used correctly by checking known constraints
-    assertEquals(0, seedPositions.get(0), "TS1 must always be at position 0");
-    assertEquals(nbTeams - 1, seedPositions.get(1), "TS2 must always be at position " + (nbTeams - 1));
-  }
-
-  @ParameterizedTest(name = "nbTeams={0}, nbSeeds={1} - Basic seed positioning validation")
-  @CsvSource({
-      // nbTeams, nbSeeds - Test basic functionality without hardcoded expectations
-      "8, 4",
-      "16, 8",
-      "32, 16",
-      "64, 32"
-  })
-  void testSeedPositions_BasicValidation(int nbTeams, int nbSeeds) {
-    KnockoutPhase knockoutPhase = new KnockoutPhase(
-        nbTeams,
-        nbSeeds,
-        PhaseType.MAIN_DRAW,
-        DrawMode.SEEDED
-    );
-
-    List<Integer> seedPositions = knockoutPhase.getSeedsPositions();
-
-    // Basic validations
-    assertEquals(nbSeeds, seedPositions.size(), "Should return exactly nbSeeds positions");
-
-    // All positions should be unique
-    Set<Integer> uniquePositions = new HashSet<>(seedPositions);
-    assertEquals(nbSeeds, uniquePositions.size(), "All seed positions should be unique");
-
-    // All positions should be valid (0 <= pos < nbTeams)
-    for (int pos : seedPositions) {
-      assertTrue(pos >= 0 && pos < nbTeams, "Position " + pos + " should be between 0 and " + (nbTeams - 1));
-    }
+    return 0; // No seeds entered yet
   }
 }

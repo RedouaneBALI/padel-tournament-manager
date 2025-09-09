@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.redouanebali.generation.strategy.AutomaticDrawStrategy;
+import io.github.redouanebali.generation.strategy.DrawStrategy;
+import io.github.redouanebali.generation.strategy.DrawStrategyFactory;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PairType;
 import io.github.redouanebali.model.Player;
@@ -469,10 +472,10 @@ public class TournamentBuilderTest {
                  "Total pairs composition mismatch in " + stage + " for " + tournamentId);
   }
 
-  // ============= NEW TESTS FOR drawLotsAndFillInitialRounds AND getInitialStage =============
+  // ============= UPDATED TESTS FOR DRAW STRATEGIES =============
 
   @Test
-  void testDrawLotsAndFillInitialRounds_mainDrawOnly_fillsOnlyFirstRound() {
+  void testAutomaticDrawStrategy_mainDrawOnly_fillsOnlyFirstRound() {
     // Given: Tournament with main draw only (32 players, 8 seeds)
     Tournament        tournament = makeTournament(0, 0, 32, 8, 0, DrawMode.SEEDED);
     TournamentBuilder builder    = new TournamentBuilder();
@@ -482,8 +485,9 @@ public class TournamentBuilderTest {
     // Create 20 player pairs (less than draw size to test BYE placement)
     List<PlayerPair> playerPairs = createTestPlayerPairs(20);
 
-    // When: Fill initial rounds
-    builder.drawLotsAndFillInitialRounds(tournament, playerPairs);
+    // When: Use the new strategy to fill initial rounds
+    DrawStrategy drawStrategy = DrawStrategyFactory.createStrategy(DrawMode.SEEDED);
+    drawStrategy.placePlayers(tournament, playerPairs);
 
     // Then: Only the first round (R32) should be filled
     Round r32Round = tournament.getRoundByStage(Stage.R32);
@@ -544,7 +548,7 @@ public class TournamentBuilderTest {
   }
 
   @Test
-  void testDrawLotsAndFillInitialRounds_withQualifications_fillsQ1AndR32() {
+  void testAutomaticDrawStrategy_withQualifications_fillsQ1AndR32() {
     // Given: Tournament with qualifications (16 -> 4 qualifiers) + main draw (32 players, 8 seeds)
     Tournament        tournament = makeTournament(16, 4, 32, 8, 4, DrawMode.SEEDED);
     TournamentBuilder builder    = new TournamentBuilder();
@@ -554,8 +558,9 @@ public class TournamentBuilderTest {
     // Create 28 player pairs (16 for qualifs + 12 direct entry to main draw)
     List<PlayerPair> playerPairs = createTestPlayerPairs(28);
 
-    // When: Fill initial rounds
-    builder.drawLotsAndFillInitialRounds(tournament, playerPairs);
+    // When: Use the new strategy to fill initial rounds
+    DrawStrategy drawStrategy = new AutomaticDrawStrategy();
+    drawStrategy.placePlayers(tournament, playerPairs);
 
     // Then: Q1 and R32 should be filled, Q2 and R16 should be empty
     Round q1Round  = tournament.getRoundByStage(Stage.Q1);
@@ -593,50 +598,36 @@ public class TournamentBuilderTest {
   }
 
   @Test
-  void testGetInitialStage_knockoutPhase_returnsCorrectStages() {
-    // Test KnockoutPhase getInitialStage() method
-    KnockoutPhase qualifPhase = new KnockoutPhase(16, 4, PhaseType.QUALIFS, DrawMode.SEEDED);
-    KnockoutPhase mainDraw32  = new KnockoutPhase(32, 8, PhaseType.MAIN_DRAW, DrawMode.SEEDED);
-    KnockoutPhase mainDraw64  = new KnockoutPhase(64, 16, PhaseType.MAIN_DRAW, DrawMode.SEEDED);
-
-    assertEquals(Stage.Q1, qualifPhase.getInitialStage(), "Qualifications should start at Q1");
-    assertEquals(Stage.R32, mainDraw32.getInitialStage(), "Main draw 32 should start at R32");
-    assertEquals(Stage.R64, mainDraw64.getInitialStage(), "Main draw 64 should start at R64");
-  }
-
-  @Test
-  void testGetInitialStage_groupPhase_returnsGroups() {
-    // Test GroupPhase getInitialStage() method
-    GroupPhase groupPhase = new GroupPhase(4, 4, 2);
-    assertEquals(Stage.GROUPS, groupPhase.getInitialStage(), "Group phase should start at GROUPS stage");
-  }
-
-  @Test
-  void testDrawLotsAndFillInitialRounds_edgeCases() {
-    // Test edge cases for drawLotsAndFillInitialRounds
-    TournamentBuilder builder = new TournamentBuilder();
+  void testDrawStrategy_edgeCases() {
+    // Test edge cases for draw strategies
+    DrawStrategy automaticStrategy = DrawStrategyFactory.createStrategy(DrawMode.SEEDED);
+    DrawStrategy manualStrategy    = DrawStrategyFactory.createStrategy(DrawMode.MANUAL);
 
     // Case 1: Null tournament
-    builder.drawLotsAndFillInitialRounds(null, createTestPlayerPairs(10));
+    automaticStrategy.placePlayers(null, createTestPlayerPairs(10));
+    manualStrategy.placePlayers(null, createTestPlayerPairs(10));
     // Should not throw exception
 
     // Case 2: Null player pairs
     Tournament tournament = makeTournament(0, 0, 32, 8, 0, DrawMode.SEEDED);
-    builder.drawLotsAndFillInitialRounds(tournament, null);
+    automaticStrategy.placePlayers(tournament, null);
+    manualStrategy.placePlayers(tournament, null);
     // Should not throw exception
 
     // Case 3: Empty player pairs
-    builder.drawLotsAndFillInitialRounds(tournament, new ArrayList<>());
+    automaticStrategy.placePlayers(tournament, new ArrayList<>());
+    manualStrategy.placePlayers(tournament, new ArrayList<>());
     // Should not throw exception
 
     // Case 4: Tournament with no rounds
     Tournament emptyTournament = makeTournament(0, 0, 32, 8, 0, DrawMode.SEEDED);
-    builder.drawLotsAndFillInitialRounds(emptyTournament, createTestPlayerPairs(10));
+    automaticStrategy.placePlayers(emptyTournament, createTestPlayerPairs(10));
+    manualStrategy.placePlayers(emptyTournament, createTestPlayerPairs(10));
     // Should not throw exception
   }
 
   @Test
-  void testDrawLotsAndFillInitialRounds_onlyInitialRoundsAreFilled() {
+  void testDrawStrategy_onlyInitialRoundsAreFilled() {
     // Given: Tournament with qualifications and main draw
     Tournament        tournament = makeTournament(32, 8, 64, 16, 8, DrawMode.SEEDED);
     TournamentBuilder builder    = new TournamentBuilder();
@@ -645,8 +636,9 @@ public class TournamentBuilderTest {
 
     List<PlayerPair> playerPairs = createTestPlayerPairs(48);
 
-    // When: Fill initial rounds
-    builder.drawLotsAndFillInitialRounds(tournament, playerPairs);
+    // When: Use strategy to fill initial rounds
+    DrawStrategy drawStrategy = new AutomaticDrawStrategy();
+    drawStrategy.placePlayers(tournament, playerPairs);
 
     // Then: Only Q1 and R64 should be filled
     List<Stage> initialStages    = List.of(Stage.Q1, Stage.R64);

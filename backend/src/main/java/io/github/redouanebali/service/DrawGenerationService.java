@@ -2,9 +2,13 @@ package io.github.redouanebali.service;
 
 import io.github.redouanebali.dto.request.RoundRequest;
 import io.github.redouanebali.generation.TournamentBuilder;
+import io.github.redouanebali.generation.strategy.DrawStrategy;
+import io.github.redouanebali.generation.strategy.DrawStrategyFactory;
+import io.github.redouanebali.generation.strategy.ManualDrawStrategy;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.format.DrawMode;
 import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
@@ -54,16 +58,35 @@ public class DrawGenerationService {
 
   public Tournament generateDrawAuto(Tournament tournament) {
     initialize(tournament);
-    tournamentBuilder.drawLotsAndFillInitialRounds(tournament, tournament.getPlayerPairs());
+
+    // Use the new strategy pattern instead of calling TournamentBuilder directly
+    DrawMode     drawMode     = tournament.getConfig().getDrawMode();
+    DrawStrategy drawStrategy = DrawStrategyFactory.createStrategy(drawMode);
+
+    List<PlayerPair> players = capPairsToMax(tournament);
+    drawStrategy.placePlayers(tournament, players);
+
     log.info("Generated draw (auto) for tournament id {}", tournament.getId());
     return tournamentRepository.save(tournament);
   }
 
   public Tournament generateDrawManual(Tournament tournament, List<RoundRequest> initialRounds) {
     initialize(tournament);
-    List<Round> convertedRounds = initialRounds == null ? List.of()
-                                                        : initialRounds.stream().map(req -> RoundRequest.toModel(req, tournament)).toList();
-    tournamentBuilder.fillInitialRoundsManual(tournament, convertedRounds);
+
+    if (initialRounds != null && !initialRounds.isEmpty()) {
+      // Use the manual strategy with predefined rounds
+      List<Round> convertedRounds = initialRounds.stream()
+                                                 .map(req -> RoundRequest.toModel(req, tournament))
+                                                 .toList();
+      ManualDrawStrategy manualStrategy = new ManualDrawStrategy();
+      manualStrategy.replaceInitialRounds(tournament, convertedRounds);
+    } else {
+      // Use the manual strategy with players in order
+      DrawStrategy     drawStrategy = DrawStrategyFactory.createStrategy(DrawMode.MANUAL);
+      List<PlayerPair> players      = capPairsToMax(tournament);
+      drawStrategy.placePlayers(tournament, players);
+    }
+
     log.info("Generated draw (manual) for tournament id {}", tournament.getId());
     return tournamentRepository.save(tournament);
   }

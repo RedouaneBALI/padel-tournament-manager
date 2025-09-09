@@ -1,5 +1,6 @@
 package io.github.redouanebali.generation;
 
+import io.github.redouanebali.generation.util.RandomPlacementUtil;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
@@ -43,21 +44,7 @@ public class GroupPhase implements TournamentPhase {
 
   @Override
   public void placeRemainingTeamsRandomly(final Round round, final List<PlayerPair> remainingTeams) {
-    if (round == null || round.getGames() == null || remainingTeams == null || remainingTeams.isEmpty()) {
-      return;
-    }
-    int index = 0;
-    for (var game : round.getGames()) {
-      if (game.getTeamA() == null && index < remainingTeams.size()) {
-        game.setTeamA(remainingTeams.get(index++));
-      }
-      if (game.getTeamB() == null && index < remainingTeams.size()) {
-        game.setTeamB(remainingTeams.get(index++));
-      }
-      if (index >= remainingTeams.size()) {
-        break;
-      }
-    }
+    RandomPlacementUtil.placeRemainingTeamsRandomly(round, remainingTeams);
   }
 
   @Override

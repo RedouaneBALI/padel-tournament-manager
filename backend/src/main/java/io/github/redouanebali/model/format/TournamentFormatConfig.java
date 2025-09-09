@@ -19,6 +19,8 @@ public class TournamentFormatConfig {
   @Builder.Default
   private DrawMode drawMode          = DrawMode.SEEDED;
   @Builder.Default
+  private Boolean  staggeredEntry    = false;
+  @Builder.Default
   private Integer  nbPools           = 0;
   @Builder.Default
   private Integer  nbPairsPerPool    = 0;
