@@ -259,16 +259,16 @@ public class KnockoutPhase implements TournamentPhase {
       return 0;
     }
 
-    // For 64-draw with 16 seeds: TS1-8 enter at R16, TS9-16 enter at R32
-    // For 32-draw with 16 seeds: TS1-8 enter at R16, TS9-16 enter at R32
-    // For 32-draw with 8 seeds: TS1-4 enter at R16, TS5-8 enter at R32
+    // For 64-draw with 16 seeds: TS1-8 enter at R64, TS9-16 enter at R32
+    // For 32-draw with 16 seeds: TS1-8 enter at R32, TS9-16 enter at R16
+    // For 32-draw with 8 seeds: TS1-4 enter at R32, TS5-8 enter at R16
 
-    Stage topSeedsEnterAt  = Stage.fromNbTeams(mainDrawSize / 2); // R16 for 32-draw, R32 for 64-draw
-    Stage nextSeedsEnterAt = Stage.fromNbTeams(mainDrawSize / 4); // R8 for 32-draw, R16 for 64-draw
+    Stage firstSeedsEnterAt  = Stage.fromNbTeams(mainDrawSize);     // R64 for 64-draw, R32 for 32-draw
+    Stage secondSeedsEnterAt = Stage.fromNbTeams(mainDrawSize / 2); // R32 for 64-draw, R16 for 32-draw
 
-    if (stage == topSeedsEnterAt) {
+    if (stage == firstSeedsEnterAt) {
       return Math.min(totalSeeds, totalSeeds / 2); // Top half of seeds
-    } else if (stage == nextSeedsEnterAt) {
+    } else if (stage == secondSeedsEnterAt) {
       return Math.max(0, totalSeeds - totalSeeds / 2); // Bottom half of seeds
     }
 
@@ -283,10 +283,10 @@ public class KnockoutPhase implements TournamentPhase {
       return 0;
     }
 
-    Stage topSeedsEnterAt  = Stage.fromNbTeams(mainDrawSize / 2);
-    Stage nextSeedsEnterAt = Stage.fromNbTeams(mainDrawSize / 4);
+    Stage firstSeedsEnterAt  = Stage.fromNbTeams(mainDrawSize);
+    Stage secondSeedsEnterAt = Stage.fromNbTeams(mainDrawSize / 2);
 
-    if (stage == nextSeedsEnterAt) {
+    if (stage == secondSeedsEnterAt) {
       return Math.min(totalSeeds, totalSeeds / 2); // Top seeds already entered
     }
 

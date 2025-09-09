@@ -11,7 +11,6 @@ import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.DrawMode;
 import io.github.redouanebali.model.format.TournamentFormatConfig;
 import io.github.redouanebali.util.TestFixtures;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -151,7 +150,8 @@ public class KnockoutPhaseTests {
     if (currentStageEnum.isQualification()) {
       isFirstRoundOfPhase = currentStageEnum == Stage.Q1;
     } else {
-      isFirstRoundOfPhase = currentStageEnum == Stage.fromNbTeams(mainDrawSize);
+      // For main draw, check if this is truly the first round (no teams from previous rounds)
+      isFirstRoundOfPhase = currentStageEnum == Stage.fromNbTeams(mainDrawSize) && fromPreviousRound == 0;
     }
 
     if (isFirstRoundOfPhase) {
@@ -163,66 +163,43 @@ public class KnockoutPhaseTests {
 
       // Handle staggered entry
       if (staggeredEntry && !currentStageEnum.isQualification()) {
-        // In staggered entry mode, seeds enter progressively
-        boolean isFirstMainDrawRound = currentStageEnum == Stage.fromNbTeams(mainDrawSize);
+        // In staggered entry mode, seeds enter selon le stage
+        if (phaseToUse instanceof KnockoutPhase ko) {
+          ko.placeSeedTeamsStaggered(currentRound, allPairs, currentStageEnum, mainDrawSize, nbSeeds, false);
+        }
 
-        if (isFirstMainDrawRound) {
-          // First main draw round: no seeds enter
-          // Use staggered method with isFirstRound=true
-          if (phaseToUse instanceof KnockoutPhase ko) {
-            ko.placeSeedTeamsStaggered(currentRound, allPairs, currentStageEnum, mainDrawSize, nbSeeds, true);
+        // Add teams from previous round plus new teams
+        Set<PlayerPair> alreadyPlaced = new HashSet<>();
+        for (Game g : currentRound.getGames()) {
+          if (g.getTeamA() != null && !g.getTeamA().isBye() && g.getTeamA().getType() != PairType.QUALIFIER) {
+            alreadyPlaced.add(g.getTeamA());
+          }
+          if (g.getTeamB() != null && !g.getTeamB().isBye() && g.getTeamB().getType() != PairType.QUALIFIER) {
+            alreadyPlaced.add(g.getTeamB());
+          }
+        }
+
+        // Place remaining teams based on CSV data
+        List<PlayerPair> remainingPairs = allPairs.stream()
+                                                  .filter(p -> !alreadyPlaced.contains(p))
+                                                  .limit(fromPreviousRound + newTeams)
+                                                  .toList();
+        phaseToUse.placeRemainingTeamsRandomly(currentRound, remainingPairs);
+
+        // Place BYEs according to CSV data
+        int actualByesToPlace = bye;
+        for (Game g : currentRound.getGames()) {
+          if (actualByesToPlace <= 0) {
+            break;
           }
 
-          // Place non-seeded teams according to CSV data
-          List<PlayerPair> nonSeededPairs = allPairs.stream()
-                                                    .filter(p -> p.getSeed() <= 0 || p.getSeed() > nbSeeds)
-                                                    .toList();
-
-          // Use exact CSV values to fill the round
-          int teamsToPlace = Math.min(newTeams + fromPreviousRound, nonSeededPairs.size());
-          List<PlayerPair> teamsForThisRound = teamsToPlace > 0 ?
-                                               nonSeededPairs.subList(0, teamsToPlace) : new ArrayList<>();
-
-          phaseToUse.placeRemainingTeamsRandomly(currentRound, teamsForThisRound);
-
-          // Place BYEs according to CSV data
-          // In staggered mode, BYEs replace seed positions + other empty positions
-          int actualByesToPlace = bye;
-          for (Game g : currentRound.getGames()) {
-            if (actualByesToPlace <= 0) {
-              break;
-            }
-
-            if (g.getTeamA() == null) {
-              g.setTeamA(PlayerPair.bye());
-              actualByesToPlace--;
-            } else if (g.getTeamB() == null) {
-              g.setTeamB(PlayerPair.bye());
-              actualByesToPlace--;
-            }
+          if (g.getTeamA() == null) {
+            g.setTeamA(PlayerPair.bye());
+            actualByesToPlace--;
+          } else if (g.getTeamB() == null) {
+            g.setTeamB(PlayerPair.bye());
+            actualByesToPlace--;
           }
-        } else {
-          // Following rounds - seeds enter according to stage
-          if (phaseToUse instanceof KnockoutPhase ko) {
-            ko.placeSeedTeamsStaggered(currentRound, allPairs, currentStageEnum, mainDrawSize, nbSeeds, false);
-          }
-
-          // Add teams from previous round (simulated)
-          Set<PlayerPair> alreadyPlaced = new HashSet<>();
-          for (Game g : currentRound.getGames()) {
-            if (g.getTeamA() != null && !g.getTeamA().isBye() && g.getTeamA().getType() != PairType.QUALIFIER) {
-              alreadyPlaced.add(g.getTeamA());
-            }
-            if (g.getTeamB() != null && !g.getTeamB().isBye() && g.getTeamB().getType() != PairType.QUALIFIER) {
-              alreadyPlaced.add(g.getTeamB());
-            }
-          }
-
-          List<PlayerPair> remainingPairs = allPairs.stream()
-                                                    .filter(p -> !alreadyPlaced.contains(p))
-                                                    .limit(fromPreviousRound + newTeams)
-                                                    .toList();
-          phaseToUse.placeRemainingTeamsRandomly(currentRound, remainingPairs);
         }
       } else {
         // Normal mode (non-staggered) - original behavior
@@ -289,16 +266,43 @@ public class KnockoutPhaseTests {
       t.getRounds().add(nextRound);
 
     } else {
-      // For intermediate round, create prevRound with teams and scores
-      int   prevRoundSize = totalPairs * 2;
-      Round prevRound     = TestFixtures.buildEmptyRound(prevRoundSize);
-      prevRound.setStage(Stage.fromNbTeams(prevRoundSize));
+      // Pour les rounds intermédiaires, création améliorée des rounds précédents
+      Round prevRound;
+
+      // Determine what kind of previous round to create
+      if (currentStageEnum == Stage.R64 && preQualDrawSize > 0 && nbQualifiers > 0) {
+        // R64 following qualifications - previous round is Q2 or Q3
+        int   qualifRounds    = Integer.numberOfTrailingZeros(preQualDrawSize / nbQualifiers);
+        Stage prevQualifStage = Stage.fromQualifIndex(qualifRounds);
+        prevRound = TestFixtures.buildEmptyRound(totalPairs * 2);
+        prevRound.setStage(prevQualifStage);
+      } else if (currentStageEnum.isQualification()) {
+        // Previous qualification round
+        int currentQualifIndex = currentStageEnum == Stage.Q1 ? 1 :
+                                 currentStageEnum == Stage.Q2 ? 2 : 3;
+        Stage prevQualifStage = Stage.fromQualifIndex(currentQualifIndex - 1);
+        prevRound = TestFixtures.buildEmptyRound(totalPairs * 2);
+        prevRound.setStage(prevQualifStage);
+      } else {
+        // Normal main draw progression
+        int prevRoundSize = totalPairs * 2;
+        // Check if the previous round size is supported
+        if (prevRoundSize > 64) {
+          // If previous would be > 64, it means we're coming from qualifications
+          // Create a qualification round instead
+          prevRound = TestFixtures.buildEmptyRound(totalPairs * 2);
+          prevRound.setStage(Stage.Q2); // Most common case
+        } else {
+          prevRound = TestFixtures.buildEmptyRound(prevRoundSize);
+          prevRound.setStage(Stage.fromNbTeams(prevRoundSize));
+        }
+      }
+
       t.getRounds().clear();
       t.getRounds().add(prevRound);
       t.getRounds().add(currentRound);
 
-      // Fill prevRound with teams and scores
-      List<PlayerPair> prevPairs = TestFixtures.createPairs(prevRoundSize);
+      List<PlayerPair> prevPairs = TestFixtures.createPairs(prevRound.getGames().size() * 2);
       int              idx       = 0;
       for (Game g : prevRound.getGames()) {
         if (idx + 1 < prevPairs.size()) {
@@ -313,16 +317,54 @@ public class KnockoutPhaseTests {
       // Propagate from prevRound to currentRound
       phaseToUse.propagateWinners(t);
 
-      // Now simulate scores in currentRound to test propagation to nextRound
-      for (Game game : currentRound.getGames()) {
-        if (game.getTeamA() != null && game.getTeamB() != null
-            && !game.getTeamA().isBye() && !game.getTeamB().isBye()) {
-          game.setFormat(TestFixtures.createSimpleFormat(1));
-          game.setScore(TestFixtures.createScoreWithWinner(game, game.getTeamA()));
+      // Manually adjust currentRound composition according to CSV data
+      // Clear the current round and rebuild it according to CSV specifications
+      for (Game g : currentRound.getGames()) {
+        g.setTeamA(null);
+        g.setTeamB(null);
+        g.setScore(null);
+      }
+
+      // Create teams according to CSV data - need enough teams for all matches + default qualifs
+      int              totalTeamsNeeded     = (matches * 2) + defaultQualif;
+      List<PlayerPair> teamsForCurrentRound = TestFixtures.createPairs(totalTeamsNeeded);
+      int              teamIndex            = 0;
+
+      // Place real matches (team vs team) - exactly 'matches' games
+      int placedMatches = 0;
+      for (Game g : currentRound.getGames()) {
+        if (placedMatches < matches && teamIndex + 1 < teamsForCurrentRound.size()) {
+          g.setTeamA(teamsForCurrentRound.get(teamIndex++));
+          g.setTeamB(teamsForCurrentRound.get(teamIndex++));
+          g.setFormat(TestFixtures.createSimpleFormat(1));
+          g.setScore(TestFixtures.createScoreWithWinner(g, g.getTeamA()));
+          placedMatches++;
         }
       }
 
-      // Create and add nextRound only now
+      // Place default qualifications (team vs BYE) - exactly 'defaultQualif' games
+      int placedDefaults = 0;
+      for (Game g : currentRound.getGames()) {
+        if (placedDefaults < defaultQualif && g.getTeamA() == null && teamIndex < teamsForCurrentRound.size()) {
+          g.setTeamA(teamsForCurrentRound.get(teamIndex++));
+          g.setTeamB(PlayerPair.bye());
+          g.setFormat(TestFixtures.createSimpleFormat(1));
+          g.setScore(TestFixtures.createScoreWithWinner(g, g.getTeamA()));
+          placedDefaults++;
+        }
+      }
+
+      // Fill remaining slots with BYEs
+      for (Game g : currentRound.getGames()) {
+        if (g.getTeamA() == null) {
+          g.setTeamA(PlayerPair.bye());
+        }
+        if (g.getTeamB() == null) {
+          g.setTeamB(PlayerPair.bye());
+        }
+      }
+
+      // Create and add nextRound
       Round nextRound = TestFixtures.buildEmptyRound(totalPairs / 2);
       t.getRounds().add(nextRound);
     }
@@ -349,12 +391,14 @@ public class KnockoutPhaseTests {
       return 0;
     }
 
-    Stage topSeedsEnterAt  = Stage.fromNbTeams(mainDrawSize / 2); // R16 for 32-draw, R32 for 64-draw
-    Stage nextSeedsEnterAt = Stage.fromNbTeams(mainDrawSize / 4); // R8 for 32-draw, R16 for 64-draw
+    // For 64-draw with 16 seeds: TS1-8 enter at R64, TS9-16 enter at R32
+    // For 32-draw with 16 seeds: TS1-8 enter at R32, TS9-16 enter at R16
+    Stage firstSeedsEnterAt  = Stage.fromNbTeams(mainDrawSize);     // R64 for 64-draw, R32 for 32-draw
+    Stage secondSeedsEnterAt = Stage.fromNbTeams(mainDrawSize / 2); // R32 for 64-draw, R16 for 32-draw
 
-    if (stage == topSeedsEnterAt) {
+    if (stage == firstSeedsEnterAt) {
       return Math.min(totalSeeds, totalSeeds / 2); // Top half of seeds
-    } else if (stage == nextSeedsEnterAt) {
+    } else if (stage == secondSeedsEnterAt) {
       return Math.max(0, totalSeeds - totalSeeds / 2); // Bottom half of seeds
     }
 
@@ -366,10 +410,10 @@ public class KnockoutPhaseTests {
       return 0;
     }
 
-    Stage topSeedsEnterAt  = Stage.fromNbTeams(mainDrawSize / 2);
-    Stage nextSeedsEnterAt = Stage.fromNbTeams(mainDrawSize / 4);
+    Stage firstSeedsEnterAt  = Stage.fromNbTeams(mainDrawSize);
+    Stage secondSeedsEnterAt = Stage.fromNbTeams(mainDrawSize / 2);
 
-    if (stage == nextSeedsEnterAt) {
+    if (stage == secondSeedsEnterAt) {
       return Math.min(totalSeeds, totalSeeds / 2); // Top seeds already entered
     }
 

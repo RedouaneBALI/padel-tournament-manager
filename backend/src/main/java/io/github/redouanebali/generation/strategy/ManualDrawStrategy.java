@@ -13,6 +13,9 @@ public class ManualDrawStrategy implements DrawStrategy {
   public void placePlayers(Tournament tournament, List<PlayerPair> players) {
     // In manual mode, we simply place players in the provided order
     // in the initial rounds of the tournament
+    if (tournament == null || tournament.getRounds() == null) {
+      return;
+    }
     fillInitialRoundsManual(tournament, players);
   }
 

@@ -35,14 +35,32 @@ public class AutomaticDrawStrategy implements DrawStrategy {
   private void fillInitialRoundsAutomatic(Tournament tournament, List<PlayerPair> allPairs) {
     List<Round> rounds = tournament.getRounds();
 
-    // Identify initial rounds (Q1, first main draw round, etc.)
+    // Find the first qualification round (Q1) and first main draw round
+    Round firstQualifRound   = null;
+    Round firstMainDrawRound = null;
+
     for (Round round : rounds) {
       Stage stage = round.getStage();
 
-      // Process only initial rounds
-      if (isInitialRound(stage)) {
-        processInitialRound(tournament, round, allPairs);
+      // Find Q1 (first qualification round)
+      if (stage == Stage.Q1 && firstQualifRound == null) {
+        firstQualifRound = round;
       }
+
+      // Find first main draw round (largest stage present)
+      if (!stage.isQualification() && stage != Stage.GROUPS && firstMainDrawRound == null) {
+        firstMainDrawRound = round;
+      }
+    }
+
+    // Process Q1 if present
+    if (firstQualifRound != null) {
+      processInitialRound(tournament, firstQualifRound, allPairs);
+    }
+
+    // Process first main draw round if present
+    if (firstMainDrawRound != null) {
+      processInitialRound(tournament, firstMainDrawRound, allPairs);
     }
   }
 
@@ -52,7 +70,16 @@ public class AutomaticDrawStrategy implements DrawStrategy {
   private boolean isInitialRound(Stage stage) {
     return stage == Stage.Q1 ||
            stage == Stage.GROUPS ||
-           stage == Stage.R64 ||
+           isFirstMainDrawStage(stage);
+  }
+
+  /**
+   * Determines if this is the first main draw stage for this tournament.
+   */
+  private boolean isFirstMainDrawStage(Stage stage) {
+    // For a tournament, the first main draw stage depends on the configuration
+    // We'll check if this is the largest main draw stage present
+    return stage == Stage.R64 ||
            stage == Stage.R32 ||
            stage == Stage.R16 ||
            stage == Stage.QUARTERS ||
@@ -93,7 +120,7 @@ public class AutomaticDrawStrategy implements DrawStrategy {
     int teamsAvailableForQualifs = Math.max(0, allPairs.size() - teamsNotInQualifs);
     int byesNeededInQualifs      = Math.max(0, qualifDrawSize - teamsAvailableForQualifs);
 
-    // Determine teams to protect with BYEs in qualifs
+    // Determine teams to protect with BYES in qualifs
     int teamsToProtectInQualifs = Math.max(nbSeedsQualif, byesNeededInQualifs);
 
     // Get teams that participate in qualifs
@@ -125,11 +152,14 @@ public class AutomaticDrawStrategy implements DrawStrategy {
    * Processes a main draw round with automatic logic.
    */
   private void processMainDrawRound(Tournament tournament, Round initialRound, List<PlayerPair> allPairs, int roundDrawSize, int configuredSeeds) {
+    // Calculate how many teams actually participate in this main draw round
+    int totalPairsInMainDraw = calculateMainDrawParticipants(tournament, allPairs);
+
     // Place configured seeds in their appropriate positions
     SeedPlacementUtil.placeSeedTeams(initialRound, allPairs, configuredSeeds, roundDrawSize);
 
-    // Place BYEs opposite protected teams
-    ByePlacementUtil.placeByeTeams(initialRound, allPairs.size(), configuredSeeds, roundDrawSize);
+    // Place BYEs opposite protected teams - use the correct count for main draw
+    ByePlacementUtil.placeByeTeams(initialRound, totalPairsInMainDraw, configuredSeeds, roundDrawSize);
 
     // Filter already placed teams (seeds and those protected with BYEs)
     Set<PlayerPair> alreadyPlaced = new HashSet<>();
@@ -148,5 +178,23 @@ public class AutomaticDrawStrategy implements DrawStrategy {
 
     // Place remaining teams in available slots
     RandomPlacementUtil.placeRemainingTeamsRandomly(initialRound, remainingTeams);
+  }
+
+  /**
+   * Calculates how many teams actually participate in the main draw. This accounts for teams that go to qualifications vs direct entry.
+   */
+  private int calculateMainDrawParticipants(Tournament tournament, List<PlayerPair> allPairs) {
+    int totalSlots   = tournament.getConfig().getMainDrawSize();
+    int nbQualifiers = tournament.getConfig().getNbQualifiers();
+
+    if (nbQualifiers > 0) {
+      // Tournament has qualifications
+      // Direct entries = total slots - qualifier spots
+      int directEntries = totalSlots - nbQualifiers;
+      return Math.min(directEntries, allPairs.size());
+    } else {
+      // No qualifications, all teams go to main draw
+      return Math.min(allPairs.size(), totalSlots);
+    }
   }
 }
