@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.TeamSide;
 import java.io.InputStream;
@@ -229,6 +230,60 @@ public class SeedPlacementUtil {
 
     } catch (Exception e) {
       throw new RuntimeException("Failed to load seed positions from JSON", e);
+    }
+  }
+
+  /**
+   * Places seeded teams in pools for group phase tournaments. Distributes seeds evenly across pools using round-robin distribution.
+   *
+   * Examples: - 4 pools, 4 seeds → 1 seed per pool (TS1 in Pool A, TS2 in Pool B, etc.) - 4 pools, 8 seeds → 2 seeds per pool (TS1+TS5 in Pool A,
+   * TS2+TS6 in Pool B, etc.)
+   *
+   * @param round the round containing pools
+   * @param playerPairs the list of player pairs
+   * @param nbPairsPerPool maximum pairs per pool
+   */
+  public static void placeSeedTeamsInPools(Round round, List<PlayerPair> playerPairs, int nbPairsPerPool) {
+    if (round == null || playerPairs == null || round.getPools().isEmpty()) {
+      return;
+    }
+
+    // Get seeded teams and sort them by seed number
+    List<PlayerPair> seededTeams = playerPairs.stream()
+                                              .filter(pair -> pair.getSeed() > 0)
+                                              .sorted(getSeedComparator())
+                                              .toList();
+
+    if (seededTeams.isEmpty()) {
+      return;
+    }
+
+    List<Pool> pools   = round.getPools();
+    int        nbPools = pools.size();
+
+    // Distribute seeds using round-robin approach
+    // This ensures even distribution: seed i goes to pool (i % nbPools)
+    for (int i = 0; i < seededTeams.size(); i++) {
+      PlayerPair seed       = seededTeams.get(i);
+      int        poolIndex  = i % nbPools; // Round-robin distribution
+      Pool       targetPool = pools.get(poolIndex);
+
+      // Check if pool has space
+      if (targetPool.getPairs().size() < nbPairsPerPool) {
+        targetPool.addPair(seed);
+      } else {
+        // If the target pool is full, find the next available pool
+        boolean placed = false;
+        for (int j = 0; j < nbPools && !placed; j++) {
+          int  nextPoolIndex = (poolIndex + j) % nbPools;
+          Pool nextPool      = pools.get(nextPoolIndex);
+          if (nextPool.getPairs().size() < nbPairsPerPool) {
+            nextPool.addPair(seed);
+            placed = true;
+          }
+        }
+        // If no pool has space, the seed cannot be placed (should not happen in normal cases)
+      }
     }
   }
 }

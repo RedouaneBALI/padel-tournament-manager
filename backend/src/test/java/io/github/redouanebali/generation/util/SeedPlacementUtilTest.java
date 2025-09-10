@@ -6,9 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.redouanebali.model.Game;
+import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.util.TestFixtures;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -334,5 +337,293 @@ public class SeedPlacementUtilTest {
     assertThrows(IllegalStateException.class,
                  () -> SeedPlacementUtil.placeSeedTeams(round, pairs, 4, 16), // Wrong drawSize
                  "Should throw exception when drawSize doesn't match actual games");
+  }
+
+  // ========== NEW TESTS FOR POOLS (GROUP PHASE) ==========
+
+  @ParameterizedTest(name = "placeSeedTeamsInPools: {0} teams, {1} pools, {2} seeds")
+  @CsvSource({
+      "12, 4, 4",  // 4 seeds in 4 pools (1 seed per pool)
+      "16, 4, 4",  // 4 seeds in 4 pools (1 seed per pool)
+      "16, 4, 8",  // 8 seeds in 4 pools (2 seeds per pool)
+      "12, 2, 4",  // 4 seeds in 2 pools (2 seeds per pool)
+      "24, 8, 8",  // 8 seeds in 8 pools (1 seed per pool)
+      "12, 4, 4",  // 4 seeds in 4 pools (1 seed per pool) - was 6 seeds
+      "20, 5, 5",  // 5 seeds in 5 pools (1 seed per pool) - was 10 seeds
+      "12, 4, 0"   // No seeds to place
+  })
+  void testPlaceSeedTeamsInPools(int totalTeams, int nbPools, int nbSeeds) {
+    // Arrange
+    Round            round          = createRoundWithPools(nbPools);
+    List<PlayerPair> teams          = createSeededPlayerPairs(totalTeams, nbSeeds);
+    int              nbPairsPerPool = totalTeams / nbPools;
+
+    // Act
+    SeedPlacementUtil.placeSeedTeamsInPools(round, teams, nbPairsPerPool);
+
+    // Assert - verify seeded teams are placed
+    Set<PlayerPair> placedSeeds = new HashSet<>();
+    for (Pool pool : round.getPools()) {
+      for (PlayerPair pair : pool.getPairs()) {
+        if (pair.getSeed() > 0) {
+          placedSeeds.add(pair);
+        }
+      }
+    }
+
+    List<PlayerPair> expectedSeeds = teams.stream()
+                                          .filter(pair -> pair.getSeed() > 0)
+                                          .toList();
+
+    assertEquals(expectedSeeds.size(), placedSeeds.size(), "All seeded teams should be placed");
+    assertTrue(placedSeeds.containsAll(expectedSeeds), "All expected seeds should be placed");
+
+    // Verify round-robin distribution of seeds
+    if (nbSeeds > 0 && nbPools > 0) {
+      int expectedSeedsPerPool = nbSeeds / nbPools;
+      int poolsWithExtraSeed   = nbSeeds % nbPools;
+
+      for (int i = 0; i < nbPools; i++) {
+        Pool pool = round.getPools().get(i);
+        long seedsInPool = pool.getPairs().stream()
+                               .filter(pair -> pair.getSeed() > 0)
+                               .count();
+
+        int expectedForThisPool = expectedSeedsPerPool;
+        if (i < poolsWithExtraSeed) {
+          expectedForThisPool++;
+        }
+
+        assertEquals(expectedForThisPool, seedsInPool,
+                     "Pool " + i + " should have " + expectedForThisPool + " seeds, but had " + seedsInPool);
+      }
+    }
+  }
+
+  @Test
+  void testPlaceSeedTeamsInPools_RoundRobinDistribution() {
+    // Arrange
+    Round            round = createRoundWithPools(4);
+    List<PlayerPair> teams = createSeededPlayerPairs(16, 8); // 8 seeds in 4 pools
+
+    // Act
+    SeedPlacementUtil.placeSeedTeamsInPools(round, teams, 4);
+
+    // Assert - verify seeds are distributed round-robin style
+    // TS1 should go to Pool 0, TS2 to Pool 1, TS3 to Pool 2, TS4 to Pool 3
+    // TS5 should go to Pool 0, TS6 to Pool 1, TS7 to Pool 2, TS8 to Pool 3
+    for (int i = 0; i < 4; i++) {
+      Pool pool = round.getPools().get(i);
+      assertEquals(2, pool.getPairs().size(), "Each pool should have exactly 2 seeds");
+
+      // Check that seeds are distributed in round-robin fashion
+      List<Integer> seedsInPool = pool.getPairs().stream()
+                                      .map(PlayerPair::getSeed)
+                                      .sorted()
+                                      .toList();
+
+      List<Integer> expectedSeeds = List.of(i + 1, i + 5); // TS(i+1) and TS(i+5)
+      assertEquals(expectedSeeds, seedsInPool,
+                   "Pool " + i + " should contain seeds " + expectedSeeds + " but had " + seedsInPool);
+    }
+  }
+
+  @Test
+  void testPlaceSeedTeamsInPools_OneSeedPerPool() {
+    // Arrange
+    Round            round = createRoundWithPools(4);
+    List<PlayerPair> teams = createSeededPlayerPairs(12, 4); // 4 seeds in 4 pools
+
+    // Act
+    SeedPlacementUtil.placeSeedTeamsInPools(round, teams, 3);
+
+    // Assert - each pool should have exactly 1 seed
+    for (int i = 0; i < 4; i++) {
+      Pool pool = round.getPools().get(i);
+      assertEquals(1, pool.getPairs().size(), "Each pool should have exactly 1 seed");
+
+      PlayerPair seedInPool = pool.getPairs().get(0);
+      assertEquals(i + 1, seedInPool.getSeed(),
+                   "Pool " + i + " should contain TS" + (i + 1) + " but had TS" + seedInPool.getSeed());
+    }
+  }
+
+  @Test
+  void testPlaceSeedTeamsInPools_MoreSeedsThanPools() {
+    // Arrange
+    Round            round = createRoundWithPools(3);
+    List<PlayerPair> teams = createSeededPlayerPairs(12, 7); // 7 seeds in 3 pools
+
+    // Act
+    SeedPlacementUtil.placeSeedTeamsInPools(round, teams, 4);
+
+    // Assert - seeds should be distributed as evenly as possible
+    // Pool 0: TS1, TS4, TS7 (3 seeds)
+    // Pool 1: TS2, TS5 (2 seeds)
+    // Pool 2: TS3, TS6 (2 seeds)
+    assertEquals(3, round.getPools().get(0).getPairs().size(), "Pool 0 should have 3 seeds");
+    assertEquals(2, round.getPools().get(1).getPairs().size(), "Pool 1 should have 2 seeds");
+    assertEquals(2, round.getPools().get(2).getPairs().size(), "Pool 2 should have 2 seeds");
+
+    // Verify all 7 seeds are placed
+    long totalSeeds = round.getPools().stream()
+                           .flatMap(pool -> pool.getPairs().stream())
+                           .filter(pair -> pair.getSeed() > 0)
+                           .count();
+    assertEquals(7, totalSeeds, "All 7 seeds should be placed");
+  }
+
+  @Test
+  void testPlaceSeedTeamsInPools_NoSeeds() {
+    // Arrange
+    Round            round = createRoundWithPools(4);
+    List<PlayerPair> teams = createSeededPlayerPairs(12, 0); // No seeds
+
+    // Act
+    SeedPlacementUtil.placeSeedTeamsInPools(round, teams, 3);
+
+    // Assert - no teams should be placed
+    for (Pool pool : round.getPools()) {
+      assertTrue(pool.getPairs().isEmpty(), "Pool should be empty when no seeds");
+    }
+  }
+
+  @Test
+  void testPlaceSeedTeamsInPools_HandlesNullInputs() {
+    // Test null round
+    List<PlayerPair> teams = createSeededPlayerPairs(8, 4);
+    SeedPlacementUtil.placeSeedTeamsInPools(null, teams, 2);
+    // Should not throw
+
+    // Test null teams
+    Round round = createRoundWithPools(4);
+    SeedPlacementUtil.placeSeedTeamsInPools(round, null, 2);
+    // Should not throw
+
+    // Test empty pools
+    Round emptyRound = new Round();
+    SeedPlacementUtil.placeSeedTeamsInPools(emptyRound, teams, 2);
+    // Should not throw
+  }
+
+  @Test
+  void testPlaceSeedTeamsInPools_WithPoolCapacityLimits() {
+    // Arrange
+    Round            round          = createRoundWithPools(3);
+    List<PlayerPair> teams          = createSeededPlayerPairs(9, 3); // 3 seeds in 3 pools (1 per pool)
+    int              nbPairsPerPool = 3; // Each pool can hold max 3 teams
+
+    // Act
+    SeedPlacementUtil.placeSeedTeamsInPools(round, teams, nbPairsPerPool);
+
+    // Assert - verify no pool exceeds capacity
+    for (Pool pool : round.getPools()) {
+      assertTrue(pool.getPairs().size() <= nbPairsPerPool,
+                 "Pool should not exceed capacity of " + nbPairsPerPool);
+    }
+
+    // Verify all 3 seeds are placed (1 per pool)
+    long totalSeeds = round.getPools().stream()
+                           .flatMap(pool -> pool.getPairs().stream())
+                           .filter(pair -> pair.getSeed() > 0)
+                           .count();
+    assertEquals(3, totalSeeds, "All 3 seeds should be placed");
+
+    // Verify each pool has exactly 1 seed
+    for (int i = 0; i < 3; i++) {
+      Pool pool = round.getPools().get(i);
+      long seedsInPool = pool.getPairs().stream()
+                             .filter(pair -> pair.getSeed() > 0)
+                             .count();
+      assertEquals(1, seedsInPool, "Pool " + i + " should have exactly 1 seed");
+    }
+  }
+
+  @Test
+  void testPlaceSeedTeamsInPools_RespectsPoolCapacityAndFallback() {
+    // Arrange
+    Round            round          = createRoundWithPools(3);
+    List<PlayerPair> teams          = createSeededPlayerPairs(9, 6); // 6 seeds in 3 pools (2 per pool max)
+    int              nbPairsPerPool = 3; // Each pool can hold max 3 teams
+
+    // Pre-fill first pool to near capacity
+    PlayerPair existingTeam = createSeededPlayerPairs(1, 0).get(0);
+    existingTeam.setSeed(0); // Non-seeded team
+    round.getPools().get(0).addPair(existingTeam);
+    round.getPools().get(0).addPair(existingTeam); // 2 teams already in pool 0
+
+    // Act
+    SeedPlacementUtil.placeSeedTeamsInPools(round, teams, nbPairsPerPool);
+
+    // Assert - verify seeds are placed and capacity is respected
+    for (Pool pool : round.getPools()) {
+      assertTrue(pool.getPairs().size() <= nbPairsPerPool,
+                 "Pool should not exceed capacity of " + nbPairsPerPool);
+    }
+
+    // Verify seeds are distributed across available pools
+    // With pool 0 having 2 existing teams, available space is: 1 + 3 + 3 = 7 total
+    // But we only have 6 seeds, so all should be placed
+    long totalSeeds = round.getPools().stream()
+                           .flatMap(pool -> pool.getPairs().stream())
+                           .filter(pair -> pair.getSeed() > 0)
+                           .count();
+    assertEquals(6, totalSeeds, "All 6 seeds should be placed");
+
+    // Verify that pool 0 has exactly 1 seed (plus 2 existing non-seeded teams)
+    long seedsInPool0 = round.getPools().get(0).getPairs().stream()
+                             .filter(pair -> pair.getSeed() > 0)
+                             .count();
+    assertEquals(1, seedsInPool0, "Pool 0 should have exactly 1 seed");
+    assertEquals(3, round.getPools().get(0).getPairs().size(), "Pool 0 should be at capacity");
+
+    // Verify pool 1 and 2 have the remaining seeds (should be distributed evenly)
+    long seedsInPool1 = round.getPools().get(1).getPairs().stream()
+                             .filter(pair -> pair.getSeed() > 0)
+                             .count();
+    long seedsInPool2 = round.getPools().get(2).getPairs().stream()
+                             .filter(pair -> pair.getSeed() > 0)
+                             .count();
+
+    // With 5 remaining seeds for 2 pools, distribution should be 3 and 2 (or 2 and 3)
+    assertTrue((seedsInPool1 == 3 && seedsInPool2 == 2) || (seedsInPool1 == 2 && seedsInPool2 == 3),
+               "Pools 1 and 2 should have 3 and 2 seeds respectively (in any order)");
+  }
+
+  // Helper method to create a round with pools
+  private Round createRoundWithPools(int nbPools) {
+    Round round = new Round();
+    for (int i = 0; i < nbPools; i++) {
+      Pool pool = new Pool();
+      pool.setName("Pool " + (char) ('A' + i));
+      round.addPool(pool);
+    }
+    return round;
+  }
+
+  // Helper method to create seeded player pairs
+  private List<PlayerPair> createSeededPlayerPairs(int totalTeams, int nbSeeds) {
+    List<PlayerPair> pairs = new ArrayList<>();
+    for (int i = 1; i <= totalTeams; i++) {
+      Player player1 = new Player();
+      player1.setName("Player" + (i * 2 - 1));
+
+      Player player2 = new Player();
+      player2.setName("Player" + (i * 2));
+
+      PlayerPair pair = new PlayerPair();
+      pair.setPlayer1(player1);
+      pair.setPlayer2(player2);
+
+      // Set seed for first nbSeeds teams
+      if (i <= nbSeeds) {
+        pair.setSeed(i);
+      } else {
+        pair.setSeed(0); // Non-seeded
+      }
+
+      pairs.add(pair);
+    }
+    return pairs;
   }
 }
