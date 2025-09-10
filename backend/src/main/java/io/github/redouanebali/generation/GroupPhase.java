@@ -94,11 +94,6 @@ public class GroupPhase implements TournamentPhase {
   }
 
   @Override
-  public List<Integer> getSeedsPositions() {
-    return List.of();
-  }
-
-  @Override
   public void placeByeTeams(final Round round, final int totalPairs) {
     // For groups, generally no BYES, so nothing to do
   }

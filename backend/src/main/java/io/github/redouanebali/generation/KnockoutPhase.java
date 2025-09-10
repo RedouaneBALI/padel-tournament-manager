@@ -115,11 +115,6 @@ public class KnockoutPhase implements TournamentPhase {
   }
 
   @Override
-  public List<Integer> getSeedsPositions() {
-    return SeedPlacementUtil.getSeedsPositions(this.drawSize, this.nbSeeds);
-  }
-
-  @Override
   public void placeByeTeams(final Round round, final int totalPairs) {
     ByePlacementUtil.placeByeTeams(round, totalPairs, this.nbSeeds, this.drawSize);
   }

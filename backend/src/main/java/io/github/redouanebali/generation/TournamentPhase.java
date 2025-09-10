@@ -39,13 +39,6 @@ public interface TournamentPhase {
   void placeSeedTeams(Round round, List<PlayerPair> playerPairs);
 
   /**
-   * Returns the list of seed positions (uses the internal properties of the class).
-   *
-   * @return list of seed positions
-   */
-  List<Integer> getSeedsPositions();
-
-  /**
    * Inserts BYE teams into the bracket if the draw is not full. Ensures seeded players can advance automatically when required. This method mutates
    * the round's games in place.
    *

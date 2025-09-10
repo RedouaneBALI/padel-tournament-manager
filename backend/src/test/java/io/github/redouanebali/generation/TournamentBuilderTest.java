@@ -140,10 +140,9 @@ public class TournamentBuilderTest {
                                                               String expectedMatchesCsv) {
     Tournament tournament = makeTournament(0, 0, mainDraw, nbSeedsMain, 0, drawMode);
 
-    TournamentBuilder builder   = new TournamentBuilder();
-    List<Round>       roundList = builder.buildQualifKOStructure(tournament.getConfig());
-    tournament.getRounds().clear();
-    tournament.getRounds().addAll(roundList);
+    TournamentBuilder builder = new TournamentBuilder();
+    // Use public API: create empty tournament by providing empty player list
+    builder.setupAndPopulateTournament(tournament, new ArrayList<>());
     List<Stage>   expectedStages  = parseStages(expectedStagesCsv);
     List<Integer> expectedMatches = parseInts(expectedMatchesCsv);
 
@@ -177,10 +176,9 @@ public class TournamentBuilderTest {
                                                                     String expectedMatchesCsv) {
     Tournament tournament = makeTournament(preQual, nbQualifiers, mainDraw, nbSeedsMain, nbSeedsQual, drawMode);
 
-    TournamentBuilder builder   = new TournamentBuilder();
-    List<Round>       roundList = builder.buildQualifKOStructure(tournament.getConfig());
-    tournament.getRounds().clear();
-    tournament.getRounds().addAll(roundList);
+    TournamentBuilder builder = new TournamentBuilder();
+    // Use public API: create empty tournament by providing empty player list
+    builder.setupAndPopulateTournament(tournament, new ArrayList<>());
     List<Stage>   expectedStages  = parseStages(expectedStagesCsv);
     List<Integer> expectedMatches = parseInts(expectedMatchesCsv);
 
@@ -229,15 +227,15 @@ public class TournamentBuilderTest {
     tournament.setConfig(cfg);
 
     TournamentBuilder builder = new TournamentBuilder();
-    List<Round>       built   = builder.buildQualifKOStructure(tournament.getConfig());
-    tournament.getRounds().addAll(built);
+    // Use public API: create empty tournament structure by providing empty player list
+    builder.setupAndPopulateTournament(tournament, new ArrayList<>());
 
     // Stage order must match CSV order
     List<Stage> expectedStages = rows.stream()
                                      .map(r -> stringValue(r, "Round").toUpperCase())
                                      .map(Stage::valueOf)
                                      .collect(Collectors.toList());
-    List<Stage> actualStages = built.stream().map(Round::getStage).collect(Collectors.toList());
+    List<Stage> actualStages = tournament.getRounds().stream().map(Round::getStage).collect(Collectors.toList());
     assertEquals(expectedStages, actualStages, "Stage order mismatch for " + tournamentId);
 
     Stage firstMainStage = expectedStages.stream()
@@ -247,25 +245,19 @@ public class TournamentBuilderTest {
 
     // --- Initialize the first main draw round (before the for loop) ---
     if (firstMainStage != null) {
-      built.stream()
-           .filter(r -> r.getStage() == firstMainStage)
-           .findFirst().ifPresent(thatRound -> initializeFirstMainDrawWithoutQualifiers(tournamentId, thatRound));
+      tournament.getRounds().stream()
+                .filter(r -> r.getStage() == firstMainStage)
+                .findFirst().ifPresent(thatRound -> initializeFirstMainDrawWithoutQualifiers(tournamentId, thatRound));
     }
 
     // Simulate each round row-by-row
-    for (int rowIndex = 0; rowIndex < rows.size(); rowIndex++) {
-      String[] row   = rows.get(rowIndex);
-      Stage    stage = Stage.valueOf(stringValue(row, "Round").toUpperCase());
-      Round currentRound = built.stream().filter(r -> r.getStage() == stage).findFirst()
-                                .orElseThrow(() -> new IllegalStateException("Round not found: " + stage + " for " + tournamentId));
+    for (String[] row : rows) {
+      Stage stage = Stage.valueOf(stringValue(row, "Round").toUpperCase());
+      Round currentRound = tournament.getRounds().stream().filter(r -> r.getStage() == stage).findFirst()
+                                     .orElseThrow(() -> new IllegalStateException("Round not found: " + stage + " for " + tournamentId));
 
-      int expectedTotalPairs               = intValue(row, "TotalPairs");
-      int expectedNonByePairs              = intValue(row, "PairsNonBye");
-      int expectedPairsPlaying             = intValue(row, "PairsPlaying");
-      int expectedNbGames                  = intValue(row, "Matches");
-      int expectedNbDirectlyQualifiedPairs = intValue(row, "DefaultQualif");
-      int expectedByePairs                 = intValue(row, "BYE");
-      int fromPreviousRound                = intValue(row, "FromPreviousRound");
+      int expectedTotalPairs = intValue(row, "TotalPairs");
+      int expectedNbGames    = intValue(row, "Matches");
 
       // Draw size sanity
       assertEquals(expectedTotalPairs / 2, currentRound.getGames().size(), "Unexpected number of games in " + stage);
@@ -321,8 +313,6 @@ public class TournamentBuilderTest {
       builder.propagateWinners(tournament);
 
       // Validate propagation results
-      Round nextRound            = tournament.getRounds().get(built.indexOf(currentRound) + 1);
-      int   expectedNewTeamsNext = intValue(rows.get(rowIndex + 1), "NewTeams");
       validatePropagation(currentRound, row);
 
       // Validate current round composition
@@ -336,8 +326,9 @@ public class TournamentBuilderTest {
     try {
       ObjectMapper mapper = new ObjectMapper();
       resource = String.format("/teams/teams_t%d.json", tournamentId);
-      InputStream is    = getClass().getResourceAsStream(resource);
-      Map         entry = mapper.readValue(is, Map.class);
+      InputStream is = getClass().getResourceAsStream(resource);
+      @SuppressWarnings("unchecked")
+      Map<String, Object> entry = mapper.readValue(is, Map.class);
       if (entry != null && entry.get("firstQualifPhase") != null) {
         List<?>    gamesJson = (List<?>) entry.get("firstQualifPhase");
         List<Game> games     = new ArrayList<>();
@@ -355,10 +346,11 @@ public class TournamentBuilderTest {
 
   private void initializeFirstMainDrawWithoutQualifiers(Long tournamentId, Round currentRound) {
     try {
-      ObjectMapper        mapper   = new ObjectMapper();
-      String              resource = String.format("/teams/teams_t%d.json", tournamentId);
-      InputStream         is       = getClass().getResourceAsStream(resource);
-      Map<String, Object> entry    = mapper.readValue(is, Map.class);
+      ObjectMapper mapper   = new ObjectMapper();
+      String       resource = String.format("/teams/teams_t%d.json", tournamentId);
+      InputStream  is       = getClass().getResourceAsStream(resource);
+      @SuppressWarnings("unchecked")
+      Map<String, Object> entry = mapper.readValue(is, Map.class);
       if (entry != null && entry.get("firstMainPhase") != null) {
         List<?>    gamesJson = (List<?>) entry.get("firstMainPhase");
         List<Game> games     = new ArrayList<>();
@@ -493,9 +485,9 @@ public class TournamentBuilderTest {
     // Create 20 player pairs (less than draw size to test BYE placement)
     List<PlayerPair> playerPairs = createTestPlayerPairs(20);
 
-    // When: Use the new initializeAndPopulate method (replaces 5 manual steps)
+    // When: Use the new setupTournamentWithPlayers method (replaces 5 manual steps)
     TournamentBuilder builder = new TournamentBuilder();
-    builder.initializeAndPopulate(tournament, playerPairs);
+    builder.setupAndPopulateTournament(tournament, playerPairs);
 
     // Then: Only the first round (R32) should be filled
     Round r32Round = tournament.getRoundByStage(Stage.R32);
@@ -560,8 +552,8 @@ public class TournamentBuilderTest {
     // Given: Tournament with qualifications (16 -> 4 qualifiers) + main draw (32 players, 8 seeds)
     Tournament        tournament = makeTournament(16, 4, 32, 8, 4, DrawMode.SEEDED);
     TournamentBuilder builder    = new TournamentBuilder();
-    List<Round>       rounds     = builder.buildQualifKOStructure(tournament.getConfig());
-    tournament.getRounds().addAll(rounds);
+    // Use public API: create empty tournament structure by providing empty player list
+    builder.setupAndPopulateTournament(tournament, new ArrayList<>());
 
     // Create 28 player pairs (16 for qualifs + 12 direct entry to main draw)
     List<PlayerPair> playerPairs = createTestPlayerPairs(28);
@@ -639,8 +631,8 @@ public class TournamentBuilderTest {
     // Given: Tournament with qualifications and main draw
     Tournament        tournament = makeTournament(32, 8, 64, 16, 8, DrawMode.SEEDED);
     TournamentBuilder builder    = new TournamentBuilder();
-    List<Round>       rounds     = builder.buildQualifKOStructure(tournament.getConfig());
-    tournament.getRounds().addAll(rounds);
+    // Use public API: create empty tournament structure by providing empty player list
+    builder.setupAndPopulateTournament(tournament, new ArrayList<>());
 
     List<PlayerPair> playerPairs = createTestPlayerPairs(48);
 

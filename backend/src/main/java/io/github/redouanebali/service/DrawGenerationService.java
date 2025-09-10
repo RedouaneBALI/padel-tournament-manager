@@ -2,11 +2,9 @@ package io.github.redouanebali.service;
 
 import io.github.redouanebali.dto.request.RoundRequest;
 import io.github.redouanebali.generation.TournamentBuilder;
-import io.github.redouanebali.generation.strategy.ManualDrawStrategy;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.model.format.TournamentFormat;
 import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
@@ -51,7 +49,7 @@ public class DrawGenerationService {
     assertCanInitialize(tournament);
 
     List<PlayerPair> players = capPairsToMax(tournament);
-    tournamentBuilder.initializeAndPopulate(tournament, players);
+    tournamentBuilder.setupAndPopulateTournament(tournament, players);
 
     log.info("Generated draw (auto) for tournament id {}", tournament.getId());
     return tournamentRepository.save(tournament);
@@ -61,20 +59,15 @@ public class DrawGenerationService {
     assertCanInitialize(tournament);
 
     if (initialRounds != null && !initialRounds.isEmpty()) {
-      TournamentFormat format      = tournament.getConfig().getFormat();
-      List<Round>      emptyRounds = tournamentBuilder.buildStructureForFormat(format, tournament.getConfig());
-      tournament.getRounds().clear();
-      tournament.getRounds().addAll(emptyRounds);
-
+      // Cas 1: Tirage manuel avec rounds spécifiques - utilise la nouvelle API propre
       List<Round> convertedRounds = initialRounds.stream()
                                                  .map(req -> RoundRequest.toModel(req, tournament))
                                                  .toList();
-      ManualDrawStrategy manualStrategy = new ManualDrawStrategy();
-      manualStrategy.replaceInitialRounds(tournament, convertedRounds);
+      tournamentBuilder.setupTournamentWithInitialRounds(tournament, convertedRounds);
     } else {
-      // Use initializeAndPopulate for simple manual placement
+      // Cas 2: Tirage "manuel" simple (utilise la stratégie automatique par défaut)
       List<PlayerPair> players = capPairsToMax(tournament);
-      tournamentBuilder.initializeAndPopulate(tournament, players);
+      tournamentBuilder.setupAndPopulateTournament(tournament, players);
     }
 
     log.info("Generated draw (manual) for tournament id {}", tournament.getId());
