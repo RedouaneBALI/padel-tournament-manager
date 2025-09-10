@@ -17,8 +17,8 @@ import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.DrawMode;
+import io.github.redouanebali.model.format.TournamentConfig;
 import io.github.redouanebali.model.format.TournamentFormat;
-import io.github.redouanebali.model.format.TournamentFormatConfig;
 import io.github.redouanebali.util.TestFixtures;
 import java.io.InputStream;
 import java.net.URL;
@@ -52,14 +52,14 @@ public class TournamentBuilderTest {
       int nbSeedsQualify,
       DrawMode drawMode) {
     Tournament tournament = new Tournament();
-    TournamentFormatConfig cfg = TournamentFormatConfig.builder()
-                                                       .preQualDrawSize(preQualDrawSize)
-                                                       .nbQualifiers(nbQualifiers)
-                                                       .mainDrawSize(mainDrawSize)
-                                                       .nbSeeds(nbSeeds)
-                                                       .nbSeedsQualify(nbSeedsQualify)
-                                                       .drawMode(drawMode)
-                                                       .build();
+    TournamentConfig cfg = TournamentConfig.builder()
+                                           .preQualDrawSize(preQualDrawSize)
+                                           .nbQualifiers(nbQualifiers)
+                                           .mainDrawSize(mainDrawSize)
+                                           .nbSeeds(nbSeeds)
+                                           .nbSeedsQualify(nbSeedsQualify)
+                                           .drawMode(drawMode)
+                                           .build();
     tournament.setConfig(cfg);
 
     // Set the appropriate tournament format based on the configuration
@@ -69,7 +69,7 @@ public class TournamentBuilderTest {
     } else {
       format = TournamentFormat.KNOCKOUT;
     }
-    tournament.setFormat(format);
+    tournament.getConfig().setFormat(format);
 
     return tournament;
   }
@@ -218,14 +218,14 @@ public class TournamentBuilderTest {
 
     Tournament tournament = new Tournament();
     tournament.setId(tournamentId);
-    TournamentFormatConfig cfg = TournamentFormatConfig.builder()
-                                                       .preQualDrawSize(preQualDrawSize)
-                                                       .nbQualifiers(nbQualifiers)
-                                                       .mainDrawSize(mainDrawSize)
-                                                       .nbSeeds(nbSeedsMain)
-                                                       .nbSeedsQualify(0)
-                                                       .drawMode(DrawMode.SEEDED)
-                                                       .build();
+    TournamentConfig cfg = TournamentConfig.builder()
+                                           .preQualDrawSize(preQualDrawSize)
+                                           .nbQualifiers(nbQualifiers)
+                                           .mainDrawSize(mainDrawSize)
+                                           .nbSeeds(nbSeedsMain)
+                                           .nbSeedsQualify(0)
+                                           .drawMode(DrawMode.SEEDED)
+                                           .build();
     tournament.setConfig(cfg);
 
     TournamentBuilder builder = new TournamentBuilder();

@@ -6,8 +6,8 @@ import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.DrawMode;
+import io.github.redouanebali.model.format.TournamentConfig;
 import io.github.redouanebali.model.format.TournamentFormat;
-import io.github.redouanebali.model.format.TournamentFormatConfig;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -17,7 +17,7 @@ public final class TournamentBuilder {
 
   private final List<TournamentPhase> phases = new ArrayList<>();
 
-  public List<Round> buildQualifKOStructure(TournamentFormatConfig cfg) {
+  public List<Round> buildQualifKOStructure(TournamentConfig cfg) {
     List<Round> rounds = new ArrayList<>();
     phases.clear();
 
@@ -42,7 +42,7 @@ public final class TournamentBuilder {
     return rounds;
   }
 
-  public List<Round> buildGroupsKOStructure(TournamentFormatConfig cfg) {
+  public List<Round> buildGroupsKOStructure(TournamentConfig cfg) {
     List<Round> rounds = new ArrayList<>();
     phases.clear();
 
@@ -70,21 +70,21 @@ public final class TournamentBuilder {
   /**
    * Propagate winners across all phases sequentially.
    */
-  public void propagateWinners(Tournament t) {
-    if (t == null || phases.isEmpty()) {
+  public void propagateWinners(Tournament tournament) {
+    if (tournament == null || phases.isEmpty()) {
       return;
     }
-    phases.getFirst().propagateWinners(t);
+    phases.getFirst().propagateWinners(tournament);
   }
 
-  public List<String> validate(Tournament t) {
+  public List<String> validate(Tournament tournament) {
     List<String> errors = new ArrayList<>();
-    if (t == null) {
+    if (tournament == null) {
       errors.add("Tournament is null");
       return errors;
     }
 
-    var config = t.getConfig();
+    var config = tournament.getConfig();
     if (config == null) {
       errors.add("Tournament configuration is null");
       return errors;
@@ -106,7 +106,7 @@ public final class TournamentBuilder {
     // Validate other phases if they exist
     if (!phases.isEmpty()) {
       for (TournamentPhase phase : phases) {
-        errors.addAll(phase.validate(t));
+        errors.addAll(phase.validate(tournament));
       }
     }
 
@@ -120,7 +120,7 @@ public final class TournamentBuilder {
    * @param config the tournament configuration
    * @return list of rounds for the specified format
    */
-  public List<Round> buildStructureForFormat(TournamentFormat format, TournamentFormatConfig config) {
+  public List<Round> buildStructureForFormat(TournamentFormat format, TournamentConfig config) {
     if (format == null) {
       throw new IllegalArgumentException("Tournament format cannot be null");
     }
@@ -144,8 +144,8 @@ public final class TournamentBuilder {
       throw new IllegalArgumentException("Tournament and config cannot be null");
     }
 
-    TournamentFormatConfig config = tournament.getConfig();
-    TournamentFormat       format = tournament.getFormat();
+    TournamentConfig config = tournament.getConfig();
+    TournamentFormat format = config.getFormat();
 
     // Step 1 & 2: Build structure based on tournament format
     List<Round> rounds = buildStructureForFormat(format, config);

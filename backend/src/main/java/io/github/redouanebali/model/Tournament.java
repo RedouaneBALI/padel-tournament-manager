@@ -1,8 +1,7 @@
 package io.github.redouanebali.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.github.redouanebali.model.format.TournamentFormat;
-import io.github.redouanebali.model.format.TournamentFormatConfig;
+import io.github.redouanebali.model.format.TournamentConfig;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -46,51 +45,49 @@ public class Tournament {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long                   id;
+  private Long             id;
   // Who can edit this tournament (user email)
   @Column(nullable = false, length = 191)
-  private String                 ownerId;
+  private String           ownerId;
   @Column(nullable = false, updatable = false)
-  private Instant                createdAt   = Instant.now();
+  private Instant          createdAt   = Instant.now();
   @Column(nullable = false)
-  private Instant                updatedAt   = Instant.now();
+  private Instant          updatedAt   = Instant.now();
   @NotBlank
-  private String                 name;
+  private String           name;
   @Setter(AccessLevel.NONE)
   @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
   @OneToMany(cascade = CascadeType.ALL)
   @JoinColumn(name = "tournament_id")
   @OrderColumn(name = "order_index") // persists list order
-  private List<Round>            rounds      = new ArrayList<>();
+  private List<Round>      rounds      = new ArrayList<>();
   @Setter(AccessLevel.NONE)
   @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "tournament_id")
   @OrderColumn(name = "order_index") // persists list order
-  private List<PlayerPair>       playerPairs = new ArrayList<>();
+  private List<PlayerPair> playerPairs = new ArrayList<>();
   @Size(max = 1000)
-  private String                 description;
+  private String           description;
   @Size(max = 50)
-  private String                 city;
+  private String           city;
   @Size(max = 50)
-  private String                 club;
+  private String           club;
   @Enumerated(EnumType.STRING)
-  private Gender                 gender;
+  private Gender           gender;
   @Enumerated(EnumType.STRING)
-  private TournamentLevel        level;
-  @Enumerated(EnumType.STRING)
-  private TournamentFormat       format;
+  private TournamentLevel  level;
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-  private LocalDate              startDate;
+  private LocalDate        startDate;
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-  private LocalDate              endDate;
+  private LocalDate        endDate;
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(columnDefinition = "JSONB")
-  private TournamentFormatConfig config;
+  private TournamentConfig config;
   @Transient
-  private boolean                editable;
+  private boolean          editable;
 
   @PreUpdate
   public void onUpdate() {

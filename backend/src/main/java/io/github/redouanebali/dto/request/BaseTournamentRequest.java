@@ -3,8 +3,7 @@ package io.github.redouanebali.dto.request;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.github.redouanebali.model.Gender;
 import io.github.redouanebali.model.TournamentLevel;
-import io.github.redouanebali.model.format.TournamentFormat;
-import io.github.redouanebali.model.format.TournamentFormatConfig;
+import io.github.redouanebali.model.format.TournamentConfig;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
@@ -41,9 +40,8 @@ public abstract class BaseTournamentRequest {
   /**
    * Classification fields.
    */
-  private Gender           gender;
-  private TournamentLevel  level;
-  private TournamentFormat format;
+  private Gender          gender;
+  private TournamentLevel level;
 
   /**
    * Event dates (yyyy-MM-dd).
@@ -58,5 +56,5 @@ public abstract class BaseTournamentRequest {
    * Flexible tournament configuration (stored as JSONB in DB). Example: nbSeeds, groupsKo, qualifyMain sizes, etc.
    */
   @Valid
-  private TournamentFormatConfig config;
+  private TournamentConfig config;
 }

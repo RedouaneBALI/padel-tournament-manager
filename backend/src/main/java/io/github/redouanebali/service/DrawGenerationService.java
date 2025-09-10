@@ -29,7 +29,7 @@ public class DrawGenerationService {
 
   public static List<PlayerPair> capPairsToMax(Tournament tournament) {
     List<PlayerPair> pairs    = tournament.getPlayerPairs();
-    int              maxPairs = tournament.getConfig().getNbMaxPairs(tournament.getFormat());
+    int              maxPairs = tournament.getConfig().getNbMaxPairs();
 
     if (pairs == null || pairs.isEmpty()) {
       return pairs == null ? List.of() : pairs;
@@ -61,7 +61,7 @@ public class DrawGenerationService {
     assertCanInitialize(tournament);
 
     if (initialRounds != null && !initialRounds.isEmpty()) {
-      TournamentFormat format      = tournament.getFormat();
+      TournamentFormat format      = tournament.getConfig().getFormat();
       List<Round>      emptyRounds = tournamentBuilder.buildStructureForFormat(format, tournament.getConfig());
       tournament.getRounds().clear();
       tournament.getRounds().addAll(emptyRounds);

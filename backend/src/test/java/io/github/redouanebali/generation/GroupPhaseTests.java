@@ -13,7 +13,7 @@ import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.DrawMath;
-import io.github.redouanebali.model.format.TournamentFormatConfig;
+import io.github.redouanebali.model.format.TournamentConfig;
 import io.github.redouanebali.util.TestFixtures;
 import java.util.HashSet;
 import java.util.List;
@@ -41,11 +41,11 @@ public class GroupPhaseTests {
   })
   void testInitializeGroupStructure(int totalTeams, int nbPools, int nbPairsPerPool, int nbQualifiedByPool) {
     // Given
-    TournamentFormatConfig config = TournamentFormatConfig.builder()
-                                                          .nbPools(nbPools)
-                                                          .nbPairsPerPool(nbPairsPerPool)
-                                                          .nbQualifiedByPool(nbQualifiedByPool)
-                                                          .build();
+    TournamentConfig config = TournamentConfig.builder()
+                                              .nbPools(nbPools)
+                                              .nbPairsPerPool(nbPairsPerPool)
+                                              .nbQualifiedByPool(nbQualifiedByPool)
+                                              .build();
 
     GroupPhase groupPhase = new GroupPhase(nbPools, nbPairsPerPool, nbQualifiedByPool);
 
@@ -79,10 +79,10 @@ public class GroupPhaseTests {
   void testTeamPlacementInPools(int totalTeams, int nbPools, int nbPairsPerPool) {
     // Given
     GroupPhase groupPhase = new GroupPhase(nbPools, nbPairsPerPool, 1);
-    TournamentFormatConfig config = TournamentFormatConfig.builder()
-                                                          .nbPools(nbPools)
-                                                          .nbPairsPerPool(nbPairsPerPool)
-                                                          .build();
+    TournamentConfig config = TournamentConfig.builder()
+                                              .nbPools(nbPools)
+                                              .nbPairsPerPool(nbPairsPerPool)
+                                              .build();
 
     List<Round> rounds     = groupPhase.initialize(config);
     Round       groupRound = rounds.get(0);
@@ -127,10 +127,10 @@ public class GroupPhaseTests {
   void testSeedDistributionInPools(int totalTeams, int nbPools, int nbSeeds) {
     // Given
     GroupPhase groupPhase = new GroupPhase(nbPools, totalTeams / nbPools, 1);
-    TournamentFormatConfig config = TournamentFormatConfig.builder()
-                                                          .nbPools(nbPools)
-                                                          .nbPairsPerPool(totalTeams / nbPools)
-                                                          .build();
+    TournamentConfig config = TournamentConfig.builder()
+                                              .nbPools(nbPools)
+                                              .nbPairsPerPool(totalTeams / nbPools)
+                                              .build();
 
     List<Round> rounds     = groupPhase.initialize(config);
     Round       groupRound = rounds.get(0);
@@ -194,10 +194,10 @@ public class GroupPhaseTests {
     int        nbPairsPerPool = 4;
     GroupPhase groupPhase     = new GroupPhase(nbPools, nbPairsPerPool, 2);
 
-    TournamentFormatConfig config = TournamentFormatConfig.builder()
-                                                          .nbPools(nbPools)
-                                                          .nbPairsPerPool(nbPairsPerPool)
-                                                          .build();
+    TournamentConfig config = TournamentConfig.builder()
+                                              .nbPools(nbPools)
+                                              .nbPairsPerPool(nbPairsPerPool)
+                                              .build();
 
     List<Round> rounds     = groupPhase.initialize(config);
     Round       groupRound = rounds.get(0);
@@ -231,11 +231,11 @@ public class GroupPhaseTests {
   void testValidateGroupConfiguration() {
     // Given
     Tournament tournament = new Tournament();
-    TournamentFormatConfig config = TournamentFormatConfig.builder()
-                                                          .nbPools(4)
-                                                          .nbPairsPerPool(3)
-                                                          .nbQualifiedByPool(1)
-                                                          .build();
+    TournamentConfig config = TournamentConfig.builder()
+                                              .nbPools(4)
+                                              .nbPairsPerPool(3)
+                                              .nbQualifiedByPool(1)
+                                              .build();
     tournament.setConfig(config);
 
     GroupPhase groupPhase = new GroupPhase(4, 3, 1);
@@ -251,11 +251,11 @@ public class GroupPhaseTests {
   void testInvalidConfigurations() {
     // Test case 1: More qualified than teams per pool
     Tournament tournament1 = new Tournament();
-    TournamentFormatConfig config1 = TournamentFormatConfig.builder()
-                                                           .nbPools(4)
-                                                           .nbPairsPerPool(2)
-                                                           .nbQualifiedByPool(3) // More than pairs per pool
-                                                           .build();
+    TournamentConfig config1 = TournamentConfig.builder()
+                                               .nbPools(4)
+                                               .nbPairsPerPool(2)
+                                               .nbQualifiedByPool(3) // More than pairs per pool
+                                               .build();
     tournament1.setConfig(config1);
 
     GroupPhase   groupPhase1 = new GroupPhase(4, 2, 3);
@@ -265,11 +265,11 @@ public class GroupPhaseTests {
 
     // Test case 2: Total qualified not power of 2
     Tournament tournament2 = new Tournament();
-    TournamentFormatConfig config2 = TournamentFormatConfig.builder()
-                                                           .nbPools(3)
-                                                           .nbPairsPerPool(4)
-                                                           .nbQualifiedByPool(1) // 3 total qualified (not power of 2)
-                                                           .build();
+    TournamentConfig config2 = TournamentConfig.builder()
+                                               .nbPools(3)
+                                               .nbPairsPerPool(4)
+                                               .nbQualifiedByPool(1) // 3 total qualified (not power of 2)
+                                               .build();
     tournament2.setConfig(config2);
 
     GroupPhase   groupPhase2 = new GroupPhase(3, 4, 1);
@@ -294,10 +294,10 @@ public class GroupPhaseTests {
   void testEmptyTeamsList() {
     // Given
     GroupPhase groupPhase = new GroupPhase(4, 3, 1);
-    TournamentFormatConfig config = TournamentFormatConfig.builder()
-                                                          .nbPools(4)
-                                                          .nbPairsPerPool(3)
-                                                          .build();
+    TournamentConfig config = TournamentConfig.builder()
+                                              .nbPools(4)
+                                              .nbPairsPerPool(3)
+                                              .build();
 
     List<Round> rounds     = groupPhase.initialize(config);
     Round       groupRound = rounds.get(0);

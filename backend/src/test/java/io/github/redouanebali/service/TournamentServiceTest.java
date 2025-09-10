@@ -15,8 +15,8 @@ import io.github.redouanebali.dto.request.UpdateTournamentRequest;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.format.TournamentConfig;
 import io.github.redouanebali.model.format.TournamentFormat;
-import io.github.redouanebali.model.format.TournamentFormatConfig;
 import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.security.SecurityProps;
 import java.util.Collections;
@@ -98,8 +98,8 @@ public class TournamentServiceTest {
     // no initialization before generation
   void testCreateTournament_initializesStructure_whenConfigProvided() {
     Tournament t = new Tournament();
-    t.setFormat(TournamentFormat.KNOCKOUT);
-    t.setConfig(TournamentFormatConfig.builder().mainDrawSize(4).nbSeeds(0).build());
+    t.getConfig().setFormat(TournamentFormat.KNOCKOUT);
+    t.setConfig(TournamentConfig.builder().mainDrawSize(4).nbSeeds(0).build());
 
     Tournament saved = tournamentService.createTournament(t);
 
@@ -113,7 +113,8 @@ public class TournamentServiceTest {
   @Test
   void testCreateTournament_skipsInit_whenNoFormatConfig() {
     Tournament t = new Tournament();
-    t.setFormat(TournamentFormat.KNOCKOUT);
+    t.setConfig(TournamentConfig.builder().build());
+    t.getConfig().setFormat(TournamentFormat.KNOCKOUT);
     t.setConfig(null);
 
     Tournament saved = tournamentService.createTournament(t);
@@ -123,9 +124,10 @@ public class TournamentServiceTest {
   @Test
   void testCreateTournament_throwsOnInvalidConfig() {
     Tournament t = new Tournament();
-    t.setFormat(TournamentFormat.KNOCKOUT);
+    t.setConfig(TournamentConfig.builder().build());
+    t.getConfig().setFormat(TournamentFormat.KNOCKOUT);
     // invalid: mainDrawSize not power of two and seeds > size
-    t.setConfig(TournamentFormatConfig.builder().mainDrawSize(12).nbSeeds(16).build());
+    t.setConfig(TournamentConfig.builder().mainDrawSize(12).nbSeeds(16).build());
 
     // Mock the drawGenerationService to return validation errors instead of throwing exception
     List<String> expectedErrors = List.of(
@@ -170,14 +172,14 @@ public class TournamentServiceTest {
 
     UpdateTournamentRequest input = new UpdateTournamentRequest();
     input.setName("New name");
-    // input.setNbSeeds(4); @todo to fixe later
-    input.setFormat(TournamentFormat.KNOCKOUT);
+    input.setConfig(TournamentConfig.builder().build());
+    input.getConfig().setFormat(TournamentFormat.KNOCKOUT);
 
     Tournament updated = tournamentService.updateTournament(7L, input);
 
     assertEquals("New name", updated.getName());
     //  assertEquals(4, updated.getNbSeeds());
-    assertEquals(TournamentFormat.KNOCKOUT, updated.getFormat());
+    assertEquals(TournamentFormat.KNOCKOUT, updated.getConfig().getFormat());
   }
 
   @Test

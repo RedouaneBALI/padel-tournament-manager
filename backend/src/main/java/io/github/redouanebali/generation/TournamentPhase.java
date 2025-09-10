@@ -4,7 +4,7 @@ import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.model.format.TournamentFormatConfig;
+import io.github.redouanebali.model.format.TournamentConfig;
 import java.util.List;
 
 /**
@@ -28,7 +28,7 @@ public interface TournamentPhase {
    * @param config the configuration for the tournament phase
    * @return list of initialized rounds
    */
-  List<Round> initialize(TournamentFormatConfig config);
+  List<Round> initialize(TournamentConfig config);
 
   /**
    * Places seeded teams at their theoretical positions in the given round. This method mutates the round's games in place.

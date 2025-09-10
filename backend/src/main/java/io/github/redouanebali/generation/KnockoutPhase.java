@@ -10,7 +10,7 @@ import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.model.format.TournamentFormatConfig;
+import io.github.redouanebali.model.format.TournamentConfig;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -29,12 +29,12 @@ public class KnockoutPhase implements TournamentPhase {
   }
 
   @Override
-  public List<Round> initialize(final TournamentFormatConfig config) {
+  public List<Round> initialize(final TournamentConfig config) {
     validateConfig(config);
     return buildRounds(config);
   }
 
-  private void validateConfig(TournamentFormatConfig config) {
+  private void validateConfig(TournamentConfig config) {
     if (config == null) {
       throw new IllegalArgumentException("config is null");
     }
@@ -43,7 +43,7 @@ public class KnockoutPhase implements TournamentPhase {
     }
   }
 
-  private List<Round> buildRounds(TournamentFormatConfig config) {
+  private List<Round> buildRounds(TournamentConfig config) {
     final List<Round> rounds = new ArrayList<>();
 
     switch (phaseType) {
@@ -55,7 +55,7 @@ public class KnockoutPhase implements TournamentPhase {
     return rounds;
   }
 
-  private void buildQualificationRounds(List<Round> rounds, TournamentFormatConfig config) {
+  private void buildQualificationRounds(List<Round> rounds, TournamentConfig config) {
     validateQualificationConfig(config);
 
     int slots  = drawSize;
@@ -68,7 +68,7 @@ public class KnockoutPhase implements TournamentPhase {
     }
   }
 
-  private void validateQualificationConfig(TournamentFormatConfig config) {
+  private void validateQualificationConfig(TournamentConfig config) {
     if (config.getNbQualifiers() <= 0
         || (config.getNbQualifiers() & (config.getNbQualifiers() - 1)) != 0
         || config.getNbQualifiers() > drawSize) {

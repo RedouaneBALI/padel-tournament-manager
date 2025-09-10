@@ -8,7 +8,7 @@ import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.model.format.TournamentFormatConfig;
+import io.github.redouanebali.model.format.TournamentConfig;
 import io.github.redouanebali.util.TestFixtures;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -45,11 +45,11 @@ public class KnockoutPhaseTests {
                                 String expectedMatchesStr) {
     // Arrange
     Tournament tournament = new Tournament();
-    TournamentFormatConfig cfg = TournamentFormatConfig.builder()
-                                                       .preQualDrawSize(preQualDrawSize)
-                                                       .nbQualifiers(nbQualifiers)
-                                                       .mainDrawSize(mainDrawSize)
-                                                       .build();
+    TournamentConfig cfg = TournamentConfig.builder()
+                                           .preQualDrawSize(preQualDrawSize)
+                                           .nbQualifiers(nbQualifiers)
+                                           .mainDrawSize(mainDrawSize)
+                                           .build();
     tournament.setConfig(cfg);
 
     KnockoutPhase phase = new KnockoutPhase(
@@ -115,12 +115,12 @@ public class KnockoutPhaseTests {
     if (currentStageEnum == Stage.FINAL) {
       return;
     }
-    TournamentFormatConfig cfg = TournamentFormatConfig.builder()
-                                                       .preQualDrawSize(preQualDrawSize)
-                                                       .nbQualifiers(nbQualifiers)
-                                                       .mainDrawSize(mainDrawSize)
-                                                       .nbSeeds(nbSeeds)
-                                                       .build();
+    TournamentConfig cfg = TournamentConfig.builder()
+                                           .preQualDrawSize(preQualDrawSize)
+                                           .nbQualifiers(nbQualifiers)
+                                           .mainDrawSize(mainDrawSize)
+                                           .nbSeeds(nbSeeds)
+                                           .build();
     Tournament t = new Tournament();
     t.setId(Long.valueOf(tournamentId));
     t.setConfig(cfg);

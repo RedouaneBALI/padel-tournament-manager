@@ -2,12 +2,10 @@ package io.github.redouanebali.dto.request;
 
 import io.github.redouanebali.model.Gender;
 import io.github.redouanebali.model.TournamentLevel;
-import io.github.redouanebali.model.format.TournamentFormat;
-import io.github.redouanebali.model.format.TournamentFormatConfig;
+import io.github.redouanebali.model.format.TournamentConfig;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import lombok.Data;
@@ -91,20 +89,11 @@ public class CreateTournamentRequest extends BaseTournamentRequest {
   }
 
   /**
-   * Tournament format is required for creation.
-   */
-  @NotNull(message = "Tournament format is required")
-  @Override
-  public TournamentFormat getFormat() {
-    return super.getFormat();
-  }
-
-  /**
    * Configuration for the tournament format, optional.
    */
   @Valid
   @Override
-  public TournamentFormatConfig getConfig() {
+  public TournamentConfig getConfig() {
     return super.getConfig();
   }
 }

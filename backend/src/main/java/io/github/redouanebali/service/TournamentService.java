@@ -6,8 +6,8 @@ import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.format.TournamentConfig;
 import io.github.redouanebali.model.format.TournamentFormat;
-import io.github.redouanebali.model.format.TournamentFormatConfig;
 import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
@@ -55,7 +55,7 @@ public class TournamentService {
     if (tournament == null) {
       throw new IllegalArgumentException("Tournament cannot be null");
     }
-    if (tournament.getFormat() != null && tournament.getConfig() != null) {
+    if (tournament.getConfig() != null && tournament.getConfig().getFormat() != null) {
       drawGenerationService.validate(tournament);
     }
     tournament.setOwnerId(SecurityUtil.currentUserId());
@@ -110,15 +110,12 @@ public class TournamentService {
     existing.setClub(updatedTournament.getClub());
     existing.setGender(updatedTournament.getGender());
     existing.setLevel(updatedTournament.getLevel());
-    existing.setFormat(updatedTournament.getFormat());
     existing.setConfig(updatedTournament.getConfig());
     // Rebuild initial rounds if we have enough info (format + config) and a meaningful draw size
-    if (existing.getFormat() != null
-        && existing.getConfig() != null) {
+    if (existing.getConfig() != null && existing.getConfig().getFormat() != null) {
       // Validate and (re)build the structure for the new/updated format configuration
-      TournamentFormat format = existing.getFormat();
-      existing.setFormat(format);
-      TournamentFormatConfig config = existing.getConfig();
+      TournamentFormat format = existing.getConfig().getFormat();
+      TournamentConfig config = existing.getConfig();
       // roundBuilder.validateAndBuild(existing);
     }
 

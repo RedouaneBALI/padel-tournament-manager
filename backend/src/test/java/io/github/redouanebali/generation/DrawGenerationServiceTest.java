@@ -16,8 +16,8 @@ import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.format.TournamentConfig;
 import io.github.redouanebali.model.format.TournamentFormat;
-import io.github.redouanebali.model.format.TournamentFormatConfig;
 import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.service.DrawGenerationService;
@@ -155,9 +155,8 @@ class DrawGenerationServiceTest {
   private Tournament baseTournamentKO(int nbPairs, int nbSeeds) {
     Tournament tournament = new Tournament();
     tournament.setId(1L);
-    tournament.setFormat(TournamentFormat.KNOCKOUT);
     tournament.setOwnerId("bali.redouane@gmail.com");
-    tournament.setConfig(TournamentFormatConfig.builder().mainDrawSize(nbPairs).nbSeeds(nbSeeds).build());
+    tournament.setConfig(TournamentConfig.builder().mainDrawSize(nbPairs).nbSeeds(nbSeeds).format(TournamentFormat.KNOCKOUT).build());
     tournament.getPlayerPairs().addAll(TestFixtures.createPairs(4));
     return tournament;
   }

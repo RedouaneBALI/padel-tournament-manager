@@ -3,8 +3,8 @@ package io.github.redouanebali.dto.response;
 import io.github.redouanebali.model.Gender;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.TournamentLevel;
+import io.github.redouanebali.model.format.TournamentConfig;
 import io.github.redouanebali.model.format.TournamentFormat;
-import io.github.redouanebali.model.format.TournamentFormatConfig;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.Getter;
@@ -14,21 +14,21 @@ import lombok.Setter;
 @Setter
 public class TournamentDTO {
 
-  private Long                   id;
-  private String                 ownerId;
-  private String                 name;
-  private List<RoundDTO>         rounds;
-  private List<PlayerPairDTO>    playerPairs;
-  private String                 description;
-  private String                 city;
-  private String                 club;
-  private Gender                 gender;
-  private TournamentLevel        level;
-  private TournamentFormat       format;
-  private TournamentFormatConfig config;
-  private LocalDate              startDate;
-  private LocalDate              endDate;
-  private boolean                editable;
+  private Long                id;
+  private String              ownerId;
+  private String              name;
+  private List<RoundDTO>      rounds;
+  private List<PlayerPairDTO> playerPairs;
+  private String              description;
+  private String              city;
+  private String              club;
+  private Gender              gender;
+  private TournamentLevel     level;
+  private TournamentFormat    format;
+  private TournamentConfig    config;
+  private LocalDate           startDate;
+  private LocalDate           endDate;
+  private boolean             editable;
 
   public Stage getCurrentRoundStage() {
     if (rounds == null || rounds.isEmpty()) {

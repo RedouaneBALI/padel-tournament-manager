@@ -9,7 +9,7 @@ import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.DrawMath;
-import io.github.redouanebali.model.format.TournamentFormatConfig;
+import io.github.redouanebali.model.format.TournamentConfig;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -30,7 +30,7 @@ public class GroupPhase implements TournamentPhase {
       return errors;
     }
 
-    TournamentFormatConfig config = tournament.getConfig();
+    TournamentConfig config = tournament.getConfig();
     if (config == null) {
       errors.add("Tournament configuration cannot be null");
       return errors;
@@ -72,7 +72,7 @@ public class GroupPhase implements TournamentPhase {
   }
 
   @Override
-  public List<Round> initialize(final TournamentFormatConfig config) {
+  public List<Round> initialize(final TournamentConfig config) {
     Round round = new Round();
     round.setStage(Stage.GROUPS);
 
