@@ -17,6 +17,7 @@ import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.DrawMode;
+import io.github.redouanebali.model.format.TournamentFormat;
 import io.github.redouanebali.model.format.TournamentFormatConfig;
 import io.github.redouanebali.util.TestFixtures;
 import java.io.InputStream;
@@ -60,6 +61,16 @@ public class TournamentBuilderTest {
                                                        .drawMode(drawMode)
                                                        .build();
     tournament.setConfig(cfg);
+
+    // Set the appropriate tournament format based on the configuration
+    TournamentFormat format;
+    if (preQualDrawSize > 0 && nbQualifiers > 0) {
+      format = TournamentFormat.QUALIF_KO;
+    } else {
+      format = TournamentFormat.KNOCKOUT;
+    }
+    tournament.setFormat(format);
+
     return tournament;
   }
 
@@ -477,17 +488,14 @@ public class TournamentBuilderTest {
   @Test
   void testAutomaticDrawStrategy_mainDrawOnly_fillsOnlyFirstRound() {
     // Given: Tournament with main draw only (32 players, 8 seeds)
-    Tournament        tournament = makeTournament(0, 0, 32, 8, 0, DrawMode.SEEDED);
-    TournamentBuilder builder    = new TournamentBuilder();
-    List<Round>       rounds     = builder.buildQualifKOStructure(tournament.getConfig());
-    tournament.getRounds().addAll(rounds);
+    Tournament tournament = makeTournament(0, 0, 32, 8, 0, DrawMode.SEEDED);
 
     // Create 20 player pairs (less than draw size to test BYE placement)
     List<PlayerPair> playerPairs = createTestPlayerPairs(20);
 
-    // When: Use the new strategy to fill initial rounds
-    DrawStrategy drawStrategy = DrawStrategyFactory.createStrategy(DrawMode.SEEDED);
-    drawStrategy.placePlayers(tournament, playerPairs);
+    // When: Use the new initializeAndPopulate method (replaces 5 manual steps)
+    TournamentBuilder builder = new TournamentBuilder();
+    builder.initializeAndPopulate(tournament, playerPairs);
 
     // Then: Only the first round (R32) should be filled
     Round r32Round = tournament.getRoundByStage(Stage.R32);
