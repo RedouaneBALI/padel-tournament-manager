@@ -3,6 +3,7 @@ package io.github.redouanebali.generation.strategy;
 import io.github.redouanebali.generation.util.ByePlacementUtil;
 import io.github.redouanebali.generation.util.RandomPlacementUtil;
 import io.github.redouanebali.generation.util.SeedPlacementUtil;
+import io.github.redouanebali.generation.util.TournamentStageUtil;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
@@ -68,9 +69,7 @@ public class AutomaticDrawStrategy implements DrawStrategy {
    * Determines if a stage represents an initial round where players enter.
    */
   private boolean isInitialRound(Stage stage) {
-    return stage == Stage.Q1 ||
-           stage == Stage.GROUPS ||
-           isFirstMainDrawStage(stage);
+    return TournamentStageUtil.isInitialRound(stage);
   }
 
   /**
@@ -78,13 +77,7 @@ public class AutomaticDrawStrategy implements DrawStrategy {
    */
   private boolean isFirstMainDrawStage(Stage stage) {
     // For a tournament, the first main draw stage depends on the configuration
-    // We'll check if this is the largest main draw stage present
-    return stage == Stage.R64 ||
-           stage == Stage.R32 ||
-           stage == Stage.R16 ||
-           stage == Stage.QUARTERS ||
-           stage == Stage.SEMIS ||
-           stage == Stage.FINAL;
+    return TournamentStageUtil.isFirstMainDrawStage(stage);
   }
 
   /**

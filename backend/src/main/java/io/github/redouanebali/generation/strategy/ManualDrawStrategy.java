@@ -1,6 +1,7 @@
 package io.github.redouanebali.generation.strategy;
 
 import io.github.redouanebali.generation.util.RandomPlacementUtil;
+import io.github.redouanebali.generation.util.TournamentStageUtil;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
@@ -55,21 +56,14 @@ public class ManualDrawStrategy implements DrawStrategy {
    * Determines if a stage is an initial round where players enter.
    */
   private boolean isInitialRound(Stage stage) {
-    return stage == Stage.Q1 ||
-           stage == Stage.GROUPS ||
-           isFirstMainDrawRound(stage);
+    return TournamentStageUtil.isInitialRound(stage);
   }
 
   /**
    * Determines if this is the first main draw round.
    */
   private boolean isFirstMainDrawRound(Stage stage) {
-    return stage == Stage.R64 ||
-           stage == Stage.R32 ||
-           stage == Stage.R16 ||
-           stage == Stage.QUARTERS ||
-           stage == Stage.SEMIS ||
-           stage == Stage.FINAL;
+    return TournamentStageUtil.isFirstMainDrawStage(stage);
   }
 
   /**

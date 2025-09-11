@@ -2,6 +2,7 @@ package io.github.redouanebali.generation;
 
 import io.github.redouanebali.generation.strategy.DrawStrategy;
 import io.github.redouanebali.generation.strategy.DrawStrategyFactory;
+import io.github.redouanebali.generation.util.TournamentStageUtil;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
@@ -72,23 +73,6 @@ public final class TournamentBuilder {
    * Complete tournament setup: creates structure and places players using the configured draw mode. This is the recommended public API method.
    *
    * @param tournament tournament with config set (will be modified)
-   * @param playerPairs players to automatically place in the tournament
-   */
-  public void setupAndPopulateTournament(Tournament tournament, List<PlayerPair> playerPairs) {
-    setupEmptyTournament(tournament);
-
-    if (tournament.getConfig() != null && playerPairs != null && !playerPairs.isEmpty()) {
-      // Always use SEEDED strategy for automatic placement
-      DrawStrategy drawStrategy = DrawStrategyFactory.createStrategy(DrawMode.SEEDED);
-      drawStrategy.placePlayers(tournament, playerPairs);
-    }
-  }
-
-  /**
-   * Sets up tournament with manually provided initial rounds. This is the recommended method for manual draw generation where the frontend provides
-   * the complete structure of initial rounds.
-   *
-   * @param tournament tournament with config set (will be modified)
    * @param initialRounds pre-populated initial rounds to replace the empty structure
    */
   public void setupTournamentWithInitialRounds(Tournament tournament, List<Round> initialRounds) {
@@ -121,6 +105,55 @@ public final class TournamentBuilder {
 
     tournament.getRounds().clear();
     tournament.getRounds().addAll(allRounds);
+  }
+
+  /**
+   * Convenience method for automatic tournament setup. Builds initial rounds automatically using SEEDED strategy, then calls
+   * setupTournamentWithInitialRounds().
+   *
+   * @param tournament tournament with config set (will be modified)
+   * @param playerPairs players to automatically place in the tournament
+   */
+  public void setupAndPopulateTournament(Tournament tournament, List<PlayerPair> playerPairs) {
+    if (tournament == null || tournament.getConfig() == null) {
+      throw new IllegalArgumentException("Tournament and config cannot be null");
+    }
+
+    if (playerPairs == null || playerPairs.isEmpty()) {
+      // Empty tournament case
+      setupTournamentWithInitialRounds(tournament, List.of());
+      return;
+    }
+
+    // Build automatic rounds using SEEDED strategy
+    List<Round> automaticRounds = buildAutomaticRounds(tournament, playerPairs);
+
+    // Use the unified method
+    setupTournamentWithInitialRounds(tournament, automaticRounds);
+  }
+
+  /**
+   * Builds initial rounds automatically using the SEEDED strategy. This method creates only the initial rounds that need to be populated (Q1, first
+   * main round, etc.).
+   *
+   * @param tournament tournament configuration
+   * @param playerPairs players to place
+   * @return list of populated initial rounds
+   */
+  private List<Round> buildAutomaticRounds(Tournament tournament, List<PlayerPair> playerPairs) {
+    // Create temporary tournament to use DrawStrategy
+    Tournament tempTournament = new Tournament();
+    tempTournament.setConfig(tournament.getConfig());
+    setupEmptyTournament(tempTournament);
+
+    // Use SEEDED strategy to populate initial rounds
+    DrawStrategy drawStrategy = DrawStrategyFactory.createStrategy(DrawMode.SEEDED);
+    drawStrategy.placePlayers(tempTournament, playerPairs);
+
+    // Extract only the initial rounds that were populated using utility
+    return tempTournament.getRounds().stream()
+                         .filter(round -> TournamentStageUtil.isInitialRoundInTournament(round, tempTournament.getRounds()))
+                         .collect(Collectors.toList());
   }
 
   /**
