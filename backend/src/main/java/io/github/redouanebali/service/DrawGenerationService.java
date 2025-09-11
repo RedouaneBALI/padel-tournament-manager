@@ -58,17 +58,15 @@ public class DrawGenerationService {
   public Tournament generateDrawManual(Tournament tournament, List<RoundRequest> initialRounds) {
     assertCanInitialize(tournament);
 
-    if (initialRounds != null && !initialRounds.isEmpty()) {
-      // Cas 1: Tirage manuel avec rounds spécifiques - utilise la nouvelle API propre
-      List<Round> convertedRounds = initialRounds.stream()
-                                                 .map(req -> RoundRequest.toModel(req, tournament))
-                                                 .toList();
-      tournamentBuilder.setupTournamentWithInitialRounds(tournament, convertedRounds);
-    } else {
-      // Cas 2: Tirage "manuel" simple (utilise la stratégie automatique par défaut)
-      List<PlayerPair> players = capPairsToMax(tournament);
-      tournamentBuilder.setupAndPopulateTournament(tournament, players);
+    if (initialRounds == null || initialRounds.isEmpty()) {
+      throw new IllegalArgumentException(
+          "Manual draw generation requires initial rounds to be provided. Use generateDrawAuto() for automatic generation instead.");
     }
+
+    List<Round> convertedRounds = initialRounds.stream()
+                                               .map(req -> RoundRequest.toModel(req, tournament))
+                                               .toList();
+    tournamentBuilder.setupTournamentWithInitialRounds(tournament, convertedRounds);
 
     log.info("Generated draw (manual) for tournament id {}", tournament.getId());
     return tournamentRepository.save(tournament);

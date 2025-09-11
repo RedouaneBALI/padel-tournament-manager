@@ -29,7 +29,6 @@ public interface TournamentMapper {
 
   @Mapping(target = "rounds", source = "rounds")
   @Mapping(target = "playerPairs", source = "playerPairs")
-  @Mapping(target = "editable", expression = "java(isEditable(tournament))")
   TournamentDTO toDTO(Tournament tournament);
 
   List<TournamentDTO> toDTO(List<Tournament> tournaments);
@@ -99,7 +98,7 @@ public interface TournamentMapper {
 
   List<PoolRankingDTO> toDTOPoolRankingList(List<PoolRanking> poolRankings);
 
-
+  @Mapping(target = "pairId", source = "playerPair.id")
   PoolRankingDetailsDTO toDTO(io.github.redouanebali.model.PoolRankingDetails details);
 
   List<PoolRankingDetailsDTO> toDTOPoolRankingDetailsList(List<io.github.redouanebali.model.PoolRankingDetails> details);
@@ -143,8 +142,9 @@ public interface TournamentMapper {
    */
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "ownerId", ignore = true)
-  @Mapping(target = "editable", ignore = true)
   @Mapping(target = "rounds", ignore = true)
   @Mapping(target = "playerPairs", ignore = true)
+  @Mapping(target = "createdAt", ignore = true)
+  @Mapping(target = "updatedAt", ignore = true)
   Tournament toEntity(CreateTournamentRequest request);
 }

@@ -6,8 +6,6 @@ import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.model.format.TournamentConfig;
-import io.github.redouanebali.model.format.TournamentFormat;
 import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
@@ -43,11 +41,20 @@ public class TournamentService {
   }
 
   /**
+   * Checks if the current user can edit the given tournament.
+   */
+  private boolean canEditTournament(Tournament tournament) {
+    String      me          = SecurityUtil.currentUserId();
+    Set<String> superAdmins = securityProps.getSuperAdmins();
+    return superAdmins.contains(me) || me.equals(tournament.getOwnerId());
+  }
+
+  /**
    * Creates a new tournament and validates its configuration. If format and config are provided, validates the tournament structure. Sets the current
    * user as the tournament owner.
    *
    * @param tournament the tournament to create
-   * @return the created tournament with editable flag set
+   * @return the created tournament
    * @throws IllegalArgumentException if tournament is null or configuration is invalid
    */
   @Transactional
@@ -62,7 +69,8 @@ public class TournamentService {
 
     Tournament savedTournament = tournamentRepository.save(tournament);
     log.info("Created tournament with id {}", savedTournament.getId());
-    return applyEditable(savedTournament);
+
+    return savedTournament;
   }
 
   /**
@@ -74,34 +82,27 @@ public class TournamentService {
    */
   @Transactional
   public void deleteTournament(Long tournamentId) {
-    Tournament  existing    = getTournamentById(tournamentId);
-    String      me          = SecurityUtil.currentUserId();
-    Set<String> superAdmins = securityProps.getSuperAdmins();
-    if (!superAdmins.contains(me) && !me.equals(existing.getOwnerId())) {
+    Tournament existing = getTournamentById(tournamentId);
+
+    if (!canEditTournament(existing)) {
       throw new AccessDeniedException("You are not allowed to delete this tournament");
     }
+
     tournamentRepository.delete(existing);
     log.info("Deleted tournament with id {}", tournamentId);
   }
 
   /**
-   * Updates an existing tournament with new information. Only the owner or super admins can update tournaments. Rebuilds tournament structure if
-   * format and config are provided.
-   *
-   * @param tournamentId the ID of the tournament to update
-   * @param updatedTournament the new tournament data
-   * @return the updated tournament with editable flag set
-   * @throws IllegalArgumentException if tournament is not found
-   * @throws AccessDeniedException if user lacks update rights
+   * Updates an existing tournament with new information. Only the owner or super admins can update tournaments.
    */
   @Transactional
   public Tournament updateTournament(Long tournamentId, UpdateTournamentRequest updatedTournament) {
-    Tournament  existing    = getTournamentById(tournamentId);
-    String      me          = SecurityUtil.currentUserId();
-    Set<String> superAdmins = securityProps.getSuperAdmins();
-    if (!superAdmins.contains(me) && !me.equals(existing.getOwnerId())) {
+    Tournament existing = getTournamentById(tournamentId);
+
+    if (!canEditTournament(existing)) {
       throw new AccessDeniedException("You are not allowed to edit this tournament");
     }
+
     existing.setName(updatedTournament.getName());
     existing.setStartDate(updatedTournament.getStartDate());
     existing.setEndDate(updatedTournament.getEndDate());
@@ -111,55 +112,35 @@ public class TournamentService {
     existing.setGender(updatedTournament.getGender());
     existing.setLevel(updatedTournament.getLevel());
     existing.setConfig(updatedTournament.getConfig());
-    // Rebuild initial rounds if we have enough info (format + config) and a meaningful draw size
-    if (existing.getConfig() != null && existing.getConfig().getFormat() != null) {
-      // Validate and (re)build the structure for the new/updated format configuration
-      TournamentFormat format = existing.getConfig().getFormat();
-      TournamentConfig config = existing.getConfig();
-      // roundBuilder.validateAndBuild(existing);
-    }
 
-    return applyEditable(tournamentRepository.save(existing));
+    return tournamentRepository.save(existing);
   }
 
   /**
-   * Generates an automatic draw using seeding algorithm. Places teams based on their seeds and fills remaining positions randomly. Only the owner or
-   * super admins can generate draws.
-   *
-   * @param tournamentId the tournament ID
-   * @return the tournament with generated draw and editable flag set
-   * @throws IllegalArgumentException if tournament is not found
-   * @throws AccessDeniedException if user lacks generation rights
+   * Generates an automatic draw using seeding algorithm. Only the owner or super admins can generate draws.
    */
   public Tournament generateDrawAuto(Long tournamentId) {
-    Tournament  tournament  = getTournamentById(tournamentId);
-    String      me          = SecurityUtil.currentUserId();
-    Set<String> superAdmins = securityProps.getSuperAdmins();
-    if (!superAdmins.contains(me) && !me.equals(tournament.getOwnerId())) {
+    Tournament tournament = getTournamentById(tournamentId);
+
+    if (!canEditTournament(tournament)) {
       throw new AccessDeniedException("You are not allowed to generate the draw for this tournament");
     }
-    return applyEditable(drawGenerationService.generateDrawAuto(tournament));
+
+    return drawGenerationService.generateDrawAuto(tournament);
   }
 
   /**
-   * Generates a manual draw using user-provided initial rounds configuration. Replaces existing rounds with the provided structure. Only the owner or
-   * super admins can generate draws.
-   *
-   * @param tournamentId the tournament ID
-   * @param initialRounds optional list of initial rounds provided by user
-   * @return the tournament with generated draw and editable flag set
-   * @throws IllegalArgumentException if tournament is not found
-   * @throws AccessDeniedException if user lacks generation rights
+   * Generates a manual draw using user-provided initial rounds configuration. Only the owner or super admins can generate draws.
    */
   @Transactional
   public Tournament generateDrawManual(Long tournamentId, List<RoundRequest> initialRounds) {
-    Tournament  tournament  = getTournamentById(tournamentId);
-    String      me          = SecurityUtil.currentUserId();
-    Set<String> superAdmins = securityProps.getSuperAdmins();
-    if (!superAdmins.contains(me) && !me.equals(tournament.getOwnerId())) {
+    Tournament tournament = getTournamentById(tournamentId);
+
+    if (!canEditTournament(tournament)) {
       throw new AccessDeniedException("You are not allowed to generate the draw for this tournament");
     }
-    return applyEditable(drawGenerationService.generateDrawManual(tournament, initialRounds));
+
+    return drawGenerationService.generateDrawManual(tournament, initialRounds);
   }
 
   /**
@@ -182,27 +163,14 @@ public class TournamentService {
   }
 
   /**
-   * Retrieves a tournament for the current user with editable flag properly set.
+   * Retrieves a tournament for the current user. The editable flag is calculated dynamically by the TournamentMapper.
    *
    * @param id the tournament ID
-   * @return the tournament with editable flag indicating if current user can modify it
+   * @return the tournament
    * @throws IllegalArgumentException if tournament is not found
    */
   public Tournament getTournamentForCurrentUser(Long id) {
-    return applyEditable(getTournamentById(id));
-  }
-
-  /**
-   * Sets the editable flag based on current user's ownership rights. Tournament is editable if user is owner or super admin.
-   *
-   * @param t the tournament to process
-   * @return the tournament with updated editable flag
-   */
-  private Tournament applyEditable(Tournament t) {
-    String      me          = SecurityUtil.currentUserId();
-    Set<String> superAdmins = securityProps.getSuperAdmins();
-    t.setEditable(superAdmins.contains(me) || me.equals(t.getOwnerId()));
-    return t;
+    return getTournamentById(id);
   }
 
   /**

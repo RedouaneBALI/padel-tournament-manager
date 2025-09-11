@@ -1,9 +1,11 @@
 package io.github.redouanebali.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.github.redouanebali.model.converter.TournamentConfigConverter;
 import io.github.redouanebali.model.format.TournamentConfig;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -16,7 +18,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderColumn;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
@@ -29,8 +30,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
@@ -83,11 +82,10 @@ public class Tournament {
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
   private LocalDate        endDate;
-  @JdbcTypeCode(SqlTypes.JSON)
-  @Column(columnDefinition = "JSONB")
+  // Stockage simple pour H2, JSON pour PostgreSQL
+  @Column(length = 10000)
+  @Convert(converter = TournamentConfigConverter.class)
   private TournamentConfig config;
-  @Transient
-  private boolean          editable;
 
   @PreUpdate
   public void onUpdate() {
@@ -104,8 +102,7 @@ public class Tournament {
     return this.getRounds().stream()
                .filter(round -> round.getStage() == stage)
                .findFirst()
-               .orElseThrow(() -> new IllegalStateException("No round fourt for " + stage));
+               .orElseThrow(() -> new IllegalStateException("No round found for " + stage));
   }
 
 }
-

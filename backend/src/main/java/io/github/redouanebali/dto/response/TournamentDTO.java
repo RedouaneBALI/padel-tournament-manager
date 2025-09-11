@@ -4,7 +4,6 @@ import io.github.redouanebali.model.Gender;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.TournamentLevel;
 import io.github.redouanebali.model.format.TournamentConfig;
-import io.github.redouanebali.model.format.TournamentFormat;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.Getter;
@@ -24,11 +23,9 @@ public class TournamentDTO {
   private String              club;
   private Gender              gender;
   private TournamentLevel     level;
-  private TournamentFormat    format;
   private TournamentConfig    config;
   private LocalDate           startDate;
   private LocalDate           endDate;
-  private boolean             editable;
 
   public Stage getCurrentRoundStage() {
     if (rounds == null || rounds.isEmpty()) {

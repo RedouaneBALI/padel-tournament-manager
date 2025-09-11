@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-@JsonDeserialize(builder = TournamentConfig.TournamentFormatConfigBuilder.class)
+@JsonDeserialize(builder = TournamentConfig.TournamentConfigBuilder.class)
 public class TournamentConfig {
 
   // The tournament format type (knockout, groups+knockout, qualifying+knockout)
@@ -62,9 +62,8 @@ public class TournamentConfig {
   }
 
   @JsonPOJOBuilder(withPrefix = "")
-  public static class TournamentFormatConfigBuilder {
-
+  public static class TournamentConfigBuilder {
+    // Jackson trouvera automatiquement la méthode build() générée par Lombok
   }
-
 
 }

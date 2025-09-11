@@ -2,6 +2,7 @@ package io.github.redouanebali.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -99,5 +100,58 @@ public class GameServiceTest {
       // null -> no winner decided
       assertNull(response.getWinner());
     }
+  }
+
+  @org.junit.jupiter.api.Test
+  void testUpdateGame_updatesScoreAndCourt() {
+    Long             tournamentId = 2L;
+    Long             gameId       = 20L;
+    MatchFormat      format       = new MatchFormat();
+    List<PlayerPair> pairs        = TestFixtures.createPairs(2);
+    PlayerPair       teamA        = pairs.get(0);
+    PlayerPair       teamB        = pairs.get(1);
+    Game             game         = new Game(format);
+    game.setId(gameId);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+    Round round = new Round();
+    round.addGames(List.of(game));
+    Tournament tournament = new Tournament();
+    tournament.setId(tournamentId);
+    tournament.getRounds().add(round);
+    tournament.setConfig(TournamentConfig.builder().mainDrawSize(4).nbSeeds(0).format(TournamentFormat.KNOCKOUT).build());
+    when(tournamentService.getTournamentById(tournamentId)).thenReturn(tournament);
+    io.github.redouanebali.dto.request.UpdateGameRequest req = new io.github.redouanebali.dto.request.UpdateGameRequest();
+    req.setCourt("Court 1");
+    Score score = new Score();
+    score.setSets(List.of(new SetScore(6, 3), new SetScore(6, 4)));
+    req.setScore(score);
+    UpdateScoreDTO result = gameService.updateGame(tournamentId, gameId, req);
+    assertEquals("Court 1", game.getCourt());
+    assertEquals(6, game.getScore().getSets().get(0).getTeamAScore());
+    // On ne teste plus result.finished(), car la classe UpdateScoreDTO n'a pas ce champ
+    // assertEquals(true, result.finished());
+    assertEquals(TeamSide.TEAM_A, result.getWinner());
+  }
+
+  @org.junit.jupiter.api.Test
+  void testUpdateGameScore_throwsIfGameNotFound() {
+    Long       tournamentId = 3L;
+    Long       gameId       = 999L;
+    Tournament tournament   = new Tournament();
+    tournament.setId(tournamentId);
+    tournament.getRounds().clear();
+    when(tournamentService.getTournamentById(tournamentId)).thenReturn(tournament);
+    Score score = new Score();
+    assertThrows(IllegalArgumentException.class, () -> gameService.updateGameScore(tournamentId, gameId, score));
+  }
+
+  @org.junit.jupiter.api.Test
+  void testUpdateGame_throwsIfTournamentNotFound() {
+    Long tournamentId = 4L;
+    Long gameId       = 888L;
+    when(tournamentService.getTournamentById(tournamentId)).thenThrow(new IllegalArgumentException("Tournament not found"));
+    io.github.redouanebali.dto.request.UpdateGameRequest req = new io.github.redouanebali.dto.request.UpdateGameRequest();
+    assertThrows(IllegalArgumentException.class, () -> gameService.updateGame(tournamentId, gameId, req));
   }
 }

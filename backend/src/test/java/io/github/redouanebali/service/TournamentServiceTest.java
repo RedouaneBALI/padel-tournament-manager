@@ -2,7 +2,6 @@ package io.github.redouanebali.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
@@ -23,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -91,23 +89,6 @@ public class TournamentServiceTest {
   void testGetTournamentById_shouldThrowWhenNotFound() {
     when(tournamentRepository.findById(99L)).thenReturn(Optional.empty());
     assertThrows(IllegalArgumentException.class, () -> tournamentService.getTournamentById(99L));
-  }
-
-  @Test
-  @Disabled
-    // no initialization before generation
-  void testCreateTournament_initializesStructure_whenConfigProvided() {
-    Tournament t = new Tournament();
-    t.getConfig().setFormat(TournamentFormat.KNOCKOUT);
-    t.setConfig(TournamentConfig.builder().mainDrawSize(4).nbSeeds(0).build());
-
-    Tournament saved = tournamentService.createTournament(t);
-
-    // rounds: SEMIS + FINAL
-    long semis  = saved.getRounds().stream().filter(r -> r.getStage() == Stage.SEMIS).count();
-    long finals = saved.getRounds().stream().filter(r -> r.getStage() == Stage.FINAL).count();
-    assertEquals(1, semis);
-    assertEquals(1, finals);
   }
 
   @Test
@@ -205,17 +186,6 @@ public class TournamentServiceTest {
 
     assertThrows(IllegalArgumentException.class,
                  () -> tournamentService.getGamesByTournamentAndStage(2L, Stage.QUARTERS));
-  }
-
-  @Test
-  void testGetTournamentForCurrentUser_setsEditableTrueForOwner() {
-    Tournament t = new Tournament();
-    t.setId(3L);
-    t.setOwnerId("bali.redouane@gmail.com");
-    when(tournamentRepository.findById(3L)).thenReturn(Optional.of(t));
-
-    Tournament res = tournamentService.getTournamentForCurrentUser(3L);
-    assertTrue(res.isEditable());
   }
 
   @Test
