@@ -30,7 +30,7 @@ public class StaggeredSeedPlacementUtilTest {
   })
   void testFirstRound_AllSeedSlotsAreQualifier(int drawSize, int totalSeeds) {
     Round            round = TestFixtures.buildEmptyRound(drawSize);
-    List<PlayerPair> pairs = TestFixtures.createPairs(drawSize);
+    List<PlayerPair> pairs = TestFixtures.createPlayerPairs(drawSize);
     Stage            stage = Stage.fromNbTeams(drawSize);
 
     StaggeredSeedPlacementUtil.placeSeedTeamsStaggered(round, pairs, stage, drawSize, totalSeeds, true);
@@ -56,7 +56,7 @@ public class StaggeredSeedPlacementUtilTest {
   })
   void testSecondRound_SeedsArePlaced(int drawSize, int totalSeeds) {
     Round            round = TestFixtures.buildEmptyRound(drawSize / 2);
-    List<PlayerPair> pairs = TestFixtures.createPairs(drawSize);
+    List<PlayerPair> pairs = TestFixtures.createPlayerPairs(drawSize);
     Stage            stage = Stage.fromNbTeams(drawSize / 2);
 
     // Simule le fait que la moitié des seeds sont déjà entrés
@@ -82,7 +82,7 @@ public class StaggeredSeedPlacementUtilTest {
   void testNoSeeds_NoPlacementOrQualifier() {
     int              drawSize = 16;
     Round            round    = TestFixtures.buildEmptyRound(drawSize);
-    List<PlayerPair> pairs    = TestFixtures.createPairs(drawSize);
+    List<PlayerPair> pairs    = TestFixtures.createPlayerPairs(drawSize);
     Stage            stage    = Stage.fromNbTeams(drawSize);
 
     StaggeredSeedPlacementUtil.placeSeedTeamsStaggered(round, pairs, stage, drawSize, 0, true);
@@ -97,7 +97,7 @@ public class StaggeredSeedPlacementUtilTest {
     int              drawSize   = 32;
     int              totalSeeds = 8;
     Round            round      = TestFixtures.buildEmptyRound(drawSize / 2);
-    List<PlayerPair> pairs      = TestFixtures.createPairs(drawSize);
+    List<PlayerPair> pairs      = TestFixtures.createPlayerPairs(drawSize);
     Stage            stage      = Stage.fromNbTeams(drawSize / 2);
 
     // Place seeds as if they already entered in previous round
@@ -137,4 +137,3 @@ public class StaggeredSeedPlacementUtilTest {
     // Should not throw
   }
 }
-

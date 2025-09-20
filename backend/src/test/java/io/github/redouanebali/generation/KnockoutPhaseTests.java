@@ -157,7 +157,7 @@ public class KnockoutPhaseTests {
       t.getRounds().clear();
       t.getRounds().add(currentRound);
 
-      List<PlayerPair> allPairs = TestFixtures.createPairs(pairsNonBye);
+      List<PlayerPair> allPairs = TestFixtures.createPlayerPairs(pairsNonBye);
 
       // Handle staggered entry
       if (staggeredEntry && !currentStageEnum.isQualification()) {
@@ -300,7 +300,7 @@ public class KnockoutPhaseTests {
       t.getRounds().add(prevRound);
       t.getRounds().add(currentRound);
 
-      List<PlayerPair> prevPairs = TestFixtures.createPairs(prevRound.getGames().size() * 2);
+      List<PlayerPair> prevPairs = TestFixtures.createPlayerPairs(prevRound.getGames().size() * 2);
       int              idx       = 0;
       for (Game g : prevRound.getGames()) {
         if (idx + 1 < prevPairs.size()) {
@@ -325,7 +325,7 @@ public class KnockoutPhaseTests {
 
       // Create teams according to CSV data - need enough teams for all matches + default qualifs
       int              totalTeamsNeeded     = (matches * 2) + defaultQualif;
-      List<PlayerPair> teamsForCurrentRound = TestFixtures.createPairs(totalTeamsNeeded);
+      List<PlayerPair> teamsForCurrentRound = TestFixtures.createPlayerPairs(totalTeamsNeeded);
       int              teamIndex            = 0;
 
       // Place real matches (team vs team) - exactly 'matches' games

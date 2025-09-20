@@ -63,7 +63,7 @@ public class GameServiceTest {
 
     // Real domain objects
     MatchFormat      format = new MatchFormat();
-    List<PlayerPair> pairs  = TestFixtures.createPairs(2);
+    List<PlayerPair> pairs  = TestFixtures.createPlayerPairs(2);
     PlayerPair       teamA  = pairs.get(0);
     PlayerPair       teamB  = pairs.get(1);
 
@@ -107,7 +107,7 @@ public class GameServiceTest {
     Long             tournamentId = 2L;
     Long             gameId       = 20L;
     MatchFormat      format       = new MatchFormat();
-    List<PlayerPair> pairs        = TestFixtures.createPairs(2);
+    List<PlayerPair> pairs        = TestFixtures.createPlayerPairs(2);
     PlayerPair       teamA        = pairs.get(0);
     PlayerPair       teamB        = pairs.get(1);
     Game             game         = new Game(format);

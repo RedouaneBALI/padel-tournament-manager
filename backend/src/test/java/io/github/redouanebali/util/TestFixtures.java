@@ -13,6 +13,8 @@ import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.SetScore;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.format.TournamentConfig;
+import io.github.redouanebali.model.format.TournamentFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -28,23 +30,13 @@ public final class TestFixtures {
   private TestFixtures() {
   }
 
+  /**
+   * Builds a PlayerPair with a given seed.
+   */
   public static PlayerPair buildPairWithSeed(int seed) {
     Player player1 = new Player((long) seed, "Player" + seed + "A", seed, 0, 1990);
     Player player2 = new Player((long) seed + 100, "Player" + seed + "B", seed, 0, 1990);
     return new PlayerPair(player1, player2, seed);
-  }
-
-  /**
-   * Create a deterministic list of PlayerPair with seeds 1..count and ids 1..count.
-   */
-  public static List<PlayerPair> createPairs(int count) {
-    List<PlayerPair> pairs = new ArrayList<>();
-    for (int seed = 1; seed <= count; seed++) {
-      PlayerPair pair = buildPairWithSeed(seed);
-      pair.setId((long) seed); // id incrémental
-      pairs.add(pair);
-    }
-    return pairs;
   }
 
   /**
@@ -62,7 +54,7 @@ public final class TestFixtures {
   }
 
   /**
-   * Create a single PlayerPair where the seed encodes pool & rank for deterministic ordering.
+   * Creates a single PlayerPair where the seed encodes pool & rank for deterministic ordering.
    */
   public static PlayerPair makePairFromPoolRank(int poolIndex, int rankInPool) {
     int seed = (poolIndex + 1) * 100 + rankInPool;
@@ -70,7 +62,7 @@ public final class TestFixtures {
   }
 
   /**
-   * Create a score where the given winner wins straight sets according to the game's MatchFormat. If format is null, defaults to 1 set to 6–0.
+   * Creates a score where the given winner wins straight sets according to the game's MatchFormat. If format is null, defaults to 1 set to 6–0.
    */
   public static Score createScoreWithWinner(Game game, PlayerPair winner) {
     int setsToWin        = 1;
@@ -96,10 +88,16 @@ public final class TestFixtures {
     return score;
   }
 
+  /**
+   * Checks if a game contains both given pairs.
+   */
   public static boolean gameContainsBoth(Game g, PlayerPair p, PlayerPair q) {
     return (g.getTeamA() == p && g.getTeamB() == q) || (g.getTeamA() == q && g.getTeamB() == p);
   }
 
+  /**
+   * Creates a simple match format with a given number of sets to win.
+   */
   public static MatchFormat createSimpleFormat(int nbSetToWin) {
     MatchFormat format = new MatchFormat();
     format.setNumberOfSetsToWin(nbSetToWin);
@@ -108,31 +106,49 @@ public final class TestFixtures {
     return format;
   }
 
+  /**
+   * Calculates the number of round robin games per pool.
+   */
   public static int roundRobinGamesPerPool(int pairsPerPool) {
     return pairsPerPool * (pairsPerPool - 1) / 2;
   }
 
+  /**
+   * Calculates the total number of group games.
+   */
   public static int totalGroupGames(int nbPools, int pairsPerPool) {
     return nbPools * roundRobinGamesPerPool(pairsPerPool);
   }
 
+  /**
+   * Sorts pools by name.
+   */
   public static List<Pool> sortedPoolsByName(List<Pool> pools) {
     List<Pool> list = new ArrayList<>(pools);
     list.sort(java.util.Comparator.comparing(p -> p.getName() == null ? "" : p.getName()));
     return list;
   }
 
+  /**
+   * Sorts pairs by seed.
+   */
   public static List<PlayerPair> sortedPairsBySeed(List<PlayerPair> pairs) {
     List<PlayerPair> list = new ArrayList<>(pairs);
     list.sort(java.util.Comparator.comparingInt(PlayerPair::getSeed));
     return list;
   }
 
+  /**
+   * Finds a round by stage in a tournament.
+   */
   public static Round findRound(Tournament t, Stage stage) {
     return t.getRounds().stream().filter(r -> r.getStage() == stage).findFirst()
             .orElseThrow(() -> new IllegalArgumentException("Round not found for stage: " + stage));
   }
 
+  /**
+   * Applies generated groups to the tournament.
+   */
   public static void applyGeneratedGroups(Tournament t, Round generatedGroups) {
     Round groups = findRound(t, Stage.GROUPS);
     groups.getPools().clear();
@@ -143,6 +159,9 @@ public final class TestFixtures {
     }
   }
 
+  /**
+   * Simulates pool winners for a round and pool.
+   */
   public static void simulatePoolWinners(Round groups,
                                          Pool pool,
                                          PlayerPair top1,
@@ -170,6 +189,9 @@ public final class TestFixtures {
     }
   }
 
+  /**
+   * Returns all teams in a round.
+   */
   public static Set<PlayerPair> teamsInRound(Round r) {
     Set<PlayerPair> teams = new HashSet<>();
     for (Game g : r.getGames()) {
@@ -183,6 +205,9 @@ public final class TestFixtures {
     return teams;
   }
 
+  /**
+   * Parses a CSV string of stages into a list of Stage enums.
+   */
   public static List<Stage> parseStages(String stagesCsv) {
     return Arrays.stream(stagesCsv.split(";"))
                  .map(String::trim)
@@ -190,6 +215,9 @@ public final class TestFixtures {
                  .collect(Collectors.toList());
   }
 
+  /**
+   * Parses a CSV string of integers into a list of Integer.
+   */
   public static List<Integer> parseInts(String csv) {
     return Arrays.stream(csv.split(";"))
                  .map(String::trim)
@@ -198,11 +226,11 @@ public final class TestFixtures {
   }
 
   /**
-   * Helper pour créer une liste de RoundRequest en mode manuel (1v2, 3v4, ...).
+   * Helper to create a list of RoundRequest in manual mode (1v2, 3v4, ...).
    *
-   * @param stage le stage du round (ex: SEMIS, FINALE, etc.)
-   * @param pairs la liste des équipes à placer
-   * @return liste contenant un seul RoundRequest rempli
+   * @param stage the round stage (e.g. SEMIS, FINAL, etc.)
+   * @param pairs the list of teams to place
+   * @return list containing a single filled RoundRequest
    */
   public static List<RoundRequest> createManualRoundRequestsFromPairs(Stage stage, List<PlayerPair> pairs) {
     RoundRequest roundRequest = new RoundRequest();
@@ -220,5 +248,51 @@ public final class TestFixtures {
     List<RoundRequest> result = new ArrayList<>();
     result.add(roundRequest);
     return result;
+  }
+
+  /**
+   * Creates a tournament with the given configuration.
+   */
+  public static Tournament makeTournament(int preQualDrawSize,
+                                          int nbQualifiers,
+                                          int mainDrawSize,
+                                          int nbSeeds,
+                                          int nbSeedsQualify,
+                                          io.github.redouanebali.model.format.DrawMode drawMode) {
+    Tournament tournament = new Tournament();
+    TournamentConfig cfg = TournamentConfig.builder()
+                                           .preQualDrawSize(preQualDrawSize)
+                                           .nbQualifiers(nbQualifiers)
+                                           .mainDrawSize(mainDrawSize)
+                                           .nbSeeds(nbSeeds)
+                                           .nbSeedsQualify(nbSeedsQualify)
+                                           .drawMode(drawMode)
+                                           .build();
+    tournament.setConfig(cfg);
+    TournamentFormat format;
+    if (preQualDrawSize > 0 && nbQualifiers > 0) {
+      format = TournamentFormat.QUALIF_KO;
+    } else {
+      format = TournamentFormat.KNOCKOUT;
+    }
+    tournament.getConfig().setFormat(format);
+    return tournament;
+  }
+
+  /**
+   * Creates a list of PlayerPair for tests, with seeds from 1 to count.
+   *
+   * @param count total number of pairs to create
+   */
+  public static List<PlayerPair> createPlayerPairs(int count) {
+    List<PlayerPair> pairs = new ArrayList<>();
+    for (int i = 1; i <= count; i++) {
+      Player     player1 = new Player((long) i, "Player" + i + "A", i, 0, 1990);
+      Player     player2 = new Player((long) i + 100, "Player" + i + "B", i, 0, 1990);
+      PlayerPair pair    = new PlayerPair(player1, player2, i);
+      pair.setId((long) i); // incremental id
+      pairs.add(pair);
+    }
+    return pairs;
   }
 }

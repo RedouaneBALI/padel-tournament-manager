@@ -1,5 +1,7 @@
 package io.github.redouanebali.model.format;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
@@ -46,6 +48,7 @@ public class TournamentConfig {
   @Builder.Default
   private Integer          nbSeedsQualify    = 0;
 
+  @JsonIgnore
   public int getNbMaxPairs() {
     switch (format) {
       case KNOCKOUT -> {
@@ -62,8 +65,9 @@ public class TournamentConfig {
   }
 
   @JsonPOJOBuilder(withPrefix = "")
+  @JsonIgnoreProperties(ignoreUnknown = true)
   public static class TournamentConfigBuilder {
-    // Jackson trouvera automatiquement la méthode build() générée par Lombok
+
   }
 
 }

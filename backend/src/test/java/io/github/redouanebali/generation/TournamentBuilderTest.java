@@ -11,14 +11,12 @@ import io.github.redouanebali.generation.strategy.DrawStrategy;
 import io.github.redouanebali.generation.strategy.DrawStrategyFactory;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PairType;
-import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.DrawMode;
 import io.github.redouanebali.model.format.TournamentConfig;
-import io.github.redouanebali.model.format.TournamentFormat;
 import io.github.redouanebali.util.TestFixtures;
 import java.io.InputStream;
 import java.net.URL;
@@ -43,36 +41,6 @@ public class TournamentBuilderTest {
 
   // --- Small header index helpers shared by provider and test ---
   private static Map<String, Integer> HEADER_INDEX;
-
-  private static Tournament makeTournament(
-      int preQualDrawSize,
-      int nbQualifiers,
-      int mainDrawSize,
-      int nbSeeds,
-      int nbSeedsQualify,
-      DrawMode drawMode) {
-    Tournament tournament = new Tournament();
-    TournamentConfig cfg = TournamentConfig.builder()
-                                           .preQualDrawSize(preQualDrawSize)
-                                           .nbQualifiers(nbQualifiers)
-                                           .mainDrawSize(mainDrawSize)
-                                           .nbSeeds(nbSeeds)
-                                           .nbSeedsQualify(nbSeedsQualify)
-                                           .drawMode(drawMode)
-                                           .build();
-    tournament.setConfig(cfg);
-
-    // Set the appropriate tournament format based on the configuration
-    TournamentFormat format;
-    if (preQualDrawSize > 0 && nbQualifiers > 0) {
-      format = TournamentFormat.QUALIF_KO;
-    } else {
-      format = TournamentFormat.KNOCKOUT;
-    }
-    tournament.getConfig().setFormat(format);
-
-    return tournament;
-  }
 
   // --- Provider that groups CSV rows by TournamentId ---
   static Stream<Arguments> tournamentsFromCsv() throws Exception {
@@ -138,25 +106,20 @@ public class TournamentBuilderTest {
                                                               DrawMode drawMode,
                                                               String expectedStagesCsv,
                                                               String expectedMatchesCsv) {
-    Tournament tournament = makeTournament(0, 0, mainDraw, nbSeedsMain, 0, drawMode);
-
-    TournamentBuilder builder = new TournamentBuilder();
-    // Use public API: create empty tournament by providing empty player list
-    builder.setupAndPopulateTournament(tournament, new ArrayList<>());
-    List<Stage>   expectedStages  = parseStages(expectedStagesCsv);
-    List<Integer> expectedMatches = parseInts(expectedMatchesCsv);
-
+    Tournament        tournament = TestFixtures.makeTournament(0, 0, mainDraw, nbSeedsMain, 0, drawMode);
+    TournamentBuilder builder    = new TournamentBuilder();
+    // Utilisation de TestFixtures.createPairs pour générer les joueurs
+    builder.setupAndPopulateTournament(tournament, TestFixtures.createPlayerPairs(mainDraw));
+    List<Stage>   expectedStages  = TestFixtures.parseStages(expectedStagesCsv);
+    List<Integer> expectedMatches = TestFixtures.parseInts(expectedMatchesCsv);
     List<Stage> actualStages = tournament.getRounds().stream()
                                          .map(Round::getStage)
                                          .collect(Collectors.toList());
-
+    Assertions.assertEquals(expectedStages, actualStages);
     List<Integer> actualMatches = tournament.getRounds().stream()
-                                            .map(r -> r.getGames() == null ? 0 : r.getGames().size())
+                                            .map(r -> r.getGames().size())
                                             .collect(Collectors.toList());
-
-    assertEquals(expectedStages, actualStages, "Stages sequence must match");
-    assertEquals(expectedMatches, actualMatches, "Matches per stage must match");
-    assertEquals(expectedStages.size(), tournament.getRounds().size(), "Unexpected number of rounds created");
+    Assertions.assertEquals(expectedMatches, actualMatches);
   }
 
   @ParameterizedTest(name = "With qualifications: preQual={0} -> nbQualifiers={1}, mainDraw={2}")
@@ -174,7 +137,7 @@ public class TournamentBuilderTest {
                                                                     DrawMode drawMode,
                                                                     String expectedStagesCsv,
                                                                     String expectedMatchesCsv) {
-    Tournament tournament = makeTournament(preQual, nbQualifiers, mainDraw, nbSeedsMain, nbSeedsQual, drawMode);
+    Tournament tournament = TestFixtures.makeTournament(preQual, nbQualifiers, mainDraw, nbSeedsMain, nbSeedsQual, drawMode);
 
     TournamentBuilder builder = new TournamentBuilder();
     // Use public API: create empty tournament by providing empty player list
@@ -480,10 +443,10 @@ public class TournamentBuilderTest {
   @Test
   void testAutomaticDrawStrategy_mainDrawOnly_fillsOnlyFirstRound() {
     // Given: Tournament with main draw only (32 players, 8 seeds)
-    Tournament tournament = makeTournament(0, 0, 32, 8, 0, DrawMode.SEEDED);
+    Tournament tournament = TestFixtures.makeTournament(0, 0, 32, 8, 0, DrawMode.SEEDED);
 
     // Create 20 player pairs (less than draw size to test BYE placement)
-    List<PlayerPair> playerPairs = createTestPlayerPairs(20);
+    List<PlayerPair> playerPairs = TestFixtures.createPlayerPairs(20);
 
     // When: Use the new setupTournamentWithPlayers method (replaces 5 manual steps)
     TournamentBuilder builder = new TournamentBuilder();
@@ -537,10 +500,10 @@ public class TournamentBuilderTest {
     List<Integer> seedPositions = new ArrayList<>();
     for (int i = 0; i < r32Round.getGames().size(); i++) {
       Game g = r32Round.getGames().get(i);
-      if (g.getTeamA() != null && !g.getTeamA().isBye() && g.getTeamA().getSeed() > 0) {
+      if (g.getTeamA() != null && !g.getTeamA().isBye() && g.getTeamA().getSeed() > 0 && g.getTeamA().getSeed() <= 8) {
         seedPositions.add(i * 2); // Team A position
       }
-      if (g.getTeamB() != null && !g.getTeamB().isBye() && g.getTeamB().getSeed() > 0) {
+      if (g.getTeamB() != null && !g.getTeamB().isBye() && g.getTeamB().getSeed() > 0 && g.getTeamB().getSeed() <= 8) {
         seedPositions.add(i * 2 + 1); // Team B position
       }
     }
@@ -550,13 +513,13 @@ public class TournamentBuilderTest {
   @Test
   void testAutomaticDrawStrategy_withQualifications_fillsQ1AndR32() {
     // Given: Tournament with qualifications (16 -> 4 qualifiers) + main draw (32 players, 8 seeds)
-    Tournament        tournament = makeTournament(16, 4, 32, 8, 4, DrawMode.SEEDED);
+    Tournament        tournament = TestFixtures.makeTournament(16, 4, 32, 8, 4, DrawMode.SEEDED);
     TournamentBuilder builder    = new TournamentBuilder();
     // Use public API: create empty tournament structure by providing empty player list
     builder.setupAndPopulateTournament(tournament, new ArrayList<>());
 
     // Create 28 player pairs (16 for qualifs + 12 direct entry to main draw)
-    List<PlayerPair> playerPairs = createTestPlayerPairs(28);
+    List<PlayerPair> playerPairs = TestFixtures.createPlayerPairs(28);
 
     // When: Use the new strategy to fill initial rounds
     DrawStrategy drawStrategy = new AutomaticDrawStrategy();
@@ -604,12 +567,12 @@ public class TournamentBuilderTest {
     DrawStrategy manualStrategy    = DrawStrategyFactory.createStrategy(DrawMode.MANUAL);
 
     // Case 1: Null tournament
-    automaticStrategy.placePlayers(null, createTestPlayerPairs(10));
-    manualStrategy.placePlayers(null, createTestPlayerPairs(10));
+    automaticStrategy.placePlayers(null, TestFixtures.createPlayerPairs(10));
+    manualStrategy.placePlayers(null, TestFixtures.createPlayerPairs(10));
     // Should not throw exception
 
     // Case 2: Null player pairs
-    Tournament tournament = makeTournament(0, 0, 32, 8, 0, DrawMode.SEEDED);
+    Tournament tournament = TestFixtures.makeTournament(0, 0, 32, 8, 0, DrawMode.SEEDED);
     automaticStrategy.placePlayers(tournament, null);
     manualStrategy.placePlayers(tournament, null);
     // Should not throw exception
@@ -620,21 +583,21 @@ public class TournamentBuilderTest {
     // Should not throw exception
 
     // Case 4: Tournament with no rounds
-    Tournament emptyTournament = makeTournament(0, 0, 32, 8, 0, DrawMode.SEEDED);
-    automaticStrategy.placePlayers(emptyTournament, createTestPlayerPairs(10));
-    manualStrategy.placePlayers(emptyTournament, createTestPlayerPairs(10));
+    Tournament emptyTournament = TestFixtures.makeTournament(0, 0, 32, 8, 0, DrawMode.SEEDED);
+    automaticStrategy.placePlayers(emptyTournament, TestFixtures.createPlayerPairs(10));
+    manualStrategy.placePlayers(emptyTournament, TestFixtures.createPlayerPairs(10));
     // Should not throw exception
   }
 
   @Test
   void testDrawStrategy_onlyInitialRoundsAreFilled() {
     // Given: Tournament with qualifications and main draw
-    Tournament        tournament = makeTournament(32, 8, 64, 16, 8, DrawMode.SEEDED);
+    Tournament        tournament = TestFixtures.makeTournament(32, 8, 64, 16, 8, DrawMode.SEEDED);
     TournamentBuilder builder    = new TournamentBuilder();
     // Use public API: create empty tournament structure by providing empty player list
     builder.setupAndPopulateTournament(tournament, new ArrayList<>());
 
-    List<PlayerPair> playerPairs = createTestPlayerPairs(48);
+    List<PlayerPair> playerPairs = TestFixtures.createPlayerPairs(48);
 
     // When: Use strategy to fill initial rounds
     DrawStrategy drawStrategy = new AutomaticDrawStrategy();
@@ -661,25 +624,5 @@ public class TournamentBuilderTest {
                              .count();
       assertEquals(0, teamsCount, "Subsequent stage " + stage + " should be empty before propagation");
     }
-  }
-
-  // Helper method to create test player pairs
-  private List<PlayerPair> createTestPlayerPairs(int count) {
-    List<PlayerPair> pairs = new ArrayList<>();
-    for (int i = 1; i <= count; i++) {
-      Player player1 = new Player();
-      player1.setName("Player" + (i * 2 - 1));
-
-      Player player2 = new Player();
-      player2.setName("Player" + (i * 2));
-
-      PlayerPair pair = new PlayerPair();
-      pair.setPlayer1(player1);
-      pair.setPlayer2(player2);
-      pair.setSeed(i <= 8 ? i : 0); // First 8 pairs are seeded
-
-      pairs.add(pair);
-    }
-    return pairs;
   }
 }

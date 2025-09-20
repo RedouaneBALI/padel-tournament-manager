@@ -35,7 +35,7 @@ public class GroupPoolRankingServiceTest {
     SecurityContextHolder.getContext().setAuthentication(
         new UsernamePasswordAuthenticationToken("bali.redouane@gmail.com", null, List.of())
     );
-    defaultPairs = TestFixtures.createPairs(3); // three pairs: [0],[1],[2]
+    defaultPairs = TestFixtures.createPlayerPairs(3); // three pairs: [0],[1],[2]
   }
 
   private Game buildGame(String scoreStr, PlayerPair teamA, PlayerPair teamB) {

@@ -87,7 +87,7 @@ public class GroupPhaseTests {
     List<Round> rounds     = groupPhase.initialize(config);
     Round       groupRound = rounds.get(0);
 
-    List<PlayerPair> teams = TestFixtures.createPairs(totalTeams);
+    List<PlayerPair> teams = TestFixtures.createPlayerPairs(totalTeams);
 
     // When
     groupPhase.placeRemainingTeamsRandomly(groupRound, teams);
@@ -135,7 +135,7 @@ public class GroupPhaseTests {
     List<Round> rounds     = groupPhase.initialize(config);
     Round       groupRound = rounds.get(0);
 
-    List<PlayerPair> teams = TestFixtures.createPairs(totalTeams);
+    List<PlayerPair> teams = TestFixtures.createPlayerPairs(totalTeams);
     // Set seeds for first nbSeeds teams
     for (int i = 0; i < nbSeeds && i < teams.size(); i++) {
       teams.get(i).setSeed(i + 1);
@@ -202,7 +202,7 @@ public class GroupPhaseTests {
     List<Round> rounds     = groupPhase.initialize(config);
     Round       groupRound = rounds.get(0);
 
-    List<PlayerPair> teams = TestFixtures.createPairs(16);
+    List<PlayerPair> teams = TestFixtures.createPlayerPairs(16);
 
     // When
     groupPhase.placeRemainingTeamsRandomly(groupRound, teams);

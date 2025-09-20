@@ -73,7 +73,7 @@ class DrawGenerationServiceTest {
   void capPairsToMax_truncates_whenAboveLimit() {
     Tournament tournament = baseTournamentKO(32, 0);
     tournament.getPlayerPairs().clear();
-    tournament.getPlayerPairs().addAll(TestFixtures.createPairs(36));
+    tournament.getPlayerPairs().addAll(TestFixtures.createPlayerPairs(36));
     List<PlayerPair> result = DrawGenerationService.capPairsToMax(tournament);
     assertEquals(32, result.size());
     assertEquals(1, result.get(0).getSeed());
@@ -175,7 +175,7 @@ class DrawGenerationServiceTest {
     tournament.setId(1L);
     tournament.setOwnerId("bali.redouane@gmail.com");
     tournament.setConfig(TournamentConfig.builder().mainDrawSize(nbPairs).nbSeeds(nbSeeds).format(TournamentFormat.KNOCKOUT).build());
-    tournament.getPlayerPairs().addAll(TestFixtures.createPairs(4));
+    tournament.getPlayerPairs().addAll(TestFixtures.createPlayerPairs(4));
     return tournament;
   }
 }

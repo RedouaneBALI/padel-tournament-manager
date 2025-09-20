@@ -182,7 +182,7 @@ public class SeedPlacementUtilTest {
   void testPlaceSeedTeams_Mapping(int drawSize, int nbSeeds) {
     // Arrange
     Round            round = TestFixtures.buildEmptyRound(drawSize);
-    List<PlayerPair> pairs = TestFixtures.createPairs(drawSize);
+    List<PlayerPair> pairs = TestFixtures.createPlayerPairs(drawSize);
     pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
 
     // Act
@@ -256,7 +256,7 @@ public class SeedPlacementUtilTest {
   void testPlaceSeedTeams_DoesNothingWhenNoSeeds(int drawSize) {
     // Arrange
     Round            round = TestFixtures.buildEmptyRound(drawSize);
-    List<PlayerPair> pairs = TestFixtures.createPairs(drawSize);
+    List<PlayerPair> pairs = TestFixtures.createPlayerPairs(drawSize);
 
     // Act
     SeedPlacementUtil.placeSeedTeams(round, pairs, 0, drawSize);
@@ -272,7 +272,7 @@ public class SeedPlacementUtilTest {
   void testPlaceSeedTeams_ThrowsException_WhenSlotAlreadyOccupied() {
     // Arrange
     Round            round = TestFixtures.buildEmptyRound(8);
-    List<PlayerPair> pairs = TestFixtures.createPairs(8);
+    List<PlayerPair> pairs = TestFixtures.createPlayerPairs(8);
 
     // Manually place a team at seed position 0 (game 0, team A)
     round.getGames().get(0).setTeamA(pairs.get(7)); // Use a different pair
@@ -286,13 +286,13 @@ public class SeedPlacementUtilTest {
   @Test
   void testPlaceSeedTeams_HandlesNullInputs() {
     // Test null round
-    SeedPlacementUtil.placeSeedTeams(null, TestFixtures.createPairs(8), 4, 8);
+    SeedPlacementUtil.placeSeedTeams(null, TestFixtures.createPlayerPairs(8), 4, 8);
     // Should not throw
 
     // Test null games - should use nbSeeds=0 since no games can be placed
     Round round = new Round();
     round.replaceGames(null);
-    SeedPlacementUtil.placeSeedTeams(round, TestFixtures.createPairs(8), 0, 0);
+    SeedPlacementUtil.placeSeedTeams(round, TestFixtures.createPlayerPairs(8), 0, 0);
     // Should not throw
 
     // Test null players
@@ -302,7 +302,7 @@ public class SeedPlacementUtilTest {
 
     // Test nbSeeds = 0
     Round anotherValidRound = TestFixtures.buildEmptyRound(8);
-    SeedPlacementUtil.placeSeedTeams(anotherValidRound, TestFixtures.createPairs(8), 0, 8);
+    SeedPlacementUtil.placeSeedTeams(anotherValidRound, TestFixtures.createPlayerPairs(8), 0, 8);
     // Should not throw and should not place anything
     for (Game g : anotherValidRound.getGames()) {
       assertNull(g.getTeamA());
@@ -314,7 +314,7 @@ public class SeedPlacementUtilTest {
   void testPlaceSeedTeams_ThrowsException_ForNegativeParameters() {
     // Arrange
     Round            round = TestFixtures.buildEmptyRound(8);
-    List<PlayerPair> pairs = TestFixtures.createPairs(8);
+    List<PlayerPair> pairs = TestFixtures.createPlayerPairs(8);
 
     // Test negative nbSeeds
     assertThrows(IllegalArgumentException.class,
@@ -331,7 +331,7 @@ public class SeedPlacementUtilTest {
   void testPlaceSeedTeams_ThrowsException_WhenDrawSizeMismatch() {
     // Arrange
     Round            round = TestFixtures.buildEmptyRound(8); // 4 games = 8 slots
-    List<PlayerPair> pairs = TestFixtures.createPairs(8);
+    List<PlayerPair> pairs = TestFixtures.createPlayerPairs(8);
 
     // Act & Then
     assertThrows(IllegalStateException.class,
