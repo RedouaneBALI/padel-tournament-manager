@@ -484,10 +484,12 @@ public class RandomPlacementUtilTest {
   }
 
   // Helper method to create test player pairs
+  @Deprecated
   private List<PlayerPair> createTestPlayerPairs(int count) {
     return createTestPlayerPairs(count, 1);
   }
 
+  @Deprecated
   private List<PlayerPair> createTestPlayerPairs(int count, int startIndex) {
     List<PlayerPair> pairs = new ArrayList<>();
     for (int i = 0; i < count; i++) {

@@ -5,11 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.redouanebali.model.Game;
-import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.util.TestFixtures;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -30,7 +28,7 @@ public class ByePlacementUtilTest {
   void testPlaceByeTeams_AutoSeeds(int drawSize, int nbSeeds, int totalPairs) {
     // Arrange: build empty round and create seeded pairs
     Round            round = TestFixtures.buildEmptyRound(drawSize);
-    List<PlayerPair> pairs = createTestPlayerPairs(drawSize);
+    List<PlayerPair> pairs = TestFixtures.createPlayerPairs(drawSize);
     pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
 
     // Place seeds first (to simulate automatic mode)
@@ -187,7 +185,7 @@ public class ByePlacementUtilTest {
     Round round = TestFixtures.buildEmptyRound(8);
 
     // Place some teams at seed positions to block BYE placement
-    List<PlayerPair> pairs = createTestPlayerPairs(8);
+    List<PlayerPair> pairs = TestFixtures.createPlayerPairs(8);
     round.getGames().get(0).setTeamA(pairs.get(0)); // Blocks position 0
     round.getGames().get(3).setTeamB(pairs.get(1)); // Blocks position 7
 
@@ -208,7 +206,7 @@ public class ByePlacementUtilTest {
     Round round = TestFixtures.buildEmptyRound(4); // 2 games = 4 slots
 
     // Block most positions to force BYE vs BYE
-    List<PlayerPair> pairs = createTestPlayerPairs(4);
+    List<PlayerPair> pairs = TestFixtures.createPlayerPairs(4);
     round.getGames().get(0).setTeamA(pairs.get(0));
 
     // Act - need 3 BYEs but only 3 slots available
@@ -226,7 +224,7 @@ public class ByePlacementUtilTest {
   void testPlaceByeTeams_ThrowsException_WhenNotEnoughSlots() {
     // Arrange - fill all but one slot
     Round            round = TestFixtures.buildEmptyRound(4); // 2 games = 4 slots
-    List<PlayerPair> pairs = createTestPlayerPairs(4);
+    List<PlayerPair> pairs = TestFixtures.createPlayerPairs(4);
 
     round.getGames().get(0).setTeamA(pairs.get(0));
     round.getGames().get(0).setTeamB(pairs.get(1));
@@ -237,25 +235,5 @@ public class ByePlacementUtilTest {
     assertThrows(IllegalStateException.class,
                  () -> ByePlacementUtil.placeByeTeams(round, 2, 2, 4),
                  "Should throw when not enough empty slots for all BYEs");
-  }
-
-  // Helper method to create test player pairs
-  private List<PlayerPair> createTestPlayerPairs(int count) {
-    List<PlayerPair> pairs = new ArrayList<>();
-    for (int i = 1; i <= count; i++) {
-      Player player1 = new Player();
-      player1.setName("Player" + (i * 2 - 1));
-
-      Player player2 = new Player();
-      player2.setName("Player" + (i * 2));
-
-      PlayerPair pair = new PlayerPair();
-      pair.setPlayer1(player1);
-      pair.setPlayer2(player2);
-      pair.setSeed(i <= count / 2 ? i : 0); // First half are seeded
-
-      pairs.add(pair);
-    }
-    return pairs;
   }
 }
