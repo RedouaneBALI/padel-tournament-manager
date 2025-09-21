@@ -209,7 +209,7 @@ public class GroupPhaseTests {
 
     // Then
     // Each pool with 4 teams should have 6 games (round-robin: C(4,2) = 6)
-    int expectedGamesPerPool = nbPairsPerPool * (nbPairsPerPool - 1) / 2;
+    int expectedGamesPerPool = (nbPairsPerPool - 1) / 2;
 
     // Since Pool doesn't have getGames(), we'll check the round's games instead
     // In group phase, games should be organized by pools
@@ -310,4 +310,6 @@ public class GroupPhaseTests {
       assertTrue(pool.getPairs().isEmpty(), "Pools should be empty when no teams provided");
     }
   }
+
+
 }

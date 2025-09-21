@@ -15,6 +15,7 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
+@Deprecated(forRemoval = false)
 public class GroupPhase implements TournamentPhase {
 
   private int nbPools;
@@ -156,7 +157,10 @@ public class GroupPhase implements TournamentPhase {
 
   @Override
   public void propagateWinners(final Tournament tournament) {
-
+    // depending on the number of qualified by pool :
+    // if one qualif / pool, 1st of pool A should play against 1st of pool B, 1st of pool C vs 1st of pool D, etc.
+    // if two qualif / pool, 1st of poole A should play against 2nd of pool B, 2nd of pool A vs 1st of pool A, etc.
+    // we won't manage more qualified
   }
 
   @Override

@@ -12,7 +12,7 @@ interface Props {
 
 export default function AdminTournamentPlayerAssignment({ tournament }: Props) {
   const [playerPairs, setPlayerPairs] = useState<PlayerPair[]>([]);
-  const format = tournament?.format;
+  const format = tournament?.config.format;
 
   useEffect(() => {
     async function loadPairs() {

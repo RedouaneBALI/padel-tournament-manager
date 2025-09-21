@@ -162,9 +162,7 @@ public class KnockoutPhaseTests {
       // Handle staggered entry
       if (staggeredEntry && !currentStageEnum.isQualification()) {
         // In staggered entry mode, seeds enter selon le stage
-        if (phaseToUse instanceof KnockoutPhase ko) {
-          ko.placeSeedTeamsStaggered(currentRound, allPairs, currentStageEnum, mainDrawSize, nbSeeds, false);
-        }
+        phaseToUse.placeSeedTeamsStaggered(currentRound, allPairs, currentStageEnum, mainDrawSize, nbSeeds, false);
 
         // Add teams from previous round plus new teams
         Set<PlayerPair> alreadyPlaced = new HashSet<>();

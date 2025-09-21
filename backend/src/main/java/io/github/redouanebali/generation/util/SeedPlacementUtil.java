@@ -286,4 +286,26 @@ public class SeedPlacementUtil {
       }
     }
   }
+
+  /**
+   * Place les seeds dans les pools selon la logique snake officielle. Retourne une liste de pools (List<List<PlayerPair>>) avec les seeds placées.
+   */
+  public static java.util.List<java.util.List<io.github.redouanebali.model.PlayerPair>> placeSeedsInPoolsSnake(java.util.List<io.github.redouanebali.model.PlayerPair> seeds,
+                                                                                                               int nbPools) {
+    java.util.List<java.util.List<io.github.redouanebali.model.PlayerPair>> pools = new java.util.ArrayList<>();
+    for (int i = 0; i < nbPools; i++) {
+      pools.add(new java.util.ArrayList<>());
+    }
+    // Correction : ordre snake = [0, n-1, n-2, ..., 1]
+    java.util.List<Integer> snakeOrder = new java.util.ArrayList<>();
+    snakeOrder.add(0);
+    for (int i = nbPools - 1; i >= 1; i--) {
+      snakeOrder.add(i);
+    }
+    for (int i = 0; i < seeds.size(); i++) {
+      int poolIdx = snakeOrder.get(i % snakeOrder.size());
+      pools.get(poolIdx).add(seeds.get(i));
+    }
+    return pools;
+  }
 }

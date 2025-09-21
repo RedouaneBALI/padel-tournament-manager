@@ -1,4 +1,4 @@
-package io.github.redouanebali.generation.strategy;
+package io.github.redouanebali.generation.draw;
 
 import io.github.redouanebali.generation.util.RandomPlacementUtil;
 import io.github.redouanebali.generation.util.TournamentStageUtil;

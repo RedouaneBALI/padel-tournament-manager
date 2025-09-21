@@ -79,8 +79,8 @@ export default function TournamentConfigSection({
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             >
               <option value="KNOCKOUT">Élimination directe</option>
-              <option value="GROUPS_KO"> Poules + Elimination directe </option>
               <option value="QUALIF_KO"> Qualif + Élimination directe </option>
+              <option value="GROUPS_KO" disabled> Poules + Elimination directe </option>
             </select>
           </div>
 
@@ -107,12 +107,12 @@ export default function TournamentConfigSection({
           </label>
           <select
             name="config.drawMode"
-            value={toStr(formData.config?.drawMode ?? 'SEEDED')}
+            value={toStr(formData.config?.drawMode ?? 'MANUAL')}
             onChange={handleInputChange}
             className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
           >
-            <option value="SEEDED">{((formData.config?.nbSeeds ?? 0) > 0) ? 'Par classement (TS)' : 'Aléatoire'}</option>
             <option value="MANUAL">Manuel</option>
+            <option value="SEEDED" disabled>{((formData.config?.nbSeeds ?? 0) > 0) ? 'Par classement (TS)' : 'Aléatoire'}</option>
           </select>
         </div>
 

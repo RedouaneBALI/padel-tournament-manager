@@ -208,20 +208,6 @@ export async function initializeDraw(tournamentId: string, payload: InitializeDr
   return await response.json();
 }
 
-export async function sortManualPairs(tournamentId: string) {
-  const response = await fetchWithAuth(api(`/admin/tournaments/${tournamentId}/pairs/sort-manual`), {
-    method: 'POST',
-  });
-
-  if (!response.ok) {
-    const text = await response.text().catch(() => '');
-    toast.error("Erreur lors du tri manuel des paires.");
-    throw new Error(`Erreur lors du tri manuel des paires (${response.status}) ${text}`);
-  }
-
-  return await response.json();
-}
-
 export async function updatePlayerPair(
   tournamentId: string | number,
   pairId: string | number,

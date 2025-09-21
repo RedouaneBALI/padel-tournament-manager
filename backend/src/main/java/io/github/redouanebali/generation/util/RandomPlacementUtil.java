@@ -111,6 +111,7 @@ public class RandomPlacementUtil {
   /**
    * Places teams in order (without shuffling) - useful for manual mode.
    */
+  // @todo this method should manage pools
   public static void placeTeamsInOrder(Round round, List<PlayerPair> teams) {
     if (round == null || round.getGames() == null || teams == null || teams.isEmpty()) {
       return;
@@ -126,6 +127,17 @@ public class RandomPlacementUtil {
       }
       if (index >= teams.size()) {
         break;
+      }
+    }
+
+    if (!round.getPools().isEmpty()) {
+      int nbPools        = round.getPools().size();
+      int nbPairsPerPool = teams.size() / nbPools;
+      for (int poolIndex = 0; poolIndex < nbPairsPerPool; poolIndex++) {
+        for (int i = 0; i < nbPairsPerPool; i++) {
+          System.out.println("adding player " + (poolIndex * nbPairsPerPool) + i + " to pool " + poolIndex);
+          round.getPools().get(poolIndex).addPair(teams.get((poolIndex * nbPairsPerPool) + i));
+        }
       }
     }
   }

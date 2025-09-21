@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { PlayerPair } from '@/src/types/playerPair';
 import { toast } from 'react-toastify';
-import { fetchPairs, savePlayerPairs, sortManualPairs } from '@/src/api/tournamentApi';
+import { fetchPairs, savePlayerPairs } from '@/src/api/tournamentApi';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
 
 interface Props {
@@ -64,7 +64,6 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
       });
 
       await savePlayerPairs(tournamentId, pairs);
-      await sortManualPairs(tournamentId);
     } catch {
       return;
     } finally {

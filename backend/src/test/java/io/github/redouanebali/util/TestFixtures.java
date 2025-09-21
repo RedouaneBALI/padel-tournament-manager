@@ -53,6 +53,24 @@ public final class TestFixtures {
     return round;
   }
 
+  public static Round buildEmptyPoolRound(int nbPools, int nbPairsPerPool) {
+    Round round = new Round();
+    round.setStage(Stage.GROUPS);
+    int expectedGames = nbPairsPerPool * (nbPairsPerPool - 1) / 2;
+
+    for (int i = 0; i < nbPools; i++) {
+      Pool pool = new Pool();
+      pool.setName("Pool " + (char) ('A' + i)); // Pool A, Pool B, etc.
+      round.getPools().add(pool);
+    }
+
+    for (int i = 0; i < expectedGames * nbPools; i++) {
+      round.getGames().add(new Game());
+    }
+
+    return round;
+  }
+
   /**
    * Creates a single PlayerPair where the seed encodes pool & rank for deterministic ordering.
    */

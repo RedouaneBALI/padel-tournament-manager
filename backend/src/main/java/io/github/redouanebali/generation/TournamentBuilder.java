@@ -1,7 +1,7 @@
 package io.github.redouanebali.generation;
 
-import io.github.redouanebali.generation.strategy.DrawStrategy;
-import io.github.redouanebali.generation.strategy.DrawStrategyFactory;
+import io.github.redouanebali.generation.draw.DrawStrategy;
+import io.github.redouanebali.generation.draw.DrawStrategyFactory;
 import io.github.redouanebali.generation.util.TournamentStageUtil;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
@@ -15,12 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
 public final class TournamentBuilder {
 
-  private final List<TournamentPhase> phases = new ArrayList<>();
+  private final List<TournamentPhase> phases;
 
   /**
    * Propagate winners across all phases sequentially.
@@ -82,12 +80,12 @@ public final class TournamentBuilder {
 
     if (initialRounds == null || initialRounds.isEmpty()) {
       // Fallback to empty structure if no initial rounds provided
-      setupEmptyTournament(tournament);
+      initializeEmptyRounds(tournament);
       return;
     }
 
     // Create full structure first
-    List<Round> allRounds = createEmptyStructure(tournament.getConfig());
+    List<Round> allRounds = createEmptyRounds(tournament.getConfig());
 
     // Replace initial rounds with provided ones
     Map<Stage, Round> providedRoundsByStage = initialRounds.stream()
@@ -144,7 +142,7 @@ public final class TournamentBuilder {
     // Create temporary tournament to use DrawStrategy
     Tournament tempTournament = new Tournament();
     tempTournament.setConfig(tournament.getConfig());
-    setupEmptyTournament(tempTournament);
+    initializeEmptyRounds(tempTournament);
 
     // Use SEEDED strategy to populate initial rounds
     DrawStrategy drawStrategy = DrawStrategyFactory.createStrategy(DrawMode.SEEDED);
@@ -162,24 +160,24 @@ public final class TournamentBuilder {
    *
    * @param tournament tournament with config set (will be modified)
    */
-  private void setupEmptyTournament(Tournament tournament) {
+  public void initializeEmptyRounds(Tournament tournament) {
     if (tournament == null || tournament.getConfig() == null) {
       throw new IllegalArgumentException("Tournament and config cannot be null");
     }
 
-    List<Round> rounds = createEmptyStructure(tournament.getConfig());
+    List<Round> rounds = createEmptyRounds(tournament.getConfig());
     tournament.getRounds().clear();
     tournament.getRounds().addAll(rounds);
   }
 
   /**
    * Creates an empty tournament structure (rounds and games) based on the format configuration. Returns a list of rounds with empty games - no
-   * players are placed. This is an internal method used by setupEmptyTournament().
+   * players are placed. This is an internal method used by initializeEmptyRounds().
    *
    * @param config the tournament configuration containing format and other settings
    * @return list of rounds with empty games ready for manual or automatic population
    */
-  private List<Round> createEmptyStructure(TournamentConfig config) {
+  private List<Round> createEmptyRounds(TournamentConfig config) {
     if (config == null) {
       throw new IllegalArgumentException("Tournament config cannot be null");
     }
@@ -190,24 +188,25 @@ public final class TournamentBuilder {
     }
 
     return switch (format) {
-      case KNOCKOUT -> buildQualifKOStructure(config);
-      case QUALIF_KO -> buildQualifKOStructure(config);
-      case GROUPS_KO -> buildGroupsKOStructure(config);
+      case KNOCKOUT -> buildQualifKORounds(config);
+      case QUALIF_KO -> buildQualifKORounds(config);
+      case GROUPS_KO -> buildGroupsKORounds(config);
     };
   }
 
-  private List<Round> buildQualifKOStructure(TournamentConfig cfg) {
+  private List<Round> buildQualifKORounds(TournamentConfig cfg) {
     List<Round> rounds = new ArrayList<>();
-    phases.clear();
+    //  phases.clear();
 
-    if (cfg.getPreQualDrawSize() != null && cfg.getPreQualDrawSize() > 0 && cfg.getNbQualifiers() != null && cfg.getNbQualifiers() > 0) {
+    if (cfg.getPreQualDrawSize() != null && cfg.getPreQualDrawSize() > 0 && cfg.getNbQualifiers() != null && cfg.getNbQualifiers() > 0
+        && cfg.getNbSeedsQualify() != null && cfg.getNbSeedsQualify() > 0) {
       TournamentPhase qualifs = new KnockoutPhase(
           cfg.getPreQualDrawSize(),
           cfg.getNbSeedsQualify(),
           PhaseType.QUALIFS
       );
       rounds.addAll(qualifs.initialize(cfg));
-      phases.add(qualifs);
+      //    phases.add(qualifs);
     }
 
     TournamentPhase mainDraw = new KnockoutPhase(
@@ -216,14 +215,14 @@ public final class TournamentBuilder {
         PhaseType.MAIN_DRAW
     );
     rounds.addAll(mainDraw.initialize(cfg));
-    phases.add(mainDraw);
+    //   phases.add(mainDraw);
 
     return rounds;
   }
 
-  private List<Round> buildGroupsKOStructure(TournamentConfig cfg) {
+  private List<Round> buildGroupsKORounds(TournamentConfig cfg) {
     List<Round> rounds = new ArrayList<>();
-    phases.clear();
+    //  phases.clear();
 
     if (cfg.getNbPools() != null && cfg.getNbPairsPerPool() > 0 && cfg.getNbQualifiedByPool() > 0) {
       TournamentPhase groupPhase = new GroupPhase(
@@ -232,7 +231,7 @@ public final class TournamentBuilder {
           cfg.getNbQualifiedByPool()
       );
       rounds.addAll(groupPhase.initialize(cfg));
-      phases.add(groupPhase);
+      //    phases.add(groupPhase);
     }
 
     TournamentPhase mainDraw = new KnockoutPhase(
@@ -241,10 +240,11 @@ public final class TournamentBuilder {
         PhaseType.MAIN_DRAW
     );
     rounds.addAll(mainDraw.initialize(cfg));
-    phases.add(mainDraw);
+//    phases.add(mainDraw);
 
     return rounds;
   }
 
-
 }
+
+

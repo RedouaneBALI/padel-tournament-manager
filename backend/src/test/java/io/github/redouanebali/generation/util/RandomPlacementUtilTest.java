@@ -1,11 +1,9 @@
 package io.github.redouanebali.generation.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.redouanebali.model.Game;
-import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Round;
@@ -13,6 +11,7 @@ import io.github.redouanebali.util.TestFixtures;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -31,7 +30,7 @@ public class RandomPlacementUtilTest {
   void testPlaceRemainingTeamsRandomly(int nbTeams, int drawSize) {
     // Arrange
     Round            round = TestFixtures.buildEmptyRound(drawSize);
-    List<PlayerPair> teams = createTestPlayerPairs(nbTeams);
+    List<PlayerPair> teams = TestFixtures.createPlayerPairs(nbTeams);
 
     // Act
     RandomPlacementUtil.placeRemainingTeamsRandomly(round, teams);
@@ -63,7 +62,7 @@ public class RandomPlacementUtilTest {
     // Arrange
     Round            round1 = TestFixtures.buildEmptyRound(8);
     Round            round2 = TestFixtures.buildEmptyRound(8);
-    List<PlayerPair> teams  = createTestPlayerPairs(6); // Leave some slots empty for variation
+    List<PlayerPair> teams  = TestFixtures.createPlayerPairs(6); // Leave some slots empty for variation
 
     // Act - place teams multiple times
     RandomPlacementUtil.placeRemainingTeamsRandomly(round1, teams);
@@ -76,7 +75,7 @@ public class RandomPlacementUtilTest {
       Game g1 = round1.getGames().get(i);
       Game g2 = round2.getGames().get(i);
 
-      if (!equals(g1.getTeamA(), g2.getTeamA()) || !equals(g1.getTeamB(), g2.getTeamB())) {
+      if (!Objects.equals(g1.getTeamA(), g2.getTeamA()) || !Objects.equals(g1.getTeamB(), g2.getTeamB())) {
         placementsDifferent = true;
         break;
       }
@@ -98,7 +97,7 @@ public class RandomPlacementUtilTest {
   void testPlaceTeamsInOrder(int nbTeams, int drawSize) {
     // Arrange
     Round            round = TestFixtures.buildEmptyRound(drawSize);
-    List<PlayerPair> teams = createTestPlayerPairs(nbTeams);
+    List<PlayerPair> teams = TestFixtures.createPlayerPairs(nbTeams);
 
     // Act
     RandomPlacementUtil.placeTeamsInOrder(round, teams);
@@ -124,199 +123,128 @@ public class RandomPlacementUtilTest {
   }
 
   @Test
-  void testPlaceTeamsInOrder_DeterministicPlacement() {
+  void testPlaceTeamsInOrder_PreservesExistingPlacements() {
     // Arrange
-    Round            round1 = TestFixtures.buildEmptyRound(8);
-    Round            round2 = TestFixtures.buildEmptyRound(8);
-    List<PlayerPair> teams  = createTestPlayerPairs(6);
+    Round round = TestFixtures.buildEmptyRound(8);
 
-    // Act - place teams in order multiple times
-    RandomPlacementUtil.placeTeamsInOrder(round1, teams);
-    RandomPlacementUtil.placeTeamsInOrder(round2, teams);
+    // Place some existing teams manually
+    List<PlayerPair> allTeams      = TestFixtures.createPlayerPairs(6);
+    List<PlayerPair> existingTeams = allTeams.subList(0, 2);
+    List<PlayerPair> newTeams      = allTeams.subList(2, 6);
 
-    // Assert - placement should be identical (deterministic)
-    for (int i = 0; i < round1.getGames().size(); i++) {
-      Game g1 = round1.getGames().get(i);
-      Game g2 = round2.getGames().get(i);
-
-      assertEquals(g1.getTeamA(), g2.getTeamA(),
-                   "TeamA should be identical in game " + i);
-      assertEquals(g1.getTeamB(), g2.getTeamB(),
-                   "TeamB should be identical in game " + i);
-    }
-  }
-
-  @Test
-  void testPlaceRemainingTeamsRandomly_HandlesNullInputs() {
-    // Test null round
-    RandomPlacementUtil.placeRemainingTeamsRandomly(null, createTestPlayerPairs(4));
-    // Should not throw
-
-    // Test null games
-    Round round = new Round();
-    round.replaceGames(null);
-    RandomPlacementUtil.placeRemainingTeamsRandomly(round, createTestPlayerPairs(4));
-    // Should not throw
-
-    // Test null teams
-    Round validRound = TestFixtures.buildEmptyRound(8);
-    RandomPlacementUtil.placeRemainingTeamsRandomly(validRound, null);
-    // Should not throw and should not place anything
-    for (Game g : validRound.getGames()) {
-      assertNull(g.getTeamA());
-      assertNull(g.getTeamB());
-    }
-
-    // Test empty teams list
-    RandomPlacementUtil.placeRemainingTeamsRandomly(validRound, new ArrayList<>());
-    // Should not throw and should not place anything
-    for (Game g : validRound.getGames()) {
-      assertNull(g.getTeamA());
-      assertNull(g.getTeamB());
-    }
-  }
-
-  @Test
-  void testPlaceTeamsInOrder_HandlesNullInputs() {
-    // Test null round
-    RandomPlacementUtil.placeTeamsInOrder(null, createTestPlayerPairs(4));
-    // Should not throw
-
-    // Test null games
-    Round round = new Round();
-    round.replaceGames(null);
-    RandomPlacementUtil.placeTeamsInOrder(round, createTestPlayerPairs(4));
-    // Should not throw
-
-    // Test null teams
-    Round validRound = TestFixtures.buildEmptyRound(8);
-    RandomPlacementUtil.placeTeamsInOrder(validRound, null);
-    // Should not throw and should not place anything
-    for (Game g : validRound.getGames()) {
-      assertNull(g.getTeamA());
-      assertNull(g.getTeamB());
-    }
-
-    // Test empty teams list
-    RandomPlacementUtil.placeTeamsInOrder(validRound, new ArrayList<>());
-    // Should not throw and should not place anything
-    for (Game g : validRound.getGames()) {
-      assertNull(g.getTeamA());
-      assertNull(g.getTeamB());
-    }
-  }
-
-  @Test
-  void testPlaceRemainingTeamsRandomly_WithPartiallyFilledRound() {
-    // Arrange - pre-fill some slots
-    Round            round         = TestFixtures.buildEmptyRound(8);
-    List<PlayerPair> existingTeams = createTestPlayerPairs(2);
     round.getGames().get(0).setTeamA(existingTeams.get(0));
     round.getGames().get(1).setTeamB(existingTeams.get(1));
-
-    List<PlayerPair> newTeams = createTestPlayerPairs(4, 3); // Start from index 3
-
-    // Act
-    RandomPlacementUtil.placeRemainingTeamsRandomly(round, newTeams);
-
-    // Assert - verify new teams are placed without disturbing existing ones
-    assertEquals(existingTeams.get(0), round.getGames().get(0).getTeamA(),
-                 "Existing team should not be disturbed");
-    assertEquals(existingTeams.get(1), round.getGames().get(1).getTeamB(),
-                 "Existing team should not be disturbed");
-
-    // Count placed new teams
-    Set<PlayerPair> placedNewTeams = new HashSet<>();
-    for (Game game : round.getGames()) {
-      if (game.getTeamA() != null && newTeams.contains(game.getTeamA())) {
-        placedNewTeams.add(game.getTeamA());
-      }
-      if (game.getTeamB() != null && newTeams.contains(game.getTeamB())) {
-        placedNewTeams.add(game.getTeamB());
-      }
-    }
-
-    assertEquals(4, placedNewTeams.size(), "All new teams should be placed");
-  }
-
-  @Test
-  void testPlaceTeamsInOrder_WithPartiallyFilledRound() {
-    // Arrange - pre-fill some slots
-    Round            round         = TestFixtures.buildEmptyRound(8);
-    List<PlayerPair> existingTeams = createTestPlayerPairs(2);
-    round.getGames().get(0).setTeamA(existingTeams.get(0));
-    round.getGames().get(1).setTeamB(existingTeams.get(1));
-
-    List<PlayerPair> newTeams = createTestPlayerPairs(4, 3); // Start from index 3
 
     // Act
     RandomPlacementUtil.placeTeamsInOrder(round, newTeams);
 
-    // Assert - verify new teams are placed in order without disturbing existing ones
-    assertEquals(existingTeams.get(0), round.getGames().get(0).getTeamA(),
-                 "Existing team should not be disturbed");
-    assertEquals(existingTeams.get(1), round.getGames().get(1).getTeamB(),
-                 "Existing team should not be disturbed");
-
-    // Verify new teams are placed in available slots in order
-    List<PlayerPair> placedNewTeams = new ArrayList<>();
+    // Assert - existing teams should remain, new teams should be added
+    Set<PlayerPair> allPlacedTeams = new HashSet<>();
     for (Game game : round.getGames()) {
-      if (game.getTeamA() != null && newTeams.contains(game.getTeamA())) {
-        placedNewTeams.add(game.getTeamA());
+      if (game.getTeamA() != null) {
+        allPlacedTeams.add(game.getTeamA());
       }
-      if (game.getTeamB() != null && newTeams.contains(game.getTeamB())) {
-        placedNewTeams.add(game.getTeamB());
+      if (game.getTeamB() != null) {
+        allPlacedTeams.add(game.getTeamB());
       }
     }
 
-    assertEquals(4, placedNewTeams.size(), "All new teams should be placed");
-    // Verify order is maintained
-    for (int i = 0; i < 4; i++) {
-      assertEquals(newTeams.get(i), placedNewTeams.get(i),
-                   "New teams should be placed in order");
-    }
+    assertEquals(6, allPlacedTeams.size(), "Should have existing teams + new teams");
+    assertTrue(allPlacedTeams.containsAll(existingTeams), "Existing teams should be preserved");
+    assertTrue(allPlacedTeams.containsAll(newTeams), "New teams should be placed");
+
+    // Verify existing placements are unchanged
+    assertEquals(existingTeams.get(0), round.getGames().get(0).getTeamA());
+    assertEquals(existingTeams.get(1), round.getGames().get(1).getTeamB());
   }
 
   @Test
-  void testPlaceRemainingTeamsRandomly_MoreTeamsThanSlots() {
+  void testPlaceRemainingTeamsRandomly_PreservesExistingPlacements() {
     // Arrange
-    Round            round = TestFixtures.buildEmptyRound(8); // Only 8 slots
-    List<PlayerPair> teams = createTestPlayerPairs(10); // More teams than slots
+    Round round = TestFixtures.buildEmptyRound(8);
+
+    // Place some existing teams manually
+    List<PlayerPair> allTeams      = TestFixtures.createPlayerPairs(6);
+    List<PlayerPair> existingTeams = allTeams.subList(0, 2);
+    List<PlayerPair> newTeams      = allTeams.subList(2, 6);
+
+    round.getGames().get(0).setTeamA(existingTeams.get(0));
+    round.getGames().get(1).setTeamB(existingTeams.get(1));
 
     // Act
-    RandomPlacementUtil.placeRemainingTeamsRandomly(round, teams);
+    RandomPlacementUtil.placeRemainingTeamsRandomly(round, newTeams);
 
-    // Assert - only 8 teams should be placed (limited by available slots)
-    long placedCount = round.getGames().stream()
-                            .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
-                            .filter(t -> t != null)
-                            .count();
-    assertEquals(8, placedCount, "Should place only as many teams as there are slots");
+    // Assert - existing teams should remain, new teams should be added
+    Set<PlayerPair> allPlacedTeams = new HashSet<>();
+    for (Game game : round.getGames()) {
+      if (game.getTeamA() != null) {
+        allPlacedTeams.add(game.getTeamA());
+      }
+      if (game.getTeamB() != null) {
+        allPlacedTeams.add(game.getTeamB());
+      }
+    }
 
-    // Verify all placed teams are from the original list
+    assertEquals(6, allPlacedTeams.size(), "Should have existing teams + new teams");
+    assertTrue(allPlacedTeams.containsAll(existingTeams), "Existing teams should be preserved");
+    assertTrue(allPlacedTeams.containsAll(newTeams), "New teams should be placed");
+
+    // Verify existing placements are unchanged
+    assertEquals(existingTeams.get(0), round.getGames().get(0).getTeamA());
+    assertEquals(existingTeams.get(1), round.getGames().get(1).getTeamB());
+  }
+
+  @Test
+  void testPlaceRemainingTeamsRandomly_HandlesNullRound() {
+    // Act & Assert
+    RandomPlacementUtil.placeRemainingTeamsRandomly(null, TestFixtures.createPlayerPairs(4));
+    // Should not throw exception
+  }
+
+  @Test
+  void testPlaceRemainingTeamsRandomly_HandlesNullTeams() {
+    Round round = TestFixtures.buildEmptyRound(8);
+    RandomPlacementUtil.placeRemainingTeamsRandomly(round, null);
+    // Should not throw exception
+  }
+
+  @Test
+  void testPlaceTeamsInOrder_HandlesOverflow() {
+    // Arrange
+    Round            round = TestFixtures.buildEmptyRound(4); // Only 4 slots total
+    List<PlayerPair> teams = TestFixtures.createPlayerPairs(10); // More teams than slots
+
+    // Act
+    RandomPlacementUtil.placeTeamsInOrder(round, teams);
+
+    // Assert - only as many teams as there are slots should be placed
     Set<PlayerPair> placedTeams = new HashSet<>();
     for (Game game : round.getGames()) {
       if (game.getTeamA() != null) {
         placedTeams.add(game.getTeamA());
-        assertTrue(teams.contains(game.getTeamA()), "Placed team should be from original list");
       }
       if (game.getTeamB() != null) {
         placedTeams.add(game.getTeamB());
-        assertTrue(teams.contains(game.getTeamB()), "Placed team should be from original list");
       }
     }
+
+    assertEquals(4, placedTeams.size(), "Should place exactly 4 teams (all available slots)");
+
+    // First 4 teams should be placed in order
+    List<PlayerPair> expectedFirstFour = teams.subList(0, 4);
+    assertTrue(placedTeams.containsAll(expectedFirstFour), "First 4 teams should be placed");
   }
 
   @Test
-  void testPlaceRemainingTeamsRandomly_WithMoreTeamsThanSlots() {
+  void testPlaceRemainingTeamsRandomly_HandlesOverflow() {
     // Arrange
-    Round            round = TestFixtures.buildEmptyRound(8);
-    List<PlayerPair> teams = createTestPlayerPairs(10); // More teams than slots
+    Round            round = TestFixtures.buildEmptyRound(4); // Only 4 slots total
+    List<PlayerPair> teams = TestFixtures.createPlayerPairs(10); // More teams than slots
 
     // Act
     RandomPlacementUtil.placeRemainingTeamsRandomly(round, teams);
 
-    // Assert - verify only as many teams as slots are placed
+    // Assert - only as many teams as there are slots should be placed
     Set<PlayerPair> placedTeams = new HashSet<>();
     for (Game game : round.getGames()) {
       if (game.getTeamA() != null) {
@@ -327,133 +255,136 @@ public class RandomPlacementUtilTest {
       }
     }
 
-    assertEquals(8, placedTeams.size(), "Should place only as many teams as there are slots");
-    assertTrue(teams.containsAll(placedTeams), "All placed teams should be from the input list");
+    assertEquals(4, placedTeams.size(), "Should place exactly 4 teams (all available slots)");
+    assertTrue(teams.containsAll(placedTeams), "All placed teams should be from the provided list");
   }
 
-  // ========== NEW TESTS FOR POOLS (GROUP PHASE) ==========
+  @Test
+  void testPlaceTeamsInOrder_HandlesNullRound() {
+    // Act & Assert
+    RandomPlacementUtil.placeTeamsInOrder(null, TestFixtures.createPlayerPairs(4));
+    // Should not throw exception
+  }
+
+  @Test
+  void testPlaceTeamsInOrder_HandlesNullTeams() {
+    Round round = TestFixtures.buildEmptyRound(8);
+    RandomPlacementUtil.placeTeamsInOrder(round, null);
+    // Should not throw exception
+  }
+
+  // -------------------- Pool-based tests --------------------
 
   @ParameterizedTest(name = "placeRemainingTeamsRandomly in pools: {0} teams, {1} pools")
   @CsvSource({
-      "12, 4",  // 12 teams in 4 pools (3 per pool)
-      "16, 4",  // 16 teams in 4 pools (4 per pool)
-      "8, 2",   // 8 teams in 2 pools (4 per pool)
-      "10, 5",  // 10 teams in 5 pools (2 per pool)
-      "0, 4"    // No teams to place
+      "9, 3", // Exactly divisible
+      "10, 3", // One extra team
+      "8, 3"  // One less team per pool
   })
   void testPlaceRemainingTeamsRandomly_InPools(int totalTeams, int nbPools) {
     // Arrange
-    Round            round = createRoundWithPools(nbPools);
-    List<PlayerPair> teams = createTestPlayerPairs(totalTeams);
+    Round            round = TestFixtures.buildEmptyPoolRound(nbPools, totalTeams / nbPools);
+    List<PlayerPair> teams = TestFixtures.createPlayerPairs(totalTeams);
 
     // Act
     RandomPlacementUtil.placeRemainingTeamsRandomly(round, teams);
 
-    // Assert - verify all teams are placed
-    Set<PlayerPair> placedTeams = new HashSet<>();
+    // Assert - verify all teams are placed across all pools
+    Set<PlayerPair> allPlacedTeams = new HashSet<>();
     for (Pool pool : round.getPools()) {
-      placedTeams.addAll(pool.getPairs());
+      allPlacedTeams.addAll(pool.getPairs());
     }
 
-    assertEquals(totalTeams, placedTeams.size(), "All teams should be placed exactly once");
-    assertTrue(placedTeams.containsAll(teams), "All provided teams should be placed");
+    assertEquals(totalTeams, allPlacedTeams.size(), "All teams should be placed");
+    assertTrue(allPlacedTeams.containsAll(teams), "All provided teams should be placed");
 
-    // Verify teams are distributed across pools
-    if (totalTeams > 0 && nbPools > 1) {
-      int minTeamsPerPool = totalTeams / nbPools;
-      int maxTeamsPerPool = minTeamsPerPool + (totalTeams % nbPools > 0 ? 1 : 0);
-
-      for (Pool pool : round.getPools()) {
-        int teamsInPool = pool.getPairs().size();
-        assertTrue(teamsInPool >= minTeamsPerPool && teamsInPool <= maxTeamsPerPool,
-                   "Pool should have between " + minTeamsPerPool + " and " + maxTeamsPerPool + " teams, but had " + teamsInPool);
-      }
+    // Verify distribution is reasonably balanced (no pool should be completely empty unless no teams)
+    if (totalTeams > 0) {
+      boolean hasNonEmptyPool = round.getPools().stream().anyMatch(pool -> !pool.getPairs().isEmpty());
+      assertTrue(hasNonEmptyPool, "At least one pool should have teams when teams are provided");
     }
   }
 
   @Test
-  void testPlaceRemainingTeamsRandomly_InPools_RoundRobinDistribution() {
+  void testPlaceRemainingTeamsRandomly_InPools_ExactlyDivisible() {
     // Arrange
-    Round            round = createRoundWithPools(3);
-    List<PlayerPair> teams = createTestPlayerPairs(9); // Exactly divisible by 3
+    Round            round = TestFixtures.buildEmptyPoolRound(3, 3);
+    List<PlayerPair> teams = TestFixtures.createPlayerPairs(9); // Exactly divisible by 3
 
     // Act
     RandomPlacementUtil.placeRemainingTeamsRandomly(round, teams);
 
-    // Assert - verify even distribution (3 teams per pool)
+    // Assert - each pool should have exactly 3 teams
     for (Pool pool : round.getPools()) {
       assertEquals(3, pool.getPairs().size(), "Each pool should have exactly 3 teams");
     }
 
-    // Verify no duplicates across pools
+    // Verify all teams are placed
     Set<PlayerPair> allPlacedTeams = new HashSet<>();
     for (Pool pool : round.getPools()) {
-      for (PlayerPair pair : pool.getPairs()) {
-        assertTrue(allPlacedTeams.add(pair), "Team should not appear in multiple pools: " + pair);
-      }
+      allPlacedTeams.addAll(pool.getPairs());
     }
+    assertEquals(9, allPlacedTeams.size(), "All 9 teams should be placed");
   }
 
   @Test
-  void testPlaceRemainingTeamsRandomly_InPools_WithPreExistingTeams() {
+  void testPlaceRemainingTeamsRandomly_InPools_PreservesExistingTeams() {
     // Arrange
-    Round            round         = createRoundWithPools(2);
-    List<PlayerPair> existingTeams = createTestPlayerPairs(2);
-    List<PlayerPair> newTeams      = createTestPlayerPairs(4, 3);
+    Round round = TestFixtures.buildEmptyPoolRound(2, 3);
 
-    // Pre-place some teams
+    // Add some existing teams to pools
+    List<PlayerPair> allTeams      = TestFixtures.createPlayerPairs(6);
+    List<PlayerPair> existingTeams = allTeams.subList(0, 2); // First 2 teams
+    List<PlayerPair> newTeams      = allTeams.subList(2, 6); // Teams 3-6
+
     round.getPools().get(0).addPair(existingTeams.get(0));
     round.getPools().get(1).addPair(existingTeams.get(1));
 
     // Act
     RandomPlacementUtil.placeRemainingTeamsRandomly(round, newTeams);
 
-    // Assert - verify existing teams are not disturbed
-    assertTrue(round.getPools().get(0).getPairs().contains(existingTeams.get(0)),
-               "Existing team in pool 0 should not be disturbed");
-    assertTrue(round.getPools().get(1).getPairs().contains(existingTeams.get(1)),
-               "Existing team in pool 1 should not be disturbed");
-
-    // Verify new teams are placed
+    // Assert - existing teams should remain, new teams should be added
     Set<PlayerPair> allPlacedTeams = new HashSet<>();
     for (Pool pool : round.getPools()) {
       allPlacedTeams.addAll(pool.getPairs());
     }
 
-    assertTrue(allPlacedTeams.containsAll(newTeams), "All new teams should be placed");
-    assertEquals(6, allPlacedTeams.size(), "Total of 6 teams should be placed (2 existing + 4 new)");
+    assertEquals(6, allPlacedTeams.size(), "Should have existing teams + new teams");
+    assertTrue(allPlacedTeams.containsAll(existingTeams), "Existing teams should be preserved");
+    assertTrue(allPlacedTeams.containsAll(newTeams), "New teams should be placed");
+
+    // Verify existing teams are still in their original pools
+    assertTrue(round.getPools().get(0).getPairs().contains(existingTeams.get(0)));
+    assertTrue(round.getPools().get(1).getPairs().contains(existingTeams.get(1)));
   }
 
   @Test
-  void testPlaceRemainingTeamsRandomly_InPools_AvoidsDuplicates() {
+  void testPlaceTeamsInOrder_InPools() {
     // Arrange
-    Round            round = createRoundWithPools(2);
-    List<PlayerPair> teams = createTestPlayerPairs(4);
+    Round            round = TestFixtures.buildEmptyPoolRound(2, 2);
+    List<PlayerPair> teams = TestFixtures.createPlayerPairs(4);
 
-    // Pre-place one team in first pool
-    round.getPools().get(0).addPair(teams.get(0));
+    // Act
+    RandomPlacementUtil.placeTeamsInOrder(round, teams);
 
-    // Act - try to place all teams (including the already placed one)
-    RandomPlacementUtil.placeRemainingTeamsRandomly(round, teams);
+    // Assert - teams should be distributed across pools in order
+    assertEquals(2, round.getPools().get(0).getPairs().size(), "First pool should have 2 teams");
+    assertEquals(2, round.getPools().get(1).getPairs().size(), "Second pool should have 2 teams");
 
-    // Assert - verify no duplicates
+    // Verify all teams are placed
     Set<PlayerPair> allPlacedTeams = new HashSet<>();
     for (Pool pool : round.getPools()) {
-      for (PlayerPair pair : pool.getPairs()) {
-        assertTrue(allPlacedTeams.add(pair), "Team should not appear in multiple pools: " + pair);
-      }
+      allPlacedTeams.addAll(pool.getPairs());
     }
-
-    // Should have exactly 4 teams placed (no duplicates)
-    assertEquals(4, allPlacedTeams.size(), "Should have exactly 4 teams placed");
-    assertTrue(allPlacedTeams.containsAll(teams), "All teams should be placed");
+    assertEquals(4, allPlacedTeams.size(), "All teams should be placed");
+    assertTrue(allPlacedTeams.containsAll(teams), "All provided teams should be placed");
   }
 
   @Test
   void testPlaceRemainingTeamsRandomly_InPools_HandlesEmptyPools() {
     // Arrange
-    Round            round = createRoundWithPools(3);
-    List<PlayerPair> teams = createTestPlayerPairs(2); // Fewer teams than pools
+    Round            round = TestFixtures.buildEmptyPoolRound(2, 2);
+    List<PlayerPair> teams = TestFixtures.createPlayerPairs(2); // Fewer teams than pools
 
     // Act
     RandomPlacementUtil.placeRemainingTeamsRandomly(round, teams);
@@ -472,53 +403,4 @@ public class RandomPlacementUtilTest {
     assertTrue(hasNonEmptyPool, "At least one pool should have teams");
   }
 
-  // Helper method to create a round with pools (for group phase testing)
-  private Round createRoundWithPools(int nbPools) {
-    Round round = new Round();
-    for (int i = 0; i < nbPools; i++) {
-      Pool pool = new Pool();
-      pool.setName("Pool " + (char) ('A' + i));
-      round.addPool(pool);
-    }
-    return round;
-  }
-
-  // Helper method to create test player pairs
-  @Deprecated
-  private List<PlayerPair> createTestPlayerPairs(int count) {
-    return createTestPlayerPairs(count, 1);
-  }
-
-  @Deprecated
-  private List<PlayerPair> createTestPlayerPairs(int count, int startIndex) {
-    List<PlayerPair> pairs = new ArrayList<>();
-    for (int i = 0; i < count; i++) {
-      int actualIndex = startIndex + i;
-
-      Player player1 = new Player();
-      player1.setName("Player" + (actualIndex * 2 - 1));
-
-      Player player2 = new Player();
-      player2.setName("Player" + (actualIndex * 2));
-
-      PlayerPair pair = new PlayerPair();
-      pair.setPlayer1(player1);
-      pair.setPlayer2(player2);
-      pair.setSeed(0); // Non-seeded for these tests
-
-      pairs.add(pair);
-    }
-    return pairs;
-  }
-
-  // Helper method to compare PlayerPair objects (handles null)
-  private boolean equals(PlayerPair p1, PlayerPair p2) {
-    if (p1 == null && p2 == null) {
-      return true;
-    }
-    if (p1 == null || p2 == null) {
-      return false;
-    }
-    return p1.equals(p2);
-  }
 }

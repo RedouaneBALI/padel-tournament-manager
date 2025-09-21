@@ -91,4 +91,11 @@ public class DrawGenerationService {
       throw new IllegalArgumentException("Invalid tournament configuration: " + String.join(", ", errors));
     }
   }
+
+  public void initializeStructure(Tournament tournament) {
+    if (tournament == null || tournament.getConfig() == null || tournament.getConfig().getFormat() == null) {
+      throw new IllegalArgumentException("Tournoi ou configuration invalide");
+    }
+    tournamentBuilder.initializeEmptyRounds(tournament);
+  }
 }

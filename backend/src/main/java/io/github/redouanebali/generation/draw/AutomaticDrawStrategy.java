@@ -1,11 +1,11 @@
-package io.github.redouanebali.generation.strategy;
+package io.github.redouanebali.generation.draw;
 
 import io.github.redouanebali.generation.util.ByePlacementUtil;
 import io.github.redouanebali.generation.util.RandomPlacementUtil;
 import io.github.redouanebali.generation.util.SeedPlacementUtil;
-import io.github.redouanebali.generation.util.TournamentStageUtil;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
@@ -44,7 +44,7 @@ public class AutomaticDrawStrategy implements DrawStrategy {
       Stage stage = round.getStage();
 
       // Find Q1 (first qualification round)
-      if (stage == Stage.Q1 && firstQualifRound == null) {
+      if ((stage == Stage.Q1 || stage == Stage.GROUPS) && firstQualifRound == null) {
         firstQualifRound = round;
       }
 
@@ -54,7 +54,7 @@ public class AutomaticDrawStrategy implements DrawStrategy {
       }
     }
 
-    // Process Q1 if present
+    // Process Q1 or Groups if present
     if (firstQualifRound != null) {
       processInitialRound(tournament, firstQualifRound, allPairs);
     }
@@ -63,21 +63,6 @@ public class AutomaticDrawStrategy implements DrawStrategy {
     if (firstMainDrawRound != null) {
       processInitialRound(tournament, firstMainDrawRound, allPairs);
     }
-  }
-
-  /**
-   * Determines if a stage represents an initial round where players enter.
-   */
-  private boolean isInitialRound(Stage stage) {
-    return TournamentStageUtil.isInitialRound(stage);
-  }
-
-  /**
-   * Determines if this is the first main draw stage for this tournament.
-   */
-  private boolean isFirstMainDrawStage(Stage stage) {
-    // For a tournament, the first main draw stage depends on the configuration
-    return TournamentStageUtil.isFirstMainDrawStage(stage);
   }
 
   /**
@@ -90,10 +75,14 @@ public class AutomaticDrawStrategy implements DrawStrategy {
 
     if (stage.isQualification()) {
       processQualificationRound(tournament, initialRound, allPairs, roundDrawSize);
+    } else if (stage == Stage.GROUPS) {
+      processGroupsRound(tournament, initialRound, allPairs);
     } else {
       processMainDrawRound(tournament, initialRound, allPairs, roundDrawSize, configuredSeeds);
     }
+
   }
+
 
   /**
    * Processes a qualification round with automatic logic.
@@ -139,6 +128,68 @@ public class AutomaticDrawStrategy implements DrawStrategy {
       remainingQualifTeams.add(qualifParticipants.get(i));
     }
     RandomPlacementUtil.placeRemainingTeamsRandomly(initialRound, remainingQualifTeams);
+  }
+
+  /**
+   * Répartit les joueurs dans nbPools groupes et génère les matchs de poule (round robin) dans le round GROUPS.
+   */
+  private void processGroupsRound(Tournament tournament, Round round, List<PlayerPair> allPairs) {
+    int nbPools           = tournament.getConfig().getNbPools();
+    int nbPairsPerPool    = tournament.getConfig().getNbPairsPerPool();
+    int nbQualifiedByPool = tournament.getConfig().getNbQualifiedByPool();
+    if (nbPools <= 0 || nbPairsPerPool <= 0 || allPairs == null || allPairs.isEmpty()) {
+      return;
+    }
+    // Sépare les seeds des autres paires
+    List<PlayerPair> seeds  = new ArrayList<>();
+    List<PlayerPair> others = new ArrayList<>();
+    for (PlayerPair pair : allPairs) {
+      if (pair.getSeed() > 0) {
+        seeds.add(pair);
+      } else {
+        others.add(pair);
+      }
+    }
+    // Placement des seeds dans les pools selon le snake officiel
+    List<List<PlayerPair>> pools = SeedPlacementUtil.placeSeedsInPoolsSnake(seeds, nbPools);
+    // Complète les pools avec les autres paires
+    int idx = 0;
+    for (int p = 0; p < nbPools; p++) {
+      while (pools.get(p).size() < nbPairsPerPool && idx < others.size()) {
+        pools.get(p).add(others.get(idx));
+        idx++;
+      }
+    }
+    // Affectation des paires aux pools du round
+    assignPairsToPools(round, pools);
+    // Génération des matchs round robin pour chaque poule
+    List<Game> games = new ArrayList<>();
+    for (List<PlayerPair> pool : pools) {
+      int n = pool.size();
+      for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+          Game g = new Game();
+          g.setTeamA(pool.get(i));
+          g.setTeamB(pool.get(j));
+          games.add(g);
+        }
+      }
+    }
+    round.getGames().clear();
+    round.getGames().addAll(games);
+  }
+
+  /**
+   * Remplit les pools du round avec les paires affectées.
+   */
+  private void assignPairsToPools(Round round, List<List<PlayerPair>> poolsPairs) {
+    round.getPools().clear();
+    char poolName = 'A';
+    for (List<PlayerPair> pairs : poolsPairs) {
+      Pool pool = new Pool("Pool " + poolName, pairs);
+      round.getPools().add(pool);
+      poolName++;
+    }
   }
 
   /**

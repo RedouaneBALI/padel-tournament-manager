@@ -64,6 +64,7 @@ public class TournamentService {
     }
     if (tournament.getConfig() != null && tournament.getConfig().getFormat() != null) {
       drawGenerationService.validate(tournament);
+      drawGenerationService.initializeStructure(tournament);
     }
     tournament.setOwnerId(SecurityUtil.currentUserId());
 
