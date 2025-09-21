@@ -15,10 +15,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
 
+@AllArgsConstructor
 public final class TournamentBuilder {
 
-  private final List<TournamentPhase> phases;
+  private final List<TournamentPhase> phases = new ArrayList<>();
 
   /**
    * Propagate winners across all phases sequentially.
