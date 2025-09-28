@@ -450,7 +450,7 @@ public class TournamentBuilderTest {
       "8, 4, 16, Q1;R16;QUARTERS;SEMIS;FINAL",
       "8, 2, 16, Q1;Q2;R16;QUARTERS;SEMIS;FINAL"
   })
-  void testSetupTournamentWithInitialRounds_withQualifications_stagesOnly(
+  void testSetupTournament_withQualifications_stagesOnly(
       int preQualDrawSize, int nbQualifiers, int mainDrawSize, String expectedStagesCsv) {
     TournamentConfig config = TournamentConfig.builder()
                                               .preQualDrawSize(preQualDrawSize)
@@ -464,7 +464,7 @@ public class TournamentBuilderTest {
     Tournament tournament = new Tournament();
     tournament.setConfig(config);
 
-    TournamentBuilder.setupTournamentWithInitialRounds(tournament, List.of());
+    TournamentBuilder.initializeEmptyRounds(tournament);
 
     List<Stage> expectedStages = parseStages(expectedStagesCsv);
     List<Stage> actualStages   = tournament.getRounds().stream().map(Round::getStage).toList();
@@ -478,7 +478,7 @@ public class TournamentBuilderTest {
       "64, R64;R32;R16;QUARTERS;SEMIS;FINAL",
       "16, R16;QUARTERS;SEMIS;FINAL"
   })
-  void testSetupTournamentWithInitialRounds_noQualifications_stagesOnly(
+  void testSetupTournament_noQualifications_stagesOnly(
       int mainDrawSize, String expectedStagesCsv) {
     TournamentConfig config = TournamentConfig.builder()
                                               .mainDrawSize(mainDrawSize)
@@ -489,7 +489,7 @@ public class TournamentBuilderTest {
     Tournament tournament = new Tournament();
     tournament.setConfig(config);
 
-    TournamentBuilder.setupTournamentWithInitialRounds(tournament, List.of());
+    TournamentBuilder.initializeEmptyRounds(tournament);
 
     List<Stage> expectedStages = parseStages(expectedStagesCsv);
     List<Stage> actualStages   = tournament.getRounds().stream().map(Round::getStage).toList();

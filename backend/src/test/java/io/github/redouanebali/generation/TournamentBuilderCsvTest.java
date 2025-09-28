@@ -147,7 +147,7 @@ class TournamentBuilderCsvTest {
     tournament.setConfig(cfg);
 
     // Use public API: create empty tournament structure by providing empty player list
-    TournamentBuilder.setupAndPopulateTournament(tournament, new ArrayList<>());
+    TournamentBuilder.initializeEmptyRounds(tournament);
 
     // Stage order must match CSV order
     List<Stage> expectedStages = rows.stream()
