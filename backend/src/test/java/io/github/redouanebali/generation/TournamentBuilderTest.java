@@ -105,10 +105,9 @@ public class TournamentBuilderTest {
                                                               DrawMode drawMode,
                                                               String expectedStagesCsv,
                                                               String expectedMatchesCsv) {
-    Tournament        tournament = TestFixtures.makeTournament(0, 0, mainDraw, nbSeedsMain, 0, drawMode);
-    TournamentBuilder builder    = new TournamentBuilder();
+    Tournament tournament = TestFixtures.makeTournament(0, 0, mainDraw, nbSeedsMain, 0, drawMode);
     // Utilisation de TestFixtures.createPairs pour générer les joueurs
-    builder.setupAndPopulateTournament(tournament, TestFixtures.createPlayerPairs(mainDraw));
+    TournamentBuilder.setupAndPopulateTournament(tournament, TestFixtures.createPlayerPairs(mainDraw));
     List<Stage>   expectedStages  = TestFixtures.parseStages(expectedStagesCsv);
     List<Integer> expectedMatches = TestFixtures.parseInts(expectedMatchesCsv);
     List<Stage> actualStages = tournament.getRounds().stream()
@@ -137,13 +136,10 @@ public class TournamentBuilderTest {
                                                                     String expectedStagesCsv,
                                                                     String expectedMatchesCsv) {
     Tournament tournament = TestFixtures.makeTournament(preQual, nbQualifiers, mainDraw, nbSeedsMain, nbSeedsQual, drawMode);
-
-    TournamentBuilder builder = new TournamentBuilder();
     // Use public API: create empty tournament by providing empty player list
-    builder.setupAndPopulateTournament(tournament, new ArrayList<>());
+    TournamentBuilder.setupAndPopulateTournament(tournament, new ArrayList<>());
     List<Stage>   expectedStages  = parseStages(expectedStagesCsv);
     List<Integer> expectedMatches = parseInts(expectedMatchesCsv);
-
     List<Stage> actualStages = tournament.getRounds().stream()
                                          .map(Round::getStage)
                                          .collect(Collectors.toList());
@@ -168,8 +164,7 @@ public class TournamentBuilderTest {
     List<PlayerPair> playerPairs = TestFixtures.createPlayerPairs(20);
 
     // When: Use the new setupTournamentWithPlayers method (replaces 5 manual steps)
-    TournamentBuilder builder = new TournamentBuilder();
-    builder.setupAndPopulateTournament(tournament, playerPairs);
+    TournamentBuilder.setupAndPopulateTournament(tournament, playerPairs);
 
     // Then: Only the first round (R32) should be filled
     Round r32Round = tournament.getRoundByStage(Stage.R32);
@@ -232,10 +227,8 @@ public class TournamentBuilderTest {
   @Test
   void testAutomaticDrawStrategy_withQualifications_fillsQ1AndR32() {
     // Given: Tournament with qualifications (16 -> 4 qualifiers) + main draw (32 players, 8 seeds)
-    Tournament        tournament = TestFixtures.makeTournament(16, 4, 32, 8, 4, DrawMode.SEEDED);
-    TournamentBuilder builder    = new TournamentBuilder();
-    // Use public API: create empty tournament structure by providing empty player list
-    builder.setupAndPopulateTournament(tournament, new ArrayList<>());
+    Tournament tournament = TestFixtures.makeTournament(16, 4, 32, 8, 4, DrawMode.SEEDED);
+    TournamentBuilder.setupAndPopulateTournament(tournament, new ArrayList<>());
 
     // Create 28 player pairs (16 for qualifs + 12 direct entry to main draw)
     List<PlayerPair> playerPairs = TestFixtures.createPlayerPairs(28);
@@ -311,10 +304,8 @@ public class TournamentBuilderTest {
   @Test
   void testDrawStrategy_onlyInitialRoundsAreFilled() {
     // Given: Tournament with qualifications and main draw
-    Tournament        tournament = TestFixtures.makeTournament(32, 8, 64, 16, 8, DrawMode.SEEDED);
-    TournamentBuilder builder    = new TournamentBuilder();
-    // Use public API: create empty tournament structure by providing empty player list
-    builder.setupAndPopulateTournament(tournament, new ArrayList<>());
+    Tournament tournament = TestFixtures.makeTournament(32, 8, 64, 16, 8, DrawMode.SEEDED);
+    TournamentBuilder.setupAndPopulateTournament(tournament, new ArrayList<>());
 
     List<PlayerPair> playerPairs = TestFixtures.createPlayerPairs(48);
 
@@ -369,7 +360,7 @@ public class TournamentBuilderTest {
 
     TournamentBuilder builder = new TournamentBuilder();
     List<PlayerPair>  pairs   = TestFixtures.createPlayerPairs(totalPairs);
-    builder.setupAndPopulateTournament(tournament, pairs);
+    TournamentBuilder.setupAndPopulateTournament(tournament, pairs);
 
     Round groupsRound = tournament.getRounds().stream()
                                   .filter(r -> r.getStage() == Stage.GROUPS)
@@ -420,7 +411,7 @@ public class TournamentBuilderTest {
     for (int i = 0; i < nbSeedsMain; i++) {
       pairs.get(i).setSeed(i + 1);
     }
-    builder.setupAndPopulateTournament(tournament, pairs);
+    TournamentBuilder.setupAndPopulateTournament(tournament, pairs);
 
     Round groupsRound = tournament.getRounds().stream()
                                   .filter(r -> r.getStage() == Stage.GROUPS)
@@ -445,5 +436,63 @@ public class TournamentBuilderTest {
       }
       assertTrue(found.get(), "La seed " + expectedSeeds[i] + " doit être placée dans une pool");
     }
+  }
+
+  @ParameterizedTest(name = "Qualifs: preQual={0}, nbQual={1}, mainDraw={2}, stages={3}")
+  @CsvSource({
+      // preQualDrawSize, nbQualifiers, mainDrawSize, expectedStagesCsv
+      "32, 16, 32, Q1;R32;R16;QUARTERS;SEMIS;FINAL",
+      "32, 8, 32, Q1;Q2;R32;R16;QUARTERS;SEMIS;FINAL",
+      "16, 8, 32, Q1;R32;R16;QUARTERS;SEMIS;FINAL",
+      "16, 4, 32, Q1;Q2;R32;R16;QUARTERS;SEMIS;FINAL",
+      "64, 32, 64, Q1;R64;R32;R16;QUARTERS;SEMIS;FINAL",
+      "64, 16, 64, Q1;Q2;R64;R32;R16;QUARTERS;SEMIS;FINAL",
+      "8, 4, 16, Q1;R16;QUARTERS;SEMIS;FINAL",
+      "8, 2, 16, Q1;Q2;R16;QUARTERS;SEMIS;FINAL"
+  })
+  void testSetupTournamentWithInitialRounds_withQualifications_stagesOnly(
+      int preQualDrawSize, int nbQualifiers, int mainDrawSize, String expectedStagesCsv) {
+    TournamentConfig config = TournamentConfig.builder()
+                                              .preQualDrawSize(preQualDrawSize)
+                                              .nbQualifiers(nbQualifiers)
+                                              .nbSeedsQualify(8)
+                                              .mainDrawSize(mainDrawSize)
+                                              .nbSeeds(16)
+                                              .drawMode(DrawMode.SEEDED)
+                                              .format(TournamentFormat.QUALIF_KO)
+                                              .build();
+    Tournament tournament = new Tournament();
+    tournament.setConfig(config);
+
+    TournamentBuilder.setupTournamentWithInitialRounds(tournament, List.of());
+
+    List<Stage> expectedStages = parseStages(expectedStagesCsv);
+    List<Stage> actualStages   = tournament.getRounds().stream().map(Round::getStage).toList();
+    assertEquals(expectedStages, actualStages, "La séquence des rounds doit être correcte");
+  }
+
+  @ParameterizedTest(name = "Config sans qualifs: mainDraw={0}, stages={1}")
+  @CsvSource({
+      // mainDrawSize, expectedStagesCsv
+      "32, R32;R16;QUARTERS;SEMIS;FINAL",
+      "64, R64;R32;R16;QUARTERS;SEMIS;FINAL",
+      "16, R16;QUARTERS;SEMIS;FINAL"
+  })
+  void testSetupTournamentWithInitialRounds_noQualifications_stagesOnly(
+      int mainDrawSize, String expectedStagesCsv) {
+    TournamentConfig config = TournamentConfig.builder()
+                                              .mainDrawSize(mainDrawSize)
+                                              .nbSeeds(8)
+                                              .drawMode(DrawMode.SEEDED)
+                                              .format(TournamentFormat.KNOCKOUT)
+                                              .build();
+    Tournament tournament = new Tournament();
+    tournament.setConfig(config);
+
+    TournamentBuilder.setupTournamentWithInitialRounds(tournament, List.of());
+
+    List<Stage> expectedStages = parseStages(expectedStagesCsv);
+    List<Stage> actualStages   = tournament.getRounds().stream().map(Round::getStage).toList();
+    assertEquals(expectedStages, actualStages, "La séquence des rounds doit être correcte");
   }
 }

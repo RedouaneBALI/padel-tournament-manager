@@ -15,15 +15,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
 public final class TournamentBuilder {
 
   /**
    * Propagate winners across all phases sequentially.
    */
-  public void propagateWinners(Tournament tournament) {
+  public static void propagateWinners(Tournament tournament) {
     if (tournament == null) {
       return;
     }
@@ -33,7 +31,7 @@ public final class TournamentBuilder {
     }
   }
 
-  public List<String> validate(Tournament tournament) {
+  public static List<String> validate(Tournament tournament) {
     List<String> errors = new ArrayList<>();
     if (tournament == null) {
       errors.add("Tournament is null");
@@ -67,7 +65,7 @@ public final class TournamentBuilder {
    * @param tournament tournament with config set (will be modified)
    * @param initialRounds pre-populated initial rounds to replace the empty structure
    */
-  public void setupTournamentWithInitialRounds(Tournament tournament, List<Round> initialRounds) {
+  public static void setupTournamentWithInitialRounds(Tournament tournament, List<Round> initialRounds) {
     if (tournament == null || tournament.getConfig() == null) {
       throw new IllegalArgumentException("Tournament and config cannot be null");
     }
@@ -96,7 +94,7 @@ public final class TournamentBuilder {
    * @param tournament tournament with config set (will be modified)
    * @param playerPairs players to automatically place in the tournament
    */
-  public void setupAndPopulateTournament(Tournament tournament, List<PlayerPair> playerPairs) {
+  public static void setupAndPopulateTournament(Tournament tournament, List<PlayerPair> playerPairs) {
     if (tournament == null || tournament.getConfig() == null) {
       throw new IllegalArgumentException("Tournament and config cannot be null");
     }
@@ -116,7 +114,7 @@ public final class TournamentBuilder {
    * @param playerPairs players to place
    * @return list of populated initial rounds
    */
-  private List<Round> buildAutomaticRounds(Tournament tournament, List<PlayerPair> playerPairs) {
+  private static List<Round> buildAutomaticRounds(Tournament tournament, List<PlayerPair> playerPairs) {
     Tournament tempTournament = new Tournament();
     tempTournament.setConfig(tournament.getConfig());
     initializeEmptyRounds(tempTournament);
@@ -133,7 +131,7 @@ public final class TournamentBuilder {
    *
    * @param tournament tournament with config set (will be modified)
    */
-  public void initializeEmptyRounds(Tournament tournament) {
+  public static void initializeEmptyRounds(Tournament tournament) {
     if (tournament == null || tournament.getConfig() == null) {
       throw new IllegalArgumentException("Tournament and config cannot be null");
     }
@@ -149,7 +147,7 @@ public final class TournamentBuilder {
    * @param config the tournament configuration containing format and other settings
    * @return list of rounds with empty games ready for manual or automatic population
    */
-  private List<Round> createEmptyRounds(TournamentConfig config) {
+  private static List<Round> createEmptyRounds(TournamentConfig config) {
     validateConfig(config);
     return buildPhases(config).stream()
                               .flatMap(phase -> phase.initialize(config).stream())
@@ -159,7 +157,7 @@ public final class TournamentBuilder {
   /**
    * Centralise la création des phases selon la config
    */
-  private List<TournamentPhase> buildPhases(TournamentConfig cfg) {
+  private static List<TournamentPhase> buildPhases(TournamentConfig cfg) {
     List<TournamentPhase> phases = new ArrayList<>();
     TournamentFormat      format = cfg.getFormat();
     if (format == null) {
@@ -169,7 +167,7 @@ public final class TournamentBuilder {
       case KNOCKOUT:
       case QUALIF_KO:
         if (cfg.getPreQualDrawSize() != null && cfg.getPreQualDrawSize() > 0 && cfg.getNbQualifiers() != null && cfg.getNbQualifiers() > 0
-            && cfg.getNbSeedsQualify() != null && cfg.getNbSeedsQualify() > 0) {
+            && cfg.getNbSeedsQualify() != null) {
           phases.add(new KnockoutPhase(cfg.getPreQualDrawSize(), cfg.getNbSeedsQualify(), PhaseType.QUALIFS));
         }
         phases.add(new KnockoutPhase(cfg.getMainDrawSize(), cfg.getNbSeeds(), PhaseType.MAIN_DRAW));
@@ -187,7 +185,7 @@ public final class TournamentBuilder {
   /**
    * Validation centralisée de la config
    */
-  private void validateConfig(TournamentConfig config) {
+  private static void validateConfig(TournamentConfig config) {
     if (config == null) {
       throw new IllegalArgumentException("Tournament config cannot be null");
     }

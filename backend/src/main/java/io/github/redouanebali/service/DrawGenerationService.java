@@ -23,7 +23,6 @@ public class DrawGenerationService {
 
   private final TournamentRepository tournamentRepository;
   private final SecurityProps        securityProps;
-  TournamentBuilder tournamentBuilder = new TournamentBuilder();
 
   public static List<PlayerPair> capPairsToMax(Tournament tournament) {
     List<PlayerPair> pairs    = tournament.getPlayerPairs();
@@ -48,8 +47,7 @@ public class DrawGenerationService {
   public Tournament generateDrawAuto(Tournament tournament) {
     assertCanInitialize(tournament);
 
-    List<PlayerPair> players = capPairsToMax(tournament);
-    tournamentBuilder.setupAndPopulateTournament(tournament, players);
+    TournamentBuilder.setupAndPopulateTournament(tournament, capPairsToMax(tournament));
 
     log.info("Generated draw (auto) for tournament id {}", tournament.getId());
     return tournamentRepository.save(tournament);
@@ -66,14 +64,14 @@ public class DrawGenerationService {
     List<Round> convertedRounds = initialRounds.stream()
                                                .map(req -> RoundRequest.toModel(req, tournament))
                                                .toList();
-    tournamentBuilder.setupTournamentWithInitialRounds(tournament, convertedRounds);
+    TournamentBuilder.setupTournamentWithInitialRounds(tournament, convertedRounds);
 
     log.info("Generated draw (manual) for tournament id {}", tournament.getId());
     return tournamentRepository.save(tournament);
   }
 
   public void propagateWinners(Tournament tournament) {
-    tournamentBuilder.propagateWinners(tournament);
+    TournamentBuilder.propagateWinners(tournament);
   }
 
   private void assertCanInitialize(Tournament tournament) {
@@ -86,7 +84,7 @@ public class DrawGenerationService {
 
 
   public void validate(final Tournament tournament) {
-    List<String> errors = tournamentBuilder.validate(tournament);
+    List<String> errors = TournamentBuilder.validate(tournament);
     if (!errors.isEmpty()) {
       throw new IllegalArgumentException("Invalid tournament configuration: " + String.join(", ", errors));
     }
@@ -96,6 +94,6 @@ public class DrawGenerationService {
     if (tournament == null || tournament.getConfig() == null || tournament.getConfig().getFormat() == null) {
       throw new IllegalArgumentException("Tournoi ou configuration invalide");
     }
-    tournamentBuilder.initializeEmptyRounds(tournament);
+    TournamentBuilder.initializeEmptyRounds(tournament);
   }
 }

@@ -146,9 +146,8 @@ class TournamentBuilderCsvTest {
                                            .build();
     tournament.setConfig(cfg);
 
-    TournamentBuilder builder = new TournamentBuilder();
     // Use public API: create empty tournament structure by providing empty player list
-    builder.setupAndPopulateTournament(tournament, new ArrayList<>());
+    TournamentBuilder.setupAndPopulateTournament(tournament, new ArrayList<>());
 
     // Stage order must match CSV order
     List<Stage> expectedStages = rows.stream()
@@ -230,7 +229,7 @@ class TournamentBuilderCsvTest {
       scoreExistingMatches(currentRound, expectedNbGames);
 
       // Propagate winners to the next round BEFORE validation
-      builder.propagateWinners(tournament);
+      TournamentBuilder.propagateWinners(tournament);
 
       // Validate propagation results
       validatePropagation(currentRound, row);
@@ -406,8 +405,7 @@ class TournamentBuilderCsvTest {
     List<PlayerPair> playerPairs = TestFixtures.createPlayerPairs(20);
 
     // When: Use the new setupTournamentWithPlayers method (replaces 5 manual steps)
-    TournamentBuilder builder = new TournamentBuilder();
-    builder.setupAndPopulateTournament(tournament, playerPairs);
+    TournamentBuilder.setupAndPopulateTournament(tournament, playerPairs);
 
     // Then: Only the first round (R32) should be filled
     Round r32Round = tournament.getRoundByStage(Stage.R32);
@@ -495,9 +493,8 @@ class TournamentBuilderCsvTest {
                                            .build();
     tournament.setConfig(cfg);
 
-    List<PlayerPair>  playerPairs = TestFixtures.createPlayerPairs(nbPlayerPairs);
-    TournamentBuilder builder     = new TournamentBuilder();
-    builder.setupAndPopulateTournament(tournament, playerPairs);
+    List<PlayerPair> playerPairs = TestFixtures.createPlayerPairs(nbPlayerPairs);
+    TournamentBuilder.setupAndPopulateTournament(tournament, playerPairs);
 
     List<Stage> expectedStages = rows.stream()
                                      .map(r -> stringValue(r, "Round").toUpperCase())
@@ -569,7 +566,7 @@ class TournamentBuilderCsvTest {
       assertEquals(nbPlayerPairs, (int) distinctRealTeams,
                    "Distinct real teams mismatch (non-BYE, non-QUALIFIER) for tournament " + tournamentId);
       scoreExistingMatches(currentRound, expectedNbGames);
-      builder.propagateWinners(tournament);
+      TournamentBuilder.propagateWinners(tournament);
 
       // Validation adaptée aux colonnes du CSV
       int actualTotalPairs = currentRound.getGames().size() * 2;
