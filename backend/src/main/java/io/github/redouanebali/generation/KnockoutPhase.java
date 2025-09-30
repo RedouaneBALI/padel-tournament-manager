@@ -90,7 +90,9 @@ public class KnockoutPhase implements TournamentPhase {
     r.setStage(stage);
     List<Game> games = new ArrayList<>(nbGames);
     for (int i = 0; i < nbGames; i++) {
-      games.add(new Game());
+      Game game = new Game();
+      game.setFormat(r.getMatchFormat());
+      games.add(game);
     }
     r.replaceGames(games);
     return r;

@@ -5,6 +5,7 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -29,18 +30,18 @@ public class Game {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne
+  @ManyToOne(cascade = CascadeType.PERSIST)
   @JoinColumn(name = "teama_id")
   private PlayerPair teamA;
 
-  @ManyToOne
+  @ManyToOne(cascade = CascadeType.PERSIST)
   @JoinColumn(name = "teamb_id")
   private PlayerPair teamB;
 
   @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
   private Score score;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "format_id")
   private MatchFormat format;
 
@@ -58,6 +59,9 @@ public class Game {
   private Pool pool;
 
   public Game(MatchFormat format) {
+    if (format == null) {
+      throw new IllegalArgumentException("Le format du match ne peut pas être null");
+    }
     this.format = format;
   }
 

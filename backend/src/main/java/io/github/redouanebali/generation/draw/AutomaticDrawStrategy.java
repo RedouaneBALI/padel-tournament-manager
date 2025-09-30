@@ -9,6 +9,7 @@ import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.format.TournamentFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -171,6 +172,7 @@ public class AutomaticDrawStrategy implements DrawStrategy {
           Game g = new Game();
           g.setTeamA(pool.get(i));
           g.setTeamB(pool.get(j));
+          g.setFormat(round.getMatchFormat());
           games.add(g);
         }
       }
@@ -228,6 +230,9 @@ public class AutomaticDrawStrategy implements DrawStrategy {
    * Calculates how many teams actually participate in the main draw. This accounts for teams that go to qualifications vs direct entry.
    */
   private int calculateMainDrawParticipants(Tournament tournament, List<PlayerPair> allPairs) {
+    if (tournament.getConfig().getFormat() == TournamentFormat.KNOCKOUT) {
+      return tournament.getConfig().getMainDrawSize();
+    }
     int totalSlots   = tournament.getConfig().getMainDrawSize();
     int nbQualifiers = tournament.getConfig().getNbQualifiers();
 

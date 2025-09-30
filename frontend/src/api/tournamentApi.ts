@@ -179,7 +179,9 @@ export async function savePlayerPairs(tournamentId: string, pairs: PlayerPair[])
 }
 
 export async function generateDraw(tournamentId: string, manual: boolean) {
-  const response = await fetchWithAuth(api(`/admin/tournaments/${tournamentId}/draw?manual=${manual}`), {
+  const drawType = manual ? 'manual' : 'auto';
+  console.log("generateDraw");
+  const response = await fetchWithAuth(api(`/admin/tournaments/${tournamentId}/draw/${drawType}`), {
     method: 'POST',
   });
 
