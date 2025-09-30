@@ -14,10 +14,10 @@ export function getInitialFormData(initialData?: Partial<TournamentFormData>): T
     club: '',
     gender: null,
     level: null,
-    format: 'KNOCKOUT',
     startDate: null,
     endDate: null,
     config: {
+      format: 'KNOCKOUT',
       mainDrawSize: 32,
       nbSeeds: 16,
       nbPools: 4,

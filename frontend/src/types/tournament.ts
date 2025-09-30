@@ -19,6 +19,5 @@ export interface Tournament {
   endDate: string;
   isEditable: boolean;
   currentRoundStage: Stage;
-  format: TournamentFormat;
   config: TournamentFormatConfig;
 }

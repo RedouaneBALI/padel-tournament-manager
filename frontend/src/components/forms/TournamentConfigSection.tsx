@@ -72,8 +72,8 @@ export default function TournamentConfigSection({
               Format
             </label>
             <select
-              name="format"
-              value={toStr(formData.format ?? '')}
+              name="config.format"
+              value={toStr(formData.config?.format ?? '')}
               onChange={handleInputChange}
               required
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
@@ -88,14 +88,13 @@ export default function TournamentConfigSection({
         </div>
 
         <div className="grid gap-6 grid-cols-1 md:grid-cols-2 md:max-w-3xl">
-
-          {formData.format === 'KNOCKOUT' && (
+          {formData.config?.format === 'KNOCKOUT' && (
             <KnockoutConfigSection formData={formData} handleInputChange={handleInputChange} />
           )}
-          {formData.format === 'GROUPS_KO' && (
+          {formData.config?.format === 'GROUPS_KO' && (
             <GroupsKoConfigSection formData={formData} handleInputChange={handleInputChange} />
           )}
-          {(formData.format as any) === 'QUALIF_KO' && (
+          {formData.config?.format === 'QUALIF_KO' && (
             <QualifKnockoutConfigSection formData={formData} handleInputChange={handleInputChange} />
           )}
         </div>
