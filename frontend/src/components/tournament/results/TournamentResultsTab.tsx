@@ -39,8 +39,8 @@ export default function TournamentResultsTab({ tournamentId }: TournamentResults
     load();
   }, [tournamentId]);
 
-  const isGroupStageFormat = tournament?.format === 'GROUPS_KO';
-  const isQualifStageFormat = tournament?.format === 'QUALIF_KO';
+  const isGroupStageFormat = tournament?.config?.format === 'GROUPS_KO';
+  const isQualifStageFormat = tournament?.config?.format === 'QUALIF_KO';
 
   const currentStage = tournament?.currentRoundStage;
   const defaultView =
@@ -85,7 +85,7 @@ export default function TournamentResultsTab({ tournamentId }: TournamentResults
                   : 'border-transparent text-muted-foreground hover:text-primary'
               }`}
             >
-              {isGroupStageFormat ? 'Poules' : 'Qualifications'}
+              {isGroupStageFormat ? 'Poules' : isQualifStageFormat ? 'Qualif' : 'Poules'}
             </button>
             <button
               onClick={() => setView(VIEW_PHASE_FINALE)}
@@ -95,7 +95,7 @@ export default function TournamentResultsTab({ tournamentId }: TournamentResults
                   : 'border-transparent text-muted-foreground hover:text-primary'
               }`}
             >
-              Phase finale
+              {isGroupStageFormat || isQualifStageFormat ? 'Tableau principal' : 'Phase finale'}
             </button>
           </nav>
         </div>

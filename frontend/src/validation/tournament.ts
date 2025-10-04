@@ -76,13 +76,13 @@ export const TournamentFormatConfigSchema = z.object({
     required_error: 'Le nombre de qualifiés est requis.'
   }).nullable()).default(2),
   nbSeedsQualify: z.preprocess((v) => {
-    if (v === '' || v === undefined || v === null) return null;
+    if (v === '' || v === undefined || v === null) return 0;
     const n = Number(v);
-    return isNaN(n) ? null : Math.trunc(n);
+    return isNaN(n) ? 0 : Math.trunc(n);
   }, z.number({
     invalid_type_error: 'Le nombre de têtes de série en qualification doit être un nombre.',
     required_error: 'Le nombre de têtes de série en qualification est requis.'
-  }).nullable()).default(null),
+  }).nullable()).default(0),
 });
 
 export const TournamentFormSchema = z.object({
