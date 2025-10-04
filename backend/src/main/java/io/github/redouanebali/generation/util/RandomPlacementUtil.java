@@ -7,8 +7,6 @@ import io.github.redouanebali.model.Round;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 /**
  * Utility for randomly placing remaining teams in tournaments. Extracted logic from KnockoutPhase to make it reusable.
@@ -79,15 +77,8 @@ public class RandomPlacementUtil {
    * Places remaining teams randomly in games for knockout phase.
    */
   private static void placeRemainingTeamsInGames(Round round, List<PlayerPair> remainingTeams) {
-    // Calculate available slots
-    int availableSlots = (int) round.getGames().stream()
-                                    .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
-                                    .filter(Objects::isNull)
-                                    .count();
-
-    // Log warning if more teams than slots (but don't throw - just place what we can)
-    if (remainingTeams.size() > availableSlots) {
-      // Could add logging here in the future
+    if (remainingTeams.isEmpty()) {
+      return;
     }
 
     // Shuffle teams for random placement
@@ -95,16 +86,27 @@ public class RandomPlacementUtil {
     Collections.shuffle(shuffled);
 
     int index = 0;
+
+    // Simply place all teams sequentially in null slots - no fancy logic needed
+    // This ensures all real teams are placed before any BYEs are added
     for (Game game : round.getGames()) {
-      if (game.getTeamA() == null && index < shuffled.size()) {
-        game.setTeamA(shuffled.get(index++));
+      if (index >= shuffled.size()) {
+        break;
       }
-      if (game.getTeamB() == null && index < shuffled.size()) {
-        game.setTeamB(shuffled.get(index++));
+      if (game.getTeamA() == null) {
+        game.setTeamA(shuffled.get(index++));
       }
       if (index >= shuffled.size()) {
         break;
       }
+      if (game.getTeamB() == null) {
+        game.setTeamB(shuffled.get(index++));
+      }
+    }
+
+    // If there are still teams to place (shouldn't happen if enough slots), log warning
+    if (index < shuffled.size()) {
+      System.err.println("WARNING: Could not place all teams. " + (shuffled.size() - index) + " teams remaining.");
     }
   }
 
