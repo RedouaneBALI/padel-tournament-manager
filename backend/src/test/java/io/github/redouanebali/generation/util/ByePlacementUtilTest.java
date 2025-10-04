@@ -35,7 +35,7 @@ public class ByePlacementUtilTest {
     SeedPlacementUtil.placeSeedTeams(round, pairs, nbSeeds, drawSize);
 
     // Act: place BYEs based on the number of registered pairs
-    ByePlacementUtil.placeByeTeams(round, totalPairs, nbSeeds, drawSize);
+    ByePlacementUtil.placeByeTeams(round, totalPairs, nbSeeds, drawSize, 0);
 
     // Assert: BYE count
     int expectedByes = drawSize - totalPairs;
@@ -75,7 +75,7 @@ public class ByePlacementUtilTest {
     Round round = TestFixtures.buildEmptyRound(drawSize);
 
     // Act
-    ByePlacementUtil.placeByeTeams(round, totalPairs, nbSeeds, drawSize);
+    ByePlacementUtil.placeByeTeams(round, totalPairs, nbSeeds, drawSize, 0);
 
     // Assert: BYE count
     int expectedByes = drawSize - totalPairs;
@@ -118,7 +118,7 @@ public class ByePlacementUtilTest {
     Round round = TestFixtures.buildEmptyRound(8);
 
     // Act - totalPairs equals drawSize, so no BYEs needed
-    ByePlacementUtil.placeByeTeams(round, 8, 4, 8);
+    ByePlacementUtil.placeByeTeams(round, 8, 4, 8, 0);
 
     // Assert - no BYEs should be placed
     long actualByes = round.getGames().stream()
@@ -138,7 +138,7 @@ public class ByePlacementUtilTest {
     round.getGames().get(1).setTeamB(PlayerPair.bye());
 
     // Act - should account for existing BYEs
-    ByePlacementUtil.placeByeTeams(round, 4, 2, 8); // Need 4 more BYEs total
+    ByePlacementUtil.placeByeTeams(round, 4, 2, 8, 0); // Need 4 more BYEs total
 
     // Assert - should have exactly 4 BYEs total (2 existing + 2 new)
     long actualByes = round.getGames().stream()
@@ -152,30 +152,30 @@ public class ByePlacementUtilTest {
   void testPlaceByeTeams_ThrowsException_ForInvalidInputs() {
     // Test null round
     assertThrows(IllegalArgumentException.class,
-                 () -> ByePlacementUtil.placeByeTeams(null, 4, 2, 8),
+                 () -> ByePlacementUtil.placeByeTeams(null, 4, 2, 8, 0),
                  "Should throw for null round");
 
     // Test null games
     Round round = new Round();
     round.replaceGames(null);
     assertThrows(IllegalArgumentException.class,
-                 () -> ByePlacementUtil.placeByeTeams(round, 4, 2, 8),
+                 () -> ByePlacementUtil.placeByeTeams(round, 4, 2, 8, 0),
                  "Should throw for null games");
 
     // Test drawSize mismatch
     Round validRound = TestFixtures.buildEmptyRound(8); // 4 games = 8 slots
     assertThrows(IllegalStateException.class,
-                 () -> ByePlacementUtil.placeByeTeams(validRound, 4, 2, 16), // Wrong drawSize
+                 () -> ByePlacementUtil.placeByeTeams(validRound, 4, 2, 16, 0), // Wrong drawSize
                  "Should throw for drawSize mismatch");
 
     // Test non-power-of-two drawSize
     assertThrows(IllegalArgumentException.class,
-                 () -> ByePlacementUtil.placeByeTeams(validRound, 4, 2, 7), // Not power of 2
+                 () -> ByePlacementUtil.placeByeTeams(validRound, 4, 2, 7, 0), // Not power of 2
                  "Should throw for non-power-of-two drawSize");
 
     // Test totalPairs exceeding drawSize
     assertThrows(IllegalArgumentException.class,
-                 () -> ByePlacementUtil.placeByeTeams(validRound, 10, 2, 8), // totalPairs > drawSize
+                 () -> ByePlacementUtil.placeByeTeams(validRound, 10, 2, 8, 0), // totalPairs > drawSize
                  "Should throw when totalPairs exceeds drawSize");
   }
 
@@ -190,7 +190,7 @@ public class ByePlacementUtilTest {
     round.getGames().get(3).setTeamB(pairs.get(1)); // Blocks position 7
 
     // Act - need 4 BYEs but some seed positions are blocked
-    ByePlacementUtil.placeByeTeams(round, 4, 4, 8);
+    ByePlacementUtil.placeByeTeams(round, 4, 4, 8, 0);
 
     // Assert - should still place correct number of BYEs using fallback logic
     long actualByes = round.getGames().stream()
@@ -210,7 +210,7 @@ public class ByePlacementUtilTest {
     round.getGames().get(0).setTeamA(pairs.get(0));
 
     // Act - need 3 BYEs but only 3 slots available
-    ByePlacementUtil.placeByeTeams(round, 1, 2, 4);
+    ByePlacementUtil.placeByeTeams(round, 1, 2, 4, 0);
 
     // Assert - should place all BYEs even if some are BYE vs BYE
     long actualByes = round.getGames().stream()
@@ -233,7 +233,26 @@ public class ByePlacementUtilTest {
 
     // Act & Assert - should throw when trying to place 2 BYEs in 1 slot
     assertThrows(IllegalStateException.class,
-                 () -> ByePlacementUtil.placeByeTeams(round, 2, 2, 4),
+                 () -> ByePlacementUtil.placeByeTeams(round, 2, 2, 4, 0),
                  "Should throw when not enough empty slots for all BYEs");
+  }
+
+  @Test
+  void testPlaceByeTeams_WithQualifiers() {
+    int              drawSize     = 16;
+    int              nbSeeds      = 4;
+    int              totalPairs   = 10;
+    int              nbQualifiers = 2;
+    Round            round        = TestFixtures.buildEmptyRound(drawSize);
+    List<PlayerPair> pairs        = TestFixtures.createPlayerPairs(drawSize);
+    pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
+    SeedPlacementUtil.placeSeedTeams(round, pairs, nbSeeds, drawSize);
+    ByePlacementUtil.placeByeTeams(round, totalPairs, nbSeeds, drawSize, nbQualifiers);
+    int expectedByes = drawSize - totalPairs - nbQualifiers;
+    long actualByes = round.getGames().stream()
+                           .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                           .filter(p -> p != null && p.isBye())
+                           .count();
+    assertEquals(expectedByes, actualByes, "BYE count should exclude qualifier slots");
   }
 }

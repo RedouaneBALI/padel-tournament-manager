@@ -14,56 +14,96 @@ public class ByePlacementUtil {
    * Places BYE teams in a round based on the total number of pairs.
    */
   public static void placeByeTeams(Round round, int totalPairs, int nbSeeds, int drawSize) {
+    placeByeTeams(round, totalPairs, nbSeeds, drawSize, 0);
+  }
+
+  /**
+   * Places BYE teams in a round, skipping slots reserved for qualifiers.
+   *
+   * @param round the round to place BYEs in
+   * @param totalPairs number of direct-entry teams
+   * @param nbSeeds number of seeds
+   * @param drawSize total draw size
+   * @param nbQualifiers number of qualifier slots to skip
+   */
+  public static void placeByeTeams(Round round, int totalPairs, int nbSeeds, int drawSize, int nbQualifiers) {
     if (round == null) {
       throw new IllegalArgumentException("round must not be null");
     }
-
     if (round.getGames() == null) {
       throw new IllegalArgumentException("round/games must not be null");
     }
-
     if (round.getGames().isEmpty()) {
       throw new IllegalArgumentException("round/games must not be empty");
     }
-
     if (drawSize <= 0 || (drawSize & (drawSize - 1)) != 0) {
       throw new IllegalArgumentException("drawSize must be a power of two");
     }
-
     if (totalPairs > drawSize) {
       throw new IllegalArgumentException("totalPairs cannot exceed drawSize");
     }
 
     final List<Game> games = round.getGames();
     final int        slots = games.size() * 2;
-
     if (slots != drawSize) {
       throw new IllegalStateException("Round games do not match drawSize: games*2=" + slots + ", drawSize=" + drawSize);
     }
 
-    // Count how many BYEs are already present to avoid placing too many
     int existingByes = countExistingByes(games);
-    int byesToPlace  = Math.max(0, drawSize - totalPairs - existingByes);
-
+    int byesToPlace  = Math.max(0, drawSize - totalPairs - nbQualifiers - existingByes);
     if (byesToPlace == 0) {
       return;
     }
 
-    // Get seed positions for teams to protect with BYEs
-    List<Integer> protectedSlots = SeedPlacementUtil.getSeedsPositions(drawSize, nbSeeds);
-
-    // Place BYEs opposite protected teams (TS1, TS2, ..., TS_n)
-    byesToPlace = placeByesOppositeProtectedTeams(games, protectedSlots, byesToPlace);
-
-    // If there are still BYEs to place, use fallback logic
-    if (byesToPlace > 0) {
-      byesToPlace = placeFallbackByes(games, byesToPlace);
+    // 1. Place BYEs opposite seeds, skipping qualifier slots
+    List<Integer> seedSlots = SeedPlacementUtil.getSeedsPositions(drawSize, nbSeeds);
+    int           placed    = 0;
+    for (int slot : seedSlots) {
+      if (placed >= byesToPlace) {
+        break;
+      }
+      int     gameIndex = slot / 2;
+      boolean left      = (slot % 2 == 0);
+      Game    g         = games.get(gameIndex);
+      if (left) {
+        if (g.getTeamB() == null && !isReservedForQualifier(g, false)) {
+          g.setTeamB(PlayerPair.bye());
+          placed++;
+        }
+      } else {
+        if (g.getTeamA() == null && !isReservedForQualifier(g, true)) {
+          g.setTeamA(PlayerPair.bye());
+          placed++;
+        }
+      }
     }
-
-    // As a last resort, allow BYE vs BYE if still necessary
-    if (byesToPlace > 0) {
-      placeLastResortByes(games, byesToPlace);
+    // 2. Fallback: place BYEs in any available slot not reserved for qualifier
+    for (Game g : games) {
+      if (placed >= byesToPlace) {
+        break;
+      }
+      if (g.getTeamA() == null && !isReservedForQualifier(g, true)) {
+        g.setTeamA(PlayerPair.bye());
+        placed++;
+      }
+      if (placed >= byesToPlace) {
+        break;
+      }
+      if (g.getTeamB() == null && !isReservedForQualifier(g, false)) {
+        g.setTeamB(PlayerPair.bye());
+        placed++;
+      }
     }
+    // 3. Last resort: throw if not enough slots
+    if (placed < byesToPlace) {
+      throw new IllegalStateException("Not enough empty slots to place all BYEs: remaining=" + (byesToPlace - placed));
+    }
+  }
+
+  // Helper to check if a slot is reserved for a qualifier (to be implemented in main draw logic)
+  private static boolean isReservedForQualifier(Game g, boolean isTeamA) {
+    // By default, always false. Main draw logic should ensure qualifiers are placed before BYEs.
+    return false;
   }
 
   /**

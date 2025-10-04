@@ -495,4 +495,52 @@ public class TournamentBuilderTest {
     List<Stage> actualStages   = tournament.getRounds().stream().map(Round::getStage).toList();
     assertEquals(expectedStages, actualStages, "La séquence des rounds doit être correcte");
   }
+
+  
+  @ParameterizedTest(name = "QUALIF_KO: preQual={0}, nbQualifiers={1}, mainDraw={2}, nbSeeds={3}")
+  @CsvSource({
+      // preQualDrawSize, nbQualifiers, mainDrawSize, nbSeeds
+      "8, 4, 32, 4",
+      "16, 8, 32, 8",
+      "32, 16, 64, 16",
+      "16, 4, 32, 8",
+      "32, 8, 64, 16"
+  })
+  public void testMainDrawHasExactNumberOfQualifiersInQualifKoMode(int preQualDrawSize, int nbQualifiers, int mainDrawSize, int nbSeeds) {
+    int expectedQualifiers = nbQualifiers;
+    int expectedTeams      = mainDrawSize - nbQualifiers;
+
+    TournamentConfig config = TournamentConfig.builder()
+                                              .preQualDrawSize(preQualDrawSize)
+                                              .nbQualifiers(nbQualifiers)
+                                              .mainDrawSize(mainDrawSize)
+                                              .nbSeeds(nbSeeds)
+                                              .drawMode(DrawMode.SEEDED)
+                                              .format(TournamentFormat.QUALIF_KO)
+                                              .build();
+
+    Tournament tournament = new Tournament();
+    tournament.setConfig(config);
+    TournamentBuilder.initializeEmptyRounds(tournament);
+
+    List<PlayerPair> allTeams = TestFixtures.createPlayerPairs(expectedTeams + preQualDrawSize);
+    TournamentBuilder.setupAndPopulateTournament(tournament, allTeams);
+
+    Round mainDrawRound = tournament.getRounds().stream()
+                                    .filter(r -> r.getStage().isMainDraw(mainDrawSize))
+                                    .findFirst()
+                                    .orElseThrow();
+
+    long qualifierCount = mainDrawRound.getGames().stream()
+                                       .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                       .filter(p -> p != null && p.isQualifier())
+                                       .count();
+    long realTeamsCount = mainDrawRound.getGames().stream()
+                                       .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                       .filter(p -> p != null && !p.isQualifier() && !p.isBye())
+                                       .count();
+
+    assertEquals(expectedQualifiers, qualifierCount, "Le main draw doit contenir exactement " + expectedQualifiers + " emplacements QUALIFIER.");
+    assertEquals(expectedTeams, realTeamsCount, "Le main draw doit contenir exactement " + expectedTeams + " équipes directes.");
+  }
 }

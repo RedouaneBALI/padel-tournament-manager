@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class AutomaticDrawStrategy implements DrawStrategy {
 
@@ -198,31 +199,32 @@ public class AutomaticDrawStrategy implements DrawStrategy {
    * Processes a main draw round with automatic logic.
    */
   private void processMainDrawRound(Tournament tournament, Round initialRound, List<PlayerPair> allPairs, int roundDrawSize, int configuredSeeds) {
-    // Calculate how many teams actually participate in this main draw round
-    int totalPairsInMainDraw = calculateMainDrawParticipants(tournament, allPairs);
-
-    // Place configured seeds in their appropriate positions
+    // Step 1: Place seeds
     SeedPlacementUtil.placeSeedTeams(initialRound, allPairs, configuredSeeds, roundDrawSize);
 
-    // Place BYEs opposite protected teams - use the correct count for main draw
-    ByePlacementUtil.placeByeTeams(initialRound, totalPairsInMainDraw, configuredSeeds, roundDrawSize);
+    // Step 2: Place BYEs for direct entries only, skipping qualifier slots
+    int nbQualifiers  = tournament.getConfig().getNbQualifiers();
+    int totalSlots    = tournament.getConfig().getMainDrawSize();
+    int directEntries = Math.min(totalSlots - nbQualifiers, allPairs.size());
+    ByePlacementUtil.placeByeTeams(initialRound, directEntries, configuredSeeds, roundDrawSize, nbQualifiers);
 
-    // Filter already placed teams (seeds and those protected with BYEs)
+    // Step 3: Place qualifiers randomly in available slots
+    RandomPlacementUtil.placeQualifiers(initialRound, nbQualifiers);
+
+    // Step 4: Place remaining teams randomly in available slots
     Set<PlayerPair> alreadyPlaced = new HashSet<>();
     for (Game g : initialRound.getGames()) {
-      if (g.getTeamA() != null && !g.getTeamA().isBye()) {
+      if (g.getTeamA() != null && !g.getTeamA().isBye() && !g.getTeamA().isQualifier()) {
         alreadyPlaced.add(g.getTeamA());
       }
-      if (g.getTeamB() != null && !g.getTeamB().isBye()) {
+      if (g.getTeamB() != null && !g.getTeamB().isBye() && !g.getTeamB().isQualifier()) {
         alreadyPlaced.add(g.getTeamB());
       }
     }
-
     List<PlayerPair> remainingTeams = allPairs.stream()
                                               .filter(p -> !alreadyPlaced.contains(p))
-                                              .toList();
-
-    // Place remaining teams in available slots
+                                              .limit(directEntries)
+                                              .collect(Collectors.toList());
     RandomPlacementUtil.placeRemainingTeamsRandomly(initialRound, remainingTeams);
   }
 

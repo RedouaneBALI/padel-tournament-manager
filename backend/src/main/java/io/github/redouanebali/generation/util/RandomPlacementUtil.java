@@ -109,6 +109,41 @@ public class RandomPlacementUtil {
   }
 
   /**
+   * Randomly places the required number of QUALIFIER placeholders in available slots of a round.
+   *
+   * @param round the round to place qualifiers in
+   * @param nbQualifiers number of qualifiers to place
+   */
+  public static void placeQualifiers(Round round, int nbQualifiers) {
+    if (round == null || nbQualifiers <= 0) {
+      return;
+    }
+    List<Game> games          = round.getGames();
+    List<Slot> availableSlots = new ArrayList<>();
+    for (Game g : games) {
+      if (g.getTeamA() == null) {
+        availableSlots.add(new Slot(g, true));
+      }
+      if (g.getTeamB() == null) {
+        availableSlots.add(new Slot(g, false));
+      }
+    }
+    Collections.shuffle(availableSlots);
+    int placed = 0;
+    for (Slot slot : availableSlots) {
+      if (placed >= nbQualifiers) {
+        break;
+      }
+      if (slot.isTeamA) {
+        slot.game.setTeamA(PlayerPair.qualifier());
+      } else {
+        slot.game.setTeamB(PlayerPair.qualifier());
+      }
+      placed++;
+    }
+  }
+
+  /**
    * Places teams in order (without shuffling) - useful for manual mode.
    */
   // @todo this method should manage pools
@@ -139,6 +174,18 @@ public class RandomPlacementUtil {
           round.getPools().get(poolIndex).addPair(teams.get((poolIndex * nbPairsPerPool) + i));
         }
       }
+    }
+  }
+
+  // Helper class to represent a slot in a game (teamA or teamB)
+  private static class Slot {
+
+    Game    game;
+    boolean isTeamA;
+
+    Slot(Game game, boolean isTeamA) {
+      this.game    = game;
+      this.isTeamA = isTeamA;
     }
   }
 }
