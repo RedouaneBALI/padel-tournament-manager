@@ -1,0 +1,436 @@
+{
+  "firstQualifPhase": [
+    {
+      "teamA": {
+        "player1": "Player1A",
+        "player2": "Player1B"
+      },
+      "teamB": {
+        "player1": "Player2A",
+        "player2": "Player2B"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "Player3A",
+        "player2": "Player3B"
+      },
+      "teamB": {
+        "player1": "Player4A",
+        "player2": "Player4B"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "Player5A",
+        "player2": "Player5B"
+      },
+      "teamB": {
+        "player1": "Player6A",
+        "player2": "Player6B"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "Player7A",
+        "player2": "Player7B"
+      },
+      "teamB": {
+        "player1": "Player8A",
+        "player2": "Player8B"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "Player9A",
+        "player2": "Player9B"
+      },
+      "teamB": {
+        "player1": "Player10A",
+        "player2": "Player10B"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "Player11A",
+        "player2": "Player11B"
+      },
+      "teamB": {
+        "player1": "Player12A",
+        "player2": "Player12B"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "Player13A",
+        "player2": "Player13B"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "Player14A",
+        "player2": "Player14B"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "Player15A",
+        "player2": "Player15B"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "Player16A",
+        "player2": "Player16B"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "Player17A",
+        "player2": "Player17B"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "Player18A",
+        "player2": "Player18B"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "Player19A",
+        "player2": "Player19B"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "Player20A",
+        "player2": "Player20B"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "Player21A",
+        "player2": "Player21B"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "Player22A",
+        "player2": "Player22B"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    }
+  ],
+  "firstMainPhase": [
+    {
+      "teamA": {
+        "player1": "BENNANI DAKHAMA WALID",
+        "player2": "MOUMAR ADAM"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "type": "BYE"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "KHADDARI KARIM",
+        "player2": "CORBELLI SÉBASTIEN"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "BENSAID HATIM",
+        "player2": "BENNANI ZIATNI OTHMANE"
+      },
+      "teamB": {
+        "type": "QUALIFIER"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "MECHICHE ALAMI ISMAIL",
+        "player2": "MARHRAOUI MEHDI"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "type": "BYE"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "CHAKI MOHAMED SAID",
+        "player2": "CHAHOUI AYMANE"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "EL ALLAMI OMAR",
+        "player2": "SBAI JASSIME"
+      },
+      "teamB": {
+        "type": "QUALIFIER"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "CHAKI RABIE",
+        "player2": "HICHAM IDRISS"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "type": "BYE"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "BERGAMASCHI THEO",
+        "player2": "OUABED RAYAN"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "LAHRICHI SAAD",
+        "player2": "BENKIRANE SAAD"
+      },
+      "teamB": {
+        "type": "QUALIFIER"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "BENZAKOUR MEHDI",
+        "player2": "SAISSI MEHDI"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "type": "BYE"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "TAGHY ZAKARIA",
+        "player2": "TAZI DRISS"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "player1": "KHAOUDA BADR",
+        "player2": "EL OMARI MEHDI"
+      },
+      "teamB": {
+        "type": "QUALIFIER"
+      }
+    },
+    {
+      "teamA": {
+        "type": "QUALIFIER"
+      },
+      "teamB": {
+        "player1": "FREJ AHMED",
+        "player2": "EL HASSANI AYMEN"
+      }
+    },
+    {
+      "teamA": {
+        "type": "BYE"
+      },
+      "teamB": {
+        "player1": "MEZZOUR JAAFAR",
+        "player2": "HASNAOUI JAAFAR"
+      }
+    },
+    {
+      "teamA": {
+        "type": "BYE"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "type": "BYE"
+      },
+      "teamB": {
+        "player1": "ALAMI MEHDI",
+        "player2": "ZIADI MEHDI"
+      }
+    },
+    {
+      "teamA": {
+        "type": "QUALIFIER"
+      },
+      "teamB": {
+        "player1": "LAHBABI ALI",
+        "player2": "CONTIE JONATHAN"
+      }
+    },
+    {
+      "teamA": {
+        "type": "BYE"
+      },
+      "teamB": {
+        "player1": "BERRADA GHALI",
+        "player2": "BENABDALLAH ABDELKADER"
+      }
+    },
+    {
+      "teamA": {
+        "type": "BYE"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "type": "BYE"
+      },
+      "teamB": {
+        "player1": "MECHICHE ALAMI MAMOUN",
+        "player2": "BARROSO SERGI"
+      }
+    },
+    {
+      "teamA": {
+        "type": "QUALIFIER"
+      },
+      "teamB": {
+        "player1": "ALAOUI MOULAY",
+        "player2": "BENNOUNA AMINE"
+      }
+    },
+    {
+      "teamA": {
+        "type": "BYE"
+      },
+      "teamB": {
+        "player1": "MENJRA MAHMOUD",
+        "player2": "EL KHARROUBI MONCEF"
+      }
+    },
+    {
+      "teamA": {
+        "type": "BYE"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "type": "BYE"
+      },
+      "teamB": {
+        "player1": "FATHI OMAR",
+        "player2": "DOUIRI ANAS"
+      }
+    },
+    {
+      "teamA": {
+        "type": "QUALIFIER"
+      },
+      "teamB": {
+        "player1": "SEDKI MESSAOURI ABDELALI",
+        "player2": "SEFIANI ELIAS"
+      }
+    },
+    {
+      "teamA": {
+        "type": "BYE"
+      },
+      "teamB": {
+        "player1": "BOUAOUDA ANAS",
+        "player2": "MEKAOUI MEHDI"
+      }
+    },
+    {
+      "teamA": {
+        "type": "BYE"
+      },
+      "teamB": {
+        "type": "BYE"
+      }
+    },
+    {
+      "teamA": {
+        "type": "BYE"
+      },
+      "teamB": {
+        "player1": "PAYAN IGNACIO",
+        "player2": "MEKKOUAR ALI"
+      }
+    }
+  ]
+}

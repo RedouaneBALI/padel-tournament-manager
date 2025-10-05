@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TournamentConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">io.github.redouanebali.model.format</a> &gt; <span class="el_source">TournamentConfig.java</span></div><h1>TournamentConfig.java</h1><pre class="source lang-java linenums">package io.github.redouanebali.model.format;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Builder
+@JsonDeserialize(builder = TournamentConfig.TournamentConfigBuilder.class)
+public class TournamentConfig {
+
+  // The tournament format type (knockout, groups+knockout, qualifying+knockout)
+  @Builder.Default
+  private TournamentFormat format            = TournamentFormat.KNOCKOUT;
+  // Number of pairs in the main draw (used for KNOCKOUT and QUALIF_KO formats)
+  @Builder.Default
+  private Integer          mainDrawSize      = 0;
+  // Number of seeded pairs in the tournament
+  @Builder.Default
+  private Integer          nbSeeds           = 0;
+  // Draw generation mode (seeded vs manual placement)
+  @Builder.Default
+  private DrawMode         drawMode          = DrawMode.SEEDED;
+  // Whether higher seeds enter the tournament in later rounds
+  @Builder.Default
+  private Boolean          staggeredEntry    = false;
+  // Number of pools in group phase (used for GROUPS_KO format)
+  @Builder.Default
+  private Integer          nbPools           = 0;
+  // Number of pairs per pool in group phase (used for GROUPS_KO format)
+  @Builder.Default
+  private Integer          nbPairsPerPool    = 0;
+  // Number of pairs that qualify from each pool to knockout phase
+  @Builder.Default
+  private Integer          nbQualifiedByPool = 0;
+  // Size of the pre-qualifying draw (used for QUALIF_KO format)
+  @Builder.Default
+  private Integer          preQualDrawSize   = 0;
+  // Number of pairs that qualify from pre-qualifying to main draw
+  @Builder.Default
+  private Integer          nbQualifiers      = 0;
+  // Number of seeded pairs in the pre-qualifying draw (used for QUALIF_KO format)
+  @Builder.Default
+  private Integer          nbSeedsQualify    = 0;
+
+  @JsonIgnore
+  public int getNbMaxPairs() {
+<span class="nc bnc" id="L53" title="All 4 branches missed.">    switch (format) {</span>
+      case KNOCKOUT -&gt; {
+<span class="nc" id="L55">        return mainDrawSize;</span>
+      }
+      case GROUPS_KO -&gt; {
+<span class="nc" id="L58">        return nbPairsPerPool * nbPairsPerPool;</span>
+      }
+      case QUALIF_KO -&gt; {
+<span class="nc" id="L61">        return mainDrawSize + preQualDrawSize;</span>
+      }
+    }
+<span class="nc" id="L64">    return 0;</span>
+  }
+
+  @JsonPOJOBuilder(withPrefix = &quot;&quot;)
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  public static class TournamentConfigBuilder {
+
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KnockoutPhase.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">io.github.redouanebali.generation</a> &gt; <span class="el_source">KnockoutPhase.java</span></div><h1>KnockoutPhase.java</h1><pre class="source lang-java linenums">package io.github.redouanebali.generation;
+
+import io.github.redouanebali.generation.util.ByePlacementUtil;
+import io.github.redouanebali.generation.util.RandomPlacementUtil;
+import io.github.redouanebali.generation.util.SeedPlacementUtil;
+import io.github.redouanebali.generation.util.StaggeredSeedPlacementUtil;
+import io.github.redouanebali.generation.util.propagation.WinnerPropagationUtil;
+import io.github.redouanebali.model.Game;
+import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.Stage;
+import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.format.TournamentConfig;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
+public class KnockoutPhase implements TournamentPhase {
+
+  private final WinnerPropagationUtil winnerPropagationUtil = new WinnerPropagationUtil();
+  private       int                   drawSize;
+  private       int                   nbSeeds;
+  private       PhaseType             phaseType;
+
+  @Override
+  public List&lt;String&gt; validate(final Tournament tournament) {
+<span class="nc" id="L28">    return List.of();</span>
+  }
+
+  @Override
+  public List&lt;Round&gt; initialize(final TournamentConfig config) {
+<span class="fc" id="L33">    validateConfig(config);</span>
+<span class="fc" id="L34">    return buildRounds(config);</span>
+  }
+
+  private void validateConfig(TournamentConfig config) {
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">    if (config == null) {</span>
+<span class="nc" id="L39">      throw new IllegalArgumentException(&quot;config is null&quot;);</span>
+    }
+<span class="pc bpc" id="L41" title="2 of 4 branches missed.">    if (drawSize &lt;= 0 || (drawSize &amp; (drawSize - 1)) != 0) {</span>
+<span class="nc" id="L42">      throw new IllegalArgumentException(&quot;drawSize must be a power of two&quot;);</span>
+    }
+<span class="fc" id="L44">  }</span>
+
+  private List&lt;Round&gt; buildRounds(TournamentConfig config) {
+<span class="fc" id="L47">    final List&lt;Round&gt; rounds = new ArrayList&lt;&gt;();</span>
+
+<span class="pc bpc" id="L49" title="1 of 3 branches missed.">    switch (phaseType) {</span>
+<span class="fc" id="L50">      case QUALIFS -&gt; buildQualificationRounds(rounds, config);</span>
+<span class="fc" id="L51">      case MAIN_DRAW -&gt; buildMainDrawRounds(rounds);</span>
+<span class="nc" id="L52">      default -&gt; throw new IllegalStateException(&quot;Unsupported phaseType: &quot; + phaseType);</span>
+    }
+
+<span class="fc" id="L55">    return rounds;</span>
+  }
+
+  private void buildQualificationRounds(List&lt;Round&gt; rounds, TournamentConfig config) {
+<span class="fc" id="L59">    validateQualificationConfig(config);</span>
+
+<span class="fc" id="L61">    int slots  = drawSize;</span>
+<span class="fc" id="L62">    int qIndex = 1;</span>
+
+<span class="pc bpc" id="L64" title="1 of 4 branches missed.">    while (slots / 2 &gt;= config.getNbQualifiers() &amp;&amp; qIndex &lt;= 3) {</span>
+<span class="fc" id="L65">      rounds.add(buildRound(Stage.fromQualifIndex(qIndex), slots / 2));</span>
+<span class="fc" id="L66">      slots /= 2;</span>
+<span class="fc" id="L67">      qIndex++;</span>
+    }
+<span class="fc" id="L69">  }</span>
+
+  private void validateQualificationConfig(TournamentConfig config) {
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">    if (config.getNbQualifiers() &lt;= 0</span>
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">        || (config.getNbQualifiers() &amp; (config.getNbQualifiers() - 1)) != 0</span>
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">        || config.getNbQualifiers() &gt; drawSize) {</span>
+<span class="nc" id="L75">      throw new IllegalArgumentException(&quot;nbQualifiers must be a power of two in (0, drawSize]&quot;);</span>
+    }
+<span class="fc" id="L77">  }</span>
+
+  private void buildMainDrawRounds(List&lt;Round&gt; rounds) {
+<span class="fc" id="L80">    int slots = drawSize;</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">    while (slots &gt;= 2) {</span>
+<span class="fc" id="L82">      Stage stage = Stage.fromNbTeams(slots);</span>
+<span class="fc" id="L83">      rounds.add(buildRound(stage, slots / 2));</span>
+<span class="fc" id="L84">      slots /= 2;</span>
+<span class="fc" id="L85">    }</span>
+<span class="fc" id="L86">  }</span>
+
+  private Round buildRound(Stage stage, int nbGames) {
+<span class="fc" id="L89">    Round r = new Round();</span>
+<span class="fc" id="L90">    r.setStage(stage);</span>
+<span class="fc" id="L91">    List&lt;Game&gt; games = new ArrayList&lt;&gt;(nbGames);</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">    for (int i = 0; i &lt; nbGames; i++) {</span>
+<span class="fc" id="L93">      Game game = new Game();</span>
+<span class="fc" id="L94">      game.setFormat(r.getMatchFormat());</span>
+<span class="fc" id="L95">      games.add(game);</span>
+    }
+<span class="fc" id="L97">    r.replaceGames(games);</span>
+<span class="fc" id="L98">    return r;</span>
+  }
+
+  @Override
+  public void placeSeedTeams(final Round round, final List&lt;PlayerPair&gt; playerPairs) {
+<span class="fc" id="L103">    SeedPlacementUtil.placeSeedTeams(round, playerPairs, this.nbSeeds, this.drawSize);</span>
+<span class="fc" id="L104">  }</span>
+
+  /**
+   * Place seeds teams for staggered entry tournaments.
+   */
+  public void placeSeedTeamsStaggered(final Round round,
+                                      final List&lt;PlayerPair&gt; playerPairs,
+                                      Stage currentStage,
+                                      int mainDrawSize,
+                                      int totalSeeds,
+                                      boolean isFirstRound) {
+<span class="nc" id="L115">    StaggeredSeedPlacementUtil.placeSeedTeamsStaggered(</span>
+        round, playerPairs, currentStage, mainDrawSize, totalSeeds, isFirstRound);
+<span class="nc" id="L117">  }</span>
+
+  @Override
+  public void placeByeTeams(final Round round, final int totalPairs) {
+<span class="nc" id="L121">    ByePlacementUtil.placeByeTeams(round, totalPairs, this.nbSeeds, this.drawSize);</span>
+<span class="nc" id="L122">  }</span>
+
+  @Override
+  public void placeRemainingTeamsRandomly(final Round round, final List&lt;PlayerPair&gt; remainingTeams) {
+<span class="fc" id="L126">    RandomPlacementUtil.placeRemainingTeamsRandomly(round, remainingTeams);</span>
+<span class="fc" id="L127">  }</span>
+
+  @Override
+  public void propagateWinners(final Tournament tournament) {
+<span class="fc" id="L131">    winnerPropagationUtil.propagateWinners(tournament);</span>
+<span class="fc" id="L132">  }</span>
+
+  @Override
+  public Stage getInitialStage() {
+<span class="nc bnc" id="L136" title="All 3 branches missed.">    return switch (phaseType) {</span>
+<span class="nc" id="L137">      case QUALIFS -&gt; Stage.Q1;</span>
+<span class="nc" id="L138">      case MAIN_DRAW -&gt; Stage.fromNbTeams(drawSize);</span>
+<span class="nc" id="L139">      default -&gt; throw new IllegalStateException(&quot;Unsupported phaseType: &quot; + phaseType);</span>
+    };
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

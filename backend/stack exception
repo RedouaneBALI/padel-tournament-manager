@@ -9,11 +9,11 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
 2025-08-08 21:33:35 2025-08-08T21:33:35.397Z  INFO 1 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
 2025-08-08 21:33:35 2025-08-08T21:33:35.552Z  INFO 1 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 131 ms. Found 1 JPA repository interface.
 2025-08-08 21:33:37 2025-08-08T21:33:37.322Z  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
-2025-08-08 21:33:37 2025-08-08T21:33:37.367Z  INFO 1 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-08-08 21:33:37 2025-08-08T21:33:37.367Z  INFO 1 --- [           main] o.apache.catalina.core.StandardService   : Starting io.github.redouanebali.api.service [Tomcat]
 2025-08-08 21:33:37 2025-08-08T21:33:37.368Z  INFO 1 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.43]
 2025-08-08 21:33:37 2025-08-08T21:33:37.426Z  INFO 1 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
 2025-08-08 21:33:37 2025-08-08T21:33:37.429Z  INFO 1 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 4547 ms
-2025-08-08 21:33:38 2025-08-08T21:33:38.188Z  INFO 1 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-08-08 21:33:38 2025-08-08T21:33:38.188Z  INFO 1 --- [           main] o.hibernate.jpa.internal.io.github.redouanebali.api.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
 2025-08-08 21:33:38 2025-08-08T21:33:38.305Z  INFO 1 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.22.Final
 2025-08-08 21:33:38 2025-08-08T21:33:38.375Z  INFO 1 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
 2025-08-08 21:33:39 2025-08-08T21:33:39.073Z  INFO 1 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
@@ -28,7 +28,7 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
 2025-08-08 21:33:39     Isolation level: undefined/unknown
 2025-08-08 21:33:39     Minimum pool size: undefined/unknown
 2025-08-08 21:33:39     Maximum pool size: undefined/unknown
-2025-08-08 21:33:42 2025-08-08T21:33:42.515Z  INFO 1 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-08-08 21:33:42 2025-08-08T21:33:42.515Z  INFO 1 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform io.github.redouanebali.api.integration)
 2025-08-08 21:33:42 2025-08-08T21:33:42.749Z  INFO 1 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
 2025-08-08 21:33:43 2025-08-08T21:33:43.424Z  WARN 1 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
 2025-08-08 21:33:44 2025-08-08T21:33:44.723Z  INFO 1 --- [           main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:testdb'
@@ -52,11 +52,11 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
 2025-08-08 21:49:26 2025-08-08T21:49:26.550Z  INFO 1 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
 2025-08-08 21:49:26 2025-08-08T21:49:26.655Z  INFO 1 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 87 ms. Found 1 JPA repository interface.
 2025-08-08 21:49:27 2025-08-08T21:49:27.742Z  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
-2025-08-08 21:49:27 2025-08-08T21:49:27.764Z  INFO 1 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-08-08 21:49:27 2025-08-08T21:49:27.764Z  INFO 1 --- [           main] o.apache.catalina.core.StandardService   : Starting io.github.redouanebali.api.service [Tomcat]
 2025-08-08 21:49:27 2025-08-08T21:49:27.765Z  INFO 1 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.43]
 2025-08-08 21:49:27 2025-08-08T21:49:27.811Z  INFO 1 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
 2025-08-08 21:49:27 2025-08-08T21:49:27.814Z  INFO 1 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 3064 ms
-2025-08-08 21:49:28 2025-08-08T21:49:28.225Z  INFO 1 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-08-08 21:49:28 2025-08-08T21:49:28.225Z  INFO 1 --- [           main] o.hibernate.jpa.internal.io.github.redouanebali.api.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
 2025-08-08 21:49:28 2025-08-08T21:49:28.326Z  INFO 1 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.22.Final
 2025-08-08 21:49:28 2025-08-08T21:49:28.395Z  INFO 1 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
 2025-08-08 21:49:29 2025-08-08T21:49:29.037Z  INFO 1 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
@@ -71,7 +71,7 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
 2025-08-08 21:49:29     Isolation level: undefined/unknown
 2025-08-08 21:49:29     Minimum pool size: undefined/unknown
 2025-08-08 21:49:29     Maximum pool size: undefined/unknown
-2025-08-08 21:49:32 2025-08-08T21:49:32.194Z  INFO 1 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-08-08 21:49:32 2025-08-08T21:49:32.194Z  INFO 1 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform io.github.redouanebali.api.integration)
 2025-08-08 21:49:32 2025-08-08T21:49:32.337Z  INFO 1 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
 2025-08-08 21:49:32 2025-08-08T21:49:32.875Z  WARN 1 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
 2025-08-08 21:49:34 2025-08-08T21:49:34.078Z  INFO 1 --- [           main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:testdb'
@@ -99,11 +99,11 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
 2025-08-08 22:18:48 2025-08-08T22:18:48.015Z  INFO 1 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
 2025-08-08 22:18:48 2025-08-08T22:18:48.149Z  INFO 1 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 105 ms. Found 1 JPA repository interface.
 2025-08-08 22:18:49 2025-08-08T22:18:49.138Z  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
-2025-08-08 22:18:49 2025-08-08T22:18:49.172Z  INFO 1 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-08-08 22:18:49 2025-08-08T22:18:49.172Z  INFO 1 --- [           main] o.apache.catalina.core.StandardService   : Starting io.github.redouanebali.api.service [Tomcat]
 2025-08-08 22:18:49 2025-08-08T22:18:49.172Z  INFO 1 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.43]
 2025-08-08 22:18:49 2025-08-08T22:18:49.222Z  INFO 1 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
 2025-08-08 22:18:49 2025-08-08T22:18:49.224Z  INFO 1 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2967 ms
-2025-08-08 22:18:49 2025-08-08T22:18:49.692Z  INFO 1 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-08-08 22:18:49 2025-08-08T22:18:49.692Z  INFO 1 --- [           main] o.hibernate.jpa.internal.io.github.redouanebali.api.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
 2025-08-08 22:18:49 2025-08-08T22:18:49.807Z  INFO 1 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.22.Final
 2025-08-08 22:18:49 2025-08-08T22:18:49.873Z  INFO 1 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
 2025-08-08 22:18:50 2025-08-08T22:18:50.429Z  INFO 1 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
@@ -118,7 +118,7 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
 2025-08-08 22:18:50     Isolation level: undefined/unknown
 2025-08-08 22:18:50     Minimum pool size: undefined/unknown
 2025-08-08 22:18:50     Maximum pool size: undefined/unknown
-2025-08-08 22:18:53 2025-08-08T22:18:53.453Z  INFO 1 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-08-08 22:18:53 2025-08-08T22:18:53.453Z  INFO 1 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform io.github.redouanebali.api.integration)
 2025-08-08 22:18:53 2025-08-08T22:18:53.580Z  INFO 1 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
 2025-08-08 22:18:54 2025-08-08T22:18:54.086Z  WARN 1 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
 2025-08-08 22:18:55 2025-08-08T22:18:55.179Z  INFO 1 --- [           main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:testdb'
@@ -132,8 +132,8 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
 2025-08-08 22:31:21 POST 401 https://padel-backend-307569718213.us-central1.run.app/admin/tournaments
 2025-08-08 22:35:01 OPTIONS 200 https://padel-backend-307569718213.us-central1.run.app/admin/tournaments
 2025-08-08 22:35:01 POST 500 https://padel-backend-307569718213.us-central1.run.app/admin/tournaments
-2025-08-08 22:35:04 2025-08-08T22:35:04.059Z  INFO 1 --- [nio-8080-exec-2] i.g.r.service.TournamentService          : Created tournament with id 1
-2025-08-08 22:35:04 2025-08-08T22:35:04.355Z ERROR 1 --- [nio-8080-exec-2] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: org.springframework.orm.jpa.JpaSystemException: A collection with orphan deletion was no longer referenced by the owning entity instance: io.github.redouanebali.model.Tournament.rounds] with root cause
+2025-08-08 22:35:04 2025-08-08T22:35:04.059Z  INFO 1 --- [nio-8080-exec-2] i.g.r.io.github.redouanebali.api.service.TournamentService          : Created tournament with id 1
+2025-08-08 22:35:04 2025-08-08T22:35:04.355Z ERROR 1 --- [nio-8080-exec-2] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.io.github.redouanebali.api.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: org.springframework.orm.jpa.JpaSystemException: A collection with orphan deletion was no longer referenced by the owning entity instance: io.github.redouanebali.model.Tournament.rounds] with root cause
 2025-08-08 22:35:04 org.hibernate.HibernateException: A collection with orphan deletion was no longer referenced by the owning entity instance: io.github.redouanebali.model.Tournament.rounds
         at org.hibernate.engine.internal.Collections.processDereferencedCollection(Collections.java:98) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
         at org.hibernate.engine.internal.Collections.processUnreachableCollection(Collections.java:49) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
@@ -141,7 +141,7 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
         at org.hibernate.event.internal.AbstractFlushingEventListener.flushEverythingToExecutions(AbstractFlushingEventListener.java:91) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
         at org.hibernate.event.internal.AbstractFlushingEventListener.flushEverythingToExecutions(AbstractFlushingEventListener.java:84) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
         at org.hibernate.event.internal.DefaultFlushEventListener.onFlush(DefaultFlushEventListener.java:40) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
-        at org.hibernate.event.service.internal.EventListenerGroupImpl.fireEventOnEachListener(EventListenerGroupImpl.java:127) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
+        at org.hibernate.event.io.github.redouanebali.api.service.internal.EventListenerGroupImpl.fireEventOnEachListener(EventListenerGroupImpl.java:127) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
         at org.hibernate.internal.SessionImpl.doFlush(SessionImpl.java:1429) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
         at org.hibernate.internal.SessionImpl.managedFlush(SessionImpl.java:491) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
         at org.hibernate.internal.SessionImpl.flushBeforeTransactionCompletion(SessionImpl.java:2354) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
@@ -163,7 +163,7 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
         at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.9.jar!/:6.2.9]
         at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:223) ~[spring-aop-6.2.9.jar!/:6.2.9]
         at jdk.proxy2/jdk.proxy2.$Proxy135.save(Unknown Source) ~[na:na]
-        at io.github.redouanebali.service.TournamentService.createTournament(TournamentService.java:48) ~[!/:1.0-SNAPSHOT]
+        at io.github.redouanebali.io.github.redouanebali.api.service.TournamentService.createTournament(TournamentService.java:48) ~[!/:1.0-SNAPSHOT]
         at io.github.redouanebali.controller.AdminTournamentController.createTournament(AdminTournamentController.java:45) ~[!/:1.0-SNAPSHOT]
         at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source) ~[na:na]
         at java.base/java.lang.reflect.Method.invoke(Unknown Source) ~[na:na]
@@ -177,9 +177,9 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
         at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979) ~[spring-webmvc-6.2.9.jar!/:6.2.9]
         at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014) ~[spring-webmvc-6.2.9.jar!/:6.2.9]
         at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914) ~[spring-webmvc-6.2.9.jar!/:6.2.9]
-        at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885) ~[spring-webmvc-6.2.9.jar!/:6.2.9]
-        at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at jakarta.servlet.http.HttpServlet.io.github.redouanebali.api.service(HttpServlet.java:590) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.springframework.web.servlet.FrameworkServlet.io.github.redouanebali.api.service(FrameworkServlet.java:885) ~[spring-webmvc-6.2.9.jar!/:6.2.9]
+        at jakarta.servlet.http.HttpServlet.io.github.redouanebali.api.service(HttpServlet.java:658) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51) ~[tomcat-embed-websocket-10.1.43.jar!/:na]
@@ -259,19 +259,19 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
         at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.apache.catalina.connector.CoyoteAdapter.io.github.redouanebali.api.service(CoyoteAdapter.java:344) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.apache.coyote.http11.Http11Processor.io.github.redouanebali.api.service(Http11Processor.java:398) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1769) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1189) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.apache.tomcat.io.github.redouanebali.api.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1769) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.apache.tomcat.io.github.redouanebali.api.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.apache.tomcat.io.github.redouanebali.api.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1189) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.apache.tomcat.io.github.redouanebali.api.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.apache.tomcat.io.github.redouanebali.api.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at java.base/java.lang.Thread.run(Unknown Source) ~[na:na]
 2025-08-08 22:36:54 POST 500 https://padel-backend-307569718213.us-central1.run.app/admin/tournaments
-2025-08-08 22:36:54 2025-08-08T22:36:54.292Z  INFO 1 --- [nio-8080-exec-7] i.g.r.service.TournamentService          : Created tournament with id 2
-2025-08-08 22:36:54 2025-08-08T22:36:54.352Z ERROR 1 --- [nio-8080-exec-7] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: org.springframework.orm.jpa.JpaSystemException: A collection with orphan deletion was no longer referenced by the owning entity instance: io.github.redouanebali.model.Tournament.rounds] with root cause
+2025-08-08 22:36:54 2025-08-08T22:36:54.292Z  INFO 1 --- [nio-8080-exec-7] i.g.r.io.github.redouanebali.api.service.TournamentService          : Created tournament with id 2
+2025-08-08 22:36:54 2025-08-08T22:36:54.352Z ERROR 1 --- [nio-8080-exec-7] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.io.github.redouanebali.api.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: org.springframework.orm.jpa.JpaSystemException: A collection with orphan deletion was no longer referenced by the owning entity instance: io.github.redouanebali.model.Tournament.rounds] with root cause
 2025-08-08 22:36:54 org.hibernate.HibernateException: A collection with orphan deletion was no longer referenced by the owning entity instance: io.github.redouanebali.model.Tournament.rounds
         at org.hibernate.engine.internal.Collections.processDereferencedCollection(Collections.java:98) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
         at org.hibernate.engine.internal.Collections.processUnreachableCollection(Collections.java:49) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
@@ -279,7 +279,7 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
         at org.hibernate.event.internal.AbstractFlushingEventListener.flushEverythingToExecutions(AbstractFlushingEventListener.java:91) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
         at org.hibernate.event.internal.AbstractFlushingEventListener.flushEverythingToExecutions(AbstractFlushingEventListener.java:84) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
         at org.hibernate.event.internal.DefaultFlushEventListener.onFlush(DefaultFlushEventListener.java:40) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
-        at org.hibernate.event.service.internal.EventListenerGroupImpl.fireEventOnEachListener(EventListenerGroupImpl.java:127) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
+        at org.hibernate.event.io.github.redouanebali.api.service.internal.EventListenerGroupImpl.fireEventOnEachListener(EventListenerGroupImpl.java:127) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
         at org.hibernate.internal.SessionImpl.doFlush(SessionImpl.java:1429) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
         at org.hibernate.internal.SessionImpl.managedFlush(SessionImpl.java:491) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
         at org.hibernate.internal.SessionImpl.flushBeforeTransactionCompletion(SessionImpl.java:2354) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
@@ -301,7 +301,7 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
         at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.9.jar!/:6.2.9]
         at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:223) ~[spring-aop-6.2.9.jar!/:6.2.9]
         at jdk.proxy2/jdk.proxy2.$Proxy135.save(Unknown Source) ~[na:na]
-        at io.github.redouanebali.service.TournamentService.createTournament(TournamentService.java:48) ~[!/:1.0-SNAPSHOT]
+        at io.github.redouanebali.io.github.redouanebali.api.service.TournamentService.createTournament(TournamentService.java:48) ~[!/:1.0-SNAPSHOT]
         at io.github.redouanebali.controller.AdminTournamentController.createTournament(AdminTournamentController.java:45) ~[!/:1.0-SNAPSHOT]
         at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source) ~[na:na]
         at java.base/java.lang.reflect.Method.invoke(Unknown Source) ~[na:na]
@@ -315,9 +315,9 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
         at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979) ~[spring-webmvc-6.2.9.jar!/:6.2.9]
         at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014) ~[spring-webmvc-6.2.9.jar!/:6.2.9]
         at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914) ~[spring-webmvc-6.2.9.jar!/:6.2.9]
-        at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885) ~[spring-webmvc-6.2.9.jar!/:6.2.9]
-        at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at jakarta.servlet.http.HttpServlet.io.github.redouanebali.api.service(HttpServlet.java:590) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.springframework.web.servlet.FrameworkServlet.io.github.redouanebali.api.service(FrameworkServlet.java:885) ~[spring-webmvc-6.2.9.jar!/:6.2.9]
+        at jakarta.servlet.http.HttpServlet.io.github.redouanebali.api.service(HttpServlet.java:658) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51) ~[tomcat-embed-websocket-10.1.43.jar!/:na]
@@ -397,15 +397,15 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
         at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.apache.catalina.connector.CoyoteAdapter.io.github.redouanebali.api.service(CoyoteAdapter.java:344) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.apache.coyote.http11.Http11Processor.io.github.redouanebali.api.service(Http11Processor.java:398) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1769) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1189) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.apache.tomcat.io.github.redouanebali.api.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1769) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.apache.tomcat.io.github.redouanebali.api.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.apache.tomcat.io.github.redouanebali.api.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1189) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.apache.tomcat.io.github.redouanebali.api.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.apache.tomcat.io.github.redouanebali.api.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at java.base/java.lang.Thread.run(Unknown Source) ~[na:na]
 2025-08-08 22:51:56 2025-08-08T22:51:56.429Z  INFO 1 --- [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
 2025-08-08 22:51:56 2025-08-08T22:51:56.949Z  INFO 1 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
@@ -425,11 +425,11 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
 2025-08-09 08:37:13 2025-08-09T08:37:13.806Z  INFO 1 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
 2025-08-09 08:37:13 2025-08-09T08:37:13.910Z  INFO 1 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 90 ms. Found 1 JPA repository interface.
 2025-08-09 08:37:15 2025-08-09T08:37:15.063Z  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
-2025-08-09 08:37:15 2025-08-09T08:37:15.092Z  INFO 1 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-08-09 08:37:15 2025-08-09T08:37:15.092Z  INFO 1 --- [           main] o.apache.catalina.core.StandardService   : Starting io.github.redouanebali.api.service [Tomcat]
 2025-08-09 08:37:15 2025-08-09T08:37:15.093Z  INFO 1 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.43]
 2025-08-09 08:37:15 2025-08-09T08:37:15.133Z  INFO 1 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
 2025-08-09 08:37:15 2025-08-09T08:37:15.135Z  INFO 1 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 3378 ms
-2025-08-09 08:37:15 2025-08-09T08:37:15.619Z  INFO 1 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-08-09 08:37:15 2025-08-09T08:37:15.619Z  INFO 1 --- [           main] o.hibernate.jpa.internal.io.github.redouanebali.api.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
 2025-08-09 08:37:15 2025-08-09T08:37:15.727Z  INFO 1 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.22.Final
 2025-08-09 08:37:15 2025-08-09T08:37:15.781Z  INFO 1 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
 2025-08-09 08:37:16 2025-08-09T08:37:16.389Z  INFO 1 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
@@ -444,7 +444,7 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
 2025-08-09 08:37:16     Isolation level: undefined/unknown
 2025-08-09 08:37:16     Minimum pool size: undefined/unknown
 2025-08-09 08:37:16     Maximum pool size: undefined/unknown
-2025-08-09 08:37:19 2025-08-09T08:37:19.306Z  INFO 1 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-08-09 08:37:19 2025-08-09T08:37:19.306Z  INFO 1 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform io.github.redouanebali.api.integration)
 2025-08-09 08:37:19 2025-08-09T08:37:19.431Z  INFO 1 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
 2025-08-09 08:37:19 2025-08-09T08:37:19.946Z  WARN 1 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
 2025-08-09 08:37:20 2025-08-09T08:37:20.918Z  INFO 1 --- [           main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:testdb'
@@ -455,8 +455,8 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
 2025-08-09 08:37:21 2025-08-09T08:37:21.283Z  INFO 1 --- [nio-8080-exec-5] o.s.web.servlet.DispatcherServlet        : Completed initialization in 3 ms
 2025-08-09 08:43:39 OPTIONS 200 https://padel-backend-307569718213.us-central1.run.app/admin/tournaments
 2025-08-09 08:43:40 POST 500 https://padel-backend-307569718213.us-central1.run.app/admin/tournaments
-2025-08-09 08:43:42 2025-08-09T08:43:42.661Z  INFO 1 --- [nio-8080-exec-8] i.g.r.service.TournamentService          : Created tournament with id 1
-2025-08-09 08:43:42 2025-08-09T08:43:42.965Z ERROR 1 --- [nio-8080-exec-8] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: org.springframework.orm.jpa.JpaSystemException: A collection with orphan deletion was no longer referenced by the owning entity instance: io.github.redouanebali.model.Tournament.rounds] with root cause
+2025-08-09 08:43:42 2025-08-09T08:43:42.661Z  INFO 1 --- [nio-8080-exec-8] i.g.r.io.github.redouanebali.api.service.TournamentService          : Created tournament with id 1
+2025-08-09 08:43:42 2025-08-09T08:43:42.965Z ERROR 1 --- [nio-8080-exec-8] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.io.github.redouanebali.api.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: org.springframework.orm.jpa.JpaSystemException: A collection with orphan deletion was no longer referenced by the owning entity instance: io.github.redouanebali.model.Tournament.rounds] with root cause
 2025-08-09 08:43:42 org.hibernate.HibernateException: A collection with orphan deletion was no longer referenced by the owning entity instance: io.github.redouanebali.model.Tournament.rounds
         at org.hibernate.engine.internal.Collections.processDereferencedCollection(Collections.java:98) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
         at org.hibernate.engine.internal.Collections.processUnreachableCollection(Collections.java:49) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
@@ -464,7 +464,7 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
         at org.hibernate.event.internal.AbstractFlushingEventListener.flushEverythingToExecutions(AbstractFlushingEventListener.java:91) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
         at org.hibernate.event.internal.AbstractFlushingEventListener.flushEverythingToExecutions(AbstractFlushingEventListener.java:84) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
         at org.hibernate.event.internal.DefaultFlushEventListener.onFlush(DefaultFlushEventListener.java:40) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
-        at org.hibernate.event.service.internal.EventListenerGroupImpl.fireEventOnEachListener(EventListenerGroupImpl.java:127) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
+        at org.hibernate.event.io.github.redouanebali.api.service.internal.EventListenerGroupImpl.fireEventOnEachListener(EventListenerGroupImpl.java:127) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
         at org.hibernate.internal.SessionImpl.doFlush(SessionImpl.java:1429) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
         at org.hibernate.internal.SessionImpl.managedFlush(SessionImpl.java:491) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
         at org.hibernate.internal.SessionImpl.flushBeforeTransactionCompletion(SessionImpl.java:2354) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
@@ -486,7 +486,7 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
         at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.9.jar!/:6.2.9]
         at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:223) ~[spring-aop-6.2.9.jar!/:6.2.9]
         at jdk.proxy2/jdk.proxy2.$Proxy135.save(Unknown Source) ~[na:na]
-        at io.github.redouanebali.service.TournamentService.createTournament(TournamentService.java:48) ~[!/:1.0-SNAPSHOT]
+        at io.github.redouanebali.io.github.redouanebali.api.service.TournamentService.createTournament(TournamentService.java:48) ~[!/:1.0-SNAPSHOT]
         at io.github.redouanebali.controller.AdminTournamentController.createTournament(AdminTournamentController.java:45) ~[!/:1.0-SNAPSHOT]
         at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source) ~[na:na]
         at java.base/java.lang.reflect.Method.invoke(Unknown Source) ~[na:na]
@@ -500,9 +500,9 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
         at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979) ~[spring-webmvc-6.2.9.jar!/:6.2.9]
         at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014) ~[spring-webmvc-6.2.9.jar!/:6.2.9]
         at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914) ~[spring-webmvc-6.2.9.jar!/:6.2.9]
-        at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885) ~[spring-webmvc-6.2.9.jar!/:6.2.9]
-        at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at jakarta.servlet.http.HttpServlet.io.github.redouanebali.api.service(HttpServlet.java:590) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.springframework.web.servlet.FrameworkServlet.io.github.redouanebali.api.service(FrameworkServlet.java:885) ~[spring-webmvc-6.2.9.jar!/:6.2.9]
+        at jakarta.servlet.http.HttpServlet.io.github.redouanebali.api.service(HttpServlet.java:658) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51) ~[tomcat-embed-websocket-10.1.43.jar!/:na]
@@ -582,15 +582,15 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
         at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.apache.catalina.connector.CoyoteAdapter.io.github.redouanebali.api.service(CoyoteAdapter.java:344) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.apache.coyote.http11.Http11Processor.io.github.redouanebali.api.service(Http11Processor.java:398) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1769) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1189) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658) ~[tomcat-embed-core-10.1.43.jar!/:na]
-        at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.apache.tomcat.io.github.redouanebali.api.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1769) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.apache.tomcat.io.github.redouanebali.api.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.apache.tomcat.io.github.redouanebali.api.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1189) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.apache.tomcat.io.github.redouanebali.api.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658) ~[tomcat-embed-core-10.1.43.jar!/:na]
+        at org.apache.tomcat.io.github.redouanebali.api.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at java.base/java.lang.Thread.run(Unknown Source) ~[na:na]
 mac-RBALI19@MAL-H9M94QWN36 backend %
 

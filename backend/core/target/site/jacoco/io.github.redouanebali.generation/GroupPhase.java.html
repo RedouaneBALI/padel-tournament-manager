@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GroupPhase.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">io.github.redouanebali.generation</a> &gt; <span class="el_source">GroupPhase.java</span></div><h1>GroupPhase.java</h1><pre class="source lang-java linenums">package io.github.redouanebali.generation;
+
+import io.github.redouanebali.generation.util.RandomPlacementUtil;
+import io.github.redouanebali.generation.util.SeedPlacementUtil;
+import io.github.redouanebali.model.Game;
+import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Pool;
+import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.Stage;
+import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.format.DrawMath;
+import io.github.redouanebali.model.format.TournamentConfig;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
+@Deprecated(forRemoval = false)
+public class GroupPhase implements TournamentPhase {
+
+  private int nbPools;
+  private int nbPairsPerPool;
+  private int nbQualifiedByPool;
+
+  @Override
+  public List&lt;String&gt; validate(final Tournament tournament) {
+<span class="fc" id="L27">    List&lt;String&gt; errors = new ArrayList&lt;&gt;();</span>
+
+<span class="pc bpc" id="L29" title="1 of 2 branches missed.">    if (tournament == null) {</span>
+<span class="nc" id="L30">      errors.add(&quot;Tournament cannot be null&quot;);</span>
+<span class="nc" id="L31">      return errors;</span>
+    }
+
+<span class="fc" id="L34">    TournamentConfig config = tournament.getConfig();</span>
+<span class="pc bpc" id="L35" title="1 of 2 branches missed.">    if (config == null) {</span>
+<span class="nc" id="L36">      errors.add(&quot;Tournament configuration cannot be null&quot;);</span>
+<span class="nc" id="L37">      return errors;</span>
+    }
+
+    // Get total number of teams
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">    int totalTeams = tournament.getPlayerPairs() != null ? tournament.getPlayerPairs().size() : 0;</span>
+
+    // Check that total teams is a multiple of number of pools
+<span class="pc bpc" id="L44" title="3 of 4 branches missed.">    if (totalTeams &gt; 0 &amp;&amp; totalTeams % nbPools != 0) {</span>
+<span class="nc" id="L45">      errors.add(&quot;Total number of teams (&quot; + totalTeams + &quot;) must be a multiple of number of pools (&quot; + nbPools + &quot;)&quot;);</span>
+    }
+
+    // Check that qualified per pool doesn't exceed pairs per pool
+<span class="fc bfc" id="L49" title="All 2 branches covered.">    if (nbQualifiedByPool &gt; nbPairsPerPool) {</span>
+<span class="fc" id="L50">      errors.add(&quot;Number of qualified per pool (&quot; + nbQualifiedByPool + &quot;) cannot exceed pairs per pool (&quot; + nbPairsPerPool + &quot;)&quot;);</span>
+    }
+
+    // Check that total qualified is a power of 2 (for knockout phase)
+<span class="fc" id="L54">    int totalQualified = nbPools * nbQualifiedByPool;</span>
+<span class="pc bpc" id="L55" title="1 of 4 branches missed.">    if (totalQualified &gt; 0 &amp;&amp; !DrawMath.isPowerOfTwo(totalQualified)) {</span>
+<span class="fc" id="L56">      errors.add(&quot;Total qualified teams (&quot; + totalQualified + &quot;) must be a power of 2 for knockout phase&quot;);</span>
+    }
+
+    // Check basic constraints
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">    if (nbPools &lt;= 0) {</span>
+<span class="nc" id="L61">      errors.add(&quot;Number of pools must be positive&quot;);</span>
+    }
+
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">    if (nbPairsPerPool &lt;= 0) {</span>
+<span class="nc" id="L65">      errors.add(&quot;Number of pairs per pool must be positive&quot;);</span>
+    }
+
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">    if (nbQualifiedByPool &lt;= 0) {</span>
+<span class="nc" id="L69">      errors.add(&quot;Number of qualified per pool must be positive&quot;);</span>
+    }
+
+<span class="fc" id="L72">    return errors;</span>
+  }
+
+  @Override
+  public List&lt;Round&gt; initialize(final TournamentConfig config) {
+<span class="fc" id="L77">    Round round = new Round();</span>
+<span class="fc" id="L78">    round.setStage(Stage.GROUPS);</span>
+
+    // Create the pools
+<span class="fc bfc" id="L81" title="All 2 branches covered.">    for (int i = 0; i &lt; nbPools; i++) {</span>
+<span class="fc" id="L82">      Pool pool = new Pool();</span>
+<span class="fc" id="L83">      pool.setName(&quot;Pool &quot; + (char) ('A' + i)); // Pool A, Pool B, Pool C, etc.</span>
+<span class="fc" id="L84">      round.addPool(pool);</span>
+    }
+
+<span class="fc" id="L87">    return List.of(round);</span>
+  }
+
+  @Override
+  public void placeSeedTeams(final Round round, final List&lt;PlayerPair&gt; playerPairs) {
+<span class="fc" id="L92">    SeedPlacementUtil.placeSeedTeamsInPools(round, playerPairs, nbPairsPerPool);</span>
+    // Generate games after placing seeds (in case all teams are seeded)
+<span class="fc" id="L94">    generateRoundRobinGamesIfPoolsAreFull(round);</span>
+<span class="fc" id="L95">  }</span>
+
+  @Override
+  public void placeByeTeams(final Round round, final int totalPairs) {
+    // For groups, generally no BYES, so nothing to do
+<span class="nc" id="L100">  }</span>
+
+  @Override
+  public void placeRemainingTeamsRandomly(final Round round, final List&lt;PlayerPair&gt; remainingTeams) {
+<span class="fc" id="L104">    RandomPlacementUtil.placeRemainingTeamsRandomly(round, remainingTeams);</span>
+
+    // Generate round-robin games for each pool after all teams are placed
+<span class="fc" id="L107">    generateRoundRobinGamesIfPoolsAreFull(round);</span>
+<span class="fc" id="L108">  }</span>
+
+  /**
+   * Generate round-robin games only if all pools are full (have the expected number of teams). This prevents generating games multiple times.
+   */
+  private void generateRoundRobinGamesIfPoolsAreFull(Round round) {
+<span class="pc bpc" id="L114" title="2 of 4 branches missed.">    if (round == null || round.getPools().isEmpty()) {</span>
+<span class="nc" id="L115">      return;</span>
+    }
+
+    // Check if all pools have the expected number of teams
+<span class="fc" id="L119">    boolean allPoolsFull = round.getPools().stream()</span>
+<span class="fc bfc" id="L120" title="All 2 branches covered.">                                .allMatch(pool -&gt; pool.getPairs().size() == nbPairsPerPool);</span>
+
+<span class="fc bfc" id="L122" title="All 2 branches covered.">    if (allPoolsFull) {</span>
+<span class="fc" id="L123">      generateRoundRobinGames(round);</span>
+    }
+<span class="fc" id="L125">  }</span>
+
+  /**
+   * Generate all possible round-robin games for each pool in the round. Each team in a pool plays against every other team exactly once.
+   */
+  private void generateRoundRobinGames(Round round) {
+<span class="pc bpc" id="L131" title="2 of 4 branches missed.">    if (round == null || round.getPools().isEmpty()) {</span>
+<span class="nc" id="L132">      return;</span>
+    }
+
+    // Clear any existing games
+<span class="fc" id="L136">    round.getGames().clear();</span>
+
+<span class="fc bfc" id="L138" title="All 2 branches covered.">    for (Pool pool : round.getPools()) {</span>
+<span class="fc" id="L139">      List&lt;PlayerPair&gt; teams = pool.getPairs();</span>
+
+      // Generate all combinations of teams in this pool (round-robin)
+<span class="fc bfc" id="L142" title="All 2 branches covered.">      for (int i = 0; i &lt; teams.size(); i++) {</span>
+<span class="fc bfc" id="L143" title="All 2 branches covered.">        for (int j = i + 1; j &lt; teams.size(); j++) {</span>
+<span class="fc" id="L144">          PlayerPair teamA = teams.get(i);</span>
+<span class="fc" id="L145">          PlayerPair teamB = teams.get(j);</span>
+
+<span class="fc" id="L147">          Game game = new Game();</span>
+<span class="fc" id="L148">          game.setTeamA(teamA);</span>
+<span class="fc" id="L149">          game.setTeamB(teamB);</span>
+<span class="fc" id="L150">          game.setFormat(round.getMatchFormat());</span>
+
+<span class="fc" id="L152">          round.addGame(game);</span>
+        }
+      }
+<span class="fc" id="L155">    }</span>
+<span class="fc" id="L156">  }</span>
+
+  @Override
+  public void propagateWinners(final Tournament tournament) {
+    // depending on the number of qualified by pool :
+    // if one qualif / pool, 1st of pool A should play against 1st of pool B, 1st of pool C vs 1st of pool D, etc.
+    // if two qualif / pool, 1st of poole A should play against 2nd of pool B, 2nd of pool A vs 1st of pool A, etc.
+    // we won't manage more qualified
+<span class="nc" id="L164">  }</span>
+
+  @Override
+  public Stage getInitialStage() {
+<span class="fc" id="L168">    return Stage.GROUPS;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Score.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">io.github.redouanebali.model</a> &gt; <span class="el_source">Score.java</span></div><h1>Score.java</h1><pre class="source lang-java linenums">package io.github.redouanebali.model;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderColumn;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class Score {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = &quot;score_id&quot;)
+  @OrderColumn(name = &quot;order_index&quot;) // persists list order
+  private List&lt;SetScore&gt; sets = new ArrayList&lt;&gt;();
+
+  public static Score fromString(String scoreStr) {
+<span class="nc" id="L36">    Score score = new Score();</span>
+<span class="nc bnc" id="L37" title="All 4 branches missed.">    if (scoreStr == null || scoreStr.isBlank()) {</span>
+<span class="nc" id="L38">      return score;</span>
+    }
+<span class="nc" id="L40">    String[] setStrings = scoreStr.trim().split(&quot;[,\\s]+&quot;);</span>
+<span class="nc bnc" id="L41" title="All 2 branches missed.">    for (String setStr : setStrings) {</span>
+<span class="nc" id="L42">      String[] parts = setStr.split(&quot;-&quot;);</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">      if (parts.length == 2) {</span>
+        try {
+<span class="nc" id="L45">          int teamAScore = Integer.parseInt(parts[0]);</span>
+<span class="nc" id="L46">          int teamBScore = Integer.parseInt(parts[1]);</span>
+<span class="nc" id="L47">          score.addSetScore(teamAScore, teamBScore);</span>
+<span class="nc" id="L48">        } catch (NumberFormatException e) {</span>
+<span class="nc" id="L49">          throw new IllegalArgumentException(&quot;Invalid score format: &quot; + setStr, e);</span>
+<span class="nc" id="L50">        }</span>
+      } else {
+<span class="nc" id="L52">        throw new IllegalArgumentException(&quot;Invalid set score format: &quot; + setStr);</span>
+      }
+    }
+<span class="nc" id="L55">    return score;</span>
+  }
+
+  public void addSetScore(int teamAScore, int teamBScore) {
+<span class="fc" id="L59">    sets.add(new SetScore(teamAScore, teamBScore));</span>
+<span class="fc" id="L60">  }</span>
+
+  public void addSetScore(int teamAScore, int teamBScore, int tieBreakAScore, int tieBreakBScore) {
+<span class="nc" id="L63">    sets.add(new SetScore(teamAScore, teamBScore, tieBreakAScore, tieBreakBScore));</span>
+<span class="nc" id="L64">  }</span>
+
+  @Override
+  public String toString() {
+<span class="nc" id="L68">    return sets.stream()</span>
+<span class="nc" id="L69">               .map(set -&gt; set.getTeamAScore() + &quot;-&quot; + set.getTeamBScore())</span>
+<span class="nc" id="L70">               .collect(Collectors.joining(&quot; &quot;));</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ByePlacementUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">io.github.redouanebali.generation.util</a> &gt; <span class="el_source">ByePlacementUtil.java</span></div><h1>ByePlacementUtil.java</h1><pre class="source lang-java linenums">package io.github.redouanebali.generation.util;
+
+import io.github.redouanebali.model.Game;
+import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Round;
+import java.util.List;
+
+/**
+ * Utility for placing BYE teams in tournaments. Extracted logic from KnockoutPhase to make it reusable.
+ */
+<span class="nc" id="L11">public class ByePlacementUtil {</span>
+
+  /**
+   * Places BYE teams in a round based on the total number of pairs.
+   */
+  public static void placeByeTeams(Round round, int totalPairs, int nbSeeds, int drawSize) {
+<span class="fc" id="L17">    placeByeTeams(round, totalPairs, nbSeeds, drawSize, 0);</span>
+<span class="fc" id="L18">  }</span>
+
+  /**
+   * Places BYE teams in a round, skipping slots reserved for qualifiers.
+   *
+   * @param round the round to place BYEs in
+   * @param totalPairs number of direct-entry teams
+   * @param nbSeeds number of seeds
+   * @param drawSize total draw size
+   * @param nbQualifiers number of qualifier slots to skip
+   */
+  public static void placeByeTeams(Round round, int totalPairs, int nbSeeds, int drawSize, int nbQualifiers) {
+<span class="fc bfc" id="L30" title="All 2 branches covered.">    if (round == null) {</span>
+<span class="fc" id="L31">      throw new IllegalArgumentException(&quot;round must not be null&quot;);</span>
+    }
+<span class="pc bpc" id="L33" title="1 of 2 branches missed.">    if (round.getGames() == null) {</span>
+<span class="nc" id="L34">      throw new IllegalArgumentException(&quot;round/games must not be null&quot;);</span>
+    }
+<span class="fc bfc" id="L36" title="All 2 branches covered.">    if (round.getGames().isEmpty()) {</span>
+<span class="fc" id="L37">      throw new IllegalArgumentException(&quot;round/games must not be empty&quot;);</span>
+    }
+<span class="pc bpc" id="L39" title="1 of 4 branches missed.">    if (drawSize &lt;= 0 || (drawSize &amp; (drawSize - 1)) != 0) {</span>
+<span class="fc" id="L40">      throw new IllegalArgumentException(&quot;drawSize must be a power of two&quot;);</span>
+    }
+<span class="fc bfc" id="L42" title="All 2 branches covered.">    if (totalPairs &gt; drawSize) {</span>
+<span class="fc" id="L43">      throw new IllegalArgumentException(&quot;totalPairs cannot exceed drawSize&quot;);</span>
+    }
+
+<span class="fc" id="L46">    final List&lt;Game&gt; games = round.getGames();</span>
+<span class="fc" id="L47">    final int        slots = games.size() * 2;</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">    if (slots != drawSize) {</span>
+<span class="fc" id="L49">      throw new IllegalStateException(&quot;Round games do not match drawSize: games*2=&quot; + slots + &quot;, drawSize=&quot; + drawSize);</span>
+    }
+
+<span class="fc" id="L52">    int existingByes = countExistingByes(games);</span>
+<span class="fc" id="L53">    int byesToPlace  = Math.max(0, drawSize - totalPairs - nbQualifiers - existingByes);</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">    if (byesToPlace == 0) {</span>
+<span class="fc" id="L55">      return;</span>
+    }
+
+    // 1. Place BYEs opposite seeds, skipping qualifier slots
+<span class="fc" id="L59">    List&lt;Integer&gt; seedSlots = SeedPlacementUtil.getSeedsPositions(drawSize, nbSeeds);</span>
+<span class="fc" id="L60">    int           placed    = 0;</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">    for (int slot : seedSlots) {</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">      if (placed &gt;= byesToPlace) {</span>
+<span class="fc" id="L63">        break;</span>
+      }
+<span class="fc" id="L65">      int     gameIndex = slot / 2;</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">      boolean left      = (slot % 2 == 0);</span>
+<span class="fc" id="L67">      Game    g         = games.get(gameIndex);</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">      if (left) {</span>
+<span class="pc bpc" id="L69" title="1 of 4 branches missed.">        if (g.getTeamB() == null &amp;&amp; !isReservedForQualifier(g, false)) {</span>
+<span class="fc" id="L70">          g.setTeamB(PlayerPair.bye());</span>
+<span class="fc" id="L71">          placed++;</span>
+        }
+      } else {
+<span class="pc bpc" id="L74" title="1 of 4 branches missed.">        if (g.getTeamA() == null &amp;&amp; !isReservedForQualifier(g, true)) {</span>
+<span class="fc" id="L75">          g.setTeamA(PlayerPair.bye());</span>
+<span class="fc" id="L76">          placed++;</span>
+        }
+      }
+<span class="fc" id="L79">    }</span>
+    // 2. Fallback: place BYEs in any available slot not reserved for qualifier
+<span class="fc bfc" id="L81" title="All 2 branches covered.">    for (Game g : games) {</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">      if (placed &gt;= byesToPlace) {</span>
+<span class="fc" id="L83">        break;</span>
+      }
+<span class="pc bpc" id="L85" title="1 of 4 branches missed.">      if (g.getTeamA() == null &amp;&amp; !isReservedForQualifier(g, true)) {</span>
+<span class="fc" id="L86">        g.setTeamA(PlayerPair.bye());</span>
+<span class="fc" id="L87">        placed++;</span>
+      }
+<span class="fc bfc" id="L89" title="All 2 branches covered.">      if (placed &gt;= byesToPlace) {</span>
+<span class="fc" id="L90">        break;</span>
+      }
+<span class="pc bpc" id="L92" title="1 of 4 branches missed.">      if (g.getTeamB() == null &amp;&amp; !isReservedForQualifier(g, false)) {</span>
+<span class="fc" id="L93">        g.setTeamB(PlayerPair.bye());</span>
+<span class="fc" id="L94">        placed++;</span>
+      }
+<span class="fc" id="L96">    }</span>
+    // 3. Last resort: throw if not enough slots
+<span class="fc bfc" id="L98" title="All 2 branches covered.">    if (placed &lt; byesToPlace) {</span>
+<span class="fc" id="L99">      throw new IllegalStateException(&quot;Not enough empty slots to place all BYEs: remaining=&quot; + (byesToPlace - placed));</span>
+    }
+<span class="fc" id="L101">  }</span>
+
+  // Helper to check if a slot is reserved for a qualifier (to be implemented in main draw logic)
+  private static boolean isReservedForQualifier(Game g, boolean isTeamA) {
+    // By default, always false. Main draw logic should ensure qualifiers are placed before BYEs.
+<span class="fc" id="L106">    return false;</span>
+  }
+
+  /**
+   * Counts the number of BYEs already present in the games.
+   */
+  private static int countExistingByes(List&lt;Game&gt; games) {
+<span class="fc" id="L113">    int count = 0;</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">    for (Game g : games) {</span>
+<span class="fc bfc" id="L115" title="All 4 branches covered.">      if (g.getTeamA() != null &amp;&amp; g.getTeamA().isBye()) {</span>
+<span class="fc" id="L116">        count++;</span>
+      }
+<span class="fc bfc" id="L118" title="All 4 branches covered.">      if (g.getTeamB() != null &amp;&amp; g.getTeamB().isBye()) {</span>
+<span class="fc" id="L119">        count++;</span>
+      }
+<span class="fc" id="L121">    }</span>
+<span class="fc" id="L122">    return count;</span>
+  }
+
+  /**
+   * Places BYEs opposite protected teams.
+   */
+  private static int placeByesOppositeProtectedTeams(List&lt;Game&gt; games, List&lt;Integer&gt; protectedSlots, int byesToPlace) {
+<span class="nc bnc" id="L129" title="All 4 branches missed.">    for (int i = 0; i &lt; protectedSlots.size() &amp;&amp; byesToPlace &gt; 0; i++) {</span>
+<span class="nc" id="L130">      int     slot      = protectedSlots.get(i);</span>
+<span class="nc" id="L131">      int     gameIndex = slot / 2;</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">      boolean left      = (slot % 2 == 0);</span>
+<span class="nc" id="L133">      Game    g         = games.get(gameIndex);</span>
+
+      // Place BYE at opposite position if empty
+<span class="nc bnc" id="L136" title="All 2 branches missed.">      if (left) {</span>
+        // Protected slot is on the left (TeamA), place BYE on the right (TeamB) if empty
+<span class="nc bnc" id="L138" title="All 2 branches missed.">        if (g.getTeamB() == null) {</span>
+<span class="nc" id="L139">          g.setTeamB(PlayerPair.bye());</span>
+<span class="nc" id="L140">          byesToPlace--;</span>
+        }
+      } else {
+        // Protected slot is on the right (TeamB), place BYE on the left (TeamA) if empty
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        if (g.getTeamA() == null) {</span>
+<span class="nc" id="L145">          g.setTeamA(PlayerPair.bye());</span>
+<span class="nc" id="L146">          byesToPlace--;</span>
+        }
+      }
+    }
+<span class="nc" id="L150">    return byesToPlace;</span>
+  }
+
+  /**
+   * Places remaining BYEs using fallback logic.
+   */
+  private static int placeFallbackByes(List&lt;Game&gt; games, int byesToPlace) {
+<span class="nc bnc" id="L157" title="All 2 branches missed.">    for (Game g : games) {</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">      if (byesToPlace == 0) {</span>
+<span class="nc" id="L159">        break;</span>
+      }
+
+<span class="nc bnc" id="L162" title="All 2 branches missed.">      boolean aEmpty = (g.getTeamA() == null);</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">      boolean bEmpty = (g.getTeamB() == null);</span>
+
+<span class="nc bnc" id="L165" title="All 2 branches missed.">      if (aEmpty ^ bEmpty) { // exactly one side empty</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">        if (aEmpty) {</span>
+<span class="nc" id="L167">          g.setTeamA(PlayerPair.bye());</span>
+        } else {
+<span class="nc" id="L169">          g.setTeamB(PlayerPair.bye());</span>
+        }
+<span class="nc" id="L171">        byesToPlace--;</span>
+      }
+<span class="nc" id="L173">    }</span>
+<span class="nc" id="L174">    return byesToPlace;</span>
+  }
+
+  /**
+   * Places BYEs as a last resort (BYE vs BYE if necessary).
+   */
+  private static void placeLastResortByes(List&lt;Game&gt; games, int byesToPlace) {
+<span class="nc bnc" id="L181" title="All 2 branches missed.">    for (Game g : games) {</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">      if (byesToPlace == 0) {</span>
+<span class="nc" id="L183">        break;</span>
+      }
+
+<span class="nc bnc" id="L186" title="All 2 branches missed.">      if (g.getTeamA() == null) {</span>
+<span class="nc" id="L187">        g.setTeamA(PlayerPair.bye());</span>
+<span class="nc" id="L188">        byesToPlace--;</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">        if (byesToPlace == 0) {</span>
+<span class="nc" id="L190">          break;</span>
+        }
+      }
+
+<span class="nc bnc" id="L194" title="All 2 branches missed.">      if (g.getTeamB() == null) {</span>
+<span class="nc" id="L195">        g.setTeamB(PlayerPair.bye());</span>
+<span class="nc" id="L196">        byesToPlace--;</span>
+      }
+<span class="nc" id="L198">    }</span>
+
+<span class="nc bnc" id="L200" title="All 2 branches missed.">    if (byesToPlace &gt; 0) {</span>
+<span class="nc" id="L201">      throw new IllegalStateException(&quot;Not enough empty slots to place all BYEs: remaining=&quot; + byesToPlace);</span>
+    }
+<span class="nc" id="L203">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

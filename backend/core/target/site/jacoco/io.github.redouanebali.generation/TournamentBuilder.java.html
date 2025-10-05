@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TournamentBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">io.github.redouanebali.generation</a> &gt; <span class="el_source">TournamentBuilder.java</span></div><h1>TournamentBuilder.java</h1><pre class="source lang-java linenums">package io.github.redouanebali.generation;
+
+import io.github.redouanebali.generation.draw.DrawStrategy;
+import io.github.redouanebali.generation.draw.DrawStrategyFactory;
+import io.github.redouanebali.generation.util.TournamentStageUtil;
+import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.Stage;
+import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.format.DrawMode;
+import io.github.redouanebali.model.format.TournamentConfig;
+import io.github.redouanebali.model.format.TournamentFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+<span class="fc" id="L19">public final class TournamentBuilder {</span>
+
+  /**
+   * Propagate winners across all phases sequentially.
+   */
+  public static void propagateWinners(Tournament tournament) {
+<span class="pc bpc" id="L25" title="1 of 2 branches missed.">    if (tournament == null) {</span>
+<span class="nc" id="L26">      return;</span>
+    }
+<span class="fc" id="L28">    List&lt;TournamentPhase&gt; phases = buildPhases(tournament.getConfig());</span>
+<span class="pc bpc" id="L29" title="1 of 2 branches missed.">    if (!phases.isEmpty()) {</span>
+<span class="fc" id="L30">      phases.getFirst().propagateWinners(tournament);</span>
+    }
+<span class="fc" id="L32">  }</span>
+
+  public static List&lt;String&gt; validate(Tournament tournament) {
+<span class="nc" id="L35">    List&lt;String&gt; errors = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L36" title="All 2 branches missed.">    if (tournament == null) {</span>
+<span class="nc" id="L37">      errors.add(&quot;Tournament is null&quot;);</span>
+<span class="nc" id="L38">      return errors;</span>
+    }
+<span class="nc" id="L40">    TournamentConfig config = tournament.getConfig();</span>
+    try {
+<span class="nc" id="L42">      validateConfig(config);</span>
+<span class="nc" id="L43">    } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L44">      errors.add(e.getMessage());</span>
+<span class="nc" id="L45">      return errors;</span>
+<span class="nc" id="L46">    }</span>
+<span class="nc" id="L47">    int mainDrawSize = config.getMainDrawSize();</span>
+<span class="nc" id="L48">    int nbSeeds      = config.getNbSeeds();</span>
+<span class="nc bnc" id="L49" title="All 4 branches missed.">    if (mainDrawSize &lt;= 0 || (mainDrawSize &amp; (mainDrawSize - 1)) != 0) {</span>
+<span class="nc" id="L50">      errors.add(&quot;mainDrawSize must be a power of 2, got: &quot; + mainDrawSize);</span>
+    }
+<span class="nc bnc" id="L52" title="All 2 branches missed.">    if (nbSeeds &gt; mainDrawSize) {</span>
+<span class="nc" id="L53">      errors.add(&quot;nbSeeds (&quot; + nbSeeds + &quot;) cannot exceed mainDrawSize (&quot; + mainDrawSize + &quot;)&quot;);</span>
+    }
+<span class="nc" id="L55">    List&lt;TournamentPhase&gt; phases = buildPhases(config);</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">    for (TournamentPhase phase : phases) {</span>
+<span class="nc" id="L57">      errors.addAll(phase.validate(tournament));</span>
+<span class="nc" id="L58">    }</span>
+<span class="nc" id="L59">    return errors;</span>
+  }
+
+  /**
+   * Complete tournament setup: creates structure and places players using the configured draw mode. This is the recommended public API method.
+   *
+   * @param tournament tournament with config set (will be modified)
+   * @param initialRounds pre-populated initial rounds to replace the empty structure
+   */
+  public static void setupTournamentWithInitialRounds(Tournament tournament, List&lt;Round&gt; initialRounds) {
+<span class="pc bpc" id="L69" title="2 of 4 branches missed.">    if (tournament == null || tournament.getConfig() == null) {</span>
+<span class="nc" id="L70">      throw new IllegalArgumentException(&quot;Tournament and config cannot be null&quot;);</span>
+    }
+<span class="pc bpc" id="L72" title="1 of 4 branches missed.">    if (initialRounds == null || initialRounds.isEmpty()) {</span>
+<span class="fc" id="L73">      initializeEmptyRounds(tournament);</span>
+<span class="fc" id="L74">      return;</span>
+    }
+<span class="fc" id="L76">    List&lt;Round&gt; allRounds = createEmptyRounds(tournament.getConfig());</span>
+<span class="fc" id="L77">    Map&lt;Stage, Round&gt; providedRoundsByStage = initialRounds.stream()</span>
+<span class="fc" id="L78">                                                           .collect(Collectors.toMap(Round::getStage, Function.identity()));</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">    for (int i = 0; i &lt; allRounds.size(); i++) {</span>
+<span class="fc" id="L80">      Round round         = allRounds.get(i);</span>
+<span class="fc" id="L81">      Round providedRound = providedRoundsByStage.get(round.getStage());</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">      if (providedRound != null) {</span>
+<span class="fc" id="L83">        allRounds.set(i, providedRound);</span>
+      }
+    }
+<span class="fc" id="L86">    tournament.getRounds().clear();</span>
+<span class="fc" id="L87">    tournament.getRounds().addAll(allRounds);</span>
+<span class="fc" id="L88">  }</span>
+
+  /**
+   * Convenience method for automatic tournament setup. Builds initial rounds automatically using SEEDED strategy, then calls
+   * setupTournamentWithInitialRounds().
+   *
+   * @param tournament tournament with config set (will be modified)
+   * @param playerPairs players to automatically place in the tournament
+   */
+  public static void setupAndPopulateTournament(Tournament tournament, List&lt;PlayerPair&gt; playerPairs) {
+<span class="pc bpc" id="L98" title="2 of 4 branches missed.">    if (tournament == null || tournament.getConfig() == null) {</span>
+<span class="nc" id="L99">      throw new IllegalArgumentException(&quot;Tournament and config cannot be null&quot;);</span>
+    }
+<span class="pc bpc" id="L101" title="1 of 4 branches missed.">    if (playerPairs == null || playerPairs.isEmpty()) {</span>
+<span class="fc" id="L102">      setupTournamentWithInitialRounds(tournament, List.of());</span>
+<span class="fc" id="L103">      return;</span>
+    }
+<span class="fc" id="L105">    List&lt;Round&gt; automaticRounds = buildAutomaticRounds(tournament, playerPairs);</span>
+<span class="fc" id="L106">    setupTournamentWithInitialRounds(tournament, automaticRounds);</span>
+<span class="fc" id="L107">  }</span>
+
+  /**
+   * Builds initial rounds automatically using the SEEDED strategy. This method creates only the initial rounds that need to be populated (Q1, first
+   * main round, etc.).
+   *
+   * @param tournament tournament configuration
+   * @param playerPairs players to place
+   * @return list of populated initial rounds
+   */
+  private static List&lt;Round&gt; buildAutomaticRounds(Tournament tournament, List&lt;PlayerPair&gt; playerPairs) {
+<span class="fc" id="L118">    Tournament tempTournament = new Tournament();</span>
+<span class="fc" id="L119">    tempTournament.setConfig(tournament.getConfig());</span>
+<span class="fc" id="L120">    initializeEmptyRounds(tempTournament);</span>
+<span class="fc" id="L121">    DrawStrategy drawStrategy = DrawStrategyFactory.createStrategy(DrawMode.SEEDED);</span>
+<span class="fc" id="L122">    drawStrategy.placePlayers(tempTournament, playerPairs);</span>
+<span class="fc" id="L123">    return tempTournament.getRounds().stream()</span>
+<span class="fc" id="L124">                         .filter(round -&gt; TournamentStageUtil.isInitialRoundInTournament(round, tempTournament.getRounds()))</span>
+<span class="fc" id="L125">                         .collect(Collectors.toList());</span>
+  }
+
+  /**
+   * Sets up the tournament structure by replacing existing rounds with empty ones. No players are placed - use setupAndPopulateTournament() for
+   * complete setup.
+   *
+   * @param tournament tournament with config set (will be modified)
+   */
+  public static void initializeEmptyRounds(Tournament tournament) {
+<span class="pc bpc" id="L135" title="2 of 4 branches missed.">    if (tournament == null || tournament.getConfig() == null) {</span>
+<span class="nc" id="L136">      throw new IllegalArgumentException(&quot;Tournament and config cannot be null&quot;);</span>
+    }
+<span class="fc" id="L138">    List&lt;Round&gt; rounds = createEmptyRounds(tournament.getConfig());</span>
+<span class="fc" id="L139">    tournament.getRounds().clear();</span>
+<span class="fc" id="L140">    tournament.getRounds().addAll(rounds);</span>
+<span class="fc" id="L141">  }</span>
+
+  /**
+   * Creates an empty tournament structure (rounds and games) based on the format configuration. Returns a list of rounds with empty games - no
+   * players are placed. This is an internal method used by initializeEmptyRounds().
+   *
+   * @param config the tournament configuration containing format and other settings
+   * @return list of rounds with empty games ready for manual or automatic population
+   */
+  private static List&lt;Round&gt; createEmptyRounds(TournamentConfig config) {
+<span class="fc" id="L151">    validateConfig(config);</span>
+<span class="fc" id="L152">    return buildPhases(config).stream()</span>
+<span class="fc" id="L153">                              .flatMap(phase -&gt; phase.initialize(config).stream())</span>
+<span class="fc" id="L154">                              .collect(Collectors.toList());</span>
+  }
+
+  /**
+   * Centralise la création des phases selon la config
+   */
+  private static List&lt;TournamentPhase&gt; buildPhases(TournamentConfig cfg) {
+<span class="fc" id="L161">    List&lt;TournamentPhase&gt; phases = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L162">    TournamentFormat      format = cfg.getFormat();</span>
+<span class="pc bpc" id="L163" title="1 of 2 branches missed.">    if (format == null) {</span>
+<span class="nc" id="L164">      return phases;</span>
+    }
+<span class="pc bpc" id="L166" title="1 of 3 branches missed.">    switch (format) {</span>
+      case KNOCKOUT:
+      case QUALIF_KO:
+<span class="pc bpc" id="L169" title="3 of 8 branches missed.">        if (cfg.getPreQualDrawSize() != null &amp;&amp; cfg.getPreQualDrawSize() &gt; 0 &amp;&amp; cfg.getNbQualifiers() != null &amp;&amp; cfg.getNbQualifiers() &gt; 0</span>
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">            &amp;&amp; cfg.getNbSeedsQualify() != null) {</span>
+<span class="fc" id="L171">          phases.add(new KnockoutPhase(cfg.getPreQualDrawSize(), cfg.getNbSeedsQualify(), PhaseType.QUALIFS));</span>
+        }
+<span class="fc" id="L173">        phases.add(new KnockoutPhase(cfg.getMainDrawSize(), cfg.getNbSeeds(), PhaseType.MAIN_DRAW));</span>
+<span class="fc" id="L174">        break;</span>
+      case GROUPS_KO:
+<span class="pc bpc" id="L176" title="3 of 6 branches missed.">        if (cfg.getNbPools() != null &amp;&amp; cfg.getNbPairsPerPool() &gt; 0 &amp;&amp; cfg.getNbQualifiedByPool() &gt; 0) {</span>
+<span class="fc" id="L177">          phases.add(new GroupPhase(cfg.getNbPools(), cfg.getNbPairsPerPool(), cfg.getNbQualifiedByPool()));</span>
+        }
+<span class="fc" id="L179">        phases.add(new KnockoutPhase(cfg.getMainDrawSize(), cfg.getNbSeeds(), PhaseType.MAIN_DRAW));</span>
+        break;
+    }
+<span class="fc" id="L182">    return phases;</span>
+  }
+
+  /**
+   * Validation centralisée de la config
+   */
+  private static void validateConfig(TournamentConfig config) {
+<span class="pc bpc" id="L189" title="1 of 2 branches missed.">    if (config == null) {</span>
+<span class="nc" id="L190">      throw new IllegalArgumentException(&quot;Tournament config cannot be null&quot;);</span>
+    }
+<span class="pc bpc" id="L192" title="1 of 2 branches missed.">    if (config.getFormat() == null) {</span>
+<span class="nc" id="L193">      throw new IllegalArgumentException(&quot;Tournament format cannot be null&quot;);</span>
+    }
+<span class="fc" id="L195">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

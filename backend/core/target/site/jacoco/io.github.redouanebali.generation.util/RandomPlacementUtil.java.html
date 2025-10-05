@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RandomPlacementUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">io.github.redouanebali.generation.util</a> &gt; <span class="el_source">RandomPlacementUtil.java</span></div><h1>RandomPlacementUtil.java</h1><pre class="source lang-java linenums">package io.github.redouanebali.generation.util;
+
+import io.github.redouanebali.model.Game;
+import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Pool;
+import io.github.redouanebali.model.Round;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * Utility for randomly placing remaining teams in tournaments. Extracted logic from KnockoutPhase to make it reusable.
+ */
+<span class="nc" id="L14">public class RandomPlacementUtil {</span>
+
+  /**
+   * Randomly places remaining teams in the empty slots of a round. Supports both knockout rounds (with games) and group rounds (with pools).
+   *
+   * @param round the round to place teams in
+   * @param remainingTeams the teams to place randomly
+   * @throws IllegalArgumentException if totalPairs exceeds available slots
+   */
+  public static void placeRemainingTeamsRandomly(Round round, List&lt;PlayerPair&gt; remainingTeams) {
+<span class="fc bfc" id="L24" title="All 6 branches covered.">    if (round == null || remainingTeams == null || remainingTeams.isEmpty()) {</span>
+<span class="fc" id="L25">      return;</span>
+    }
+
+    // Check if this is a group round (has pools) or knockout round (has games)
+<span class="fc bfc" id="L29" title="All 2 branches covered.">    if (!round.getPools().isEmpty()) {</span>
+<span class="fc" id="L30">      placeRemainingTeamsInPools(round, remainingTeams);</span>
+<span class="pc bpc" id="L31" title="2 of 4 branches missed.">    } else if (round.getGames() != null &amp;&amp; !round.getGames().isEmpty()) {</span>
+<span class="fc" id="L32">      placeRemainingTeamsInGames(round, remainingTeams);</span>
+    }
+<span class="fc" id="L34">  }</span>
+
+  /**
+   * Places remaining teams randomly in pools for group phase.
+   */
+  private static void placeRemainingTeamsInPools(Round round, List&lt;PlayerPair&gt; remainingTeams) {
+<span class="fc" id="L40">    List&lt;Pool&gt; pools = round.getPools();</span>
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">    if (pools.isEmpty()) {</span>
+<span class="nc" id="L42">      return;</span>
+    }
+
+    // Filter out teams that are already placed in pools
+<span class="fc" id="L46">    List&lt;PlayerPair&gt; alreadyPlaced = pools.stream()</span>
+<span class="fc" id="L47">                                          .flatMap(pool -&gt; pool.getPairs().stream())</span>
+<span class="fc" id="L48">                                          .toList();</span>
+
+<span class="fc" id="L50">    List&lt;PlayerPair&gt; teamsToPlace = remainingTeams.stream()</span>
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">                                                  .filter(team -&gt; !alreadyPlaced.contains(team))</span>
+<span class="fc" id="L52">                                                  .toList();</span>
+
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">    if (teamsToPlace.isEmpty()) {</span>
+<span class="nc" id="L55">      return;</span>
+    }
+
+    // Shuffle teams for random placement
+<span class="fc" id="L59">    List&lt;PlayerPair&gt; shuffled = new ArrayList&lt;&gt;(teamsToPlace);</span>
+<span class="fc" id="L60">    Collections.shuffle(shuffled);</span>
+
+    // Distribute teams evenly across pools using round-robin distribution
+    // This ensures teams are spread as evenly as possible across all pools
+<span class="fc" id="L64">    int teamIndex = 0;</span>
+<span class="fc" id="L65">    int poolIndex = 0;</span>
+
+<span class="fc bfc" id="L67" title="All 2 branches covered.">    while (teamIndex &lt; shuffled.size()) {</span>
+<span class="fc" id="L68">      Pool currentPool = pools.get(poolIndex);</span>
+<span class="fc" id="L69">      currentPool.addPair(shuffled.get(teamIndex));</span>
+
+<span class="fc" id="L71">      teamIndex++;</span>
+<span class="fc" id="L72">      poolIndex = (poolIndex + 1) % pools.size(); // Move to next pool, wrap around</span>
+<span class="fc" id="L73">    }</span>
+<span class="fc" id="L74">  }</span>
+
+  /**
+   * Places remaining teams randomly in games for knockout phase.
+   */
+  private static void placeRemainingTeamsInGames(Round round, List&lt;PlayerPair&gt; remainingTeams) {
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">    if (remainingTeams.isEmpty()) {</span>
+<span class="nc" id="L81">      return;</span>
+    }
+
+    // Shuffle teams for random placement
+<span class="fc" id="L85">    List&lt;PlayerPair&gt; shuffled = new ArrayList&lt;&gt;(remainingTeams);</span>
+<span class="fc" id="L86">    Collections.shuffle(shuffled);</span>
+
+<span class="fc" id="L88">    int index = 0;</span>
+
+    // Simply place all teams sequentially in null slots - no fancy logic needed
+    // This ensures all real teams are placed before any BYEs are added
+<span class="fc bfc" id="L92" title="All 2 branches covered.">    for (Game game : round.getGames()) {</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">      if (index &gt;= shuffled.size()) {</span>
+<span class="fc" id="L94">        break;</span>
+      }
+<span class="fc bfc" id="L96" title="All 2 branches covered.">      if (game.getTeamA() == null) {</span>
+<span class="fc" id="L97">        game.setTeamA(shuffled.get(index++));</span>
+      }
+<span class="fc bfc" id="L99" title="All 2 branches covered.">      if (index &gt;= shuffled.size()) {</span>
+<span class="fc" id="L100">        break;</span>
+      }
+<span class="fc bfc" id="L102" title="All 2 branches covered.">      if (game.getTeamB() == null) {</span>
+<span class="fc" id="L103">        game.setTeamB(shuffled.get(index++));</span>
+      }
+<span class="fc" id="L105">    }</span>
+
+    // If there are still teams to place (shouldn't happen if enough slots), log warning
+<span class="fc bfc" id="L108" title="All 2 branches covered.">    if (index &lt; shuffled.size()) {</span>
+<span class="fc" id="L109">      System.err.println(&quot;WARNING: Could not place all teams. &quot; + (shuffled.size() - index) + &quot; teams remaining.&quot;);</span>
+    }
+<span class="fc" id="L111">  }</span>
+
+  /**
+   * Randomly places the required number of QUALIFIER placeholders in available slots of a round.
+   *
+   * @param round the round to place qualifiers in
+   * @param nbQualifiers number of qualifiers to place
+   */
+  public static void placeQualifiers(Round round, int nbQualifiers) {
+<span class="pc bpc" id="L120" title="1 of 4 branches missed.">    if (round == null || nbQualifiers &lt;= 0) {</span>
+<span class="fc" id="L121">      return;</span>
+    }
+<span class="fc" id="L123">    List&lt;Game&gt; games          = round.getGames();</span>
+<span class="fc" id="L124">    List&lt;Slot&gt; availableSlots = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L125" title="All 2 branches covered.">    for (Game g : games) {</span>
+<span class="fc bfc" id="L126" title="All 2 branches covered.">      if (g.getTeamA() == null) {</span>
+<span class="fc" id="L127">        availableSlots.add(new Slot(g, true));</span>
+      }
+<span class="fc bfc" id="L129" title="All 2 branches covered.">      if (g.getTeamB() == null) {</span>
+<span class="fc" id="L130">        availableSlots.add(new Slot(g, false));</span>
+      }
+<span class="fc" id="L132">    }</span>
+<span class="fc" id="L133">    Collections.shuffle(availableSlots);</span>
+<span class="fc" id="L134">    int placed = 0;</span>
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">    for (Slot slot : availableSlots) {</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">      if (placed &gt;= nbQualifiers) {</span>
+<span class="fc" id="L137">        break;</span>
+      }
+<span class="fc bfc" id="L139" title="All 2 branches covered.">      if (slot.isTeamA) {</span>
+<span class="fc" id="L140">        slot.game.setTeamA(PlayerPair.qualifier());</span>
+      } else {
+<span class="fc" id="L142">        slot.game.setTeamB(PlayerPair.qualifier());</span>
+      }
+<span class="fc" id="L144">      placed++;</span>
+<span class="fc" id="L145">    }</span>
+<span class="fc" id="L146">  }</span>
+
+  /**
+   * Places teams in order (without shuffling) - useful for manual mode.
+   */
+  // @todo this method should manage pools
+  public static void placeTeamsInOrder(Round round, List&lt;PlayerPair&gt; teams) {
+<span class="pc bpc" id="L153" title="1 of 8 branches missed.">    if (round == null || round.getGames() == null || teams == null || teams.isEmpty()) {</span>
+<span class="fc" id="L154">      return;</span>
+    }
+
+<span class="fc" id="L157">    int index = 0;</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">    for (Game game : round.getGames()) {</span>
+<span class="pc bpc" id="L159" title="1 of 4 branches missed.">      if (game.getTeamA() == null &amp;&amp; index &lt; teams.size()) {</span>
+<span class="fc" id="L160">        game.setTeamA(teams.get(index++));</span>
+      }
+<span class="pc bpc" id="L162" title="1 of 4 branches missed.">      if (game.getTeamB() == null &amp;&amp; index &lt; teams.size()) {</span>
+<span class="fc" id="L163">        game.setTeamB(teams.get(index++));</span>
+      }
+<span class="fc bfc" id="L165" title="All 2 branches covered.">      if (index &gt;= teams.size()) {</span>
+<span class="fc" id="L166">        break;</span>
+      }
+<span class="fc" id="L168">    }</span>
+
+<span class="fc bfc" id="L170" title="All 2 branches covered.">    if (!round.getPools().isEmpty()) {</span>
+<span class="fc" id="L171">      int nbPools        = round.getPools().size();</span>
+<span class="fc" id="L172">      int nbPairsPerPool = teams.size() / nbPools;</span>
+<span class="fc bfc" id="L173" title="All 2 branches covered.">      for (int poolIndex = 0; poolIndex &lt; nbPairsPerPool; poolIndex++) {</span>
+<span class="fc bfc" id="L174" title="All 2 branches covered.">        for (int i = 0; i &lt; nbPairsPerPool; i++) {</span>
+<span class="fc" id="L175">          System.out.println(&quot;adding player &quot; + (poolIndex * nbPairsPerPool) + i + &quot; to pool &quot; + poolIndex);</span>
+<span class="fc" id="L176">          round.getPools().get(poolIndex).addPair(teams.get((poolIndex * nbPairsPerPool) + i));</span>
+        }
+      }
+    }
+<span class="fc" id="L180">  }</span>
+
+  // Helper class to represent a slot in a game (teamA or teamB)
+  private static class Slot {
+
+    Game    game;
+    boolean isTeamA;
+
+<span class="fc" id="L188">    Slot(Game game, boolean isTeamA) {</span>
+<span class="fc" id="L189">      this.game    = game;</span>
+<span class="fc" id="L190">      this.isTeamA = isTeamA;</span>
+<span class="fc" id="L191">    }</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
