@@ -543,4 +543,175 @@ public class TournamentBuilderTest {
     assertEquals(expectedQualifiers, qualifierCount, "Le main draw doit contenir exactement " + expectedQualifiers + " emplacements QUALIFIER.");
     assertEquals(expectedTeams, realTeamsCount, "Le main draw doit contenir exactement " + expectedTeams + " équipes directes.");
   }
+
+  // ============= TEST POUR DÉTECTER LE BUG DE DUPLICATION QUALIF/MAIN DRAW =============
+
+  @Test
+  void testQualifKO_noTeamShouldBeInBothQualifAndMainDraw() {
+    // Given: Tournament QUALIF_KO avec 16 équipes en qualif (-> 4 qualifiers) et 32 places en main draw
+    // On crée 28 équipes au total : les 12 meilleurs doivent aller directement en R32,
+    // les 16 moins bons doivent aller en Q1
+    Tournament tournament = TestFixtures.makeTournament(
+        16,           // preQualSize = 16 places en qualif
+        4,            // nbQualifiers = 4 qualifiers passent en main draw
+        32,           // mainDrawSize = 32 places en phase finale
+        8,            // nbSeedsMain = 8 seeds en main draw
+        4,            // nbSeedsQual = 4 seeds en qualif
+        DrawMode.SEEDED
+    );
+
+    // Create 28 player pairs with seeds 1-28
+    List<PlayerPair> playerPairs = TestFixtures.createPlayerPairs(28);
+    for (int i = 0; i < playerPairs.size(); i++) {
+      playerPairs.get(i).setSeed(i + 1);
+    }
+
+    // When: Generate draw automatically
+    TournamentBuilder.setupAndPopulateTournament(tournament, playerPairs);
+
+    // Then: Collect all teams in Q1 and R32
+    Round q1Round  = tournament.getRoundByStage(Stage.Q1);
+    Round r32Round = tournament.getRoundByStage(Stage.R32);
+
+    // Collecter toutes les équipes NON-BYE et NON-QUALIFIER dans Q1
+    List<PlayerPair> teamsInQ1 = q1Round.getGames().stream()
+                                        .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                        .filter(Objects::nonNull)
+                                        .filter(p -> !p.isBye() && !p.isQualifier()) // Exclure BYE et placeholders QUALIFIER
+                                        .collect(Collectors.toList());
+
+    // Collecter toutes les équipes NON-BYE et NON-QUALIFIER dans R32
+    List<PlayerPair> teamsInR32 = r32Round.getGames().stream()
+                                          .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                          .filter(Objects::nonNull)
+                                          .filter(p -> !p.isBye() && !p.isQualifier()) // Exclure BYE et placeholders QUALIFIER
+                                          .collect(Collectors.toList());
+
+    System.out.println("=== DEBUG: Teams in Q1 ===");
+    teamsInQ1.forEach(p -> System.out.println("  Seed " + p.getSeed() + ": " +
+                                              p.getPlayer1().getName() + "/" + p.getPlayer2().getName()));
+
+    System.out.println("=== DEBUG: Teams in R32 ===");
+    teamsInR32.forEach(p -> System.out.println("  Seed " + p.getSeed() + ": " +
+                                               p.getPlayer1().getName() + "/" + p.getPlayer2().getName()));
+
+    // Vérifier qu'aucune équipe n'est présente dans les deux rounds
+    for (PlayerPair teamInQ1 : teamsInQ1) {
+      boolean isDuplicateInR32 = teamsInR32.stream()
+                                           .anyMatch(teamInR32 ->
+                                                         teamInR32.getPlayer1().getName().equals(teamInQ1.getPlayer1().getName()) &&
+                                                         teamInR32.getPlayer2().getName().equals(teamInQ1.getPlayer2().getName())
+                                           );
+
+      Assertions.assertFalse(isDuplicateInR32,
+                             String.format("BUG DÉTECTÉ ! L'équipe %s/%s (seed %d) est présente à la fois en Q1 ET en R32 !",
+                                           teamInQ1.getPlayer1().getName(),
+                                           teamInQ1.getPlayer2().getName(),
+                                           teamInQ1.getSeed()));
+    }
+
+    // Vérification supplémentaire : les seeds les plus faibles doivent être en Q1
+    // et les seeds les plus fortes doivent être en R32
+    if (!teamsInQ1.isEmpty() && !teamsInR32.isEmpty()) {
+      int maxSeedInQ1 = teamsInQ1.stream()
+                                 .mapToInt(PlayerPair::getSeed)
+                                 .max()
+                                 .orElse(0);
+
+      int minSeedInR32 = teamsInR32.stream()
+                                   .mapToInt(PlayerPair::getSeed)
+                                   .filter(seed -> seed > 0 && seed < Integer.MAX_VALUE) // Exclure les seeds spéciales
+                                   .min()
+                                   .orElse(Integer.MAX_VALUE);
+
+      System.out.println("Max seed in Q1: " + maxSeedInQ1);
+      System.out.println("Min seed in R32: " + minSeedInR32);
+
+      // Les seeds en Q1 doivent être plus élevées (moins bonnes) que celles en R32
+      assertTrue(maxSeedInQ1 > minSeedInR32,
+                 String.format("Les seeds en qualif (%d max) doivent être moins bonnes que celles en main draw (%d min)",
+                               maxSeedInQ1, minSeedInR32));
+    }
+
+    // Vérification du nombre total d'équipes uniques
+    List<PlayerPair> allRealTeams = new ArrayList<>();
+    allRealTeams.addAll(teamsInQ1);
+    allRealTeams.addAll(teamsInR32);
+
+    long uniqueTeamsCount = allRealTeams.stream()
+                                        .map(p -> p.getPlayer1().getName() + "/" + p.getPlayer2().getName())
+                                        .distinct()
+                                        .count();
+
+    assertEquals(allRealTeams.size(), uniqueTeamsCount,
+                 "Toutes les équipes doivent être uniques (pas de duplication entre Q1 et R32)");
+  }
+
+  @ParameterizedTest(name = "QUALIF_KO: preQual={0}, qualifiers={1}, mainDraw={2}, teams={3}")
+  @CsvSource({
+      "16, 4, 32, 28",   // 16 en qualif, 12 direct en R32 (28 total)
+      "32, 8, 32, 32",   // 32 en qualif, 0 direct en R32 (32 total)
+      "32, 8, 64, 60",   // 32 en qualif, 28 direct en R64 (60 total)
+      "16, 4, 16, 16"    // 16 en qualif, 0 direct en R16 (16 total)
+  })
+  void testQualifKO_variousConfigurations_noTeamDuplication(int preQual, int nbQualifiers, int mainDraw, int totalTeams) {
+    // Given: Various QUALIF_KO configurations
+    Tournament tournament = TestFixtures.makeTournament(
+        preQual,
+        nbQualifiers,
+        mainDraw,
+        Math.min(mainDraw / 4, 16), // nbSeedsMain
+        Math.min(preQual / 4, 8),   // nbSeedsQual
+        DrawMode.SEEDED
+    );
+
+    List<PlayerPair> playerPairs = TestFixtures.createPlayerPairs(totalTeams);
+    for (int i = 0; i < playerPairs.size(); i++) {
+      playerPairs.get(i).setSeed(i + 1);
+    }
+
+    // When: Generate draw
+    TournamentBuilder.setupAndPopulateTournament(tournament, playerPairs);
+
+    // Then: Collect all non-BYE, non-QUALIFIER teams from Q1 and first main round
+    Round qualRound = tournament.getRounds().stream()
+                                .filter(r -> r.getStage().isQualification())
+                                .findFirst()
+                                .orElse(null);
+
+    Round mainRound = tournament.getRounds().stream()
+                                .filter(r -> !r.getStage().isQualification())
+                                .findFirst()
+                                .orElse(null);
+
+    if (qualRound != null && mainRound != null) {
+      List<PlayerPair> teamsInQual = qualRound.getGames().stream()
+                                              .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                              .filter(Objects::nonNull)
+                                              .filter(p -> !p.isBye() && !p.isQualifier())
+                                              .collect(Collectors.toList());
+
+      List<PlayerPair> teamsInMain = mainRound.getGames().stream()
+                                              .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                              .filter(Objects::nonNull)
+                                              .filter(p -> !p.isBye() && !p.isQualifier())
+                                              .collect(Collectors.toList());
+
+      // Check no team is in both rounds
+      for (PlayerPair teamInQual : teamsInQual) {
+        boolean isDuplicate = teamsInMain.stream()
+                                         .anyMatch(teamInMain ->
+                                                       teamInMain.getPlayer1().getName().equals(teamInQual.getPlayer1().getName()) &&
+                                                       teamInMain.getPlayer2().getName().equals(teamInQual.getPlayer2().getName())
+                                         );
+
+        Assertions.assertFalse(isDuplicate,
+                               String.format("Team %s/%s appears in both qualification (%s) and main draw (%s)",
+                                             teamInQual.getPlayer1().getName(),
+                                             teamInQual.getPlayer2().getName(),
+                                             qualRound.getStage(),
+                                             mainRound.getStage()));
+      }
+    }
+  }
 }

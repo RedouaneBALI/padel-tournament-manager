@@ -60,7 +60,7 @@ public class TournamentMapperTest {
                                               .nbSeeds(4)
                                               .build();
     t.setConfig(config);
-    // Ajout d'une paire et d'un round pour tester la collection
+    // Added a pair and a round to test the collection
     PlayerPair pair = new PlayerPair();
     pair.setId(2L);
     Player p1 = new Player("Alice");
@@ -211,12 +211,12 @@ public class TournamentMapperTest {
   }
 
   // ========================================
-  // Tests pour le mapping du champ type
+  // Tests for mapping the type field
   // ========================================
 
   @Test
   void testPlayerPairToDTO_withNormalType() {
-    // Given: Une paire normale
+    // Given: A normal player pair
     PlayerPair pair = new PlayerPair();
     pair.setId(1L);
     pair.setPlayer1(new Player("Alice"));
@@ -224,10 +224,10 @@ public class TournamentMapperTest {
     pair.setSeed(3);
     pair.setType(PairType.NORMAL);
 
-    // When: Mapping vers DTO
+    // When: Mapping to DTO
     PlayerPairDTO dto = mapper.toDTO(pair);
 
-    // Then: Le type doit être mappé
+    // Then: Type should be mapped
     assertNotNull(dto);
     assertEquals(PairType.NORMAL, dto.getType());
     assertEquals("Alice", dto.getPlayer1Name());
@@ -239,45 +239,45 @@ public class TournamentMapperTest {
 
   @Test
   void testPlayerPairToDTO_withByeType() {
-    // Given: Une paire BYE
+    // Given: A BYE pair
     PlayerPair pair = PlayerPair.bye();
     pair.setId(2L);
 
-    // When: Mapping vers DTO
+    // When: Mapping to DTO
     PlayerPairDTO dto = mapper.toDTO(pair);
 
-    // Then: Le type doit être BYE
+    // Then: Type should be BYE
     assertNotNull(dto);
     assertEquals(PairType.BYE, dto.getType());
     assertEquals("BYE", dto.getPlayer1Name());
     assertEquals("BYE", dto.getPlayer2Name());
     assertTrue(dto.isBye());
-    assertNull(dto.getSeed()); // Les BYE n'ont pas de seed visible
+    assertNull(dto.getSeed()); // BYE teams don't have a visible seed
     assertNull(dto.getDisplaySeed());
   }
 
   @Test
   void testPlayerPairToDTO_withQualifierType() {
-    // Given: Une paire QUALIFIER
+    // Given: A QUALIFIER pair
     PlayerPair pair = PlayerPair.qualifier();
     pair.setId(3L);
 
-    // When: Mapping vers DTO
+    // When: Mapping to DTO
     PlayerPairDTO dto = mapper.toDTO(pair);
 
-    // Then: Le type doit être QUALIFIER et PAS de noms de joueurs
+    // Then: Type should be QUALIFIER with NO player names
     assertNotNull(dto);
     assertEquals(PairType.QUALIFIER, dto.getType());
-    assertNull(dto.getPlayer1Name()); // Important : pas de noms pour les qualifiers
-    assertNull(dto.getPlayer2Name()); // Important : pas de noms pour les qualifiers
+    assertNull(dto.getPlayer1Name()); // Important: no names for qualifiers
+    assertNull(dto.getPlayer2Name()); // Important: no names for qualifiers
     assertTrue(dto.isQualifierSlot());
-    assertNull(dto.getSeed()); // Les qualifiers n'ont pas de seed visible
+    assertNull(dto.getSeed()); // Qualifiers don't have a visible seed
     assertEquals("Q", dto.getDisplaySeed());
   }
 
   @Test
   void testPlayerPairDTO_jsonSerialization_normalType() throws JsonProcessingException {
-    // Given: Un DTO avec type NORMAL
+    // Given: A DTO with NORMAL type
     PlayerPairDTO dto = new PlayerPairDTO();
     dto.setId(1L);
     dto.setPlayer1Name("Alice");
@@ -286,10 +286,10 @@ public class TournamentMapperTest {
     dto.setType(PairType.NORMAL);
     dto.setDisplaySeed("3");
 
-    // When: Sérialisation en JSON
+    // When: Serialization to JSON
     String json = objectMapper.writeValueAsString(dto);
 
-    // Then: Le champ "type" ne doit PAS apparaître (NORMAL est filtré)
+    // Then: "type" field should NOT appear (NORMAL is filtered)
     assertFalse(json.contains("\"type\""),
                 "Le champ 'type' ne devrait pas apparaître pour PairType.NORMAL");
     assertTrue(json.contains("\"player1Name\":\"Alice\""));
@@ -298,7 +298,7 @@ public class TournamentMapperTest {
 
   @Test
   void testPlayerPairDTO_jsonSerialization_byeType() throws JsonProcessingException {
-    // Given: Un DTO avec type BYE
+    // Given: A DTO with BYE type
     PlayerPairDTO dto = new PlayerPairDTO();
     dto.setId(2L);
     dto.setPlayer1Name("BYE");
@@ -306,10 +306,10 @@ public class TournamentMapperTest {
     dto.setBye(true);
     dto.setType(PairType.BYE);
 
-    // When: Sérialisation en JSON
+    // When: Serialization to JSON
     String json = objectMapper.writeValueAsString(dto);
 
-    // Then: Le champ "type" DOIT apparaître avec la valeur "BYE"
+    // Then: "type" field MUST appear with value "BYE"
     assertTrue(json.contains("\"type\":\"BYE\""),
                "Le champ 'type' devrait apparaître avec la valeur 'BYE'");
     assertTrue(json.contains("\"bye\":true"));
@@ -317,7 +317,7 @@ public class TournamentMapperTest {
 
   @Test
   void testPlayerPairDTO_jsonSerialization_qualifierType() throws JsonProcessingException {
-    // Given: Un DTO avec type QUALIFIER
+    // Given: A DTO with QUALIFIER type
     PlayerPairDTO dto = new PlayerPairDTO();
     dto.setId(3L);
     dto.setPlayer1Name("Q");
@@ -326,10 +326,10 @@ public class TournamentMapperTest {
     dto.setType(PairType.QUALIFIER);
     dto.setDisplaySeed("Q");
 
-    // When: Sérialisation en JSON
+    // When: Serialization to JSON
     String json = objectMapper.writeValueAsString(dto);
 
-    // Then: Le champ "type" DOIT apparaître avec la valeur "QUALIFIER"
+    // Then: "type" field MUST appear with value "QUALIFIER"
     assertTrue(json.contains("\"type\":\"QUALIFIER\""),
                "Le champ 'type' devrait apparaître avec la valeur 'QUALIFIER'");
     assertTrue(json.contains("\"qualifierSlot\":true"));
@@ -338,7 +338,7 @@ public class TournamentMapperTest {
 
   @Test
   void testGameDTO_withQualifierTeams() {
-    // Given: Un match avec une équipe qualifier
+    // Given: A game with a qualifier team
     PlayerPair normalTeam = new PlayerPair();
     normalTeam.setId(1L);
     normalTeam.setPlayer1(new Player("Alice"));
@@ -354,10 +354,10 @@ public class TournamentMapperTest {
     game.setTeamA(normalTeam);
     game.setTeamB(qualifierTeam);
 
-    // When: Mapping vers DTO
+    // When: Mapping to DTO
     GameDTO dto = mapper.toDTO(game);
 
-    // Then: Les deux équipes doivent être mappées avec leur type
+    // Then: Both teams should be mapped with their type
     assertNotNull(dto);
     assertEquals(100L, dto.getId());
 
@@ -369,32 +369,32 @@ public class TournamentMapperTest {
     PlayerPairDTO teamBDto = dto.getTeamB();
     assertNotNull(teamBDto);
     assertEquals(PairType.QUALIFIER, teamBDto.getType());
-    assertNull(teamBDto.getPlayer1Name()); // Important : pas de noms pour les qualifiers
-    assertNull(teamBDto.getPlayer2Name()); // Important : pas de noms pour les qualifiers
+    assertNull(teamBDto.getPlayer1Name()); // Important: no names for qualifiers
+    assertNull(teamBDto.getPlayer2Name()); // Important: no names for qualifiers
     assertTrue(teamBDto.isQualifierSlot());
     assertEquals("Q", teamBDto.getDisplaySeed());
   }
 
   @Test
   void testPlayerPairDTO_jsonSerialization_nullType() throws JsonProcessingException {
-    // Given: Un DTO avec type null
+    // Given: A DTO with null type
     PlayerPairDTO dto = new PlayerPairDTO();
     dto.setId(1L);
     dto.setPlayer1Name("Alice");
     dto.setPlayer2Name("Bob");
     dto.setType(null);
 
-    // When: Sérialisation en JSON
+    // When: Serialization to JSON
     String json = objectMapper.writeValueAsString(dto);
 
-    // Then: Le champ "type" ne doit PAS apparaître (null est filtré)
+    // Then: "type" field should NOT appear (null is filtered)
     assertFalse(json.contains("\"type\""),
                 "Le champ 'type' ne devrait pas apparaître quand il est null");
   }
 
   @Test
   void testPlayerPairDTO_displaySeed_forDifferentTypes() {
-    // Test displaySeed pour NORMAL
+    // Test displaySeed for NORMAL
     PlayerPair normalPair = new PlayerPair();
     normalPair.setSeed(5);
     normalPair.setType(PairType.NORMAL);
@@ -403,12 +403,12 @@ public class TournamentMapperTest {
     PlayerPairDTO normalDto = mapper.toDTO(normalPair);
     assertEquals("5", normalDto.getDisplaySeed());
 
-    // Test displaySeed pour BYE
+    // Test displaySeed for BYE
     PlayerPair    byePair = PlayerPair.bye();
     PlayerPairDTO byeDto  = mapper.toDTO(byePair);
     assertNull(byeDto.getDisplaySeed());
 
-    // Test displaySeed pour QUALIFIER
+    // Test displaySeed for QUALIFIER
     PlayerPair    qualifierPair = PlayerPair.qualifier();
     PlayerPairDTO qualifierDto  = mapper.toDTO(qualifierPair);
     assertEquals("Q", qualifierDto.getDisplaySeed());

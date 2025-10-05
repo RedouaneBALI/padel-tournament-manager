@@ -24,7 +24,7 @@ public class SecurityConfig {
         .cors(Customizer.withDefaults())
         .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()     // préflight
+            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()     // preflight
             .requestMatchers(HttpMethod.GET, "/tournaments/**").permitAll() // ⬅️ public GET
             .anyRequest().authenticated()
         )

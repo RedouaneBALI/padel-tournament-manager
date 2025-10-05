@@ -50,7 +50,7 @@ public class DrawGenerationService {
 
     TournamentBuilder.setupAndPopulateTournament(tournament, capPairsToMax(tournament));
 
-    // IMPORTANT : Persister les qualifiers en les ajoutant à la liste des PlayerPairs
+    // IMPORTANT: Persist qualifiers by adding them to the PlayerPairs list
     collectAndPersistQualifiers(tournament);
 
     log.info("Generated draw (auto) for tournament id {}", tournament.getId());
@@ -70,7 +70,7 @@ public class DrawGenerationService {
                                                .toList();
     TournamentBuilder.setupTournamentWithInitialRounds(tournament, convertedRounds);
 
-    // IMPORTANT : Persister les qualifiers
+    // IMPORTANT: Persist qualifiers by adding them to the PlayerPairs list
     collectAndPersistQualifiers(tournament);
 
     log.info("Generated draw (manual) for tournament id {}", tournament.getId());
@@ -80,7 +80,7 @@ public class DrawGenerationService {
   public void propagateWinners(Tournament tournament) {
     TournamentBuilder.propagateWinners(tournament);
   }
-  
+
   private void collectAndPersistQualifiers(Tournament tournament) {
     Set<PlayerPair> qualifiersToAdd = new HashSet<>();
 

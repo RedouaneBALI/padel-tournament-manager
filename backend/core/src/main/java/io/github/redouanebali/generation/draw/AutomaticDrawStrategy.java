@@ -56,14 +56,31 @@ public class AutomaticDrawStrategy implements DrawStrategy {
       }
     }
 
+    // Collect teams already placed in Q1 to exclude them from the main draw
+    Set<PlayerPair> teamsPlacedInQualif = new HashSet<>();
+
     // Process Q1 or Groups if present
     if (firstQualifRound != null) {
       processInitialRound(tournament, firstQualifRound, allPairs);
+
+      // Collect all real teams (non-BYE, non-QUALIFIER) placed in Q1
+      for (Game game : firstQualifRound.getGames()) {
+        if (game.getTeamA() != null && !game.getTeamA().isBye() && !game.getTeamA().isQualifier()) {
+          teamsPlacedInQualif.add(game.getTeamA());
+        }
+        if (game.getTeamB() != null && !game.getTeamB().isBye() && !game.getTeamB().isQualifier()) {
+          teamsPlacedInQualif.add(game.getTeamB());
+        }
+      }
     }
 
     // Process first main draw round if present
     if (firstMainDrawRound != null) {
-      processInitialRound(tournament, firstMainDrawRound, allPairs);
+      List<PlayerPair> pairsForMainDraw = allPairs.stream()
+                                                  .filter(pair -> !teamsPlacedInQualif.contains(pair))
+                                                  .collect(Collectors.toList());
+
+      processInitialRound(tournament, firstMainDrawRound, pairsForMainDraw);
     }
   }
 
@@ -97,38 +114,56 @@ public class AutomaticDrawStrategy implements DrawStrategy {
     int nbQualifiers            = tournament.getConfig().getNbQualifiers();
     int directEntriesToMainDraw = totalSlotsInMainDraw - nbQualifiers;
 
-    // Teams that go directly to main draw (best ranked)
-    int teamsNotInQualifs = Math.min(directEntriesToMainDraw, allPairs.size());
+    // CORRECTION: Lower-ranked teams must go through qualifications
+    // Calculate how many teams MUST go to qualifs (fill the qualification draw to maximum)
+    int teamsForQualifs = Math.min(qualifDrawSize, allPairs.size());
 
-    // Remaining teams that compete in qualifs
-    int teamsAvailableForQualifs = Math.max(0, allPairs.size() - teamsNotInQualifs);
-    int byesNeededInQualifs      = Math.max(0, qualifDrawSize - teamsAvailableForQualifs);
+    // If we have more teams than qualification slots, the best teams go directly to main draw
+    int teamsGoingDirectToMainDraw = Math.max(0, allPairs.size() - qualifDrawSize);
 
-    // Determine teams to protect with BYES in qualifs
-    int teamsToProtectInQualifs = Math.max(nbSeedsQualif, byesNeededInQualifs);
-
-    // Get teams that participate in qualifs
+    // Teams participating in qualifs are the LAST ones in the list (lower-ranked)
     List<PlayerPair> qualifParticipants = new ArrayList<>();
-    int              startIndex         = Math.max(0, allPairs.size() - teamsAvailableForQualifs);
+    int              startIndex         = teamsGoingDirectToMainDraw;
     for (int i = startIndex; i < allPairs.size(); i++) {
       qualifParticipants.add(allPairs.get(i));
     }
 
+    // Calculate necessary BYEs in qualif
+    int byesNeededInQualifs = Math.max(0, qualifDrawSize - qualifParticipants.size());
+
     // Place seeds in qualifs (among qualif participants only)
+    // Note: nbSeedsQualif représente le nombre de têtes de série PARMI les participants aux qualifs
     if (nbSeedsQualif > 0 && !qualifParticipants.isEmpty()) {
       SeedPlacementUtil.placeSeedTeams(initialRound, qualifParticipants, nbSeedsQualif, qualifDrawSize);
     }
 
     // Place BYEs in qualifs if necessary
     if (byesNeededInQualifs > 0) {
-      ByePlacementUtil.placeByeTeams(initialRound, teamsAvailableForQualifs, nbSeedsQualif, qualifDrawSize);
+      ByePlacementUtil.placeByeTeams(initialRound, qualifParticipants.size(), nbSeedsQualif, qualifDrawSize);
     }
 
     // Place remaining qualif participants randomly
+    // On doit placer TOUTES les équipes qui ne sont pas déjà placées (seeds + BYEs)
     List<PlayerPair> remainingQualifTeams = new ArrayList<>();
-    for (int i = teamsToProtectInQualifs; i < qualifParticipants.size(); i++) {
-      remainingQualifTeams.add(qualifParticipants.get(i));
+
+    // Trouver quelles équipes sont déjà placées dans le round
+    Set<PlayerPair> alreadyPlaced = new HashSet<>();
+    for (Game game : initialRound.getGames()) {
+      if (game.getTeamA() != null && !game.getTeamA().isBye()) {
+        alreadyPlaced.add(game.getTeamA());
+      }
+      if (game.getTeamB() != null && !game.getTeamB().isBye()) {
+        alreadyPlaced.add(game.getTeamB());
+      }
     }
+
+    // Ajouter toutes les équipes qui ne sont PAS encore placées
+    for (PlayerPair pair : qualifParticipants) {
+      if (!alreadyPlaced.contains(pair)) {
+        remainingQualifTeams.add(pair);
+      }
+    }
+
     RandomPlacementUtil.placeRemainingTeamsRandomly(initialRound, remainingQualifTeams);
   }
 
