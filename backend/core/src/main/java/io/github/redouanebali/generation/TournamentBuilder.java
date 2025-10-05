@@ -165,6 +165,8 @@ public final class TournamentBuilder {
     }
     switch (format) {
       case KNOCKOUT:
+        phases.add(new KnockoutPhase(cfg.getMainDrawSize(), cfg.getNbSeeds(), PhaseType.MAIN_DRAW));
+        break;
       case QUALIF_KO:
         if (cfg.getPreQualDrawSize() != null && cfg.getPreQualDrawSize() > 0 && cfg.getNbQualifiers() != null && cfg.getNbQualifiers() > 0
             && cfg.getNbSeedsQualify() != null) {

@@ -136,6 +136,12 @@ class TournamentBuilderCsvTest {
 
     Tournament tournament = new Tournament();
     tournament.setId(tournamentId);
+    TournamentFormat format;
+    if (nbQualifiers > 0 && preQualDrawSize > 0) {
+      format = TournamentFormat.QUALIF_KO;
+    } else {
+      format = TournamentFormat.KNOCKOUT;
+    }
     TournamentConfig cfg = TournamentConfig.builder()
                                            .preQualDrawSize(preQualDrawSize)
                                            .nbQualifiers(nbQualifiers)
@@ -143,6 +149,7 @@ class TournamentBuilderCsvTest {
                                            .nbSeeds(nbSeedsMain)
                                            .nbSeedsQualify(0)
                                            .drawMode(DrawMode.SEEDED)
+                                           .format(format)
                                            .build();
     tournament.setConfig(cfg);
 

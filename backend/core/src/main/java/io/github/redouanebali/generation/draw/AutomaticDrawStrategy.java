@@ -234,33 +234,57 @@ public class AutomaticDrawStrategy implements DrawStrategy {
    * Processes a main draw round with automatic logic.
    */
   private void processMainDrawRound(Tournament tournament, Round initialRound, List<PlayerPair> allPairs, int roundDrawSize, int configuredSeeds) {
+    TournamentFormat format = tournament.getConfig().getFormat();
+
     // Step 1: Place seeds
     SeedPlacementUtil.placeSeedTeams(initialRound, allPairs, configuredSeeds, roundDrawSize);
 
-    // Step 2: Place BYEs for direct entries only, skipping qualifier slots
-    int nbQualifiers  = tournament.getConfig().getNbQualifiers();
-    int totalSlots    = tournament.getConfig().getMainDrawSize();
-    int directEntries = Math.min(totalSlots - nbQualifiers, allPairs.size());
-    ByePlacementUtil.placeByeTeams(initialRound, directEntries, configuredSeeds, roundDrawSize, nbQualifiers);
+    // Step 2: Place BYEs and qualifiers based on tournament format
+    if (format == TournamentFormat.QUALIF_KO) {
+      // QUALIFS_KO mode: Place BYEs for direct entries only, skipping qualifier slots
+      int nbQualifiers  = tournament.getConfig().getNbQualifiers();
+      int totalSlots    = tournament.getConfig().getMainDrawSize();
+      int directEntries = Math.min(totalSlots - nbQualifiers, allPairs.size());
+      ByePlacementUtil.placeByeTeams(initialRound, directEntries, configuredSeeds, roundDrawSize, nbQualifiers);
 
-    // Step 3: Place qualifiers randomly in available slots
-    RandomPlacementUtil.placeQualifiers(initialRound, nbQualifiers);
+      // Step 3: Place qualifiers randomly in available slots (only in QUALIFS_KO mode)
+      RandomPlacementUtil.placeQualifiers(initialRound, nbQualifiers);
 
-    // Step 4: Place remaining teams randomly in available slots
-    Set<PlayerPair> alreadyPlaced = new HashSet<>();
-    for (Game g : initialRound.getGames()) {
-      if (g.getTeamA() != null && !g.getTeamA().isBye() && !g.getTeamA().isQualifier()) {
-        alreadyPlaced.add(g.getTeamA());
+      // Step 4: Place remaining teams randomly in available slots
+      Set<PlayerPair> alreadyPlaced = new HashSet<>();
+      for (Game g : initialRound.getGames()) {
+        if (g.getTeamA() != null && !g.getTeamA().isBye() && !g.getTeamA().isQualifier()) {
+          alreadyPlaced.add(g.getTeamA());
+        }
+        if (g.getTeamB() != null && !g.getTeamB().isBye() && !g.getTeamB().isQualifier()) {
+          alreadyPlaced.add(g.getTeamB());
+        }
       }
-      if (g.getTeamB() != null && !g.getTeamB().isBye() && !g.getTeamB().isQualifier()) {
-        alreadyPlaced.add(g.getTeamB());
+      List<PlayerPair> remainingTeams = allPairs.stream()
+                                                .filter(p -> !alreadyPlaced.contains(p))
+                                                .limit(directEntries)
+                                                .collect(Collectors.toList());
+      RandomPlacementUtil.placeRemainingTeamsRandomly(initialRound, remainingTeams);
+    } else {
+      // KNOCKOUT mode: Place BYEs normally for all teams (no qualifiers)
+      int nbTeams = allPairs.size();
+      ByePlacementUtil.placeByeTeams(initialRound, nbTeams, configuredSeeds, roundDrawSize);
+
+      // Place remaining teams randomly in available slots
+      Set<PlayerPair> alreadyPlaced = new HashSet<>();
+      for (Game g : initialRound.getGames()) {
+        if (g.getTeamA() != null && !g.getTeamA().isBye()) {
+          alreadyPlaced.add(g.getTeamA());
+        }
+        if (g.getTeamB() != null && !g.getTeamB().isBye()) {
+          alreadyPlaced.add(g.getTeamB());
+        }
       }
+      List<PlayerPair> remainingTeams = allPairs.stream()
+                                                .filter(p -> !alreadyPlaced.contains(p))
+                                                .collect(Collectors.toList());
+      RandomPlacementUtil.placeRemainingTeamsRandomly(initialRound, remainingTeams);
     }
-    List<PlayerPair> remainingTeams = allPairs.stream()
-                                              .filter(p -> !alreadyPlaced.contains(p))
-                                              .limit(directEntries)
-                                              .collect(Collectors.toList());
-    RandomPlacementUtil.placeRemainingTeamsRandomly(initialRound, remainingTeams);
   }
 
   /**
