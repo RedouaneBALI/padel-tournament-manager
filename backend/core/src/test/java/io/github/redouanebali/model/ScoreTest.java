@@ -29,4 +29,5 @@ public class ScoreTest {
     assertEquals(7, score.getSets().get(2).getTeamBScore());
   }
 
+
 }

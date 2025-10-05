@@ -3,14 +3,6 @@
   xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <artifactId>padel-tournament-manager</artifactId>
-  <packaging>pom</packaging>
-  <modules>
-    <module>api</module>
-    <module>api</module>
-    <module>core</module>
-    <module>persistence</module>
-  </modules>
-
   <build>
     <plugins>
       <!-- Maven Compiler Plugin -->
@@ -65,7 +57,6 @@
       </plugin>
     </plugins>
   </build>
-
   <dependencies>
     <!-- Spring Boot Dependencies -->
     <dependency>
@@ -174,8 +165,15 @@
       <version>5.11.0</version>
     </dependency>
   </dependencies>
+
   <groupId>io.github.redouanebali</groupId>
+
   <modelVersion>4.0.0</modelVersion>
+  <modules>
+    <module>api</module>
+    <module>core</module>
+  </modules>
+  <packaging>pom</packaging>
 
   <parent>
     <artifactId>spring-boot-starter-parent</artifactId>

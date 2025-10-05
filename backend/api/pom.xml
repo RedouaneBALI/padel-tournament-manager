@@ -9,6 +9,11 @@
       <scope>test</scope>
       <version>3.8.1</version>
     </dependency>
+    <dependency>
+      <artifactId>core</artifactId>
+      <groupId>io.github.redouanebali</groupId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 
   <modelVersion>4.0.0</modelVersion>

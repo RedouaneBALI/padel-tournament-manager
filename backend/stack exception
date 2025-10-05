@@ -132,7 +132,7 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
 2025-08-08 22:31:21 POST 401 https://padel-backend-307569718213.us-central1.run.app/admin/tournaments
 2025-08-08 22:35:01 OPTIONS 200 https://padel-backend-307569718213.us-central1.run.app/admin/tournaments
 2025-08-08 22:35:01 POST 500 https://padel-backend-307569718213.us-central1.run.app/admin/tournaments
-2025-08-08 22:35:04 2025-08-08T22:35:04.059Z  INFO 1 --- [nio-8080-exec-2] i.g.r.io.github.redouanebali.api.service.TournamentService          : Created tournament with id 1
+2025-08-08 22:35:04 2025-08-08T22:35:04.059Z  INFO 1 --- [nio-8080-exec-2] i.g.r.service.io.github.redouanebali.TournamentService          : Created tournament with id 1
 2025-08-08 22:35:04 2025-08-08T22:35:04.355Z ERROR 1 --- [nio-8080-exec-2] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.io.github.redouanebali.api.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: org.springframework.orm.jpa.JpaSystemException: A collection with orphan deletion was no longer referenced by the owning entity instance: io.github.redouanebali.model.Tournament.rounds] with root cause
 2025-08-08 22:35:04 org.hibernate.HibernateException: A collection with orphan deletion was no longer referenced by the owning entity instance: io.github.redouanebali.model.Tournament.rounds
         at org.hibernate.engine.internal.Collections.processDereferencedCollection(Collections.java:98) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
@@ -163,7 +163,7 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
         at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.9.jar!/:6.2.9]
         at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:223) ~[spring-aop-6.2.9.jar!/:6.2.9]
         at jdk.proxy2/jdk.proxy2.$Proxy135.save(Unknown Source) ~[na:na]
-        at io.github.redouanebali.io.github.redouanebali.api.service.TournamentService.createTournament(TournamentService.java:48) ~[!/:1.0-SNAPSHOT]
+        at io.github.redouanebali.service.io.github.redouanebali.TournamentService.createTournament(TournamentService.java:48) ~[!/:1.0-SNAPSHOT]
         at io.github.redouanebali.controller.AdminTournamentController.createTournament(AdminTournamentController.java:45) ~[!/:1.0-SNAPSHOT]
         at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source) ~[na:na]
         at java.base/java.lang.reflect.Method.invoke(Unknown Source) ~[na:na]
@@ -270,7 +270,7 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
         at org.apache.tomcat.io.github.redouanebali.api.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.43.jar!/:na]
         at java.base/java.lang.Thread.run(Unknown Source) ~[na:na]
 2025-08-08 22:36:54 POST 500 https://padel-backend-307569718213.us-central1.run.app/admin/tournaments
-2025-08-08 22:36:54 2025-08-08T22:36:54.292Z  INFO 1 --- [nio-8080-exec-7] i.g.r.io.github.redouanebali.api.service.TournamentService          : Created tournament with id 2
+2025-08-08 22:36:54 2025-08-08T22:36:54.292Z  INFO 1 --- [nio-8080-exec-7] i.g.r.service.io.github.redouanebali.TournamentService          : Created tournament with id 2
 2025-08-08 22:36:54 2025-08-08T22:36:54.352Z ERROR 1 --- [nio-8080-exec-7] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.io.github.redouanebali.api.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: org.springframework.orm.jpa.JpaSystemException: A collection with orphan deletion was no longer referenced by the owning entity instance: io.github.redouanebali.model.Tournament.rounds] with root cause
 2025-08-08 22:36:54 org.hibernate.HibernateException: A collection with orphan deletion was no longer referenced by the owning entity instance: io.github.redouanebali.model.Tournament.rounds
         at org.hibernate.engine.internal.Collections.processDereferencedCollection(Collections.java:98) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
@@ -301,7 +301,7 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
         at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.9.jar!/:6.2.9]
         at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:223) ~[spring-aop-6.2.9.jar!/:6.2.9]
         at jdk.proxy2/jdk.proxy2.$Proxy135.save(Unknown Source) ~[na:na]
-        at io.github.redouanebali.io.github.redouanebali.api.service.TournamentService.createTournament(TournamentService.java:48) ~[!/:1.0-SNAPSHOT]
+        at io.github.redouanebali.service.io.github.redouanebali.TournamentService.createTournament(TournamentService.java:48) ~[!/:1.0-SNAPSHOT]
         at io.github.redouanebali.controller.AdminTournamentController.createTournament(AdminTournamentController.java:45) ~[!/:1.0-SNAPSHOT]
         at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source) ~[na:na]
         at java.base/java.lang.reflect.Method.invoke(Unknown Source) ~[na:na]
@@ -455,7 +455,7 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
 2025-08-09 08:37:21 2025-08-09T08:37:21.283Z  INFO 1 --- [nio-8080-exec-5] o.s.web.servlet.DispatcherServlet        : Completed initialization in 3 ms
 2025-08-09 08:43:39 OPTIONS 200 https://padel-backend-307569718213.us-central1.run.app/admin/tournaments
 2025-08-09 08:43:40 POST 500 https://padel-backend-307569718213.us-central1.run.app/admin/tournaments
-2025-08-09 08:43:42 2025-08-09T08:43:42.661Z  INFO 1 --- [nio-8080-exec-8] i.g.r.io.github.redouanebali.api.service.TournamentService          : Created tournament with id 1
+2025-08-09 08:43:42 2025-08-09T08:43:42.661Z  INFO 1 --- [nio-8080-exec-8] i.g.r.service.io.github.redouanebali.TournamentService          : Created tournament with id 1
 2025-08-09 08:43:42 2025-08-09T08:43:42.965Z ERROR 1 --- [nio-8080-exec-8] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.io.github.redouanebali.api.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: org.springframework.orm.jpa.JpaSystemException: A collection with orphan deletion was no longer referenced by the owning entity instance: io.github.redouanebali.model.Tournament.rounds] with root cause
 2025-08-09 08:43:42 org.hibernate.HibernateException: A collection with orphan deletion was no longer referenced by the owning entity instance: io.github.redouanebali.model.Tournament.rounds
         at org.hibernate.engine.internal.Collections.processDereferencedCollection(Collections.java:98) ~[hibernate-core-6.6.22.Final.jar!/:6.6.22.Final]
@@ -486,7 +486,7 @@ mac-RBALI19@MAL-H9M94QWN36 backend % gcloud run services logs read padel-backend
         at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.9.jar!/:6.2.9]
         at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:223) ~[spring-aop-6.2.9.jar!/:6.2.9]
         at jdk.proxy2/jdk.proxy2.$Proxy135.save(Unknown Source) ~[na:na]
-        at io.github.redouanebali.io.github.redouanebali.api.service.TournamentService.createTournament(TournamentService.java:48) ~[!/:1.0-SNAPSHOT]
+        at io.github.redouanebali.service.io.github.redouanebali.TournamentService.createTournament(TournamentService.java:48) ~[!/:1.0-SNAPSHOT]
         at io.github.redouanebali.controller.AdminTournamentController.createTournament(AdminTournamentController.java:45) ~[!/:1.0-SNAPSHOT]
         at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source) ~[na:na]
         at java.base/java.lang.reflect.Method.invoke(Unknown Source) ~[na:na]
