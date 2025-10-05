@@ -46,27 +46,42 @@ public interface TournamentMapper {
     if (playerPair == null) {
       return null;
     }
+
     PlayerPairDTO dto = new PlayerPairDTO();
     dto.setId(playerPair.getId());
-    dto.setSeed(playerPair.getSeed()); // numeric seed stays numeric
-    dto.setBye(playerPair.isBye());
+    dto.setType(playerPair.getType());
 
-    // Consider any PairType.QUALIFIER (placeholder or real qualified entrant) as qualifierSlot for DTO purposes
-    dto.setQualifierSlot(playerPair.isQualifier());
-
-    // Display seed for UI
-    String display;
-    if (playerPair.isBye()) {
-      display = null;
-    } else if (playerPair.isQualifier()) {
-      display = "Q";
-    } else {
-      display = String.valueOf(playerPair.getSeed());
+    // Cas 1 : C'est un QUALIFIER (placeholder pour une paire qui viendra des qualifications)
+    if (playerPair.isQualifier()) {
+      dto.setQualifierSlot(true);
+      dto.setDisplaySeed("Q");
+      // Important : PAS de noms de joueurs pour les qualifiers
+      // Le front affichera juste "Q"
+      return dto;
     }
-    dto.setDisplaySeed(display);
 
+    // Cas 2 : C'est un BYE (bye automatique)
+    if (playerPair.isBye()) {
+      dto.setBye(true);
+      dto.setDisplaySeed(null);
+      // Les BYE peuvent garder leurs noms "BYE" / "BYE" si nécessaire
+      dto.setPlayer1Name(playerPair.getPlayer1() != null ? playerPair.getPlayer1().getName() : null);
+      dto.setPlayer2Name(playerPair.getPlayer2() != null ? playerPair.getPlayer2().getName() : null);
+      return dto;
+    }
+
+    // Cas 3 : Paire NORMALE (avec de vrais joueurs)
     dto.setPlayer1Name(playerPair.getPlayer1() != null ? playerPair.getPlayer1().getName() : null);
     dto.setPlayer2Name(playerPair.getPlayer2() != null ? playerPair.getPlayer2().getName() : null);
+    dto.setSeed(playerPair.getSeed());
+
+    // Display seed pour l'UI
+    if (playerPair.getSeed() > 0 && playerPair.getSeed() < Integer.MAX_VALUE) {
+      dto.setDisplaySeed(String.valueOf(playerPair.getSeed()));
+    } else {
+      dto.setDisplaySeed(null);
+    }
+
     return dto;
   }
 

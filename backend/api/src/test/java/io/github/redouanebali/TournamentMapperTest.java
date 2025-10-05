@@ -3,8 +3,11 @@ package io.github.redouanebali;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
 import io.github.redouanebali.dto.response.GameDTO;
 import io.github.redouanebali.dto.response.MatchFormatDTO;
@@ -16,6 +19,7 @@ import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Gender;
 import io.github.redouanebali.model.MatchFormat;
+import io.github.redouanebali.model.PairType;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.PoolRankingDetails;
@@ -34,7 +38,8 @@ import org.mapstruct.factory.Mappers;
 
 public class TournamentMapperTest {
 
-  private final TournamentMapper mapper = Mappers.getMapper(TournamentMapper.class);
+  private final TournamentMapper mapper       = Mappers.getMapper(TournamentMapper.class);
+  private final ObjectMapper     objectMapper = new ObjectMapper();
 
   @Test
   void testTournamentToDTO_mapping() {
@@ -203,5 +208,209 @@ public class TournamentMapperTest {
     round.setStage(Stage.FINAL);
     dto.setRounds(List.of(round));
     assertEquals(Stage.FINAL, dto.getCurrentRoundStage());
+  }
+
+  // ========================================
+  // Tests pour le mapping du champ type
+  // ========================================
+
+  @Test
+  void testPlayerPairToDTO_withNormalType() {
+    // Given: Une paire normale
+    PlayerPair pair = new PlayerPair();
+    pair.setId(1L);
+    pair.setPlayer1(new Player("Alice"));
+    pair.setPlayer2(new Player("Bob"));
+    pair.setSeed(3);
+    pair.setType(PairType.NORMAL);
+
+    // When: Mapping vers DTO
+    PlayerPairDTO dto = mapper.toDTO(pair);
+
+    // Then: Le type doit être mappé
+    assertNotNull(dto);
+    assertEquals(PairType.NORMAL, dto.getType());
+    assertEquals("Alice", dto.getPlayer1Name());
+    assertEquals("Bob", dto.getPlayer2Name());
+    assertEquals(3, dto.getSeed());
+    assertFalse(dto.isBye());
+    assertFalse(dto.isQualifierSlot());
+  }
+
+  @Test
+  void testPlayerPairToDTO_withByeType() {
+    // Given: Une paire BYE
+    PlayerPair pair = PlayerPair.bye();
+    pair.setId(2L);
+
+    // When: Mapping vers DTO
+    PlayerPairDTO dto = mapper.toDTO(pair);
+
+    // Then: Le type doit être BYE
+    assertNotNull(dto);
+    assertEquals(PairType.BYE, dto.getType());
+    assertEquals("BYE", dto.getPlayer1Name());
+    assertEquals("BYE", dto.getPlayer2Name());
+    assertTrue(dto.isBye());
+    assertNull(dto.getSeed()); // Les BYE n'ont pas de seed visible
+    assertNull(dto.getDisplaySeed());
+  }
+
+  @Test
+  void testPlayerPairToDTO_withQualifierType() {
+    // Given: Une paire QUALIFIER
+    PlayerPair pair = PlayerPair.qualifier();
+    pair.setId(3L);
+
+    // When: Mapping vers DTO
+    PlayerPairDTO dto = mapper.toDTO(pair);
+
+    // Then: Le type doit être QUALIFIER et PAS de noms de joueurs
+    assertNotNull(dto);
+    assertEquals(PairType.QUALIFIER, dto.getType());
+    assertNull(dto.getPlayer1Name()); // Important : pas de noms pour les qualifiers
+    assertNull(dto.getPlayer2Name()); // Important : pas de noms pour les qualifiers
+    assertTrue(dto.isQualifierSlot());
+    assertNull(dto.getSeed()); // Les qualifiers n'ont pas de seed visible
+    assertEquals("Q", dto.getDisplaySeed());
+  }
+
+  @Test
+  void testPlayerPairDTO_jsonSerialization_normalType() throws JsonProcessingException {
+    // Given: Un DTO avec type NORMAL
+    PlayerPairDTO dto = new PlayerPairDTO();
+    dto.setId(1L);
+    dto.setPlayer1Name("Alice");
+    dto.setPlayer2Name("Bob");
+    dto.setSeed(3);
+    dto.setType(PairType.NORMAL);
+    dto.setDisplaySeed("3");
+
+    // When: Sérialisation en JSON
+    String json = objectMapper.writeValueAsString(dto);
+
+    // Then: Le champ "type" ne doit PAS apparaître (NORMAL est filtré)
+    assertFalse(json.contains("\"type\""),
+                "Le champ 'type' ne devrait pas apparaître pour PairType.NORMAL");
+    assertTrue(json.contains("\"player1Name\":\"Alice\""));
+    assertTrue(json.contains("\"seed\":3"));
+  }
+
+  @Test
+  void testPlayerPairDTO_jsonSerialization_byeType() throws JsonProcessingException {
+    // Given: Un DTO avec type BYE
+    PlayerPairDTO dto = new PlayerPairDTO();
+    dto.setId(2L);
+    dto.setPlayer1Name("BYE");
+    dto.setPlayer2Name("BYE");
+    dto.setBye(true);
+    dto.setType(PairType.BYE);
+
+    // When: Sérialisation en JSON
+    String json = objectMapper.writeValueAsString(dto);
+
+    // Then: Le champ "type" DOIT apparaître avec la valeur "BYE"
+    assertTrue(json.contains("\"type\":\"BYE\""),
+               "Le champ 'type' devrait apparaître avec la valeur 'BYE'");
+    assertTrue(json.contains("\"bye\":true"));
+  }
+
+  @Test
+  void testPlayerPairDTO_jsonSerialization_qualifierType() throws JsonProcessingException {
+    // Given: Un DTO avec type QUALIFIER
+    PlayerPairDTO dto = new PlayerPairDTO();
+    dto.setId(3L);
+    dto.setPlayer1Name("Q");
+    dto.setPlayer2Name("Q");
+    dto.setQualifierSlot(true);
+    dto.setType(PairType.QUALIFIER);
+    dto.setDisplaySeed("Q");
+
+    // When: Sérialisation en JSON
+    String json = objectMapper.writeValueAsString(dto);
+
+    // Then: Le champ "type" DOIT apparaître avec la valeur "QUALIFIER"
+    assertTrue(json.contains("\"type\":\"QUALIFIER\""),
+               "Le champ 'type' devrait apparaître avec la valeur 'QUALIFIER'");
+    assertTrue(json.contains("\"qualifierSlot\":true"));
+    assertTrue(json.contains("\"displaySeed\":\"Q\""));
+  }
+
+  @Test
+  void testGameDTO_withQualifierTeams() {
+    // Given: Un match avec une équipe qualifier
+    PlayerPair normalTeam = new PlayerPair();
+    normalTeam.setId(1L);
+    normalTeam.setPlayer1(new Player("Alice"));
+    normalTeam.setPlayer2(new Player("Bob"));
+    normalTeam.setSeed(1);
+    normalTeam.setType(PairType.NORMAL);
+
+    PlayerPair qualifierTeam = PlayerPair.qualifier();
+    qualifierTeam.setId(2L);
+
+    Game game = new Game();
+    game.setId(100L);
+    game.setTeamA(normalTeam);
+    game.setTeamB(qualifierTeam);
+
+    // When: Mapping vers DTO
+    GameDTO dto = mapper.toDTO(game);
+
+    // Then: Les deux équipes doivent être mappées avec leur type
+    assertNotNull(dto);
+    assertEquals(100L, dto.getId());
+
+    PlayerPairDTO teamADto = dto.getTeamA();
+    assertNotNull(teamADto);
+    assertEquals(PairType.NORMAL, teamADto.getType());
+    assertEquals("Alice", teamADto.getPlayer1Name());
+
+    PlayerPairDTO teamBDto = dto.getTeamB();
+    assertNotNull(teamBDto);
+    assertEquals(PairType.QUALIFIER, teamBDto.getType());
+    assertNull(teamBDto.getPlayer1Name()); // Important : pas de noms pour les qualifiers
+    assertNull(teamBDto.getPlayer2Name()); // Important : pas de noms pour les qualifiers
+    assertTrue(teamBDto.isQualifierSlot());
+    assertEquals("Q", teamBDto.getDisplaySeed());
+  }
+
+  @Test
+  void testPlayerPairDTO_jsonSerialization_nullType() throws JsonProcessingException {
+    // Given: Un DTO avec type null
+    PlayerPairDTO dto = new PlayerPairDTO();
+    dto.setId(1L);
+    dto.setPlayer1Name("Alice");
+    dto.setPlayer2Name("Bob");
+    dto.setType(null);
+
+    // When: Sérialisation en JSON
+    String json = objectMapper.writeValueAsString(dto);
+
+    // Then: Le champ "type" ne doit PAS apparaître (null est filtré)
+    assertFalse(json.contains("\"type\""),
+                "Le champ 'type' ne devrait pas apparaître quand il est null");
+  }
+
+  @Test
+  void testPlayerPairDTO_displaySeed_forDifferentTypes() {
+    // Test displaySeed pour NORMAL
+    PlayerPair normalPair = new PlayerPair();
+    normalPair.setSeed(5);
+    normalPair.setType(PairType.NORMAL);
+    normalPair.setPlayer1(new Player("A"));
+    normalPair.setPlayer2(new Player("B"));
+    PlayerPairDTO normalDto = mapper.toDTO(normalPair);
+    assertEquals("5", normalDto.getDisplaySeed());
+
+    // Test displaySeed pour BYE
+    PlayerPair    byePair = PlayerPair.bye();
+    PlayerPairDTO byeDto  = mapper.toDTO(byePair);
+    assertNull(byeDto.getDisplaySeed());
+
+    // Test displaySeed pour QUALIFIER
+    PlayerPair    qualifierPair = PlayerPair.qualifier();
+    PlayerPairDTO qualifierDto  = mapper.toDTO(qualifierPair);
+    assertEquals("Q", qualifierDto.getDisplaySeed());
   }
 }

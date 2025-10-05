@@ -9,6 +9,7 @@ import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +50,9 @@ public class DrawGenerationService {
 
     TournamentBuilder.setupAndPopulateTournament(tournament, capPairsToMax(tournament));
 
+    // IMPORTANT : Persister les qualifiers en les ajoutant à la liste des PlayerPairs
+    collectAndPersistQualifiers(tournament);
+
     log.info("Generated draw (auto) for tournament id {}", tournament.getId());
     return tournamentRepository.save(tournament);
   }
@@ -66,12 +70,38 @@ public class DrawGenerationService {
                                                .toList();
     TournamentBuilder.setupTournamentWithInitialRounds(tournament, convertedRounds);
 
+    // IMPORTANT : Persister les qualifiers
+    collectAndPersistQualifiers(tournament);
+
     log.info("Generated draw (manual) for tournament id {}", tournament.getId());
     return tournamentRepository.save(tournament);
   }
 
   public void propagateWinners(Tournament tournament) {
     TournamentBuilder.propagateWinners(tournament);
+  }
+  
+  private void collectAndPersistQualifiers(Tournament tournament) {
+    Set<PlayerPair> qualifiersToAdd = new HashSet<>();
+
+    for (Round round : tournament.getRounds()) {
+      for (io.github.redouanebali.model.Game game : round.getGames()) {
+        if (game.getTeamA() != null && game.getTeamA().isQualifier()) {
+          qualifiersToAdd.add(game.getTeamA());
+        }
+        if (game.getTeamB() != null && game.getTeamB().isQualifier()) {
+          qualifiersToAdd.add(game.getTeamB());
+        }
+      }
+    }
+
+    for (PlayerPair qualifier : qualifiersToAdd) {
+      if (!tournament.getPlayerPairs().contains(qualifier)) {
+        tournament.getPlayerPairs().add(qualifier);
+      }
+    }
+
+    log.debug("Added {} qualifiers to tournament pairs for persistence", qualifiersToAdd.size());
   }
 
   private void assertCanInitialize(Tournament tournament) {

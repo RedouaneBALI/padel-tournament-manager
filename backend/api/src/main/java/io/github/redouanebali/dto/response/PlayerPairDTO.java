@@ -2,6 +2,7 @@ package io.github.redouanebali.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import io.github.redouanebali.model.PairType;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,14 +10,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PlayerPairDTO {
 
-  private Long    id;
-  private String  player1Name;
-  private String  player2Name;
-  private Integer seed;
+  private Long     id;
+  private String   player1Name;
+  private String   player2Name;
+  private Integer  seed;
   @JsonInclude(Include.NON_DEFAULT)
-  private boolean bye;
+  private boolean  bye;
   @JsonInclude(Include.NON_DEFAULT)
-  private boolean qualifierSlot;
+  private boolean  qualifierSlot;
+  @JsonInclude(value = Include.CUSTOM, valueFilter = NormalTypeFilter.class)
+  private PairType type;
 
   private String displaySeed;
 
@@ -30,5 +33,16 @@ public class PlayerPairDTO {
       return null;
     }
     return seed;
+  }
+
+  /**
+   * Filtre personnalisé pour exclure PairType.NORMAL de la sérialisation JSON
+   */
+  public static class NormalTypeFilter {
+
+    @Override
+    public boolean equals(Object obj) {
+      return obj == null || obj == PairType.NORMAL;
+    }
   }
 }
