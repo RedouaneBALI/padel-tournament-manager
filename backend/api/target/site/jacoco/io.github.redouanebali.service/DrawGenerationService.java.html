@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DrawGenerationService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">api</a> &gt; <a href="index.source.html" class="el_package">io.github.redouanebali.service</a> &gt; <span class="el_source">DrawGenerationService.java</span></div><h1>DrawGenerationService.java</h1><pre class="source lang-java linenums">package io.github.redouanebali.service;
+
+import io.github.redouanebali.dto.request.RoundRequest;
+import io.github.redouanebali.generation.TournamentBuilder;
+import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.repository.TournamentRepository;
+import io.github.redouanebali.security.SecurityProps;
+import io.github.redouanebali.security.SecurityUtil;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+<span class="fc" id="L21">@Slf4j</span>
+public class DrawGenerationService {
+
+  private final TournamentRepository tournamentRepository;
+  private final SecurityProps        securityProps;
+
+  public static List&lt;PlayerPair&gt; capPairsToMax(Tournament tournament) {
+<span class="fc" id="L28">    List&lt;PlayerPair&gt; pairs    = tournament.getPlayerPairs();</span>
+<span class="fc" id="L29">    int              maxPairs = tournament.getConfig().getNbMaxPairs();</span>
+
+<span class="pc bpc" id="L31" title="1 of 4 branches missed.">    if (pairs == null || pairs.isEmpty()) {</span>
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">      return pairs == null ? List.of() : pairs;</span>
+    }
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">    if (maxPairs &lt;= 0) {</span>
+<span class="nc" id="L35">      return pairs;</span>
+    }
+
+<span class="fc bfc" id="L38" title="All 2 branches covered.">    if (pairs.size() &lt;= maxPairs) {</span>
+<span class="fc" id="L39">      return pairs;</span>
+    }
+
+<span class="fc" id="L42">    log.warn(&quot;Tournament id {} has {} pairs; max is {} — using first {} only for draw generation.&quot;,</span>
+<span class="fc" id="L43">             tournament.getId(), pairs.size(), maxPairs, maxPairs);</span>
+<span class="fc" id="L44">    return new ArrayList&lt;&gt;(pairs.subList(0, maxPairs));</span>
+  }
+
+  public Tournament generateDrawAuto(Tournament tournament) {
+<span class="fc" id="L48">    assertCanInitialize(tournament);</span>
+
+<span class="fc" id="L50">    TournamentBuilder.setupAndPopulateTournament(tournament, capPairsToMax(tournament));</span>
+
+<span class="fc" id="L52">    log.info(&quot;Generated draw (auto) for tournament id {}&quot;, tournament.getId());</span>
+<span class="fc" id="L53">    return tournamentRepository.save(tournament);</span>
+  }
+
+  public Tournament generateDrawManual(Tournament tournament, List&lt;RoundRequest&gt; initialRounds) {
+<span class="fc" id="L57">    assertCanInitialize(tournament);</span>
+
+<span class="fc bfc" id="L59" title="All 4 branches covered.">    if (initialRounds == null || initialRounds.isEmpty()) {</span>
+<span class="fc" id="L60">      throw new IllegalArgumentException(</span>
+          &quot;Manual draw generation requires initial rounds to be provided. Use generateDrawAuto() for automatic generation instead.&quot;);
+    }
+
+<span class="fc" id="L64">    List&lt;Round&gt; convertedRounds = initialRounds.stream()</span>
+<span class="fc" id="L65">                                               .map(req -&gt; RoundRequest.toModel(req, tournament))</span>
+<span class="fc" id="L66">                                               .toList();</span>
+<span class="fc" id="L67">    TournamentBuilder.setupTournamentWithInitialRounds(tournament, convertedRounds);</span>
+
+<span class="fc" id="L69">    log.info(&quot;Generated draw (manual) for tournament id {}&quot;, tournament.getId());</span>
+<span class="fc" id="L70">    return tournamentRepository.save(tournament);</span>
+  }
+
+  public void propagateWinners(Tournament tournament) {
+<span class="nc" id="L74">    TournamentBuilder.propagateWinners(tournament);</span>
+<span class="nc" id="L75">  }</span>
+
+  private void assertCanInitialize(Tournament tournament) {
+<span class="fc" id="L78">    String      me          = SecurityUtil.currentUserId();</span>
+<span class="fc" id="L79">    Set&lt;String&gt; superAdmins = securityProps.getSuperAdmins();</span>
+<span class="fc bfc" id="L80" title="All 4 branches covered.">    if (!superAdmins.contains(me) &amp;&amp; !me.equals(tournament.getOwnerId())) {</span>
+<span class="fc" id="L81">      throw new AccessDeniedException(&quot;You are not allowed to initialize draw for this tournament&quot;);</span>
+    }
+<span class="fc" id="L83">  }</span>
+
+
+  public void validate(final Tournament tournament) {
+<span class="nc" id="L87">    List&lt;String&gt; errors = TournamentBuilder.validate(tournament);</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">    if (!errors.isEmpty()) {</span>
+<span class="nc" id="L89">      throw new IllegalArgumentException(&quot;Invalid tournament configuration: &quot; + String.join(&quot;, &quot;, errors));</span>
+    }
+<span class="nc" id="L91">  }</span>
+
+  public void initializeStructure(Tournament tournament) {
+<span class="nc bnc" id="L94" title="All 6 branches missed.">    if (tournament == null || tournament.getConfig() == null || tournament.getConfig().getFormat() == null) {</span>
+<span class="nc" id="L95">      throw new IllegalArgumentException(&quot;Tournoi ou configuration invalide&quot;);</span>
+    }
+<span class="nc" id="L97">    TournamentBuilder.initializeEmptyRounds(tournament);</span>
+<span class="nc" id="L98">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

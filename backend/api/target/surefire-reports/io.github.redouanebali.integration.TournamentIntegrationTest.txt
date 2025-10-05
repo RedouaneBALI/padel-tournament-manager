@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: io.github.redouanebali.integration.TournamentIntegrationTest
+-------------------------------------------------------------------------------
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.174 s -- in io.github.redouanebali.integration.TournamentIntegrationTest

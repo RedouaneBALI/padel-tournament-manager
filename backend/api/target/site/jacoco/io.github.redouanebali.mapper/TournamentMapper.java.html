@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TournamentMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">api</a> &gt; <a href="index.source.html" class="el_package">io.github.redouanebali.mapper</a> &gt; <span class="el_source">TournamentMapper.java</span></div><h1>TournamentMapper.java</h1><pre class="source lang-java linenums">package io.github.redouanebali.mapper;
+
+import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
+import io.github.redouanebali.dto.request.CreateTournamentRequest;
+import io.github.redouanebali.dto.response.GameDTO;
+import io.github.redouanebali.dto.response.MatchFormatDTO;
+import io.github.redouanebali.dto.response.PlayerPairDTO;
+import io.github.redouanebali.dto.response.PoolDTO;
+import io.github.redouanebali.dto.response.PoolRankingDTO;
+import io.github.redouanebali.dto.response.PoolRankingDetailsDTO;
+import io.github.redouanebali.dto.response.RoundDTO;
+import io.github.redouanebali.dto.response.TournamentDTO;
+import io.github.redouanebali.model.Game;
+import io.github.redouanebali.model.MatchFormat;
+import io.github.redouanebali.model.Player;
+import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Pool;
+import io.github.redouanebali.model.PoolRanking;
+import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.security.SecurityUtil;
+import java.util.List;
+import java.util.Set;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+
+@Mapper(componentModel = &quot;spring&quot;)
+public interface TournamentMapper {
+
+  @Mapping(target = &quot;rounds&quot;, source = &quot;rounds&quot;)
+  @Mapping(target = &quot;playerPairs&quot;, source = &quot;playerPairs&quot;)
+  TournamentDTO toDTO(Tournament tournament);
+
+  List&lt;TournamentDTO&gt; toDTO(List&lt;Tournament&gt; tournaments);
+
+  Set&lt;TournamentDTO&gt; toDTO(Set&lt;Tournament&gt; tournaments);
+
+  @Mapping(target = &quot;winnerSide&quot;, source = &quot;winnerSide&quot;)
+  GameDTO toDTO(Game game);
+
+  List&lt;GameDTO&gt; toDTOGameList(List&lt;Game&gt; games);
+
+  Set&lt;GameDTO&gt; toDTOGameSet(Set&lt;Game&gt; games);
+
+  default PlayerPairDTO toDTO(PlayerPair playerPair) {
+<span class="fc bfc" id="L46" title="All 2 branches covered.">    if (playerPair == null) {</span>
+<span class="fc" id="L47">      return null;</span>
+    }
+<span class="fc" id="L49">    PlayerPairDTO dto = new PlayerPairDTO();</span>
+<span class="fc" id="L50">    dto.setId(playerPair.getId());</span>
+<span class="fc" id="L51">    dto.setSeed(playerPair.getSeed()); // numeric seed stays numeric</span>
+<span class="fc" id="L52">    dto.setBye(playerPair.isBye());</span>
+
+    // Consider any PairType.QUALIFIER (placeholder or real qualified entrant) as qualifierSlot for DTO purposes
+<span class="fc" id="L55">    dto.setQualifierSlot(playerPair.isQualifier());</span>
+
+    // Display seed for UI
+    String display;
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">    if (playerPair.isBye()) {</span>
+<span class="nc" id="L60">      display = null;</span>
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">    } else if (playerPair.isQualifier()) {</span>
+<span class="nc" id="L62">      display = &quot;Q&quot;;</span>
+    } else {
+<span class="fc" id="L64">      display = String.valueOf(playerPair.getSeed());</span>
+    }
+<span class="fc" id="L66">    dto.setDisplaySeed(display);</span>
+
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">    dto.setPlayer1Name(playerPair.getPlayer1() != null ? playerPair.getPlayer1().getName() : null);</span>
+<span class="pc bpc" id="L69" title="1 of 2 branches missed.">    dto.setPlayer2Name(playerPair.getPlayer2() != null ? playerPair.getPlayer2().getName() : null);</span>
+<span class="fc" id="L70">    return dto;</span>
+  }
+
+  List&lt;PlayerPairDTO&gt; toDTOPlayerPairList(List&lt;PlayerPair&gt; playerPairs);
+
+  Set&lt;PlayerPairDTO&gt; toDTOPlayerPairSet(Set&lt;PlayerPair&gt; playerPairs);
+
+  RoundDTO toDTO(Round round);
+
+  List&lt;RoundDTO&gt; toDTORoundList(List&lt;Round&gt; rounds);
+
+  MatchFormatDTO toDTO(MatchFormat matchFormat);
+
+  List&lt;MatchFormatDTO&gt; toDTOMatchFormatList(List&lt;MatchFormat&gt; matchFormats);
+
+  Set&lt;MatchFormatDTO&gt; toDTOMatchFormatSet(Set&lt;MatchFormat&gt; matchFormats);
+
+  // Mapping Pool -&gt; PoolDTO
+  @Mapping(target = &quot;pairs&quot;, source = &quot;pairs&quot;)
+  @Mapping(target = &quot;poolRanking&quot;, source = &quot;poolRanking&quot;)
+  PoolDTO toDTO(Pool pool);
+
+  List&lt;PoolDTO&gt; toDTOPoolList(List&lt;io.github.redouanebali.model.Pool&gt; pools);
+
+  // Mapping PoolRanking -&gt; PoolRankingDTO
+  @Mapping(target = &quot;id&quot;, source = &quot;id&quot;)
+  @Mapping(target = &quot;details&quot;, source = &quot;details&quot;)
+  PoolRankingDTO toDTO(PoolRanking poolRanking);
+
+  List&lt;PoolRankingDTO&gt; toDTOPoolRankingList(List&lt;PoolRanking&gt; poolRankings);
+
+  @Mapping(target = &quot;pairId&quot;, source = &quot;playerPair.id&quot;)
+  PoolRankingDetailsDTO toDTO(io.github.redouanebali.model.PoolRankingDetails details);
+
+  List&lt;PoolRankingDetailsDTO&gt; toDTOPoolRankingDetailsList(List&lt;io.github.redouanebali.model.PoolRankingDetails&gt; details);
+
+  List&lt;PlayerPair&gt; toPlayerPairList(List&lt;CreatePlayerPairRequest&gt; requests);
+
+  default Player toPlayer(String name) {
+<span class="pc bpc" id="L109" title="2 of 4 branches missed.">    if (name == null || name.isEmpty()) {</span>
+<span class="nc" id="L110">      return null;</span>
+    }
+<span class="fc" id="L112">    return new Player(name);</span>
+  }
+
+  default PlayerPair toPlayerPair(CreatePlayerPairRequest request) {
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">    if (request == null) {</span>
+<span class="nc" id="L117">      return null;</span>
+    }
+
+<span class="fc" id="L120">    PlayerPair pair = new PlayerPair();</span>
+<span class="fc" id="L121">    pair.setPlayer1(toPlayer(request.getPlayer1Name()));</span>
+<span class="fc" id="L122">    pair.setPlayer2(toPlayer(request.getPlayer2Name()));</span>
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">    pair.setSeed(request.getSeed() != null ? request.getSeed() : 0); // Assigner la seed</span>
+<span class="fc" id="L124">    return pair;</span>
+  }
+
+  default boolean isEditable(Tournament tournament) {
+<span class="nc" id="L128">    String me = SecurityUtil.currentUserId();</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">    if (me == null) {</span>
+<span class="nc" id="L130">      return false; // utilisateur non connecté</span>
+    }
+<span class="nc bnc" id="L132" title="All 2 branches missed.">    return SecurityUtil.isSuperAdmin(Set.of(me))</span>
+<span class="nc bnc" id="L133" title="All 4 branches missed.">           || (tournament.getOwnerId() != null &amp;&amp; tournament.getOwnerId().equals(me));</span>
+  }
+
+  /**
+   * Converts a CreateTournamentRequest DTO to a Tournament entity. Maps only the fields that can be set during creation, excluding system-managed
+   * fields.
+   *
+   * @param request the tournament creation request
+   * @return a new Tournament entity with mapped fields
+   */
+  @Mapping(target = &quot;id&quot;, ignore = true)
+  @Mapping(target = &quot;ownerId&quot;, ignore = true)
+  @Mapping(target = &quot;rounds&quot;, ignore = true)
+  @Mapping(target = &quot;playerPairs&quot;, ignore = true)
+  @Mapping(target = &quot;createdAt&quot;, ignore = true)
+  @Mapping(target = &quot;updatedAt&quot;, ignore = true)
+  Tournament toEntity(CreateTournamentRequest request);
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

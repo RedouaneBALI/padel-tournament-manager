@@ -8,6 +8,7 @@ io/github/redouanebali/model/StageTest.class
 io/github/redouanebali/generation/TournamentBuilderCsvTest.class
 io/github/redouanebali/util/TestFixtures.class
 io/github/redouanebali/generation/util/ByePlacementUtilTest.class
+io/github/redouanebali/model/PoolTest.class
 io/github/redouanebali/generation/GroupPhaseTests.class
 io/github/redouanebali/model/GameTest.class
 io/github/redouanebali/generation/TournamentBuilderTest.class

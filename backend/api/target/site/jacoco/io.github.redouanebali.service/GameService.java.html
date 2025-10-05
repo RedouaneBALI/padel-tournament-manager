@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GameService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">api</a> &gt; <a href="index.source.html" class="el_package">io.github.redouanebali.service</a> &gt; <span class="el_source">GameService.java</span></div><h1>GameService.java</h1><pre class="source lang-java linenums">package io.github.redouanebali.service;
+
+import io.github.redouanebali.dto.request.UpdateGameRequest;
+import io.github.redouanebali.dto.response.UpdateScoreDTO;
+import io.github.redouanebali.model.Game;
+import io.github.redouanebali.model.Score;
+import io.github.redouanebali.model.TeamSide;
+import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.repository.TournamentRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class GameService {
+
+  private final TournamentRepository  tournamentRepository;
+  private final TournamentService     tournamentService;
+  private final DrawGenerationService drawGenerationService;
+
+
+  /**
+   * Updates the score of a specific game and propagates winners if the game is finished. Saves the tournament after the update.
+   *
+   * @param tournamentId the tournament ID
+   * @param gameId the game ID to update
+   * @param score the new score to set
+   * @return update result containing finish status and winner information
+   * @throws IllegalArgumentException if tournament or game is not found
+   */
+  public UpdateScoreDTO updateGameScore(Long tournamentId, Long gameId, Score score) {
+<span class="fc" id="L32">    Tournament tournament = tournamentService.getTournamentById(tournamentId);</span>
+<span class="fc" id="L33">    Game       game       = findGameInTournament(tournament, gameId);</span>
+
+<span class="fc" id="L35">    return updateScoreAndPropagate(game, tournament, score);</span>
+  }
+
+  /**
+   * Updates a game's complete information including score, scheduled time, and court. Propagates winners if the game becomes finished after the
+   * update.
+   *
+   * @param tournamentId the tournament ID
+   * @param gameId the game ID to update
+   * @param request the update request containing score, time, and court information
+   * @return update result containing finish status and winner information
+   * @throws IllegalArgumentException if tournament or game is not found
+   */
+  public UpdateScoreDTO updateGame(Long tournamentId, Long gameId, UpdateGameRequest request) {
+<span class="fc" id="L49">    Tournament tournament = tournamentService.getTournamentById(tournamentId);</span>
+<span class="fc" id="L50">    Game       game       = findGameInTournament(tournament, gameId);</span>
+
+    // Update time and court
+<span class="fc" id="L53">    game.setScheduledTime(request.getScheduledTime());</span>
+<span class="fc" id="L54">    game.setCourt(request.getCourt());</span>
+
+<span class="fc" id="L56">    return updateScoreAndPropagate(game, tournament, request.getScore());</span>
+  }
+
+  /**
+   * Updates a game's score and propagates winners through the tournament if the game is finished. This is a common method used by both score-only and
+   * full game updates.
+   *
+   * @param game the game to update
+   * @param tournament the tournament containing the game
+   * @param score the new score to set
+   * @return update result with finish status and winner side information
+   */
+  private UpdateScoreDTO updateScoreAndPropagate(Game game, Tournament tournament, Score score) {
+<span class="fc" id="L69">    game.setScore(score);</span>
+
+<span class="fc" id="L71">    TeamSide winner = null;</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">    if (game.isFinished()) {</span>
+<span class="fc" id="L73">      drawGenerationService.propagateWinners(tournament);</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">      winner = game.getWinner().equals(game.getTeamA()) ? TeamSide.TEAM_A : TeamSide.TEAM_B;</span>
+    }
+
+<span class="fc" id="L77">    tournamentRepository.save(tournament);</span>
+<span class="fc" id="L78">    return new UpdateScoreDTO(game.isFinished(), winner);</span>
+  }
+
+
+  /**
+   * Finds a specific game within a tournament by its ID. Searches through all rounds and games in the tournament.
+   *
+   * @param tournament the tournament to search in
+   * @param gameId the ID of the game to find
+   * @return the found game
+   * @throws IllegalArgumentException if no game with the given ID is found
+   */
+  private Game findGameInTournament(Tournament tournament, Long gameId) {
+<span class="fc" id="L91">    return tournament.getRounds().stream()</span>
+<span class="fc" id="L92">                     .flatMap(round -&gt; round.getGames().stream())</span>
+<span class="fc" id="L93">                     .filter(g -&gt; g.getId().equals(gameId))</span>
+<span class="fc" id="L94">                     .findFirst()</span>
+<span class="fc" id="L95">                     .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Game not found with ID: &quot; + gameId));</span>
+  }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AdminTournamentController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">api</a> &gt; <a href="index.source.html" class="el_package">io.github.redouanebali.controller</a> &gt; <span class="el_source">AdminTournamentController.java</span></div><h1>AdminTournamentController.java</h1><pre class="source lang-java linenums">package io.github.redouanebali.controller;
+
+import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
+import io.github.redouanebali.dto.request.CreateTournamentRequest;
+import io.github.redouanebali.dto.request.RoundRequest;
+import io.github.redouanebali.dto.request.UpdateGameRequest;
+import io.github.redouanebali.dto.request.UpdatePlayerPairRequest;
+import io.github.redouanebali.dto.request.UpdateTournamentRequest;
+import io.github.redouanebali.dto.response.TournamentDTO;
+import io.github.redouanebali.dto.response.UpdateScoreDTO;
+import io.github.redouanebali.mapper.TournamentMapper;
+import io.github.redouanebali.model.MatchFormat;
+import io.github.redouanebali.model.Score;
+import io.github.redouanebali.model.Stage;
+import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.security.SecurityProps;
+import io.github.redouanebali.security.SecurityUtil;
+import io.github.redouanebali.service.GameService;
+import io.github.redouanebali.service.MatchFormatService;
+import io.github.redouanebali.service.PlayerPairService;
+import io.github.redouanebali.service.TournamentService;
+import jakarta.validation.Valid;
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping(
+    value = &quot;/admin/tournaments&quot;,
+    produces = MediaType.APPLICATION_JSON_VALUE
+)
+<span class="fc" id="L51">@Slf4j</span>
+@RequiredArgsConstructor
+@PreAuthorize(&quot;isAuthenticated()&quot;)
+public class AdminTournamentController {
+
+  private final TournamentService  tournamentService;
+  private final PlayerPairService  playerPairService;
+  private final GameService        gameService;
+  private final MatchFormatService matchFormatService;
+  private final SecurityProps      securityProps;
+  private final TournamentMapper   tournamentMapper;
+
+  /**
+   * Creates a new tournament with the provided configuration. Validates the tournament structure if both format and config are provided.
+   *
+   * @param request the tournament creation request containing only allowed fields
+   * @return ResponseEntity containing the created tournament DTO with 201 status
+   */
+  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity&lt;TournamentDTO&gt; createTournament(@RequestBody @Valid CreateTournamentRequest request) {
+<span class="nc" id="L71">    log.info(&quot;Creating tournament '{}' for user: {}&quot;, request.getName(), SecurityUtil.currentUserId());</span>
+<span class="nc" id="L72">    Tournament tournament = tournamentMapper.toEntity(request);</span>
+<span class="nc" id="L73">    Tournament saved      = tournamentService.createTournament(tournament);</span>
+<span class="nc" id="L74">    return ResponseEntity</span>
+<span class="nc" id="L75">        .created(URI.create(&quot;/admin/tournaments/&quot; + saved.getId()))</span>
+<span class="nc" id="L76">        .body(tournamentMapper.toDTO(saved));</span>
+  }
+
+  /**
+   * Deletes a tournament. Only the owner or super admins can delete a tournament.
+   *
+   * @param id the tournament ID to delete
+   * @return ResponseEntity with 204 No Content status
+   */
+  @DeleteMapping(&quot;/{id}&quot;)
+  public ResponseEntity&lt;Void&gt; deleteTournament(@PathVariable Long id) {
+<span class="nc" id="L87">    log.info(&quot;User {} attempting to delete tournament {}&quot;, SecurityUtil.currentUserId(), id);</span>
+<span class="nc" id="L88">    checkOwnership(id);</span>
+<span class="nc" id="L89">    tournamentService.deleteTournament(id);</span>
+<span class="nc" id="L90">    return ResponseEntity.noContent().build();</span>
+  }
+
+  /**
+   * Lists tournaments based on the scope parameter. Returns all tournaments for super admins when scope='all', otherwise returns user's own
+   * tournaments.
+   *
+   * @param scope the scope filter - &quot;all&quot; for all tournaments (super admin only), &quot;mine&quot; for user's tournaments
+   * @return ResponseEntity containing list of tournament DTOs
+   */
+  @GetMapping
+  public ResponseEntity&lt;List&lt;TournamentDTO&gt;&gt; listMyTournaments(@RequestParam(defaultValue = &quot;mine&quot;) String scope) {
+<span class="nc" id="L102">    String  me      = SecurityUtil.currentUserId();</span>
+<span class="nc" id="L103">    boolean isSuper = securityProps.getSuperAdmins().contains(me);</span>
+
+<span class="nc bnc" id="L105" title="All 4 branches missed.">    List&lt;Tournament&gt; list = (&quot;all&quot;.equalsIgnoreCase(scope) &amp;&amp; isSuper)</span>
+<span class="nc" id="L106">                            ? tournamentService.listAll()</span>
+<span class="nc" id="L107">                            : tournamentService.listByOwner(me);</span>
+
+<span class="nc" id="L109">    return ResponseEntity.ok(list.stream().map(tournamentMapper::toDTO).toList());</span>
+  }
+
+  /**
+   * Updates an existing tournament with new data. Only the owner or super admins can update a tournament.
+   *
+   * @param id the tournament ID to update
+   * @param updated the updated tournament data
+   * @return ResponseEntity containing the updated tournament DTO
+   */
+  @PutMapping(path = &quot;/{id}&quot;, consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity&lt;TournamentDTO&gt; updateTournament(@PathVariable Long id, @RequestBody @Valid UpdateTournamentRequest updated) {
+<span class="nc" id="L121">    checkOwnership(id);</span>
+<span class="nc" id="L122">    return ResponseEntity.ok(tournamentMapper.toDTO(tournamentService.updateTournament(id, updated)));</span>
+  }
+
+  /**
+   * Adds player pairs to a tournament and clears existing game assignments. Automatically adds BYE pairs if needed to reach the main draw size.
+   *
+   * @param id the tournament ID
+   * @param players list of player pairs to add
+   * @return ResponseEntity containing the updated tournament DTO
+   */
+  @PostMapping(path = &quot;/{id}/pairs&quot;, consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity&lt;TournamentDTO&gt; addPairs(@PathVariable Long id, @RequestBody @Valid List&lt;CreatePlayerPairRequest&gt; players) {
+<span class="nc" id="L134">    checkOwnership(id);</span>
+<span class="nc" id="L135">    return ResponseEntity.ok(tournamentMapper.toDTO(playerPairService.addPairs(id, players)));</span>
+  }
+
+  /**
+   * Updates an existing player pair's information (names and seed). BYE pairs cannot be modified.
+   *
+   * @param id the tournament ID
+   * @param pairId the player pair ID to update
+   * @param req the update request containing new player names and/or seed
+   * @return ResponseEntity with 204 No Content status
+   */
+  @PatchMapping(path = &quot;/{id}/pairs/{pairId}&quot;, consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity&lt;Void&gt; updatePlayerPair(@PathVariable Long id,
+                                               @PathVariable Long pairId,
+                                               @RequestBody @Valid UpdatePlayerPairRequest req) {
+<span class="nc" id="L150">    checkOwnership(id);</span>
+
+<span class="nc" id="L152">    playerPairService.updatePlayerPair(id, pairId, req.getPlayer1Name(), req.getPlayer2Name(), req.getSeed());</span>
+<span class="nc" id="L153">    return ResponseEntity.noContent().build();</span>
+  }
+
+  /**
+   * Updates the match format for a specific tournament round/stage. Only the owner or super admins can modify match formats.
+   *
+   * @param id the tournament ID
+   * @param stage the tournament stage/round
+   * @param newFormat the new match format configuration
+   * @return ResponseEntity containing the updated match format
+   */
+  @PutMapping(path = &quot;/{id}/rounds/{stage}/match-format&quot;, consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity&lt;MatchFormat&gt; updateMatchFormat(@PathVariable Long id,
+                                                       @PathVariable Stage stage,
+                                                       @RequestBody @Valid MatchFormat newFormat) {
+<span class="nc" id="L168">    checkOwnership(id);</span>
+<span class="nc" id="L169">    return ResponseEntity.ok(matchFormatService.updateMatchFormatForRound(id, stage, newFormat));</span>
+  }
+
+  /**
+   * Updates the score of a specific game and propagates winners if the game is finished. Only the tournament owner or super admins can update
+   * scores.
+   *
+   * @param tournamentId the tournament ID
+   * @param gameId the game ID to update
+   * @param score the new score
+   * @return ResponseEntity containing update result with finish status and winner information
+   */
+  @PutMapping(path = &quot;/{tournamentId}/games/{gameId}/score&quot;, consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity&lt;UpdateScoreDTO&gt; updateScore(@PathVariable Long tournamentId,
+                                                    @PathVariable Long gameId,
+                                                    @RequestBody @Valid Score score) {
+<span class="nc" id="L185">    checkOwnership(tournamentId);</span>
+<span class="nc" id="L186">    return ResponseEntity.ok(gameService.updateGameScore(tournamentId, gameId, score));</span>
+  }
+
+  /**
+   * Updates a game's complete information including score, time, and court. Propagates winners if the game becomes finished after the update.
+   *
+   * @param tournamentId the tournament ID
+   * @param gameId the game ID to update
+   * @param request the update request containing score, time, and court information
+   * @return ResponseEntity containing update result with finish status and winner information
+   */
+  @PutMapping(path = &quot;/{tournamentId}/games/{gameId}&quot;, consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity&lt;UpdateScoreDTO&gt; updateGame(@PathVariable Long tournamentId,
+                                                   @PathVariable Long gameId,
+                                                   @RequestBody @Valid UpdateGameRequest request) {
+<span class="nc" id="L201">    checkOwnership(tournamentId);</span>
+<span class="nc" id="L202">    return ResponseEntity.ok(gameService.updateGame(tournamentId, gameId, request));</span>
+  }
+
+  /**
+   * Debug endpoint that returns current authentication information. Useful for testing authentication and authorization.
+   *
+   * @param a the current authentication object
+   * @return ResponseEntity containing authentication details
+   */
+  @PreAuthorize(&quot;hasRole('SUPER_ADMIN') or authentication.name in @securityProps.superAdmins&quot;)
+  @GetMapping(&quot;/debug/auth&quot;)
+  public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; auth(Authentication a) {
+<span class="nc" id="L214">    return ResponseEntity.ok(Map.of(</span>
+<span class="nc bnc" id="L215" title="All 4 branches missed.">        &quot;name&quot;, a != null ? a.getName() : &quot;anonymous&quot;,</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">        &quot;authenticated&quot;, a != null &amp;&amp; a.isAuthenticated(),</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">        &quot;authorities&quot;, a != null ? a.getAuthorities().toString() : &quot;none&quot;,</span>
+<span class="nc bnc" id="L218" title="All 2 branches missed.">        &quot;details&quot;, a != null ? a.getDetails() : &quot;none&quot;</span>
+    ));
+  }
+
+  /**
+   * Generates an automatic draw using seeding algorithm. Places teams based on their seeds and fills remaining positions randomly.
+   *
+   * @param id the tournament ID
+   * @return ResponseEntity containing the tournament DTO with generated draw
+   */
+  @PostMapping(path = &quot;/{id}/draw/auto&quot;)
+  public ResponseEntity&lt;TournamentDTO&gt; generateDrawAuto(@PathVariable Long id) {
+<span class="nc" id="L230">    log.info(&quot;Generating automatic draw for tournament {} by user {}&quot;, id, SecurityUtil.currentUserId());</span>
+<span class="nc" id="L231">    checkOwnership(id);</span>
+<span class="nc" id="L232">    return ResponseEntity.ok(tournamentMapper.toDTO(tournamentService.generateDrawAuto(id)));</span>
+  }
+
+  /**
+   * Generates a manual draw using user-provided initial rounds. Replaces the tournament structure with the provided rounds configuration.
+   *
+   * @param id the tournament ID
+   * @param initialRounds optional list of initial rounds provided by the user
+   * @return ResponseEntity containing the tournament DTO with generated draw
+   */
+  @PostMapping(path = &quot;/{id}/draw/manual&quot;)
+  public ResponseEntity&lt;TournamentDTO&gt; generateDrawManual(@PathVariable Long id,
+                                                          @RequestBody(required = false) List&lt;RoundRequest&gt; initialRounds) {
+<span class="nc" id="L245">    log.info(&quot;Generating manual draw for tournament {} by user {}&quot;, id, SecurityUtil.currentUserId());</span>
+<span class="nc" id="L246">    checkOwnership(id);</span>
+<span class="nc" id="L247">    return ResponseEntity.ok(tournamentMapper.toDTO(tournamentService.generateDrawManual(id, initialRounds)));</span>
+  }
+
+  /**
+   * Verifies that the current user has ownership rights over a tournament. Throws AccessDeniedException if the user is not the owner or a super
+   * admin.
+   *
+   * @param tournamentId the tournament ID to check ownership for
+   * @throws AccessDeniedException if the user lacks ownership rights
+   */
+  private void checkOwnership(Long tournamentId) {
+<span class="nc" id="L258">    String      me          = SecurityUtil.currentUserId();</span>
+<span class="nc" id="L259">    Tournament  tournament  = tournamentService.getTournamentById(tournamentId);</span>
+<span class="nc" id="L260">    Set&lt;String&gt; superAdmins = securityProps.getSuperAdmins();</span>
+<span class="nc bnc" id="L261" title="All 4 branches missed.">    if (!superAdmins.contains(me) &amp;&amp; !Objects.equals(me, tournament.getOwnerId())) {</span>
+<span class="nc" id="L262">      throw new AccessDeniedException(&quot;You are not allowed to modify this tournament&quot;);</span>
+    }
+<span class="nc" id="L264">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

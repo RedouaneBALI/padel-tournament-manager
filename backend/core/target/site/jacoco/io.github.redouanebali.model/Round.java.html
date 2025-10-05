@@ -28,11 +28,11 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Round {
 
-<span class="nc" id="L31">  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)</span>
+<span class="fc" id="L31">  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)</span>
   @JoinColumn(name = &quot;round_id&quot;) // FK in Game table
   @OrderColumn(name = &quot;order_index&quot;) // persists list order
   private final List&lt;Game&gt;  games       = new ArrayList&lt;&gt;();
-<span class="nc" id="L35">  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)</span>
+<span class="fc" id="L35">  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)</span>
   @JoinColumn(name = &quot;round_id&quot;)
   @OrderBy(&quot;name ASC&quot;)
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -42,13 +42,13 @@ public class Round {
   private       Long        id;
   @Enumerated(EnumType.STRING)
   private       Stage       stage;
-<span class="nc" id="L45">  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)</span>
+<span class="fc" id="L45">  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)</span>
   @JoinColumn(name = &quot;match_format_id&quot;)
   private       MatchFormat matchFormat = new MatchFormat();
 
-<span class="nc" id="L49">  public Round(Stage stage) {</span>
-<span class="nc" id="L50">    this.stage = stage;</span>
-<span class="nc" id="L51">  }</span>
+<span class="fc" id="L49">  public Round(Stage stage) {</span>
+<span class="fc" id="L50">    this.stage = stage;</span>
+<span class="fc" id="L51">  }</span>
 
   public void addGame(PlayerPair teamA, PlayerPair teamB) {
 <span class="nc" id="L54">    Game game = new Game();</span>

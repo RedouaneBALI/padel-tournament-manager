@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TournamentService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">api</a> &gt; <a href="index.source.html" class="el_package">io.github.redouanebali.service</a> &gt; <span class="el_source">TournamentService.java</span></div><h1>TournamentService.java</h1><pre class="source lang-java linenums">package io.github.redouanebali.service;
+
+import io.github.redouanebali.dto.request.RoundRequest;
+import io.github.redouanebali.dto.request.UpdateTournamentRequest;
+import io.github.redouanebali.model.Game;
+import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.Stage;
+import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.repository.TournamentRepository;
+import io.github.redouanebali.security.SecurityProps;
+import io.github.redouanebali.security.SecurityUtil;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+<span class="fc" id="L23">@Slf4j</span>
+public class TournamentService {
+
+  private final TournamentRepository tournamentRepository;
+  private final SecurityProps        securityProps;
+
+  private final DrawGenerationService drawGenerationService;
+
+  /**
+   * Retrieves a tournament by its ID.
+   *
+   * @param id the tournament ID
+   * @return the tournament entity
+   * @throws IllegalArgumentException if the tournament is not found
+   */
+  public Tournament getTournamentById(Long id) {
+<span class="fc" id="L39">    return tournamentRepository.findById(id)</span>
+<span class="fc" id="L40">                               .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Tournament not found&quot;));</span>
+  }
+
+  /**
+   * Checks if the current user can edit the given tournament.
+   */
+  private boolean canEditTournament(Tournament tournament) {
+<span class="fc" id="L47">    String      me          = SecurityUtil.currentUserId();</span>
+<span class="fc" id="L48">    Set&lt;String&gt; superAdmins = securityProps.getSuperAdmins();</span>
+<span class="pc bpc" id="L49" title="1 of 4 branches missed.">    return superAdmins.contains(me) || me.equals(tournament.getOwnerId());</span>
+  }
+
+  /**
+   * Creates a new tournament and validates its configuration. If format and config are provided, validates the tournament structure. Sets the current
+   * user as the tournament owner.
+   *
+   * @param tournament the tournament to create
+   * @return the created tournament
+   * @throws IllegalArgumentException if tournament is null or configuration is invalid
+   */
+  @Transactional
+  public Tournament createTournament(final Tournament tournament) {
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">    if (tournament == null) {</span>
+<span class="nc" id="L63">      throw new IllegalArgumentException(&quot;Tournament cannot be null&quot;);</span>
+    }
+<span class="pc bpc" id="L65" title="1 of 4 branches missed.">    if (tournament.getConfig() != null &amp;&amp; tournament.getConfig().getFormat() != null) {</span>
+<span class="nc" id="L66">      drawGenerationService.validate(tournament);</span>
+<span class="nc" id="L67">      drawGenerationService.initializeStructure(tournament);</span>
+    }
+<span class="fc" id="L69">    tournament.setOwnerId(SecurityUtil.currentUserId());</span>
+
+<span class="fc" id="L71">    Tournament savedTournament = tournamentRepository.save(tournament);</span>
+<span class="fc" id="L72">    log.info(&quot;Created tournament with id {}&quot;, savedTournament.getId());</span>
+
+<span class="fc" id="L74">    return savedTournament;</span>
+  }
+
+  /**
+   * Deletes a tournament if the current user is the owner or a super admin.
+   *
+   * @param tournamentId the ID of the tournament to delete
+   * @throws IllegalArgumentException if tournament is not found
+   * @throws AccessDeniedException if user lacks deletion rights
+   */
+  @Transactional
+  public void deleteTournament(Long tournamentId) {
+<span class="fc" id="L86">    Tournament existing = getTournamentById(tournamentId);</span>
+
+<span class="fc bfc" id="L88" title="All 2 branches covered.">    if (!canEditTournament(existing)) {</span>
+<span class="fc" id="L89">      throw new AccessDeniedException(&quot;You are not allowed to delete this tournament&quot;);</span>
+    }
+
+<span class="fc" id="L92">    tournamentRepository.delete(existing);</span>
+<span class="fc" id="L93">    log.info(&quot;Deleted tournament with id {}&quot;, tournamentId);</span>
+<span class="fc" id="L94">  }</span>
+
+  /**
+   * Updates an existing tournament with new information. Only the owner or super admins can update tournaments.
+   */
+  @Transactional
+  public Tournament updateTournament(Long tournamentId, UpdateTournamentRequest updatedTournament) {
+<span class="fc" id="L101">    Tournament existing = getTournamentById(tournamentId);</span>
+
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">    if (!canEditTournament(existing)) {</span>
+<span class="nc" id="L104">      throw new AccessDeniedException(&quot;You are not allowed to edit this tournament&quot;);</span>
+    }
+
+<span class="fc" id="L107">    existing.setName(updatedTournament.getName());</span>
+<span class="fc" id="L108">    existing.setStartDate(updatedTournament.getStartDate());</span>
+<span class="fc" id="L109">    existing.setEndDate(updatedTournament.getEndDate());</span>
+<span class="fc" id="L110">    existing.setDescription(updatedTournament.getDescription());</span>
+<span class="fc" id="L111">    existing.setCity(updatedTournament.getCity());</span>
+<span class="fc" id="L112">    existing.setClub(updatedTournament.getClub());</span>
+<span class="fc" id="L113">    existing.setGender(updatedTournament.getGender());</span>
+<span class="fc" id="L114">    existing.setLevel(updatedTournament.getLevel());</span>
+<span class="fc" id="L115">    existing.setConfig(updatedTournament.getConfig());</span>
+
+<span class="fc" id="L117">    return tournamentRepository.save(existing);</span>
+  }
+
+  /**
+   * Generates an automatic draw using seeding algorithm. Only the owner or super admins can generate draws.
+   */
+  public Tournament generateDrawAuto(Long tournamentId) {
+<span class="fc" id="L124">    Tournament tournament = getTournamentById(tournamentId);</span>
+
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">    if (!canEditTournament(tournament)) {</span>
+<span class="nc" id="L127">      throw new AccessDeniedException(&quot;You are not allowed to generate the draw for this tournament&quot;);</span>
+    }
+
+<span class="fc" id="L130">    return drawGenerationService.generateDrawAuto(tournament);</span>
+  }
+
+  /**
+   * Generates a manual draw using user-provided initial rounds configuration. Only the owner or super admins can generate draws.
+   */
+  @Transactional
+  public Tournament generateDrawManual(Long tournamentId, List&lt;RoundRequest&gt; initialRounds) {
+<span class="nc" id="L138">    Tournament tournament = getTournamentById(tournamentId);</span>
+
+<span class="nc bnc" id="L140" title="All 2 branches missed.">    if (!canEditTournament(tournament)) {</span>
+<span class="nc" id="L141">      throw new AccessDeniedException(&quot;You are not allowed to generate the draw for this tournament&quot;);</span>
+    }
+
+<span class="nc" id="L144">    return drawGenerationService.generateDrawManual(tournament, initialRounds);</span>
+  }
+
+  /**
+   * Retrieves all games for a specific tournament stage.
+   *
+   * @param tournamentId the tournament ID
+   * @param stage the tournament stage to get games from
+   * @return set of games for the specified stage
+   * @throws IllegalArgumentException if tournament or stage round is not found
+   */
+  public Set&lt;Game&gt; getGamesByTournamentAndStage(Long tournamentId, Stage stage) {
+<span class="fc" id="L156">    Tournament tournament = getTournamentById(tournamentId);</span>
+
+<span class="fc" id="L158">    Round round = tournament.getRounds().stream()</span>
+<span class="pc bpc" id="L159" title="1 of 2 branches missed.">                            .filter(r -&gt; r.getStage() == stage)</span>
+<span class="fc" id="L160">                            .findFirst()</span>
+<span class="fc" id="L161">                            .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Round not found for stage: &quot; + stage));</span>
+
+<span class="fc" id="L163">    return new LinkedHashSet&lt;&gt;(round.getGames());</span>
+  }
+
+  /**
+   * Retrieves a tournament for the current user. The editable flag is calculated dynamically by the TournamentMapper.
+   *
+   * @param id the tournament ID
+   * @return the tournament
+   * @throws IllegalArgumentException if tournament is not found
+   */
+  public Tournament getTournamentForCurrentUser(Long id) {
+<span class="nc" id="L174">    return getTournamentById(id);</span>
+  }
+
+  /**
+   * Retrieves all tournaments owned by a specific user.
+   *
+   * @param ownerId the owner's user ID
+   * @return list of tournaments owned by the user
+   */
+  public List&lt;Tournament&gt; listByOwner(String ownerId) {
+<span class="fc" id="L184">    return tournamentRepository.findAllByOwnerId(ownerId);</span>
+  }
+
+  /**
+   * Retrieves all tournaments in the system. Typically used by super admins.
+   *
+   * @return list of all tournaments
+   */
+  public List&lt;Tournament&gt; listAll() {
+<span class="fc" id="L193">    return tournamentRepository.findAll();</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

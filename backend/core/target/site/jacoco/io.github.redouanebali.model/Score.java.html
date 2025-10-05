@@ -33,26 +33,26 @@ public class Score {
   private List&lt;SetScore&gt; sets = new ArrayList&lt;&gt;();
 
   public static Score fromString(String scoreStr) {
-<span class="nc" id="L36">    Score score = new Score();</span>
-<span class="nc bnc" id="L37" title="All 4 branches missed.">    if (scoreStr == null || scoreStr.isBlank()) {</span>
+<span class="fc" id="L36">    Score score = new Score();</span>
+<span class="pc bpc" id="L37" title="2 of 4 branches missed.">    if (scoreStr == null || scoreStr.isBlank()) {</span>
 <span class="nc" id="L38">      return score;</span>
     }
-<span class="nc" id="L40">    String[] setStrings = scoreStr.trim().split(&quot;[,\\s]+&quot;);</span>
-<span class="nc bnc" id="L41" title="All 2 branches missed.">    for (String setStr : setStrings) {</span>
-<span class="nc" id="L42">      String[] parts = setStr.split(&quot;-&quot;);</span>
-<span class="nc bnc" id="L43" title="All 2 branches missed.">      if (parts.length == 2) {</span>
+<span class="fc" id="L40">    String[] setStrings = scoreStr.trim().split(&quot;[,\\s]+&quot;);</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">    for (String setStr : setStrings) {</span>
+<span class="fc" id="L42">      String[] parts = setStr.split(&quot;-&quot;);</span>
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">      if (parts.length == 2) {</span>
         try {
-<span class="nc" id="L45">          int teamAScore = Integer.parseInt(parts[0]);</span>
-<span class="nc" id="L46">          int teamBScore = Integer.parseInt(parts[1]);</span>
-<span class="nc" id="L47">          score.addSetScore(teamAScore, teamBScore);</span>
+<span class="fc" id="L45">          int teamAScore = Integer.parseInt(parts[0]);</span>
+<span class="fc" id="L46">          int teamBScore = Integer.parseInt(parts[1]);</span>
+<span class="fc" id="L47">          score.addSetScore(teamAScore, teamBScore);</span>
 <span class="nc" id="L48">        } catch (NumberFormatException e) {</span>
 <span class="nc" id="L49">          throw new IllegalArgumentException(&quot;Invalid score format: &quot; + setStr, e);</span>
-<span class="nc" id="L50">        }</span>
+<span class="fc" id="L50">        }</span>
       } else {
 <span class="nc" id="L52">        throw new IllegalArgumentException(&quot;Invalid set score format: &quot; + setStr);</span>
       }
     }
-<span class="nc" id="L55">    return score;</span>
+<span class="fc" id="L55">    return score;</span>
   }
 
   public void addSetScore(int teamAScore, int teamBScore) {

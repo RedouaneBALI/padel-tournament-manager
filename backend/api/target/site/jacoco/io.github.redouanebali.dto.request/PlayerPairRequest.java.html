@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PlayerPairRequest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">api</a> &gt; <a href="index.source.html" class="el_package">io.github.redouanebali.dto.request</a> &gt; <span class="el_source">PlayerPairRequest.java</span></div><h1>PlayerPairRequest.java</h1><pre class="source lang-java linenums">package io.github.redouanebali.dto.request;
+
+import io.github.redouanebali.model.PairType;
+import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.Tournament;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+public class PlayerPairRequest {
+
+  private PairType type;
+  private Long     pairId; // requis si type == &quot;PAIR&quot;
+
+  public static PlayerPair toModel(PlayerPairRequest req, Tournament tournament) {
+<span class="pc bpc" id="L17" title="1 of 2 branches missed.">    if (req == null) {</span>
+<span class="nc" id="L18">      return null;</span>
+    }
+<span class="pc bpc" id="L20" title="1 of 2 branches missed.">    if (req.isBye()) {</span>
+<span class="nc" id="L21">      return PlayerPair.bye();</span>
+    }
+<span class="pc bpc" id="L23" title="1 of 2 branches missed.">    if (req.isQualifier()) {</span>
+<span class="nc" id="L24">      return PlayerPair.qualifier();</span>
+    }
+<span class="pc bpc" id="L26" title="2 of 4 branches missed.">    if (req.getType() == PairType.NORMAL &amp;&amp; req.getPairId() != null) {</span>
+<span class="fc" id="L27">      return tournament.getPlayerPairs().stream()</span>
+<span class="fc" id="L28">                       .filter(p -&gt; req.getPairId().equals(p.getId()))</span>
+<span class="fc" id="L29">                       .findFirst()</span>
+<span class="fc" id="L30">                       .orElse(null);</span>
+    }
+<span class="nc" id="L32">    return null;</span>
+  }
+
+  public static PlayerPairRequest fromModel(PlayerPair pair) {
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">    if (pair == null) {</span>
+<span class="nc" id="L37">      return null;</span>
+    }
+<span class="fc" id="L39">    PlayerPairRequest req = new PlayerPairRequest();</span>
+<span class="fc" id="L40">    req.setType(pair.getType());</span>
+<span class="fc" id="L41">    req.setPairId(pair.getId());</span>
+<span class="fc" id="L42">    return req;</span>
+  }
+
+  public boolean isBye() {
+<span class="pc bpc" id="L46" title="1 of 2 branches missed.">    return this.type == PairType.BYE;</span>
+  }
+
+  public boolean isQualifier() {
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">    return this.type == PairType.QUALIFIER;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

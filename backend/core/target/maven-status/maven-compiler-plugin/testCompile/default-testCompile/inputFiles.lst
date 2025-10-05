@@ -7,6 +7,7 @@
 /Users/mac-RBALI19/Documents/GitHub/padel-tournament-manager/backend/core/src/test/java/io/github/redouanebali/generation/GroupPhaseTests.java
 /Users/mac-RBALI19/Documents/GitHub/padel-tournament-manager/backend/core/src/test/java/io/github/redouanebali/model/StageTest.java
 /Users/mac-RBALI19/Documents/GitHub/padel-tournament-manager/backend/core/src/test/java/io/github/redouanebali/generation/TournamentBuilderCsvTest.java
+/Users/mac-RBALI19/Documents/GitHub/padel-tournament-manager/backend/core/src/test/java/io/github/redouanebali/model/PoolTest.java
 /Users/mac-RBALI19/Documents/GitHub/padel-tournament-manager/backend/core/src/test/java/io/github/redouanebali/generation/util/ByePlacementUtilTest.java
 /Users/mac-RBALI19/Documents/GitHub/padel-tournament-manager/backend/core/src/test/java/io/github/redouanebali/generation/KnockoutPhaseTests.java
 /Users/mac-RBALI19/Documents/GitHub/padel-tournament-manager/backend/core/src/test/java/io/github/redouanebali/model/GameTest.java

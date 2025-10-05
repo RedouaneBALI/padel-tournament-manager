@@ -4,7 +4,5 @@
 /Users/mac-RBALI19/Documents/GitHub/padel-tournament-manager/backend/api/src/test/java/io/github/redouanebali/service/DrawGenerationServiceTest.java
 /Users/mac-RBALI19/Documents/GitHub/padel-tournament-manager/backend/api/src/test/java/io/github/redouanebali/integration/TournamentIntegrationTest.java
 /Users/mac-RBALI19/Documents/GitHub/padel-tournament-manager/backend/api/src/test/java/io/github/redouanebali/service/MatchFormatServiceTest.java
-/Users/mac-RBALI19/Documents/GitHub/padel-tournament-manager/backend/api/src/test/java/io/github/redouanebali/service/GroupPoolRankingServiceTest.java
 /Users/mac-RBALI19/Documents/GitHub/padel-tournament-manager/backend/api/src/test/java/io/github/redouanebali/service/GameServiceTest.java
-/Users/mac-RBALI19/Documents/GitHub/padel-tournament-manager/backend/api/src/test/java/io/github/redouanebali/AppTest.java
 /Users/mac-RBALI19/Documents/GitHub/padel-tournament-manager/backend/api/src/test/java/io/github/redouanebali/TestFixtures.java

@@ -5,12 +5,12 @@ core,io.github.redouanebali.generation,KnockoutPhase,62,175,11,15,13,44,14,14,4,
 core,io.github.redouanebali.generation,PhaseType,0,21,0,0,0,4,0,1,0,1
 core,io.github.redouanebali.model,Player,0,6,0,0,0,3,0,1,0,1
 core,io.github.redouanebali.model,PoolRankingDetails,28,12,2,0,4,5,2,1,1,1
-core,io.github.redouanebali.model,Score,99,10,8,0,20,2,8,1,4,1
-core,io.github.redouanebali.model,Pool,328,56,25,1,61,13,22,4,9,4
-core,io.github.redouanebali.model,Round,148,26,29,3,37,8,23,4,8,3
+core,io.github.redouanebali.model,Score,44,65,3,5,9,13,6,3,3,2
+core,io.github.redouanebali.model,Pool,80,304,9,17,17,57,10,16,3,10
+core,io.github.redouanebali.model,Round,127,47,29,3,31,14,22,5,7,4
 core,io.github.redouanebali.model,Stage,15,172,3,9,4,20,3,8,0,4
 core,io.github.redouanebali.model,Game,39,320,16,92,6,65,15,45,1,5
-core,io.github.redouanebali.model,Pool.new Object() {...},12,0,0,0,4,0,1,0,1,0
+core,io.github.redouanebali.model,Pool.new Object() {...},0,12,0,0,0,4,0,1,0,1
 core,io.github.redouanebali.model,PlayerPair,58,110,4,8,16,28,6,8,2,6
 core,io.github.redouanebali.model,PairType,0,21,0,0,0,4,0,1,0,1
 core,io.github.redouanebali.model,SetScore,17,9,0,0,6,4,1,1,1,1
