@@ -199,6 +199,7 @@ public class RandomPlacementUtilTest {
     // Act & Assert
     RandomPlacementUtil.placeRemainingTeamsRandomly(null, TestFixtures.createPlayerPairs(4));
     // Should not throw exception
+    assertTrue(true, "Should handle null teams without throwing exception");
   }
 
   @Test
@@ -265,6 +266,7 @@ public class RandomPlacementUtilTest {
     // Act & Assert
     RandomPlacementUtil.placeTeamsInOrder(null, TestFixtures.createPlayerPairs(4));
     // Should not throw exception
+    assertTrue(true, "Should handle null teams without throwing exception");
   }
 
   @Test

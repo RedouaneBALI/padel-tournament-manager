@@ -21,9 +21,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class PlayerPairService {
 
-  private final TournamentRepository tournamentRepository;
-  private final SecurityProps        securityProps;
-  private final TournamentMapper     tournamentMapper;
+  private static final String               TOURNAMENT_NOT_FOUND = "Tournament not found";
+  private final        TournamentRepository tournamentRepository;
+  private final        SecurityProps        securityProps;
+  private final        TournamentMapper     tournamentMapper;
 
   /**
    * Adds player pairs to a tournament and clears existing game assignments. Automatically adds BYE pairs if needed to reach the main draw size. Only
@@ -37,7 +38,7 @@ public class PlayerPairService {
    */
   public Tournament addPairs(Long tournamentId, List<CreatePlayerPairRequest> requests) {
     Tournament tournament = tournamentRepository.findById(tournamentId)
-                                                .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
+                                                .orElseThrow(() -> new IllegalArgumentException(TOURNAMENT_NOT_FOUND));
     String      me          = SecurityUtil.currentUserId();
     Set<String> superAdmins = securityProps.getSuperAdmins();
     if (!superAdmins.contains(me) && !me.equals(tournament.getOwnerId())) {
@@ -77,7 +78,7 @@ public class PlayerPairService {
    */
   public List<PlayerPair> getPairsByTournamentId(Long tournamentId, boolean includeByes) {
     Tournament tournament = tournamentRepository.findById(tournamentId)
-                                                .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
+                                                .orElseThrow(() -> new IllegalArgumentException(TOURNAMENT_NOT_FOUND));
     if (includeByes) {
       return new ArrayList<>(tournament.getPlayerPairs());
     } else {
@@ -101,7 +102,7 @@ public class PlayerPairService {
   @Transactional
   public void updatePlayerPair(Long tournamentId, Long pairId, String player1Name, String player2Name, Integer seed) {
     Tournament tournament = tournamentRepository.findById(tournamentId)
-                                                .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
+                                                .orElseThrow(() -> new IllegalArgumentException(TOURNAMENT_NOT_FOUND));
 
     String      me          = SecurityUtil.currentUserId();
     Set<String> superAdmins = securityProps.getSuperAdmins();

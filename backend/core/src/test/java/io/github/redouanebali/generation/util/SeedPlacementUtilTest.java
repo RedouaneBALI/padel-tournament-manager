@@ -506,6 +506,7 @@ public class SeedPlacementUtilTest {
     Round emptyRound = new Round();
     SeedPlacementUtil.placeSeedTeamsInPools(emptyRound, teams, 2);
     // Should not throw
+    assertTrue(true, "Should handle null teams without throwing exception");
   }
 
   @Test

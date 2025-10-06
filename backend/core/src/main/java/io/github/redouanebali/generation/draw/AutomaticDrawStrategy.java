@@ -38,50 +38,51 @@ public class AutomaticDrawStrategy implements DrawStrategy {
   private void fillInitialRoundsAutomatic(Tournament tournament, List<PlayerPair> allPairs) {
     List<Round> rounds = tournament.getRounds();
 
-    // Find the first qualification round (Q1) and first main draw round
-    Round firstQualifRound   = null;
-    Round firstMainDrawRound = null;
+    Round firstQualifRound   = findFirstQualificationRound(rounds);
+    Round firstMainDrawRound = findFirstMainDrawRound(rounds);
 
-    for (Round round : rounds) {
-      Stage stage = round.getStage();
-
-      // Find Q1 (first qualification round)
-      if ((stage == Stage.Q1 || stage == Stage.GROUPS) && firstQualifRound == null) {
-        firstQualifRound = round;
-      }
-
-      // Find first main draw round (largest stage present)
-      if (!stage.isQualification() && stage != Stage.GROUPS && firstMainDrawRound == null) {
-        firstMainDrawRound = round;
-      }
-    }
-
-    // Collect teams already placed in Q1 to exclude them from the main draw
+    // Process Q1 or Groups if present and collect teams placed in qualification
     Set<PlayerPair> teamsPlacedInQualif = new HashSet<>();
-
-    // Process Q1 or Groups if present
     if (firstQualifRound != null) {
       processInitialRound(tournament, firstQualifRound, allPairs);
-
-      // Collect all real teams (non-BYE, non-QUALIFIER) placed in Q1
-      for (Game game : firstQualifRound.getGames()) {
-        if (game.getTeamA() != null && !game.getTeamA().isBye() && !game.getTeamA().isQualifier()) {
-          teamsPlacedInQualif.add(game.getTeamA());
-        }
-        if (game.getTeamB() != null && !game.getTeamB().isBye() && !game.getTeamB().isQualifier()) {
-          teamsPlacedInQualif.add(game.getTeamB());
-        }
-      }
+      teamsPlacedInQualif = collectTeamsPlacedInRound(firstQualifRound);
     }
 
     // Process first main draw round if present
     if (firstMainDrawRound != null) {
+      final Set<PlayerPair> excludedTeams = teamsPlacedInQualif; // Make it effectively final
       List<PlayerPair> pairsForMainDraw = allPairs.stream()
-                                                  .filter(pair -> !teamsPlacedInQualif.contains(pair))
+                                                  .filter(pair -> !excludedTeams.contains(pair))
                                                   .collect(Collectors.toList());
 
       processInitialRound(tournament, firstMainDrawRound, pairsForMainDraw);
     }
+  }
+
+  /**
+   * Finds the first qualification round (Q1 or GROUPS).
+   */
+  private Round findFirstQualificationRound(List<Round> rounds) {
+    for (Round round : rounds) {
+      Stage stage = round.getStage();
+      if (stage == Stage.Q1 || stage == Stage.GROUPS) {
+        return round;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Finds the first main draw round.
+   */
+  private Round findFirstMainDrawRound(List<Round> rounds) {
+    for (Round round : rounds) {
+      Stage stage = round.getStage();
+      if (!stage.isQualification() && stage != Stage.GROUPS) {
+        return round;
+      }
+    }
+    return null;
   }
 
   /**
@@ -171,15 +172,45 @@ public class AutomaticDrawStrategy implements DrawStrategy {
    * Répartit les joueurs dans nbPools groupes et génère les matchs de poule (round robin) dans le round GROUPS.
    */
   private void processGroupsRound(Tournament tournament, Round round, List<PlayerPair> allPairs) {
-    int nbPools           = tournament.getConfig().getNbPools();
-    int nbPairsPerPool    = tournament.getConfig().getNbPairsPerPool();
-    int nbQualifiedByPool = tournament.getConfig().getNbQualifiedByPool();
-    if (nbPools <= 0 || nbPairsPerPool <= 0 || allPairs == null || allPairs.isEmpty()) {
+    if (!isValidGroupsConfiguration(tournament, allPairs)) {
       return;
     }
+
+    int nbPools        = tournament.getConfig().getNbPools();
+    int nbPairsPerPool = tournament.getConfig().getNbPairsPerPool();
+
     // Sépare les seeds des autres paires
     List<PlayerPair> seeds  = new ArrayList<>();
     List<PlayerPair> others = new ArrayList<>();
+    separateSeedsFromOthers(allPairs, seeds, others);
+
+    // Placement des seeds dans les pools selon le snake officiel
+    List<List<PlayerPair>> pools = SeedPlacementUtil.placeSeedsInPoolsSnake(seeds, nbPools);
+
+    // Complète les pools avec les autres paires
+    fillPoolsWithRemainingTeams(pools, others, nbPairsPerPool);
+
+    // Affectation des paires aux pools du round
+    assignPairsToPools(round, pools);
+
+    // Génération des matchs round robin pour chaque poule
+    generateRoundRobinMatches(round, pools);
+  }
+
+  /**
+   * Validates the configuration for groups processing.
+   */
+  private boolean isValidGroupsConfiguration(Tournament tournament, List<PlayerPair> allPairs) {
+    int nbPools        = tournament.getConfig().getNbPools();
+    int nbPairsPerPool = tournament.getConfig().getNbPairsPerPool();
+
+    return nbPools > 0 && nbPairsPerPool > 0 && allPairs != null && !allPairs.isEmpty();
+  }
+
+  /**
+   * Separates player pairs into seeds and others.
+   */
+  private void separateSeedsFromOthers(List<PlayerPair> allPairs, List<PlayerPair> seeds, List<PlayerPair> others) {
     for (PlayerPair pair : allPairs) {
       if (pair.getSeed() > 0) {
         seeds.add(pair);
@@ -187,19 +218,38 @@ public class AutomaticDrawStrategy implements DrawStrategy {
         others.add(pair);
       }
     }
-    // Placement des seeds dans les pools selon le snake officiel
-    List<List<PlayerPair>> pools = SeedPlacementUtil.placeSeedsInPoolsSnake(seeds, nbPools);
-    // Complète les pools avec les autres paires
+  }
+
+  /**
+   * Remplit les pools du round avec les paires affectées.
+   */
+  private void assignPairsToPools(Round round, List<List<PlayerPair>> poolsPairs) {
+    round.getPools().clear();
+    char poolName = 'A';
+    for (List<PlayerPair> pairs : poolsPairs) {
+      Pool pool = new Pool("Pool " + poolName, pairs);
+      round.getPools().add(pool);
+      poolName++;
+    }
+  }
+
+  /**
+   * Fills pools with remaining non-seeded teams.
+   */
+  private void fillPoolsWithRemainingTeams(List<List<PlayerPair>> pools, List<PlayerPair> others, int nbPairsPerPool) {
     int idx = 0;
-    for (int p = 0; p < nbPools; p++) {
+    for (int p = 0; p < pools.size(); p++) {
       while (pools.get(p).size() < nbPairsPerPool && idx < others.size()) {
         pools.get(p).add(others.get(idx));
         idx++;
       }
     }
-    // Affectation des paires aux pools du round
-    assignPairsToPools(round, pools);
-    // Génération des matchs round robin pour chaque poule
+  }
+
+  /**
+   * Generates round robin matches for all pools.
+   */
+  private void generateRoundRobinMatches(Round round, List<List<PlayerPair>> pools) {
     List<Game> games = new ArrayList<>();
     for (List<PlayerPair> pool : pools) {
       int n = pool.size();
@@ -215,19 +265,6 @@ public class AutomaticDrawStrategy implements DrawStrategy {
     }
     round.getGames().clear();
     round.getGames().addAll(games);
-  }
-
-  /**
-   * Remplit les pools du round avec les paires affectées.
-   */
-  private void assignPairsToPools(Round round, List<List<PlayerPair>> poolsPairs) {
-    round.getPools().clear();
-    char poolName = 'A';
-    for (List<PlayerPair> pairs : poolsPairs) {
-      Pool pool = new Pool("Pool " + poolName, pairs);
-      round.getPools().add(pool);
-      poolName++;
-    }
   }
 
   /**
@@ -307,4 +344,28 @@ public class AutomaticDrawStrategy implements DrawStrategy {
       return Math.min(allPairs.size(), totalSlots);
     }
   }
+
+  /**
+   * Collects all real teams (non-BYE, non-QUALIFIER) placed in a round.
+   */
+  private Set<PlayerPair> collectTeamsPlacedInRound(Round round) {
+    Set<PlayerPair> teamsPlaced = new HashSet<>();
+
+    for (Game game : round.getGames()) {
+      addRealTeamIfPresent(game.getTeamA(), teamsPlaced);
+      addRealTeamIfPresent(game.getTeamB(), teamsPlaced);
+    }
+
+    return teamsPlaced;
+  }
+
+  /**
+   * Adds a team to the collection if it's a real team (not BYE, not QUALIFIER).
+   */
+  private void addRealTeamIfPresent(PlayerPair team, Set<PlayerPair> teamsCollection) {
+    if (team != null && !team.isBye() && !team.isQualifier()) {
+      teamsCollection.add(team);
+    }
+  }
 }
+
