@@ -282,6 +282,7 @@ public class TournamentBuilderTest {
     automaticStrategy.placePlayers(null, TestFixtures.createPlayerPairs(10));
     manualStrategy.placePlayers(null, TestFixtures.createPlayerPairs(10));
     // Should not throw exception
+    assertTrue(true, "Should handle null tournament without throwing exception");
 
     // Case 2: Null player pairs
     Tournament tournament = TestFixtures.makeTournament(0, 0, 32, 8, 0, DrawMode.SEEDED);

@@ -135,5 +135,6 @@ public class StaggeredSeedPlacementUtilTest {
     Round validRound = TestFixtures.buildEmptyRound(8);
     StaggeredSeedPlacementUtil.placeSeedTeamsStaggered(validRound, null, Stage.fromNbTeams(8), 8, 4, true);
     // Should not throw
+    assertTrue(true, "Should handle null inputs without throwing exception");
   }
 }

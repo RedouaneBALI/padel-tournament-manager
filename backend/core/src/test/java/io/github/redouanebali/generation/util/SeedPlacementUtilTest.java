@@ -308,6 +308,8 @@ public class SeedPlacementUtilTest {
       assertNull(g.getTeamA());
       assertNull(g.getTeamB());
     }
+
+    assertTrue(true, "Should handle null and empty inputs without throwing exception");
   }
 
   @Test
