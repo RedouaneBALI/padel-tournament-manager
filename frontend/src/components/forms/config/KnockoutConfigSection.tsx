@@ -16,9 +16,9 @@ export default function KnockoutConfigSection({
   const cfg = formData.config || { mainDrawSize: 32, nbSeeds: 16 };
 
   const mainDrawSize = Number((cfg as any).mainDrawSize ?? 32);
-  const defaultNbSeeds = mainDrawSize / 2;
+  const defaultNbSeeds = mainDrawSize / 4;
   const seedOptions = [0];
-  for (let i = 2; i <= defaultNbSeeds; i *= 2) {
+  for (let i = 2; i <= defaultNbSeeds*2; i *= 2) {
     seedOptions.push(i);
   }
 
@@ -57,7 +57,7 @@ export default function KnockoutConfigSection({
           ))}
         </select>
       </div>
-      <div className="space-y-2"  style={{display: 'none'}}>
+      <div className="space-y-2">
         <label htmlFor="nbSeeds" className="flex items-center gap-2 text-sm font-medium text-foreground leading-none">
           <Hash className="h-4 w-4" />
           Têtes de série (0 si tirage aléatoire)

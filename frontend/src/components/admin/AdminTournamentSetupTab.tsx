@@ -74,18 +74,16 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
                   };
                 });
 
-                const payload: InitializeDrawRequest = {
-                  rounds: [
-                    {
-                      stage: tournament?.rounds?.[0]?.stage ?? undefined as any,
-                      games,
-                    },
-                  ],
-                };
+                const rounds = [
+                  {
+                    stage: tournament?.rounds?.[0]?.stage ?? undefined as any,
+                    games,
+                  },
+                ];
 
-                await initializeDraw(tournamentId, payload);
+                await generateDraw(tournamentId, { mode: 'manual', rounds });
               } else {
-                await generateDraw(tournamentId, false);
+                await generateDraw(tournamentId, { mode: 'auto' });
               }
               router.push(`/admin/tournament/${tournamentId}/bracket`);
             } finally {

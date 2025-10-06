@@ -178,16 +178,34 @@ export async function savePlayerPairs(tournamentId: string, pairs: PlayerPair[])
   return await response.json();
 }
 
-export async function generateDraw(tournamentId: string, manual: boolean) {
-  const drawType = manual ? 'manual' : 'auto';
-  console.log("generateDraw");
-  const response = await fetchWithAuth(api(`/admin/tournaments/${tournamentId}/draw/${drawType}`), {
+export async function generateDraw(
+  tournamentId: string,
+  options: { mode: 'auto' } | { mode: 'manual'; rounds?: InitializeDrawRequest['rounds'] }
+) {
+  const { mode } = options;
+  const drawType = mode === 'manual' ? 'manual' : 'auto';
+
+  console.log("generateDraw", drawType);
+
+  const requestOptions: RequestInit = {
     method: 'POST',
-  });
+  };
+
+  // Si mode manuel avec des rounds, on les envoie dans le body
+  if (mode === 'manual' && 'rounds' in options && options.rounds) {
+    requestOptions.headers = { 'Content-Type': 'application/json' };
+    requestOptions.body = JSON.stringify(options.rounds);
+  }
+
+  const response = await fetchWithAuth(
+    api(`/admin/tournaments/${tournamentId}/draw/${drawType}`),
+    requestOptions
+  );
 
   if (!response.ok) {
+    const text = await response.text().catch(() => '');
     toast.error("Tirage déjà effectué ou erreur serveur.");
-    throw new Error('Erreur lors de la génération du tirage');
+    throw new Error(`Erreur lors de la génération du tirage (${response.status}) ${text}`);
   }
 
   toast.success('Tirage généré !');

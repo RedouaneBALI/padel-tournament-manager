@@ -19,7 +19,7 @@ export function getInitialFormData(initialData?: Partial<TournamentFormData>): T
     config: {
       format: 'KNOCKOUT',
       mainDrawSize: 32,
-      nbSeeds: 16,
+      nbSeeds: 8,
       nbPools: 4,
       nbPairsPerPool: 4,
       nbQualifiedByPool: 2,

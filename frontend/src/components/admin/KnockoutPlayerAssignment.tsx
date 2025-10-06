@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Tournament } from '@/src/types/tournament';
 import { PlayerPair } from '@/src/types/playerPair';
 import GameAssignmentBloc from '@/src/components/admin/GameAssignmentBloc';
@@ -112,6 +112,7 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
   // fall back to the raw playerPairs list otherwise.
   useEffect(() => {
     const size = matchesCount * 2;
+    const rounds = (tournament as any)?.rounds as Array<any> | undefined;
 
     // Try to derive slots from the first non-GROUPS round
     let derived: Array<PlayerPair | null> | null = null;
@@ -119,14 +120,19 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
       const firstBracket = rounds.find((r) => r?.stage && r.stage !== 'GROUPS');
       const games: Array<any> = firstBracket?.games || [];
       if (games.length > 0) {
-        const next: Array<PlayerPair | null> = new Array(size).fill(null);
-        for (let m = 0; m < Math.min(games.length, size / 2); m++) {
-          const g = games[m];
-          // Keep BYE objects as-is so they remain draggable; null remains null.
-          next[m * 2] = (g?.teamA ?? null) as PlayerPair | null;
-          next[m * 2 + 1] = (g?.teamB ?? null) as PlayerPair | null;
+        // Check if at least one game has actual team data
+        const hasTeamData = games.some((g) => g?.teamA || g?.teamB);
+
+        if (hasTeamData) {
+          const next: Array<PlayerPair | null> = new Array(size).fill(null);
+          for (let m = 0; m < Math.min(games.length, size / 2); m++) {
+            const g = games[m];
+            // Keep BYE objects as-is so they remain draggable; null remains null.
+            next[m * 2] = (g?.teamA ?? null) as PlayerPair | null;
+            next[m * 2 + 1] = (g?.teamB ?? null) as PlayerPair | null;
+          }
+          derived = next;
         }
-        derived = next;
       }
     }
 
@@ -141,7 +147,8 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
       if (i < size) next[i] = p;
     });
     setSlots(next);
-  }, [tournament, playerPairs, matchesCount, rounds]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tournament.id, matchesCount, playerPairs.length]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -152,7 +159,7 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
         },
       }));
     }
-  }, [slots, tournament]);
+  }, [slots, tournament.id]);
 
   const cancelAutoScroll = () => {
     if (autoScrollRAF.current != null) {
@@ -222,6 +229,7 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
   const onRootDragEnd = () => {
     cancelAutoScroll();
   };
+
 
   return (
     <div

@@ -43,7 +43,7 @@ export default function QualifKnockoutConfigSection({
           <option value={32}>32</option>
         </select>
       </div>
-      <div className="space-y-2" style={{display: 'none'}}>
+      <div className="space-y-2">
         <label htmlFor="nbSeedsQualify" className="flex items-center gap-2 text-sm font-medium text-foreground leading-none">
           <Hash className="h-4 w-4" />
           Têtes de série en qualif (0 si tirage aléatoire)
@@ -51,7 +51,7 @@ export default function QualifKnockoutConfigSection({
         <select
           id="nbSeedsQualify"
           name="config.nbSeedsQualify"
-          value={cfg.nbSeedsQualify ?? Math.floor(preQualSize / 2)}
+          value={cfg.nbSeedsQualify ?? Math.floor(preQualSize / 4)}
           onChange={handleInputChange}
           className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10"
         >
