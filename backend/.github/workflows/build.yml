@@ -1,8 +1,8 @@
-name: SonarQube
+name: SonarCloud Analysis
 on:
   push:
     branches:
-      - main
+      - '**'  # Analyse sur toutes les branches
   pull_request:
     types: [ opened, synchronize, reopened ]
 jobs:
@@ -33,4 +33,5 @@ jobs:
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=RedouaneBALI_padel-tournament-manager
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Nécessaire pour les PR
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=RedouaneBALI_padel-tournament-manager -Dsonar.organization=redouanebali
