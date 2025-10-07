@@ -83,7 +83,10 @@ public class Game {
     if (aBye && bBye) {
       return true;
     }
-    return (aBye && teamB != null && !bBye) || (bBye && teamA != null && !aBye);
+    if (aBye && teamB != null) {
+      return true;
+    }
+    return bBye && teamA != null;
   }
 
   private boolean hasValidScore() {
@@ -137,23 +140,35 @@ public class Game {
 
 
   public PlayerPair getWinner() {
-    // Resolve BYE first using PlayerPair.isBye()
-    boolean aBye = teamA != null && teamA.isBye();
-    boolean bBye = teamB != null && teamB.isBye();
-    if (aBye && !bBye) {
-      return teamB;
-    }
-    if (bBye && !aBye) {
-      return teamA;
-    }
-    if (aBye && bBye) {
-      return teamA;
+    PlayerPair byeWinner = resolveByeWinner();
+    if (byeWinner != null) {
+      return byeWinner;
     }
 
     if (!isFinished()) {
       return null;
     }
 
+    return determineWinnerByScore();
+  }
+
+  private PlayerPair resolveByeWinner() {
+    boolean aBye = teamA != null && teamA.isBye();
+    boolean bBye = teamB != null && teamB.isBye();
+
+    if (aBye && bBye) {
+      return teamA;
+    }
+    if (aBye) {
+      return teamB;
+    }
+    if (bBye) {
+      return teamA;
+    }
+    return null;
+  }
+
+  private PlayerPair determineWinnerByScore() {
     int setsWonByA = 0;
     int setsWonByB = 0;
 

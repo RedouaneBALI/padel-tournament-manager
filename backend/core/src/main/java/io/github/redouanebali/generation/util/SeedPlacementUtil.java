@@ -149,83 +149,97 @@ public class SeedPlacementUtil {
    */
   private static List<Integer> loadSeedPositionsFromJson(int drawSize, int nbSeeds) {
     try {
-      // Load JSON from resources
-      InputStream inputStream = SeedPlacementUtil.class.getResourceAsStream("/seed_positions.json");
-      if (inputStream == null) {
-        throw new IllegalStateException("seed_positions.json not found in resources");
-      }
-
-      ObjectMapper mapper   = new ObjectMapper();
-      JsonNode     rootNode = mapper.readTree(inputStream);
-
-      // Navigate to the correct drawSize
-      JsonNode drawSizeNode = rootNode.get(String.valueOf(drawSize));
-      if (drawSizeNode == null) {
-        throw new IllegalArgumentException("DrawSize " + drawSize + " not supported in seed_positions.json");
-      }
-
-      // If nbSeeds is not a power of 2, use the next power of 2
-      int nbSeedsToUse = nbSeeds;
-      if (nbSeeds > 0 && (nbSeeds & (nbSeeds - 1)) != 0) {
-        nbSeedsToUse = Integer.highestOneBit(nbSeeds) << 1;
-        nbSeedsToUse = Math.min(nbSeedsToUse, drawSize);
-      }
-
-      JsonNode nbSeedsNode = drawSizeNode.get(String.valueOf(nbSeedsToUse));
-      if (nbSeedsNode == null) {
-        throw new IllegalArgumentException("NbSeeds " + nbSeedsToUse + " not supported for drawSize " + drawSize);
-      }
-
-      List<Integer> positions = new ArrayList<>();
-
-      // Process seed groups in order: TS1, TS2, TS3-4, etc.
-      Iterator<String> fieldNames   = nbSeedsNode.fieldNames();
-      List<String>     sortedFields = new ArrayList<>();
-      fieldNames.forEachRemaining(sortedFields::add);
-
-      // Sort to ensure proper order: TS1, TS2, TS3-4, TS5-8, etc.
-      sortedFields.sort((a, b) -> {
-        if (a.equals("TS1")) {
-          return -1;
-        }
-        if (b.equals("TS1")) {
-          return 1;
-        }
-        if (a.equals("TS2")) {
-          return -1;
-        }
-        if (b.equals("TS2")) {
-          return 1;
-        }
-        return a.compareTo(b);
-      });
-
-      for (String groupKey : sortedFields) {
-        JsonNode      positionsArray = nbSeedsNode.get(groupKey);
-        List<Integer> groupPositions = new ArrayList<>();
-
-        // Collect all positions for this group
-        for (JsonNode posNode : positionsArray) {
-          groupPositions.add(posNode.asInt());
-        }
-
-        // For TS1 and TS2, use the fixed position
-        if ("TS1".equals(groupKey) || "TS2".equals(groupKey)) {
-          positions.addAll(groupPositions);
-        } else {
-          // For TS3+, shuffle the positions to simulate a random draw
-          Collections.shuffle(groupPositions);
-          positions.addAll(groupPositions);
-        }
-      }
-
-      // Return only the number of seeds requested
+      JsonNode      nbSeedsNode  = loadAndNavigateToSeedNode(drawSize, nbSeeds);
+      List<String>  sortedFields = getSortedFieldNames(nbSeedsNode);
+      List<Integer> positions    = processAllSeedGroups(nbSeedsNode, sortedFields);
       return positions.subList(0, Math.min(nbSeeds, positions.size()));
-
     } catch (Exception e) {
       throw new RuntimeException("Failed to load seed positions from JSON", e);
     }
   }
+
+  private static JsonNode loadAndNavigateToSeedNode(int drawSize, int nbSeeds) throws Exception {
+    InputStream inputStream = SeedPlacementUtil.class.getResourceAsStream("/seed_positions.json");
+    if (inputStream == null) {
+      throw new IllegalStateException("seed_positions.json not found in resources");
+    }
+
+    ObjectMapper mapper       = new ObjectMapper();
+    JsonNode     rootNode     = mapper.readTree(inputStream);
+    JsonNode     drawSizeNode = rootNode.get(String.valueOf(drawSize));
+
+    if (drawSizeNode == null) {
+      throw new IllegalArgumentException("DrawSize " + drawSize + " not supported in seed_positions.json");
+    }
+
+    int      nbSeedsToUse = calculateNbSeedsToUse(nbSeeds, drawSize);
+    JsonNode nbSeedsNode  = drawSizeNode.get(String.valueOf(nbSeedsToUse));
+
+    if (nbSeedsNode == null) {
+      throw new IllegalArgumentException("NbSeeds " + nbSeedsToUse + " not supported for drawSize " + drawSize);
+    }
+
+    return nbSeedsNode;
+  }
+
+  private static int calculateNbSeedsToUse(int nbSeeds, int drawSize) {
+    if (nbSeeds <= 0 || (nbSeeds & (nbSeeds - 1)) == 0) {
+      return nbSeeds;
+    }
+    int nbSeedsToUse = Integer.highestOneBit(nbSeeds) << 1;
+    return Math.min(nbSeedsToUse, drawSize);
+  }
+
+  private static List<String> getSortedFieldNames(JsonNode nbSeedsNode) {
+    Iterator<String> fieldNames   = nbSeedsNode.fieldNames();
+    List<String>     sortedFields = new ArrayList<>();
+    fieldNames.forEachRemaining(sortedFields::add);
+    sortedFields.sort(SeedPlacementUtil::compareSeedGroupKeys);
+    return sortedFields;
+  }
+
+  private static int compareSeedGroupKeys(String a, String b) {
+    if (a.equals("TS1")) {
+      return -1;
+    }
+    if (b.equals("TS1")) {
+      return 1;
+    }
+    if (a.equals("TS2")) {
+      return -1;
+    }
+    if (b.equals("TS2")) {
+      return 1;
+    }
+    return a.compareTo(b);
+  }
+
+  private static List<Integer> processAllSeedGroups(JsonNode nbSeedsNode, List<String> sortedFields) {
+    List<Integer> positions = new ArrayList<>();
+    for (String groupKey : sortedFields) {
+      List<Integer> groupPositions = extractGroupPositions(nbSeedsNode.get(groupKey));
+      addGroupPositionsToList(positions, groupPositions, groupKey);
+    }
+    return positions;
+  }
+
+  private static List<Integer> extractGroupPositions(JsonNode positionsArray) {
+    List<Integer> groupPositions = new ArrayList<>();
+    for (JsonNode posNode : positionsArray) {
+      groupPositions.add(posNode.asInt());
+    }
+    return groupPositions;
+  }
+
+  private static void addGroupPositionsToList(List<Integer> positions, List<Integer> groupPositions, String groupKey) {
+    if ("TS1".equals(groupKey) || "TS2".equals(groupKey)) {
+      positions.addAll(groupPositions);
+    } else {
+      Collections.shuffle(groupPositions);
+      positions.addAll(groupPositions);
+    }
+  }
+
 
   /**
    * Places seeded teams in pools for group phase tournaments. Distributes seeds evenly across pools using round-robin distribution.
