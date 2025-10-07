@@ -18,15 +18,32 @@ public class ByePlacementUtil {
   }
 
   /**
-   * Places BYE teams in a round, skipping slots reserved for qualifiers.
+   * Places BYE teams in the round based on the number of actual pairs and seeds. Skips qualifier slots when nbQualifiers > 0.
    *
    * @param round the round to place BYEs in
-   * @param totalPairs number of direct-entry teams
+   * @param totalPairs total number of real pairs
    * @param nbSeeds number of seeds
    * @param drawSize total draw size
    * @param nbQualifiers number of qualifier slots to skip
    */
   public static void placeByeTeams(Round round, int totalPairs, int nbSeeds, int drawSize, int nbQualifiers) {
+    validateInputParameters(round, totalPairs, drawSize);
+
+    final List<Game> games = round.getGames();
+    validateGamesStructure(games, drawSize);
+
+    int byesToPlace = calculateByesToPlace(games, totalPairs, nbQualifiers, drawSize);
+    if (byesToPlace == 0) {
+      return;
+    }
+
+    placeByesInRound(games, byesToPlace, nbSeeds, drawSize);
+  }
+
+  /**
+   * Validates input parameters for bye placement.
+   */
+  private static void validateInputParameters(Round round, int totalPairs, int drawSize) {
     if (round == null) {
       throw new IllegalArgumentException("round must not be null");
     }
@@ -42,61 +59,136 @@ public class ByePlacementUtil {
     if (totalPairs > drawSize) {
       throw new IllegalArgumentException("totalPairs cannot exceed drawSize");
     }
+  }
 
-    final List<Game> games = round.getGames();
-    final int        slots = games.size() * 2;
+  /**
+   * Validates that games structure matches expected draw size.
+   */
+  private static void validateGamesStructure(List<Game> games, int drawSize) {
+    final int slots = games.size() * 2;
     if (slots != drawSize) {
       throw new IllegalStateException("Round games do not match drawSize: games*2=" + slots + ", drawSize=" + drawSize);
     }
+  }
 
+  /**
+   * Calculates how many BYEs need to be placed.
+   */
+  private static int calculateByesToPlace(List<Game> games, int totalPairs, int nbQualifiers, int drawSize) {
     int existingByes = countExistingByes(games);
-    int byesToPlace  = Math.max(0, drawSize - totalPairs - nbQualifiers - existingByes);
-    if (byesToPlace == 0) {
-      return;
-    }
+    return Math.max(0, drawSize - totalPairs - nbQualifiers - existingByes);
+  }
 
-    // 1. Place BYEs opposite seeds, skipping qualifier slots
+  /**
+   * Places BYEs in the round using different strategies.
+   */
+  private static void placeByesInRound(List<Game> games, int byesToPlace, int nbSeeds, int drawSize) {
+    int placed = 0;
+
+    // Strategy 1: Place BYEs opposite seeds
+    placed += placeByesOppositeSeedsStrategy(games, byesToPlace, nbSeeds, drawSize, placed);
+
+    // Strategy 2: Fallback placement in any available slot
+    placed += placeByesFallbackStrategy(games, byesToPlace, placed);
+
+    // Validate all BYEs were placed
+    validateAllByesPlaced(byesToPlace, placed);
+  }
+
+  /**
+   * Places BYEs opposite seed positions.
+   */
+  private static int placeByesOppositeSeedsStrategy(List<Game> games, int byesToPlace, int nbSeeds, int drawSize, int alreadyPlaced) {
     List<Integer> seedSlots = SeedPlacementUtil.getSeedsPositions(drawSize, nbSeeds);
-    int           placed    = 0;
+    int           placed    = alreadyPlaced;
+
     for (int slot : seedSlots) {
       if (placed >= byesToPlace) {
         break;
       }
-      int     gameIndex = slot / 2;
-      boolean left      = (slot % 2 == 0);
-      Game    g         = games.get(gameIndex);
-      if (left) {
-        if (g.getTeamB() == null && !isReservedForQualifier(g, false)) {
-          g.setTeamB(PlayerPair.bye());
-          placed++;
-        }
-      } else {
-        if (g.getTeamA() == null && !isReservedForQualifier(g, true)) {
-          g.setTeamA(PlayerPair.bye());
-          placed++;
-        }
-      }
+      placed += tryPlaceByeAtOppositeSlot(games, slot, placed < byesToPlace);
     }
-    // 2. Fallback: place BYEs in any available slot not reserved for qualifier
+
+    return placed - alreadyPlaced;
+  }
+
+  /**
+   * Places BYEs in any available slot as fallback.
+   */
+  private static int placeByesFallbackStrategy(List<Game> games, int byesToPlace, int alreadyPlaced) {
+    int placed = alreadyPlaced;
+
     for (Game g : games) {
       if (placed >= byesToPlace) {
         break;
       }
-      if (g.getTeamA() == null && !isReservedForQualifier(g, true)) {
-        g.setTeamA(PlayerPair.bye());
-        placed++;
+
+      placed += tryPlaceByeInGame(g, byesToPlace, placed);
+    }
+
+    return placed - alreadyPlaced;
+  }
+
+  /**
+   * Tries to place a BYE at the opposite slot of a seed position.
+   */
+  private static int tryPlaceByeAtOppositeSlot(List<Game> games, int seedSlot, boolean canPlace) {
+    if (!canPlace) {
+      return 0;
+    }
+
+    int     gameIndex  = seedSlot / 2;
+    boolean isLeftSlot = (seedSlot % 2 == 0);
+    Game    game       = games.get(gameIndex);
+
+    if (isLeftSlot) {
+      return tryPlaceByeInTeamPosition(game, false) ? 1 : 0; // Place in TeamB (opposite)
+    } else {
+      return tryPlaceByeInTeamPosition(game, true) ? 1 : 0;  // Place in TeamA (opposite)
+    }
+  }
+
+  /**
+   * Tries to place BYEs in both positions of a game.
+   */
+  private static int tryPlaceByeInGame(Game game, int byesToPlace, int alreadyPlaced) {
+    int placed = 0;
+
+    if (alreadyPlaced + placed < byesToPlace && tryPlaceByeInTeamPosition(game, true)) {
+      placed++;
+    }
+
+    if (alreadyPlaced + placed < byesToPlace && tryPlaceByeInTeamPosition(game, false)) {
+      placed++;
+    }
+
+    return placed;
+  }
+
+  /**
+   * Tries to place a BYE in a specific team position.
+   */
+  private static boolean tryPlaceByeInTeamPosition(Game game, boolean isTeamA) {
+    if (isTeamA) {
+      if (game.getTeamA() == null && !isReservedForQualifier(game, true)) {
+        game.setTeamA(PlayerPair.bye());
+        return true;
       }
-      if (placed >= byesToPlace) {
-        break;
-      }
-      if (g.getTeamB() == null && !isReservedForQualifier(g, false)) {
-        g.setTeamB(PlayerPair.bye());
-        placed++;
+    } else {
+      if (game.getTeamB() == null && !isReservedForQualifier(game, false)) {
+        game.setTeamB(PlayerPair.bye());
+        return true;
       }
     }
-    // 3. Last resort: throw if not enough slots
-    if (placed < byesToPlace) {
-      throw new IllegalStateException("Not enough empty slots to place all BYEs: remaining=" + (byesToPlace - placed));
+    return false;
+  }
+
+  /**
+   * Validates that all required BYEs were successfully placed.
+   */
+  private static void validateAllByesPlaced(int byesToPlace, int actuallyPlaced) {
+    if (actuallyPlaced < byesToPlace) {
+      throw new IllegalStateException("Not enough empty slots to place all BYEs: remaining=" + (byesToPlace - actuallyPlaced));
     }
   }
 

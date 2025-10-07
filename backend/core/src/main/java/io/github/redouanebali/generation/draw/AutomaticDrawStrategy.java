@@ -278,94 +278,143 @@ public class AutomaticDrawStrategy implements DrawStrategy {
 
     // Step 2: Place BYEs and qualifiers based on tournament format
     if (format == TournamentFormat.QUALIF_KO) {
-      // QUALIFS_KO mode: Place BYEs for direct entries only, skipping qualifier slots
-      int nbQualifiers  = tournament.getConfig().getNbQualifiers();
-      int totalSlots    = tournament.getConfig().getMainDrawSize();
-      int directEntries = Math.min(totalSlots - nbQualifiers, allPairs.size());
-      ByePlacementUtil.placeByeTeams(initialRound, directEntries, configuredSeeds, roundDrawSize, nbQualifiers);
-
-      // Step 3: Place qualifiers randomly in available slots (only in QUALIFS_KO mode)
-      RandomPlacementUtil.placeQualifiers(initialRound, nbQualifiers);
-
-      // Step 4: Place remaining teams randomly in available slots
-      Set<PlayerPair> alreadyPlaced = new HashSet<>();
-      for (Game g : initialRound.getGames()) {
-        if (g.getTeamA() != null && !g.getTeamA().isBye() && !g.getTeamA().isQualifier()) {
-          alreadyPlaced.add(g.getTeamA());
-        }
-        if (g.getTeamB() != null && !g.getTeamB().isBye() && !g.getTeamB().isQualifier()) {
-          alreadyPlaced.add(g.getTeamB());
-        }
-      }
-      List<PlayerPair> remainingTeams = allPairs.stream()
-                                                .filter(p -> !alreadyPlaced.contains(p))
-                                                .limit(directEntries)
-                                                .collect(Collectors.toList());
-      RandomPlacementUtil.placeRemainingTeamsRandomly(initialRound, remainingTeams);
+      processQualifKOFormat(tournament, initialRound, allPairs, roundDrawSize, configuredSeeds);
     } else {
-      // KNOCKOUT mode: Place BYEs normally for all teams (no qualifiers)
-      int nbTeams = allPairs.size();
-      ByePlacementUtil.placeByeTeams(initialRound, nbTeams, configuredSeeds, roundDrawSize);
-
-      // Place remaining teams randomly in available slots
-      Set<PlayerPair> alreadyPlaced = new HashSet<>();
-      for (Game g : initialRound.getGames()) {
-        if (g.getTeamA() != null && !g.getTeamA().isBye()) {
-          alreadyPlaced.add(g.getTeamA());
-        }
-        if (g.getTeamB() != null && !g.getTeamB().isBye()) {
-          alreadyPlaced.add(g.getTeamB());
-        }
-      }
-      List<PlayerPair> remainingTeams = allPairs.stream()
-                                                .filter(p -> !alreadyPlaced.contains(p))
-                                                .collect(Collectors.toList());
-      RandomPlacementUtil.placeRemainingTeamsRandomly(initialRound, remainingTeams);
+      processKnockoutFormat(initialRound, allPairs, roundDrawSize, configuredSeeds);
     }
   }
 
   /**
-   * Calculates how many teams actually participate in the main draw. This accounts for teams that go to qualifications vs direct entry.
+   * Processes main draw for QUALIF_KO format.
    */
-  private int calculateMainDrawParticipants(Tournament tournament, List<PlayerPair> allPairs) {
-    if (tournament.getConfig().getFormat() == TournamentFormat.KNOCKOUT) {
-      return tournament.getConfig().getMainDrawSize();
-    }
-    int totalSlots   = tournament.getConfig().getMainDrawSize();
-    int nbQualifiers = tournament.getConfig().getNbQualifiers();
+  private void processQualifKOFormat(Tournament tournament, Round initialRound, List<PlayerPair> allPairs, int roundDrawSize, int configuredSeeds) {
+    int nbQualifiers  = tournament.getConfig().getNbQualifiers();
+    int totalSlots    = tournament.getConfig().getMainDrawSize();
+    int directEntries = Math.min(totalSlots - nbQualifiers, allPairs.size());
 
-    if (nbQualifiers > 0) {
-      // Tournament has qualifications
-      // Direct entries = total slots - qualifier spots
-      int directEntries = totalSlots - nbQualifiers;
-      return Math.min(directEntries, allPairs.size());
-    } else {
-      // No qualifications, all teams go to main draw
-      return Math.min(allPairs.size(), totalSlots);
+    // Place BYEs for direct entries only, skipping qualifier slots
+    ByePlacementUtil.placeByeTeams(initialRound, directEntries, configuredSeeds, roundDrawSize, nbQualifiers);
+
+    // Place qualifiers randomly in available slots
+    RandomPlacementUtil.placeQualifiers(initialRound, nbQualifiers);
+
+    // Place remaining teams randomly in available slots
+    placeRemainingTeamsForQualifKO(initialRound, allPairs, directEntries);
+  }
+
+  /**
+   * Processes main draw for KNOCKOUT format.
+   */
+  private void processKnockoutFormat(Round initialRound, List<PlayerPair> allPairs, int roundDrawSize, int configuredSeeds) {
+    int nbTeams = allPairs.size();
+
+    // Place BYEs normally for all teams (no qualifiers)
+    ByePlacementUtil.placeByeTeams(initialRound, nbTeams, configuredSeeds, roundDrawSize);
+
+    // Place remaining teams randomly in available slots
+    placeRemainingTeamsForKnockout(initialRound, allPairs);
+  }
+
+  /**
+   * Places remaining teams for QUALIF_KO format.
+   */
+  private void placeRemainingTeamsForQualifKO(Round initialRound, List<PlayerPair> allPairs, int directEntries) {
+    Set<PlayerPair> alreadyPlaced = collectAlreadyPlacedTeamsExcludingQualifiers(initialRound);
+
+    List<PlayerPair> remainingTeams = allPairs.stream()
+                                              .filter(p -> !alreadyPlaced.contains(p))
+                                              .limit(directEntries)
+                                              .collect(Collectors.toList());
+
+    RandomPlacementUtil.placeRemainingTeamsRandomly(initialRound, remainingTeams);
+  }
+
+  /**
+   * Places remaining teams for KNOCKOUT format.
+   */
+  private void placeRemainingTeamsForKnockout(Round initialRound, List<PlayerPair> allPairs) {
+    Set<PlayerPair> alreadyPlaced = collectAlreadyPlacedTeamsIncludingAll(initialRound);
+
+    List<PlayerPair> remainingTeams = allPairs.stream()
+                                              .filter(p -> !alreadyPlaced.contains(p))
+                                              .collect(Collectors.toList());
+
+    RandomPlacementUtil.placeRemainingTeamsRandomly(initialRound, remainingTeams);
+  }
+
+  /**
+   * Collects already placed teams excluding qualifiers (for QUALIF_KO format).
+   */
+  private Set<PlayerPair> collectAlreadyPlacedTeamsExcludingQualifiers(Round initialRound) {
+    Set<PlayerPair> alreadyPlaced = new HashSet<>();
+
+    for (Game g : initialRound.getGames()) {
+      addTeamIfNotByeAndNotQualifier(g.getTeamA(), alreadyPlaced);
+      addTeamIfNotByeAndNotQualifier(g.getTeamB(), alreadyPlaced);
+    }
+
+    return alreadyPlaced;
+  }
+
+  /**
+   * Collects already placed teams including all types (for KNOCKOUT format).
+   */
+  private Set<PlayerPair> collectAlreadyPlacedTeamsIncludingAll(Round initialRound) {
+    Set<PlayerPair> alreadyPlaced = new HashSet<>();
+
+    for (Game g : initialRound.getGames()) {
+      addTeamIfNotBye(g.getTeamA(), alreadyPlaced);
+      addTeamIfNotBye(g.getTeamB(), alreadyPlaced);
+    }
+
+    return alreadyPlaced;
+  }
+
+  /**
+   * Adds team if it's not null, not BYE and not QUALIFIER.
+   */
+  private void addTeamIfNotByeAndNotQualifier(PlayerPair team, Set<PlayerPair> collection) {
+    if (team != null && !team.isBye() && !team.isQualifier()) {
+      collection.add(team);
     }
   }
 
   /**
-   * Collects all real teams (non-BYE, non-QUALIFIER) placed in a round.
+   * Adds team if it's not null and not BYE.
+   */
+  private void addTeamIfNotBye(PlayerPair team, Set<PlayerPair> collection) {
+    if (team != null && !team.isBye()) {
+      collection.add(team);
+    }
+  }
+
+  /**
+   * Collects all teams that have been placed in a round (from games and pools).
    */
   private Set<PlayerPair> collectTeamsPlacedInRound(Round round) {
     Set<PlayerPair> teamsPlaced = new HashSet<>();
 
-    for (Game game : round.getGames()) {
-      addRealTeamIfPresent(game.getTeamA(), teamsPlaced);
-      addRealTeamIfPresent(game.getTeamB(), teamsPlaced);
+    // Collect teams from games
+    if (round.getGames() != null) {
+      for (Game game : round.getGames()) {
+        addTeamIfNotBye(game.getTeamA(), teamsPlaced);
+        addTeamIfNotBye(game.getTeamB(), teamsPlaced);
+      }
+    }
+
+    // Collect teams from pools
+    if (round.getPools() != null) {
+      for (Pool pool : round.getPools()) {
+        if (pool.getPairs() != null) {
+          for (PlayerPair pair : pool.getPairs()) {
+            if (pair != null && !pair.isBye()) {
+              teamsPlaced.add(pair);
+            }
+          }
+        }
+      }
     }
 
     return teamsPlaced;
   }
-
-  /**
-   * Adds a team to the collection if it's a real team (not BYE, not QUALIFIER).
-   */
-  private void addRealTeamIfPresent(PlayerPair team, Set<PlayerPair> teamsCollection) {
-    if (team != null && !team.isBye() && !team.isQualifier()) {
-      teamsCollection.add(team);
-    }
-  }
 }
-

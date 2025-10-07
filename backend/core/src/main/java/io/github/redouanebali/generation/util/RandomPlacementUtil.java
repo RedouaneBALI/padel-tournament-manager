@@ -42,25 +42,34 @@ public class RandomPlacementUtil {
       return;
     }
 
-    // Filter out teams that are already placed in pools
-    List<PlayerPair> alreadyPlaced = pools.stream()
-                                          .flatMap(pool -> pool.getPairs().stream())
-                                          .toList();
-
-    List<PlayerPair> teamsToPlace = remainingTeams.stream()
-                                                  .filter(team -> !alreadyPlaced.contains(team))
-                                                  .toList();
-
+    List<PlayerPair> teamsToPlace = filterUnplacedTeams(pools, remainingTeams);
     if (teamsToPlace.isEmpty()) {
       return;
     }
 
-    // Shuffle teams for random placement
+    distributeTeamsAcrossPools(pools, teamsToPlace);
+  }
+
+  /**
+   * Filters out teams that are already placed in pools.
+   */
+  private static List<PlayerPair> filterUnplacedTeams(List<Pool> pools, List<PlayerPair> remainingTeams) {
+    List<PlayerPair> alreadyPlaced = pools.stream()
+                                          .flatMap(pool -> pool.getPairs().stream())
+                                          .toList();
+
+    return remainingTeams.stream()
+                         .filter(team -> !alreadyPlaced.contains(team))
+                         .toList();
+  }
+
+  /**
+   * Distributes teams evenly across pools using round-robin distribution.
+   */
+  private static void distributeTeamsAcrossPools(List<Pool> pools, List<PlayerPair> teamsToPlace) {
     List<PlayerPair> shuffled = new ArrayList<>(teamsToPlace);
     Collections.shuffle(shuffled);
 
-    // Distribute teams evenly across pools using round-robin distribution
-    // This ensures teams are spread as evenly as possible across all pools
     int teamIndex = 0;
     int poolIndex = 0;
 
@@ -81,33 +90,54 @@ public class RandomPlacementUtil {
       return;
     }
 
-    // Shuffle teams for random placement
-    List<PlayerPair> shuffled = new ArrayList<>(remainingTeams);
-    Collections.shuffle(shuffled);
+    List<PlayerPair> shuffled      = shuffleTeams(remainingTeams);
+    int              unplacedCount = placeTeamsInGames(round.getGames(), shuffled);
 
+    if (unplacedCount > 0) {
+      logUnplacedTeamsWarning(unplacedCount);
+    }
+  }
+
+  /**
+   * Shuffles teams for random placement.
+   */
+  private static List<PlayerPair> shuffleTeams(List<PlayerPair> teams) {
+    List<PlayerPair> shuffled = new ArrayList<>(teams);
+    Collections.shuffle(shuffled);
+    return shuffled;
+  }
+
+  /**
+   * Places teams sequentially in available game slots.
+   *
+   * @return number of teams that couldn't be placed
+   */
+  private static int placeTeamsInGames(List<Game> games, List<PlayerPair> shuffledTeams) {
     int index = 0;
 
-    // Simply place all teams sequentially in null slots - no fancy logic needed
-    // This ensures all real teams are placed before any BYEs are added
-    for (Game game : round.getGames()) {
-      if (index >= shuffled.size()) {
+    for (Game game : games) {
+      if (index >= shuffledTeams.size()) {
         break;
       }
       if (game.getTeamA() == null) {
-        game.setTeamA(shuffled.get(index++));
+        game.setTeamA(shuffledTeams.get(index++));
       }
-      if (index >= shuffled.size()) {
+      if (index >= shuffledTeams.size()) {
         break;
       }
       if (game.getTeamB() == null) {
-        game.setTeamB(shuffled.get(index++));
+        game.setTeamB(shuffledTeams.get(index++));
       }
     }
 
-    // If there are still teams to place (shouldn't happen if enough slots), log warning
-    if (index < shuffled.size()) {
-      System.err.println("WARNING: Could not place all teams. " + (shuffled.size() - index) + " teams remaining.");
-    }
+    return shuffledTeams.size() - index;
+  }
+
+  /**
+   * Logs a warning when not all teams could be placed.
+   */
+  private static void logUnplacedTeamsWarning(int unplacedCount) {
+    System.err.println("WARNING: Could not place all teams. " + unplacedCount + " teams remaining.");
   }
 
   /**
@@ -120,17 +150,32 @@ public class RandomPlacementUtil {
     if (round == null || nbQualifiers <= 0) {
       return;
     }
-    List<Game> games          = round.getGames();
+
+    List<Slot> availableSlots = collectAvailableSlots(round.getGames());
+    Collections.shuffle(availableSlots);
+    placeQualifiersInSlots(availableSlots, nbQualifiers);
+  }
+
+  /**
+   * Collects all available slots from games.
+   */
+  private static List<Slot> collectAvailableSlots(List<Game> games) {
     List<Slot> availableSlots = new ArrayList<>();
-    for (Game g : games) {
-      if (g.getTeamA() == null) {
-        availableSlots.add(new Slot(g, true));
+    for (Game game : games) {
+      if (game.getTeamA() == null) {
+        availableSlots.add(new Slot(game, true));
       }
-      if (g.getTeamB() == null) {
-        availableSlots.add(new Slot(g, false));
+      if (game.getTeamB() == null) {
+        availableSlots.add(new Slot(game, false));
       }
     }
-    Collections.shuffle(availableSlots);
+    return availableSlots;
+  }
+
+  /**
+   * Places qualifiers in the specified number of slots.
+   */
+  private static void placeQualifiersInSlots(List<Slot> availableSlots, int nbQualifiers) {
     int placed = 0;
     for (Slot slot : availableSlots) {
       if (placed >= nbQualifiers) {
@@ -148,14 +193,26 @@ public class RandomPlacementUtil {
   /**
    * Places teams in order (without shuffling) - useful for manual mode.
    */
-  // @todo this method should manage pools
   public static void placeTeamsInOrder(Round round, List<PlayerPair> teams) {
-    if (round == null || round.getGames() == null || teams == null || teams.isEmpty()) {
+    if (round == null || teams == null || teams.isEmpty()) {
       return;
     }
 
+    if (round.getGames() != null && !round.getGames().isEmpty()) {
+      placeTeamsInOrderInGames(round.getGames(), teams);
+    }
+
+    if (!round.getPools().isEmpty()) {
+      placeTeamsInOrderInPools(round.getPools(), teams);
+    }
+  }
+
+  /**
+   * Places teams in order in games without shuffling.
+   */
+  private static void placeTeamsInOrderInGames(List<Game> games, List<PlayerPair> teams) {
     int index = 0;
-    for (Game game : round.getGames()) {
+    for (Game game : games) {
       if (game.getTeamA() == null && index < teams.size()) {
         game.setTeamA(teams.get(index++));
       }
@@ -166,15 +223,23 @@ public class RandomPlacementUtil {
         break;
       }
     }
+  }
 
-    if (!round.getPools().isEmpty()) {
-      int nbPools        = round.getPools().size();
-      int nbPairsPerPool = teams.size() / nbPools;
-      for (int poolIndex = 0; poolIndex < nbPairsPerPool; poolIndex++) {
-        for (int i = 0; i < nbPairsPerPool; i++) {
-          System.out.println("adding player " + (poolIndex * nbPairsPerPool) + i + " to pool " + poolIndex);
-          round.getPools().get(poolIndex).addPair(teams.get((poolIndex * nbPairsPerPool) + i));
-        }
+  /**
+   * Places teams in order in pools without shuffling.
+   */
+  private static void placeTeamsInOrderInPools(List<Pool> pools, List<PlayerPair> teams) {
+    int nbPools        = pools.size();
+    int nbPairsPerPool = teams.size() / nbPools;
+
+    for (int poolIndex = 0; poolIndex < pools.size() && poolIndex < nbPairsPerPool; poolIndex++) {
+      Pool currentPool = pools.get(poolIndex);
+      int  startIndex  = poolIndex * nbPairsPerPool;
+      int  endIndex    = Math.min(startIndex + nbPairsPerPool, teams.size());
+
+      for (int i = startIndex; i < endIndex; i++) {
+        System.out.println("adding player " + i + " to pool " + poolIndex);
+        currentPool.addPair(teams.get(i));
       }
     }
   }
