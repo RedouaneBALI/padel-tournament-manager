@@ -99,28 +99,53 @@ public class Game {
     int     setsToWin    = format.getNumberOfSetsToWin();
     int     pointsPerSet = format.getGamesPerSet();
     boolean superTie     = format.isSuperTieBreakInFinalSet();
+
     for (int i = 0; i < score.getSets().size(); i++) {
       SetScore set        = score.getSets().get(i);
-      boolean  isFinalSet = (i == score.getSets().size() - 1) && (teamAWonSets == setsToWin - 1) && (teamBWonSets == setsToWin - 1);
+      boolean  isFinalSet = isFinalSetScenario(i, teamAWonSets, teamBWonSets, setsToWin);
+
       if (isFinalSet && superTie) {
-        int a = set.getTeamAScore();
-        int b = set.getTeamBScore();
-        if ((a >= 10 || b >= 10) && Math.abs(a - b) >= 2) {
-          if (a > b) {
-            teamAWonSets++;
-          } else {
-            teamBWonSets++;
-          }
+        int winner = evaluateSuperTieBreak(set);
+        if (winner == 1) {
+          teamAWonSets++;
+        } else if (winner == 2) {
+          teamBWonSets++;
         }
       } else {
-        if (isSetWonBy(set.getTeamAScore(), set.getTeamBScore(), pointsPerSet)) {
+        int winner = evaluateRegularSet(set, pointsPerSet);
+        if (winner == 1) {
           teamAWonSets++;
-        } else if (isSetWonBy(set.getTeamBScore(), set.getTeamAScore(), pointsPerSet)) {
+        } else if (winner == 2) {
           teamBWonSets++;
         }
       }
     }
     return new int[]{teamAWonSets, teamBWonSets};
+  }
+
+  private boolean isFinalSetScenario(int setIndex, int teamAWonSets, int teamBWonSets, int setsToWin) {
+    boolean isLastSet          = (setIndex == score.getSets().size() - 1);
+    boolean isTieBreakScenario = (teamAWonSets == setsToWin - 1) && (teamBWonSets == setsToWin - 1);
+    return isLastSet && isTieBreakScenario;
+  }
+
+  private int evaluateSuperTieBreak(SetScore set) {
+    int a = set.getTeamAScore();
+    int b = set.getTeamBScore();
+    if ((a >= 10 || b >= 10) && Math.abs(a - b) >= 2) {
+      return a > b ? 1 : 2;
+    }
+    return 0; // No winner yet
+  }
+
+  private int evaluateRegularSet(SetScore set, int pointsPerSet) {
+    if (isSetWonBy(set.getTeamAScore(), set.getTeamBScore(), pointsPerSet)) {
+      return 1; // Team A won
+    }
+    if (isSetWonBy(set.getTeamBScore(), set.getTeamAScore(), pointsPerSet)) {
+      return 2; // Team B won
+    }
+    return 0; // No winner yet
   }
 
   public boolean isSetWonBy(int teamScore, int opponentScore, int maxPointsPerSet) {
