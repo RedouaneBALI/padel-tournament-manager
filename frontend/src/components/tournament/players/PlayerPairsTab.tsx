@@ -42,7 +42,7 @@ export default function PlayerPairsTab({ tournamentId }: Props) {
       {playerPairs.map((pair, index) => (
         <li key={index} className="border rounded px-4 py-2 bg-background shadow-sm">
           <span className="font-semibold text-primary">
-            {pair.displaySeed && pair.displaySeed > 0 ? `#${pair.displaySeed} ` : ''}
+            {pair.displaySeed && pair.displaySeed !== '' ? `#${pair.displaySeed} ` : ''}
           </span>
           {pair.player1Name} – {pair.player2Name}
         </li>

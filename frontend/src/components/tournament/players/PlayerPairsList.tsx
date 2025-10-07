@@ -40,7 +40,7 @@ export default function PlayerPairList({ pairs, tournamentId, loading = false, e
       if ((p.id ?? -1) !== pairId) return p;
       return {
         ...p,
-        seed: update.displaySeed !== undefined ? update.displaySeed : p.displaySeed,
+        displaySeed: update.seed !== undefined ? update.seed.toString() : p.displaySeed,
         player1Name: update.player1Name !== undefined ? update.player1Name : p.player1Name,
         player2Name: update.player2Name !== undefined ? update.player2Name : p.player2Name,
       };

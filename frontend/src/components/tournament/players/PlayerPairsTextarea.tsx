@@ -60,10 +60,13 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
           player1Name: p1,
           player2Name: p2,
           seed,
+          type: 'NORMAL' as const,
+          displaySeed: seed.toString(),
         };
       });
 
       await savePlayerPairs(tournamentId, pairs);
+      if (onSaveSuccess) onSaveSuccess();
     } catch {
       return;
     } finally {

@@ -3,12 +3,12 @@
 // Types sent from the front to initialize a manual draw on the backend.
 // Minimal, explicit, and format-agnostic (we start with KNOCKOUT first-round use case).
 
-export type TeamSlotType = 'PAIR' | 'BYE' | 'QUALIFIER';
+import { PairType } from '@/src/types/pairType';
 
 export interface TeamSlotRequest {
   /** Slot type: a concrete pair by id, a BYE placeholder, or a QUALIFIER placeholder */
-  type: TeamSlotType;
-  /** Required when type === 'PAIR' */
+  type: PairType;
+  /** Required when type === 'NORMAL' */
   pairId?: number;
 }
 

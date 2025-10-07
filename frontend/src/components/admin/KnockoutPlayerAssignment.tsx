@@ -257,7 +257,7 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
           return (
             <div
               key={`match-${m}`}
-              ref={(el) => (matchRefs.current[m] = el)}
+              ref={(el) => { matchRefs.current[m] = el; }}
               onDragOver={onMatchDragOver(m)}
               onDrop={onMatchDrop(m)}
               className="relative"

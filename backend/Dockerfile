@@ -2,15 +2,23 @@
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
+# Copie tous les POM (parent + modules)
 COPY pom.xml .
+COPY app/pom.xml ./app/
+COPY core/pom.xml ./core/
+
+# Télécharge les dépendances
 RUN mvn -q -DskipTests dependency:go-offline
 
-COPY src ./src
-# ⬇️ important: repackage pour produire un JAR exécutable
-RUN mvn -q -DskipTests package spring-boot:repackage
+# Copie les sources
+COPY core/src ./core/src
+COPY app/src ./app/src
+
+# Build : compile core d'abord, puis package app
+RUN mvn -q -DskipTests clean install
 
 # Copie le jar final en un nom stable
-RUN JAR="$(ls target/*.jar | head -n1)" && cp "$JAR" /app/app.jar
+RUN cp app/target/*.jar /app/app.jar
 
 ########## Run stage ##########
 FROM eclipse-temurin:21-jre

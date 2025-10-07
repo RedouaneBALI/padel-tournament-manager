@@ -81,7 +81,7 @@ export default function TournamentOverviewTab({ tournament }: TournamentOverview
             <Layers className="h-5 w-5 text-muted-foreground" aria-hidden />
             <div className="min-w-0 w-full">
               <div className="text-sm font-medium">
-                {`${tournament.format ?? '—'}${tournament.config?.nbSeeds ? ` - ${tournament.config.nbSeeds} têtes de série` : ''}`}
+                {`${tournament.config?.format ?? '—'}${tournament.config?.nbSeeds ? ` - ${tournament.config.nbSeeds} têtes de série` : ''}`}
               </div>
             </div>
           </div>

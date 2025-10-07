@@ -110,7 +110,9 @@ export default function TournamentConfigSection({
             onChange={handleInputChange}
             className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
           >
-            <option value="SEEDED">{((formData.config?.nbSeeds ?? 0) > 0) ? 'Par classement (TS)' : 'Aléatoire'}</option>
+            <option value="SEEDED">
+              {(typeof formData.config?.nbSeeds === 'number' && formData.config.nbSeeds > 0) ? 'Par classement (TS)' : 'Aléatoire'}
+            </option>
             <option value="MANUAL" disabled={formData.config?.format !== 'KNOCKOUT'}>Manuel</option>
           </select>
         </div>

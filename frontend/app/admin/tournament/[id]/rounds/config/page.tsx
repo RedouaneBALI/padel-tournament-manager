@@ -11,7 +11,7 @@ type Props = {
 
 export default async function MatchFormatConfigPage({ params }: Props) {
   const { id } = await params;
-  const hdrs = headers();
+  const hdrs = await headers();
   const proto = hdrs.get('x-forwarded-proto') ?? 'http';
   const host = hdrs.get('host');
   const origin = host ? `${proto}://${host}` : process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';

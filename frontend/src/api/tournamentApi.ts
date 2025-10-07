@@ -9,7 +9,17 @@ import type { Score } from '@/src/types/score';
 import { fetchWithAuth } from "./fetchWithAuth";
 import type { InitializeDrawRequest } from '@/src/types/api/InitializeDrawRequest';
 
-const api = (path: string) => `/api${path}`;
+// Utiliser directement l'URL du backend depuis les variables d'environnement
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+
+const api = (path: string) => {
+  // Si le path commence par /api/auth, c'est NextAuth - on garde le chemin relatif
+  if (path.startsWith('/auth')) {
+    return `/api${path}`;
+  }
+  // Sinon, on utilise l'URL complète du backend
+  return `${API_BASE_URL}${path}`;
+};
 
 export async function fetchTournament(tournamentId: string): Promise<Tournament> {
   const res = await fetch(api(`/tournaments/${tournamentId}`), { method: 'GET' });
@@ -63,7 +73,7 @@ export async function fetchRounds(tournamentId: string): Promise<Round[]> {
   return await response.json();
 }
 
-export async function fetchPairs(tournamentId: string, includeByes: boolean = false): Promise<PlayerPair[]> {
+export async function fetchPairs(tournamentId: string | number, includeByes: boolean = false): Promise<PlayerPair[]> {
   const response = await fetch(api(`/tournaments/${tournamentId}/pairs?includeByes=${includeByes}`));
   if (!response.ok) {
     throw new Error('Erreur de récupération des PlayerPair');

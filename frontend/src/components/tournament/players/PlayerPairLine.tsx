@@ -51,9 +51,9 @@ export default function PlayerPairLine({
     if (p2Trim && p2Trim !== pair.player2Name) payload.player2Name = p2Trim;
 
     const parsedSeed = seedStr === '' ? undefined : Number(seedStr);
-    if (Number.isFinite(parsedSeed as number) && parsedSeed !== pair.displaySeed) payload.displaySeed = parsedSeed as number;
+    if (Number.isFinite(parsedSeed as number) && seedStr !== pair.displaySeed) payload.seed = parsedSeed as number;
 
-    if (!payload.player1Name && !payload.player2Name && payload.displaySeed === undefined) {
+    if (!payload.player1Name && !payload.player2Name && payload.seed === undefined) {
       onCancelEdit();
       return;
     }
@@ -74,7 +74,7 @@ export default function PlayerPairLine({
       <div className="w-full flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0 truncate">
           <span className="font-semibold text-primary">
-            {pair.displaySeed && pair.displaySeed > 0 ? `#${pair.displaySeed} ` : ''}
+            {pair.displaySeed && pair.displaySeed !== '' ? `#${pair.displaySeed} ` : ''}
           </span>
           {pair.player1Name} – {pair.player2Name}
         </div>

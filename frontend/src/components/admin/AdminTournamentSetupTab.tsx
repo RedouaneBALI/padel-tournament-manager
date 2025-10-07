@@ -6,7 +6,7 @@ import PlayerPairsTextarea from '@/src/components/tournament/players/PlayerPairs
 import PlayerPairsList from '@/src/components/tournament/players/PlayerPairsList';
 import { useRouter } from 'next/navigation';
 import { confirmAlert } from 'react-confirm-alert';
-import { generateDraw, initializeDraw, sortManualPairs } from '@/src/api/tournamentApi';
+import { generateDraw, initializeDraw } from '@/src/api/tournamentApi';
 import type { InitializeDrawRequest } from '@/src/types/api/InitializeDrawRequest';
 import { FileText } from 'lucide-react';
 import { PlayerPair } from '@/src/types/playerPair';
@@ -64,8 +64,8 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
                   const b = slots[iB];
 
                   const toTeamSlot = (p: PlayerPair | null) => {
-                    if (!p) return { type: 'BYE' } as const;
-                    return { type: 'NORMAL', pairId: p.id } as const;
+                    if (!p || !p.id) return { type: 'BYE' as const };
+                    return { type: 'NORMAL' as const, pairId: p.id };
                   };
 
                   return {
@@ -232,7 +232,11 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
                   </>
                 )
               ) : (
-                <AdminTournamentPlayerAssignment tournament={tournament} />
+                tournament ? (
+                  <AdminTournamentPlayerAssignment tournament={tournament} />
+                ) : (
+                  <CenteredLoader />
+                )
               )}
             </>
           )}
