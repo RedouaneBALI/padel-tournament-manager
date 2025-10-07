@@ -30,67 +30,53 @@ public class SeedPlacementUtil {
    * @throws IllegalStateException if slots are already occupied or drawSize mismatch
    */
   public static void placeSeedTeams(Round round, List<PlayerPair> playerPairs, int nbSeeds, int drawSize) {
-    if (round == null || round.getGames() == null || playerPairs == null || nbSeeds == 0) {
+    if (!isValidSeedPlacementParams(round, playerPairs, nbSeeds, drawSize)) {
       return;
-    }
-
-    if (nbSeeds < 0) {
-      throw new IllegalArgumentException("nbSeeds cannot be negative");
-    }
-
-    if (drawSize < 0) {
-      throw new IllegalArgumentException("drawSize cannot be negative");
     }
 
     final List<Game> games = round.getGames();
     final int        slots = games.size() * 2;
+    validateDrawSize(drawSize, slots);
 
-    if (drawSize != 0 && drawSize != slots) {
-      throw new IllegalStateException("Configured drawSize=" + drawSize + " but games provide slots=" + slots);
-    }
-
-    // Calculate how many BYEs will be needed
-    int byesToPlace = Math.max(0, drawSize - playerPairs.size());
-
-    // Determine how many teams we need to place at theoretical positions
-    // This includes official seeds + additional teams at theoretical positions for BYEs
-    int teamsToPlaceAtSeedPositions = Math.max(nbSeeds, byesToPlace);
-    teamsToPlaceAtSeedPositions = Math.min(teamsToPlaceAtSeedPositions, playerPairs.size());
-
+    int byesToPlace                 = Math.max(0, drawSize - playerPairs.size());
+    int teamsToPlaceAtSeedPositions = calculateTeamsToPlace(nbSeeds, byesToPlace, playerPairs.size());
     if (teamsToPlaceAtSeedPositions == 0) {
       return;
     }
 
-    // Sort pairs by seed
-    final List<PlayerPair> sortedBySeed = new ArrayList<>(playerPairs);
-    sortedBySeed.sort(getSeedComparator());
+    List<Integer>    seedPositions = getSeedPositions(drawSize, nbSeeds, teamsToPlaceAtSeedPositions);
+    List<PlayerPair> teamsToPlace  = playerPairs.subList(0, teamsToPlaceAtSeedPositions);
+    placeTeamsAtSlots(games, teamsToPlace, seedPositions, false);
+  }
 
-    // Get theoretical positions
-    final List<Integer> seedSlots = getSeedsPositions(drawSize, teamsToPlaceAtSeedPositions);
-
-    // Place teams at theoretical positions
-    for (int i = 0; i < teamsToPlaceAtSeedPositions && i < sortedBySeed.size() && i < seedSlots.size(); i++) {
-      int      slot      = seedSlots.get(i);
-      int      gameIndex = slot / 2;
-      TeamSide side      = (slot % 2 == 0) ? TeamSide.TEAM_A : TeamSide.TEAM_B;
-
-      Game       g        = games.get(gameIndex);
-      PlayerPair teamPair = sortedBySeed.get(i);
-
-      if (side == TeamSide.TEAM_A) {
-        if (g.getTeamA() == null) {
-          g.setTeamA(teamPair);
-        } else {
-          throw new IllegalStateException("Seed slot already occupied: game=" + gameIndex + ", side=TEAM_A");
-        }
-      } else {
-        if (g.getTeamB() == null) {
-          g.setTeamB(teamPair);
-        } else {
-          throw new IllegalStateException("Seed slot already occupied: game=" + gameIndex + ", side=TEAM_B");
-        }
-      }
+  private static boolean isValidSeedPlacementParams(Round round, List<PlayerPair> playerPairs, int nbSeeds, int drawSize) {
+    if (round == null || round.getGames() == null || playerPairs == null || nbSeeds == 0) {
+      return false;
     }
+    if (nbSeeds < 0) {
+      throw new IllegalArgumentException("nbSeeds cannot be negative");
+    }
+    if (drawSize < 0) {
+      throw new IllegalArgumentException("drawSize cannot be negative");
+    }
+    return true;
+  }
+
+  private static void validateDrawSize(int drawSize, int slots) {
+    if (drawSize != 0 && drawSize != slots) {
+      throw new IllegalStateException("Configured drawSize=" + drawSize + " but games provide slots=" + slots);
+    }
+  }
+
+  private static int calculateTeamsToPlace(int nbSeeds, int byesToPlace, int totalTeams) {
+    int teamsToPlace = Math.max(nbSeeds, byesToPlace);
+    return Math.min(teamsToPlace, totalTeams);
+  }
+
+  private static List<Integer> getSeedPositions(int drawSize, int nbSeeds, int teamsToPlaceAtSeedPositions) {
+    List<Integer> allPositions = loadSeedPositionsFromJson(drawSize, nbSeeds);
+    int           max          = Math.min(teamsToPlaceAtSeedPositions, allPositions.size());
+    return allPositions.subList(0, max);
   }
 
   /**
@@ -134,20 +120,28 @@ public class SeedPlacementUtil {
       TeamSide   side      = (slot % 2 == 0) ? TeamSide.TEAM_A : TeamSide.TEAM_B;
       Game       g         = games.get(gameIndex);
       PlayerPair team      = teams.get(i);
-      if (side == TeamSide.TEAM_A) {
-        if (g.getTeamA() == null || (allowQualifierOverwrite && g.getTeamA().getType() == io.github.redouanebali.model.PairType.QUALIFIER)) {
-          g.setTeamA(team);
-        } else if (!allowQualifierOverwrite) {
-          throw new IllegalStateException("Seed slot already occupied: game=" + gameIndex + ", side=TEAM_A");
-        }
+      placeTeamInGameSlot(g, team, side, allowQualifierOverwrite, gameIndex);
+    }
+  }
+
+  private static void placeTeamInGameSlot(Game g, PlayerPair team, TeamSide side, boolean allowQualifierOverwrite, int gameIndex) {
+    if (side == TeamSide.TEAM_A) {
+      if (canPlaceTeam(g.getTeamA(), allowQualifierOverwrite)) {
+        g.setTeamA(team);
       } else {
-        if (g.getTeamB() == null || (allowQualifierOverwrite && g.getTeamB().getType() == io.github.redouanebali.model.PairType.QUALIFIER)) {
-          g.setTeamB(team);
-        } else if (!allowQualifierOverwrite) {
-          throw new IllegalStateException("Seed slot already occupied: game=" + gameIndex + ", side=TEAM_B");
-        }
+        throw new IllegalStateException("Seed slot already occupied: game=" + gameIndex + ", side=TEAM_A");
+      }
+    } else {
+      if (canPlaceTeam(g.getTeamB(), allowQualifierOverwrite)) {
+        g.setTeamB(team);
+      } else {
+        throw new IllegalStateException("Seed slot already occupied: game=" + gameIndex + ", side=TEAM_B");
       }
     }
+  }
+
+  private static boolean canPlaceTeam(PlayerPair current, boolean allowQualifierOverwrite) {
+    return current == null || (allowQualifierOverwrite && current.getType() == io.github.redouanebali.model.PairType.QUALIFIER);
   }
 
   /**

@@ -66,34 +66,39 @@ public class Game {
   }
 
   public boolean isFinished() {
-    // BYE handling using PlayerPair.isBye()
+    if (isByeFinished()) {
+      return true;
+    }
+    if (!hasValidScore()) {
+      return false;
+    }
+    int[] setsWon   = calculateSetsWon();
+    int   setsToWin = format.getNumberOfSetsToWin();
+    return setsWon[0] >= setsToWin || setsWon[1] >= setsToWin;
+  }
+
+  private boolean isByeFinished() {
     boolean aBye = teamA != null && teamA.isBye();
     boolean bBye = teamB != null && teamB.isBye();
-
-    // Both BYE → consider finished (no meaningful winner)
     if (aBye && bBye) {
       return true;
     }
-    // Exactly one BYE with a real opponent present → finished (auto-qualify the non-BYE side)
-    if ((aBye && teamB != null && !bBye) || (bBye && teamA != null && !aBye)) {
-      return true;
-    }
+    return (aBye && teamB != null && !bBye) || (bBye && teamA != null && !aBye);
+  }
 
-    // Fall back to score-based completion
-    if (score == null || score.getSets().isEmpty()) {
-      return false;
-    }
+  private boolean hasValidScore() {
+    return score != null && score.getSets() != null && !score.getSets().isEmpty();
+  }
 
+  private int[] calculateSetsWon() {
     int     teamAWonSets = 0;
     int     teamBWonSets = 0;
     int     setsToWin    = format.getNumberOfSetsToWin();
     int     pointsPerSet = format.getGamesPerSet();
     boolean superTie     = format.isSuperTieBreakInFinalSet();
-
     for (int i = 0; i < score.getSets().size(); i++) {
       SetScore set        = score.getSets().get(i);
       boolean  isFinalSet = (i == score.getSets().size() - 1) && (teamAWonSets == setsToWin - 1) && (teamBWonSets == setsToWin - 1);
-
       if (isFinalSet && superTie) {
         int a = set.getTeamAScore();
         int b = set.getTeamBScore();
@@ -112,8 +117,7 @@ public class Game {
         }
       }
     }
-
-    return teamAWonSets >= setsToWin || teamBWonSets >= setsToWin;
+    return new int[]{teamAWonSets, teamBWonSets};
   }
 
   public boolean isSetWonBy(int teamScore, int opponentScore, int maxPointsPerSet) {
@@ -143,7 +147,7 @@ public class Game {
       return teamA;
     }
     if (aBye && bBye) {
-      return this.getTeamA();
+      return teamA;
     }
 
     if (!isFinished()) {

@@ -393,28 +393,35 @@ public class AutomaticDrawStrategy implements DrawStrategy {
    */
   private Set<PlayerPair> collectTeamsPlacedInRound(Round round) {
     Set<PlayerPair> teamsPlaced = new HashSet<>();
+    collectTeamsFromGames(round, teamsPlaced);
+    collectTeamsFromPools(round, teamsPlaced);
+    return teamsPlaced;
+  }
 
-    // Collect teams from games
-    if (round.getGames() != null) {
-      for (Game game : round.getGames()) {
-        addTeamIfNotBye(game.getTeamA(), teamsPlaced);
-        addTeamIfNotBye(game.getTeamB(), teamsPlaced);
-      }
+  private void collectTeamsFromGames(Round round, Set<PlayerPair> teamsPlaced) {
+    if (round.getGames() == null) {
+      return;
     }
+    for (Game game : round.getGames()) {
+      addTeamIfNotBye(game.getTeamA(), teamsPlaced);
+      addTeamIfNotBye(game.getTeamB(), teamsPlaced);
+    }
+  }
 
-    // Collect teams from pools
-    if (round.getPools() != null) {
-      for (Pool pool : round.getPools()) {
-        if (pool.getPairs() != null) {
-          for (PlayerPair pair : pool.getPairs()) {
-            if (pair != null && !pair.isBye()) {
-              teamsPlaced.add(pair);
-            }
-          }
+  private void collectTeamsFromPools(Round round, Set<PlayerPair> teamsPlaced) {
+    if (round.getPools() == null) {
+      return;
+    }
+    for (Pool pool : round.getPools()) {
+      if (pool.getPairs() == null) {
+        continue;
+      }
+      for (PlayerPair pair : pool.getPairs()) {
+        if (pair != null && !pair.isBye()) {
+          teamsPlaced.add(pair);
         }
       }
     }
-
-    return teamsPlaced;
   }
 }
+
