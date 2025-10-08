@@ -31,6 +31,7 @@ import io.github.redouanebali.model.TournamentLevel;
 import io.github.redouanebali.model.format.TournamentConfig;
 import io.github.redouanebali.model.format.TournamentFormat;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -135,7 +136,7 @@ public class TournamentMapperTest {
   }
 
   @Test
-  void testGameToDTO_mapping() {
+  void testGameToDTO_mapping() throws Exception {
     PlayerPair teamA = new PlayerPair();
     teamA.setId(1L);
     teamA.setPlayer1(new Player("A"));
@@ -149,12 +150,22 @@ public class TournamentMapperTest {
     game.setTeamA(teamA);
     game.setTeamB(teamB);
     game.setWinnerSide(TeamSide.TEAM_A);
+    game.setCourt("Court1");
+    LocalTime now = LocalTime.of(13, 0);
+    game.setScheduledTime(now);
     GameDTO dto = mapper.toDTO(game);
     assertNotNull(dto);
     assertEquals(100L, dto.getId());
     assertEquals("A", dto.getTeamA().getPlayer1Name());
     assertEquals("C", dto.getTeamB().getPlayer1Name());
+    assertEquals("Court1", dto.getCourt());
+    assertEquals(now, dto.getScheduledTime());
     assertEquals(TeamSide.TEAM_A, dto.getWinnerSide());
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.findAndRegisterModules();
+    String json = objectMapper.writeValueAsString(dto);
+    assertTrue(json.contains("\"scheduledTime\":\"13:00\""),
+               "Le champ scheduledTime doit être au format HH:mm dans le JSON : " + json);
   }
 
   @Test

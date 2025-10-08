@@ -109,6 +109,9 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
           round.games?.some(game => game.score !== null)
         );
         setTournamentStarted(hasStarted);
+        if (hasStarted) {
+          setActiveTab('players');
+        }
       } finally {
         setLoadingTournament(false);
       }
@@ -192,24 +195,26 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
           ) : (
             // --- MODE MANUEL: tabs Joueurs / Affectation ---
             <>
-              <div className="flex justify-center border-b border-border mb-4">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('players')}
-                  className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'players' ? 'border-primary text-foreground' : 'border-transparent text-tab-inactive'}`}
-                >
-                  Import
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('assignment')}
-                  className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'assignment' ? 'border-primary text-foreground' : 'border-transparent text-tab-inactive'}`}
-                >
-                  Affectation
-                </button>
-              </div>
+              {!tournamentStarted && (
+                <div className="flex justify-center border-b border-border mb-4">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('players')}
+                    className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'players' ? 'border-primary text-foreground' : 'border-transparent text-tab-inactive'}`}
+                  >
+                    Import
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('assignment')}
+                    className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'assignment' ? 'border-primary text-foreground' : 'border-transparent text-tab-inactive'}`}
+                  >
+                    Affectation
+                  </button>
+                </div>
+              )}
 
-              {activeTab === 'players' ? (
+              {activeTab === 'players' || tournamentStarted ? (
                 tournamentStarted ? (
                   <PlayerPairsList tournamentId={tournamentId} pairs={pairs} loading={loadingPairs} editable={true} />
                 ) : (

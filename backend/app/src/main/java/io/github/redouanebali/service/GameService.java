@@ -9,6 +9,7 @@ import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.TournamentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +46,7 @@ public class GameService {
    * @return update result containing finish status and winner information
    * @throws IllegalArgumentException if tournament or game is not found
    */
+  @Transactional
   public UpdateScoreDTO updateGame(Long tournamentId, Long gameId, UpdateGameRequest request) {
     Tournament tournament = tournamentService.getTournamentById(tournamentId);
     Game       game       = findGameInTournament(tournament, gameId);

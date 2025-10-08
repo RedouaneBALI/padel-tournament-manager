@@ -26,16 +26,13 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface TournamentMapper {
-
-  @Mapping(target = "rounds", source = "rounds")
-  @Mapping(target = "playerPairs", source = "playerPairs")
+  
   TournamentDTO toDTO(Tournament tournament);
 
   List<TournamentDTO> toDTO(List<Tournament> tournaments);
 
   Set<TournamentDTO> toDTO(Set<Tournament> tournaments);
 
-  @Mapping(target = "winnerSide", source = "winnerSide")
   GameDTO toDTO(Game game);
 
   List<GameDTO> toDTOGameList(List<Game> games);

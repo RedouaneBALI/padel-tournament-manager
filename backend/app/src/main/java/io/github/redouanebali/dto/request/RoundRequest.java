@@ -21,9 +21,12 @@ public class RoundRequest {
     Round      round = new Round(stage);
     List<Game> games = new ArrayList<>();
     for (GameRequest gReq : req.getGames()) {
-      Game game = new Game(); // @todo add format ?
+      Game game = new Game();
       game.setTeamA(PlayerPairRequest.toModel(gReq.getTeamA(), tournament));
       game.setTeamB(PlayerPairRequest.toModel(gReq.getTeamB(), tournament));
+      if (tournament.getRounds() != null && !tournament.getRounds().isEmpty()) {
+        game.setFormat(tournament.getRounds().getFirst().getMatchFormat()); // dirty
+      }
       games.add(game);
     }
     round.replaceGames(games);
