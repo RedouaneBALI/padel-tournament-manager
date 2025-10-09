@@ -1,10 +1,10 @@
 package io.github.redouanebali.generation.util;
 
+import io.github.redouanebali.generation.util.GameSlotUtil.TeamSlot;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
-import io.github.redouanebali.model.TeamSide;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,20 +67,13 @@ public class StaggeredSeedPlacementUtil {
     final List<Integer> allSeedSlots = SeedPlacementUtil.getSeedsPositions(round.getGames().size() * 2, totalSeeds);
 
     for (int slot : allSeedSlots) {
-      int      gameIndex = slot / 2;
-      TeamSide side      = (slot % 2 == 0) ? TeamSide.TEAM_A : TeamSide.TEAM_B;
-
-      Game       g         = round.getGames().get(gameIndex);
+      TeamSlot   teamSlot  = GameSlotUtil.getTeamSlot(slot);
+      Game       game      = round.getGames().get(teamSlot.gameIndex());
       PlayerPair qualifier = PlayerPair.qualifier();
 
-      if (side == TeamSide.TEAM_A) {
-        if (g.getTeamA() == null) {
-          g.setTeamA(qualifier);
-        }
-      } else {
-        if (g.getTeamB() == null) {
-          g.setTeamB(qualifier);
-        }
+      // Only place if slot is empty
+      if (GameSlotUtil.isSlotEmpty(game, teamSlot.side())) {
+        GameSlotUtil.setTeam(game, teamSlot.side(), qualifier);
       }
     }
   }

@@ -1,5 +1,6 @@
 package io.github.redouanebali.generation.util;
 
+import io.github.redouanebali.generation.util.GameSlotUtil.TeamSlot;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Pool;
@@ -70,16 +71,8 @@ public class RandomPlacementUtil {
     List<PlayerPair> shuffled = new ArrayList<>(teamsToPlace);
     Collections.shuffle(shuffled);
 
-    int teamIndex = 0;
-    int poolIndex = 0;
-
-    while (teamIndex < shuffled.size()) {
-      Pool currentPool = pools.get(poolIndex);
-      currentPool.addPair(shuffled.get(teamIndex));
-
-      teamIndex++;
-      poolIndex = (poolIndex + 1) % pools.size(); // Move to next pool, wrap around
-    }
+    // Use centralized distribution logic
+    PoolDistributionUtil.distributeRoundRobin(pools, shuffled);
   }
 
   /**
@@ -91,7 +84,7 @@ public class RandomPlacementUtil {
     }
 
     List<PlayerPair> shuffled      = shuffleTeams(remainingTeams);
-    int              unplacedCount = placeTeamsInGames(round.getGames(), shuffled);
+    int              unplacedCount = GameSlotUtil.placeTeamsSequentially(round.getGames(), shuffled);
 
     if (unplacedCount > 0) {
       logUnplacedTeamsWarning(unplacedCount);
@@ -105,32 +98,6 @@ public class RandomPlacementUtil {
     List<PlayerPair> shuffled = new ArrayList<>(teams);
     Collections.shuffle(shuffled);
     return shuffled;
-  }
-
-  /**
-   * Places teams sequentially in available game slots.
-   *
-   * @return number of teams that couldn't be placed
-   */
-  private static int placeTeamsInGames(List<Game> games, List<PlayerPair> shuffledTeams) {
-    int index = 0;
-
-    for (Game game : games) {
-      if (index >= shuffledTeams.size()) {
-        break;
-      }
-      if (game.getTeamA() == null) {
-        game.setTeamA(shuffledTeams.get(index++));
-      }
-      if (index >= shuffledTeams.size()) {
-        break;
-      }
-      if (game.getTeamB() == null) {
-        game.setTeamB(shuffledTeams.get(index++));
-      }
-    }
-
-    return shuffledTeams.size() - index;
   }
 
   /**
@@ -151,41 +118,22 @@ public class RandomPlacementUtil {
       return;
     }
 
-    List<Slot> availableSlots = collectAvailableSlots(round.getGames());
+    List<TeamSlot> availableSlots = GameSlotUtil.collectEmptySlots(round.getGames());
     Collections.shuffle(availableSlots);
-    placeQualifiersInSlots(availableSlots, nbQualifiers);
-  }
-
-  /**
-   * Collects all available slots from games.
-   */
-  private static List<Slot> collectAvailableSlots(List<Game> games) {
-    List<Slot> availableSlots = new ArrayList<>();
-    for (Game game : games) {
-      if (game.getTeamA() == null) {
-        availableSlots.add(new Slot(game, true));
-      }
-      if (game.getTeamB() == null) {
-        availableSlots.add(new Slot(game, false));
-      }
-    }
-    return availableSlots;
+    placeQualifiersInSlots(round.getGames(), availableSlots, nbQualifiers);
   }
 
   /**
    * Places qualifiers in the specified number of slots.
    */
-  private static void placeQualifiersInSlots(List<Slot> availableSlots, int nbQualifiers) {
+  private static void placeQualifiersInSlots(List<Game> games, List<TeamSlot> availableSlots, int nbQualifiers) {
     int placed = 0;
-    for (Slot slot : availableSlots) {
+    for (TeamSlot slot : availableSlots) {
       if (placed >= nbQualifiers) {
         break;
       }
-      if (slot.isTeamA) {
-        slot.game.setTeamA(PlayerPair.qualifier());
-      } else {
-        slot.game.setTeamB(PlayerPair.qualifier());
-      }
+      Game game = games.get(slot.gameIndex());
+      GameSlotUtil.setTeam(game, slot.side(), PlayerPair.qualifier());
       placed++;
     }
   }
@@ -211,18 +159,7 @@ public class RandomPlacementUtil {
    * Places teams in order in games without shuffling.
    */
   private static void placeTeamsInOrderInGames(List<Game> games, List<PlayerPair> teams) {
-    int index = 0;
-    for (Game game : games) {
-      if (game.getTeamA() == null && index < teams.size()) {
-        game.setTeamA(teams.get(index++));
-      }
-      if (game.getTeamB() == null && index < teams.size()) {
-        game.setTeamB(teams.get(index++));
-      }
-      if (index >= teams.size()) {
-        break;
-      }
-    }
+    GameSlotUtil.placeTeamsSequentially(games, teams);
   }
 
   /**
@@ -241,18 +178,6 @@ public class RandomPlacementUtil {
         System.out.println("adding player " + i + " to pool " + poolIndex);
         currentPool.addPair(teams.get(i));
       }
-    }
-  }
-
-  // Helper class to represent a slot in a game (teamA or teamB)
-  private static class Slot {
-
-    Game    game;
-    boolean isTeamA;
-
-    Slot(Game game, boolean isTeamA) {
-      this.game    = game;
-      this.isTeamA = isTeamA;
     }
   }
 }

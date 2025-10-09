@@ -1,8 +1,10 @@
 package io.github.redouanebali.generation.util;
 
+import io.github.redouanebali.generation.util.GameSlotUtil.TeamSlot;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.TeamSide;
 import java.util.List;
 
 /**
@@ -137,15 +139,11 @@ public class ByePlacementUtil {
       return 0;
     }
 
-    int     gameIndex  = seedSlot / 2;
-    boolean isLeftSlot = (seedSlot % 2 == 0);
-    Game    game       = games.get(gameIndex);
+    int      oppositeSlot = GameSlotUtil.getOppositeSlot(seedSlot);
+    TeamSlot teamSlot     = GameSlotUtil.getTeamSlot(oppositeSlot);
+    Game     game         = games.get(teamSlot.gameIndex());
 
-    if (isLeftSlot) {
-      return tryPlaceByeInTeamPosition(game, false) ? 1 : 0; // Place in TeamB (opposite)
-    } else {
-      return tryPlaceByeInTeamPosition(game, true) ? 1 : 0;  // Place in TeamA (opposite)
-    }
+    return GameSlotUtil.tryPlaceTeam(game, teamSlot.side(), PlayerPair.bye(), false) ? 1 : 0;
   }
 
   /**
@@ -169,16 +167,12 @@ public class ByePlacementUtil {
    * Tries to place a BYE in a specific team position.
    */
   private static boolean tryPlaceByeInTeamPosition(Game game, boolean isTeamA) {
-    if (isTeamA) {
-      if (game.getTeamA() == null && !isReservedForQualifier(game, true)) {
-        game.setTeamA(PlayerPair.bye());
-        return true;
-      }
-    } else {
-      if (game.getTeamB() == null && !isReservedForQualifier(game, false)) {
-        game.setTeamB(PlayerPair.bye());
-        return true;
-      }
+    TeamSide side = isTeamA ? io.github.redouanebali.model.TeamSide.TEAM_A : io.github.redouanebali.model.TeamSide.TEAM_B;
+
+    // Don't place BYE if slot is reserved for qualifier or already occupied
+    if (GameSlotUtil.isSlotEmpty(game, side) && !GameSlotUtil.isReservedForQualifier(game, side)) {
+      GameSlotUtil.setTeam(game, side, PlayerPair.bye());
+      return true;
     }
     return false;
   }
@@ -194,8 +188,9 @@ public class ByePlacementUtil {
 
   // Helper to check if a slot is reserved for a qualifier (to be implemented in main draw logic)
   private static boolean isReservedForQualifier(Game g, boolean isTeamA) {
-    // By default, always false. Main draw logic should ensure qualifiers are placed before BYEs.
-    return false;
+    // Deprecated: Use GameSlotUtil.isReservedForQualifier instead
+    TeamSide side = isTeamA ? io.github.redouanebali.model.TeamSide.TEAM_A : io.github.redouanebali.model.TeamSide.TEAM_B;
+    return GameSlotUtil.isReservedForQualifier(g, side);
   }
 
   /**
@@ -214,83 +209,4 @@ public class ByePlacementUtil {
     return count;
   }
 
-  /**
-   * Places BYEs opposite protected teams.
-   */
-  private static int placeByesOppositeProtectedTeams(List<Game> games, List<Integer> protectedSlots, int byesToPlace) {
-    for (int i = 0; i < protectedSlots.size() && byesToPlace > 0; i++) {
-      int     slot      = protectedSlots.get(i);
-      int     gameIndex = slot / 2;
-      boolean left      = (slot % 2 == 0);
-      Game    g         = games.get(gameIndex);
-
-      // Place BYE at opposite position if empty
-      if (left) {
-        // Protected slot is on the left (TeamA), place BYE on the right (TeamB) if empty
-        if (g.getTeamB() == null) {
-          g.setTeamB(PlayerPair.bye());
-          byesToPlace--;
-        }
-      } else {
-        // Protected slot is on the right (TeamB), place BYE on the left (TeamA) if empty
-        if (g.getTeamA() == null) {
-          g.setTeamA(PlayerPair.bye());
-          byesToPlace--;
-        }
-      }
-    }
-    return byesToPlace;
-  }
-
-  /**
-   * Places remaining BYEs using fallback logic.
-   */
-  private static int placeFallbackByes(List<Game> games, int byesToPlace) {
-    for (Game g : games) {
-      if (byesToPlace == 0) {
-        break;
-      }
-
-      boolean aEmpty = (g.getTeamA() == null);
-      boolean bEmpty = (g.getTeamB() == null);
-
-      if (aEmpty ^ bEmpty) { // exactly one side empty
-        if (aEmpty) {
-          g.setTeamA(PlayerPair.bye());
-        } else {
-          g.setTeamB(PlayerPair.bye());
-        }
-        byesToPlace--;
-      }
-    }
-    return byesToPlace;
-  }
-
-  /**
-   * Places BYEs as a last resort (BYE vs BYE if necessary).
-   */
-  private static void placeLastResortByes(List<Game> games, int byesToPlace) {
-    for (Game g : games) {
-      if (byesToPlace == 0) {
-        break;
-      }
-
-      if (g.getTeamA() == null) {
-        g.setTeamA(PlayerPair.bye());
-        byesToPlace--;
-        if (byesToPlace == 0) {
-          break;
-        }
-      }
-
-      if (g.getTeamB() == null) {
-        g.setTeamB(PlayerPair.bye());
-        byesToPlace--;
-      }
-    }
-
-    if (byesToPlace > 0) {
-      throw new IllegalStateException("Not enough empty slots to place all BYEs: remaining=" + byesToPlace);
-    }
-  }
 }

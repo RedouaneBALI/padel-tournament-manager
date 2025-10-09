@@ -74,28 +74,6 @@ public class PlayerPair {
     return qPair;
   }
 
-  public static PlayerPair qualifierSlot(String label, int slotNumber) {
-    Player     placeholder1 = new Player(label + " #" + slotNumber);
-    Player     placeholder2 = new Player(label + " #" + slotNumber);
-    PlayerPair qPair        = new PlayerPair();
-    qPair.setPlayer1(placeholder1);
-    qPair.setPlayer2(placeholder2);
-    qPair.setSeed(Integer.MAX_VALUE - 1); // ou un code spécial
-    qPair.setType(PairType.QUALIFIER);
-    return qPair;
-  }
-
-  /*
-  public static PlayerPair fromRequest(PlayerPairRequest req) {
-    if (req == null) {
-      return null;
-    }
-    PlayerPair p = new PlayerPair();
-    p.setId(req.getPairId());
-    p.setType(req.getType());
-    return p;
-  } */
-
   public boolean isBye() {
     return type == PairType.BYE;
   }
@@ -115,5 +93,22 @@ public class PlayerPair {
     return (player1 != null && player2 != null)
            ? player1.getName() + " / " + player2.getName()
            : "";
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    PlayerPair that = (PlayerPair) o;
+    return id != null && id.equals(that.id);
+  }
+
+  @Override
+  public int hashCode() {
+    return getClass().hashCode();
   }
 }

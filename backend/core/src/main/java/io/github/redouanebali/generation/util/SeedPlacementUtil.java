@@ -2,11 +2,11 @@ package io.github.redouanebali.generation.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.redouanebali.generation.util.GameSlotUtil.TeamSlot;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Round;
-import io.github.redouanebali.model.TeamSide;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -115,33 +115,13 @@ public class SeedPlacementUtil {
    */
   public static void placeTeamsAtSlots(List<Game> games, List<PlayerPair> teams, List<Integer> slots, boolean allowQualifierOverwrite) {
     for (int i = 0; i < teams.size() && i < slots.size(); i++) {
-      int        slot      = slots.get(i);
-      int        gameIndex = slot / 2;
-      TeamSide   side      = (slot % 2 == 0) ? TeamSide.TEAM_A : TeamSide.TEAM_B;
-      Game       g         = games.get(gameIndex);
-      PlayerPair team      = teams.get(i);
-      placeTeamInGameSlot(g, team, side, allowQualifierOverwrite, gameIndex);
-    }
-  }
+      int        slot     = slots.get(i);
+      TeamSlot   teamSlot = GameSlotUtil.getTeamSlot(slot);
+      Game       game     = games.get(teamSlot.gameIndex());
+      PlayerPair team     = teams.get(i);
 
-  private static void placeTeamInGameSlot(Game g, PlayerPair team, TeamSide side, boolean allowQualifierOverwrite, int gameIndex) {
-    if (side == TeamSide.TEAM_A) {
-      if (canPlaceTeam(g.getTeamA(), allowQualifierOverwrite)) {
-        g.setTeamA(team);
-      } else {
-        throw new IllegalStateException("Seed slot already occupied: game=" + gameIndex + ", side=TEAM_A");
-      }
-    } else {
-      if (canPlaceTeam(g.getTeamB(), allowQualifierOverwrite)) {
-        g.setTeamB(team);
-      } else {
-        throw new IllegalStateException("Seed slot already occupied: game=" + gameIndex + ", side=TEAM_B");
-      }
+      GameSlotUtil.placeTeamOrThrow(game, teamSlot.side(), team, allowQualifierOverwrite, teamSlot.gameIndex());
     }
-  }
-
-  private static boolean canPlaceTeam(PlayerPair current, boolean allowQualifierOverwrite) {
-    return current == null || (allowQualifierOverwrite && current.getType() == io.github.redouanebali.model.PairType.QUALIFIER);
   }
 
   /**
@@ -266,54 +246,26 @@ public class SeedPlacementUtil {
       return;
     }
 
-    List<Pool> pools   = round.getPools();
-    int        nbPools = pools.size();
-
-    // Distribute seeds using round-robin approach
-    // This ensures even distribution: seed i goes to pool (i % nbPools)
-    for (int i = 0; i < seededTeams.size(); i++) {
-      PlayerPair seed       = seededTeams.get(i);
-      int        poolIndex  = i % nbPools; // Round-robin distribution
-      Pool       targetPool = pools.get(poolIndex);
-
-      // Check if pool has space
-      if (targetPool.getPairs().size() < nbPairsPerPool) {
-        targetPool.addPair(seed);
-      } else {
-        // If the target pool is full, find the next available pool
-        boolean placed = false;
-        for (int j = 0; j < nbPools && !placed; j++) {
-          int  nextPoolIndex = (poolIndex + j) % nbPools;
-          Pool nextPool      = pools.get(nextPoolIndex);
-          if (nextPool.getPairs().size() < nbPairsPerPool) {
-            nextPool.addPair(seed);
-            placed = true;
-          }
-        }
-        // If no pool has space, the seed cannot be placed (should not happen in normal cases)
-      }
-    }
+    // Distribute seeds using round-robin approach with capacity check
+    PoolDistributionUtil.distributeRoundRobinWithCapacity(round.getPools(), seededTeams, nbPairsPerPool);
   }
 
   /**
    * Place les seeds dans les pools selon la logique snake officielle. Retourne une liste de pools (List<List<PlayerPair>>) avec les seeds placées.
    */
-  public static java.util.List<java.util.List<io.github.redouanebali.model.PlayerPair>> placeSeedsInPoolsSnake(java.util.List<io.github.redouanebali.model.PlayerPair> seeds,
-                                                                                                               int nbPools) {
-    java.util.List<java.util.List<io.github.redouanebali.model.PlayerPair>> pools = new java.util.ArrayList<>();
+  public static List<List<PlayerPair>> placeSeedsInPoolsSnake(List<PlayerPair> seeds, int nbPools) {
+    List<Pool> pools = new ArrayList<>();
     for (int i = 0; i < nbPools; i++) {
-      pools.add(new java.util.ArrayList<>());
+      pools.add(new Pool("Pool_" + (char) ('A' + i), new ArrayList<>()));
     }
-    // Correction : ordre snake = [0, n-1, n-2, ..., 1]
-    java.util.List<Integer> snakeOrder = new java.util.ArrayList<>();
-    snakeOrder.add(0);
-    for (int i = nbPools - 1; i >= 1; i--) {
-      snakeOrder.add(i);
-    }
-    for (int i = 0; i < seeds.size(); i++) {
-      int poolIdx = snakeOrder.get(i % snakeOrder.size());
-      pools.get(poolIdx).add(seeds.get(i));
-    }
-    return pools;
+
+    // Use snake distribution from PoolDistributionUtil
+    PoolDistributionUtil.distributeSnake(pools, seeds);
+
+    // Convert Pool objects to List<List<PlayerPair>>
+    return pools.stream()
+                .map(Pool::getPairs)
+                .map(ArrayList::new)
+                .collect(java.util.stream.Collectors.toList());
   }
 }
