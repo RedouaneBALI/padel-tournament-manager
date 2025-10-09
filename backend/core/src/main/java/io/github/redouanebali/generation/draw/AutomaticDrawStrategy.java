@@ -109,22 +109,12 @@ public class AutomaticDrawStrategy implements DrawStrategy {
   private void processQualificationRound(Tournament tournament, Round initialRound, List<PlayerPair> allPairs, int qualifDrawSize) {
     int nbSeedsQualif = tournament.getConfig().getNbSeedsQualify();
 
-    // Calculate how many teams participate in qualifs vs direct entry to main draw
-    int totalSlotsInMainDraw    = tournament.getConfig().getMainDrawSize();
-    int nbQualifiers            = tournament.getConfig().getNbQualifiers();
-    int directEntriesToMainDraw = totalSlotsInMainDraw - nbQualifiers;
-
-    // CORRECTION: Lower-ranked teams must go through qualifications
-    // Calculate how many teams MUST go to qualifs (fill the qualification draw to maximum)
-    int teamsForQualifs = Math.min(qualifDrawSize, allPairs.size());
-
     // If we have more teams than qualification slots, the best teams go directly to main draw
     int teamsGoingDirectToMainDraw = Math.max(0, allPairs.size() - qualifDrawSize);
 
     // Teams participating in qualifs are the LAST ones in the list (lower-ranked)
     List<PlayerPair> qualifParticipants = new ArrayList<>();
-    int              startIndex         = teamsGoingDirectToMainDraw;
-    for (int i = startIndex; i < allPairs.size(); i++) {
+    for (int i = teamsGoingDirectToMainDraw; i < allPairs.size(); i++) {
       qualifParticipants.add(allPairs.get(i));
     }
 
@@ -132,7 +122,6 @@ public class AutomaticDrawStrategy implements DrawStrategy {
     int byesNeededInQualifs = Math.max(0, qualifDrawSize - qualifParticipants.size());
 
     // Place seeds in qualifs (among qualif participants only)
-    // Note: nbSeedsQualif représente le nombre de têtes de série PARMI les participants aux qualifs
     if (nbSeedsQualif > 0 && !qualifParticipants.isEmpty()) {
       SeedPlacementUtil.placeSeedTeams(initialRound, qualifParticipants, nbSeedsQualif, qualifDrawSize);
     }
@@ -143,10 +132,9 @@ public class AutomaticDrawStrategy implements DrawStrategy {
     }
 
     // Place remaining qualif participants randomly
-    // On doit placer TOUTES les équipes qui ne sont pas déjà placées (seeds + BYEs)
     List<PlayerPair> remainingQualifTeams = new ArrayList<>();
 
-    // Trouver quelles équipes sont déjà placées dans le round
+    // Find which teams are already placed in the round
     Set<PlayerPair> alreadyPlaced = new HashSet<>();
     for (Game game : initialRound.getGames()) {
       if (game.getTeamA() != null && !game.getTeamA().isBye()) {
@@ -157,7 +145,7 @@ public class AutomaticDrawStrategy implements DrawStrategy {
       }
     }
 
-    // Ajouter toutes les équipes qui ne sont PAS encore placées
+    // Add all teams that are NOT yet placed
     for (PlayerPair pair : qualifParticipants) {
       if (!alreadyPlaced.contains(pair)) {
         remainingQualifTeams.add(pair);
@@ -237,9 +225,9 @@ public class AutomaticDrawStrategy implements DrawStrategy {
    */
   private void fillPoolsWithRemainingTeams(List<List<PlayerPair>> pools, List<PlayerPair> others, int nbPairsPerPool) {
     int idx = 0;
-    for (int p = 0; p < pools.size(); p++) {
-      while (pools.get(p).size() < nbPairsPerPool && idx < others.size()) {
-        pools.get(p).add(others.get(idx));
+    for (List<PlayerPair> pool : pools) {
+      while (pool.size() < nbPairsPerPool && idx < others.size()) {
+        pool.add(others.get(idx));
         idx++;
       }
     }

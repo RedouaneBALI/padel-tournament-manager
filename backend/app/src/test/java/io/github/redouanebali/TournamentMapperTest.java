@@ -161,7 +161,6 @@ public class TournamentMapperTest {
     assertEquals("Court1", dto.getCourt());
     assertEquals(now, dto.getScheduledTime());
     assertEquals(TeamSide.TEAM_A, dto.getWinnerSide());
-    ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.findAndRegisterModules();
     String json = objectMapper.writeValueAsString(dto);
     assertTrue(json.contains("\"scheduledTime\":\"13:00\""),

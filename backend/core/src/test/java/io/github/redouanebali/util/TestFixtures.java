@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Shared test data builders to avoid duplication across tests.
@@ -227,7 +226,7 @@ public final class TestFixtures {
     return Arrays.stream(stagesCsv.split(";"))
                  .map(String::trim)
                  .map(Stage::valueOf)
-                 .collect(Collectors.toList());
+                 .toList();
   }
 
   /**
@@ -237,7 +236,7 @@ public final class TestFixtures {
     return Arrays.stream(csv.split(";"))
                  .map(String::trim)
                  .map(Integer::parseInt)
-                 .collect(Collectors.toList());
+                 .toList();
   }
 
 

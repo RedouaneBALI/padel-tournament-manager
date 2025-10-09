@@ -60,13 +60,6 @@ public class ManualDrawStrategy implements DrawStrategy {
   }
 
   /**
-   * Determines if this is the first main draw round.
-   */
-  private boolean isFirstMainDrawRound(Stage stage) {
-    return TournamentStageUtil.isFirstMainDrawStage(stage);
-  }
-
-  /**
    * Fills a round with players in order.
    *
    * @param round The round to fill
@@ -83,41 +76,5 @@ public class ManualDrawStrategy implements DrawStrategy {
     RandomPlacementUtil.placeTeamsInOrder(round, playersForThisRound);
 
     return startIndex + playersForThisRound.size();
-  }
-
-  /**
-   * Alternative to replace existing rounds with predefined rounds (original logic from fillInitialRoundsManual).
-   *
-   * @param tournament The tournament to modify
-   * @param predefinedRounds The predefined rounds by the user
-   */
-  public void replaceInitialRounds(Tournament tournament, List<Round> predefinedRounds) {
-    if (predefinedRounds == null || predefinedRounds.isEmpty()) {
-      return;
-    }
-
-    List<Round> rounds = tournament.getRounds();
-    if (rounds == null || rounds.isEmpty()) {
-      return;
-    }
-
-    // Replace initial rounds with those provided by the user
-    // Assuming predefinedRounds[0] = Q1, predefinedRounds[1] = first main draw round
-    int replaced = 0;
-    for (int i = 0; i < rounds.size() && replaced < predefinedRounds.size(); i++) {
-      Round currentRound  = rounds.get(i);
-      Round providedRound = predefinedRounds.get(replaced);
-
-      // Replace Q1 if stage matches
-      if (replaced == 0 && currentRound.getStage().name().equals(providedRound.getStage().name())) {
-        rounds.set(i, providedRound);
-        replaced++;
-      }
-      // Replace first main draw round
-      else if (replaced == 1 && currentRound.getStage().name().equals(providedRound.getStage().name())) {
-        rounds.set(i, providedRound);
-        replaced++;
-      }
-    }
   }
 }
