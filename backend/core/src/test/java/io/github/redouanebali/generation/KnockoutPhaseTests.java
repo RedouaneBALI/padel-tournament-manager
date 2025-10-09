@@ -1,15 +1,15 @@
 package io.github.redouanebali.generation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.github.redouanebali.generation.KnockoutPhase;
-import io.github.redouanebali.generation.PhaseType;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PairType;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.format.DrawMode;
 import io.github.redouanebali.model.format.TournamentConfig;
 import io.github.redouanebali.util.TestFixtures;
 import java.util.ArrayList;
@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -509,19 +510,130 @@ public class KnockoutPhaseTests {
     return 0; // No seeds enter at this stage
   }
 
-  private int getSeedsEnteredBeforeStage(Stage stage, int mainDrawSize, int totalSeeds) {
-    if (totalSeeds <= 0) {
-      return 0;
+  @Test
+  void testKnockout_40Teams_16Seeds_allSeedsPlayByes_noBYEvsBAYE() {
+    // Given: A tournament in KNOCKOUT mode with 40 teams, 64 slots, and 16 seeds
+    Tournament tournament = TestFixtures.makeTournament(
+        0,              // preQualDrawSize
+        0,              // nbQualifiers
+        64,             // mainDrawSize
+        16,             // nbSeeds
+        0,              // nbSeedsQualify
+        DrawMode.SEEDED
+    );
+
+    // Create 40 teams (seeds 1-40)
+    List<PlayerPair> teams = TestFixtures.createPlayerPairs(40);
+
+    // Initialize tournament structure
+    KnockoutPhase mainDrawPhase = new KnockoutPhase(64, 16, PhaseType.MAIN_DRAW);
+    List<Round>   rounds        = mainDrawPhase.initialize(tournament.getConfig());
+    tournament.getRounds().clear();
+    tournament.getRounds().addAll(rounds);
+
+    // When: Place players using automatic strategy
+    mainDrawPhase.placeSeedTeams(rounds.get(0), teams);
+    mainDrawPhase.placeByeTeams(rounds.get(0), 40);
+    mainDrawPhase.placeRemainingTeamsRandomly(rounds.get(0),
+                                              teams.stream()
+                                                   .filter(p -> rounds.get(0).getGames().stream()
+                                                                      .noneMatch(g -> g.getTeamA() == p || g.getTeamB() == p))
+                                                   .toList());
+
+    // Then: Verify the first round (R64)
+    Round firstRound = rounds.get(0);
+    assertEquals(Stage.R64, firstRound.getStage(), "First round should be R64");
+    assertEquals(32, firstRound.getGames().size(), "R64 should have 32 games");
+
+    // Count total BYEs in the draw
+    long totalByes = firstRound.getGames().stream()
+                               .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                               .filter(team -> team != null && team.isBye())
+                               .count();
+    assertEquals(24, totalByes, "Should have exactly 24 BYEs for 40 teams in a 64-slot draw");
+
+    // Verify that ALL 16 seeds (seeds 1-16) play against a BYE
+    int seedsPlayingByes = 0;
+    for (Game game : firstRound.getGames()) {
+      PlayerPair teamA = game.getTeamA();
+      PlayerPair teamB = game.getTeamB();
+
+      if (teamA == null || teamB == null) {
+        continue;
+      }
+
+      boolean teamAIsSeed = teamA.getSeed() >= 1 && teamA.getSeed() <= 16;
+      boolean teamBIsSeed = teamB.getSeed() >= 1 && teamB.getSeed() <= 16;
+      boolean teamAIsBye  = teamA.isBye();
+      boolean teamBIsBye  = teamB.isBye();
+
+      if ((teamAIsSeed && teamBIsBye) || (teamBIsSeed && teamAIsBye)) {
+        seedsPlayingByes++;
+      }
     }
 
-    Stage firstSeedsEnterAt  = Stage.fromNbTeams(mainDrawSize);
-    Stage secondSeedsEnterAt = Stage.fromNbTeams(mainDrawSize / 2);
+    assertEquals(16, seedsPlayingByes,
+                 "All 16 seeds (seeds 1-16) must play against a BYE in the first round");
 
-    if (stage == secondSeedsEnterAt) {
-      return Math.min(totalSeeds, totalSeeds / 2); // Top seeds already entered
+    // Verify explicitly that EACH of the 16 seeded pairs (seeds 1-16) plays a BYE
+    for (int seed = 1; seed <= 16; seed++) {
+      final int currentSeed = seed;
+      boolean seedFoundPlayingBye = firstRound.getGames().stream()
+                                              .anyMatch(game -> {
+                                                PlayerPair teamA = game.getTeamA();
+                                                PlayerPair teamB = game.getTeamB();
+
+                                                if (teamA == null || teamB == null) {
+                                                  return false;
+                                                }
+
+                                                return (teamA.getSeed() == currentSeed && teamB.isBye()) ||
+                                                       (teamB.getSeed() == currentSeed && teamA.isBye());
+                                              });
+
+      assertTrue(seedFoundPlayingBye,
+                 String.format("Seed #%d must play against a BYE in R64", currentSeed));
     }
 
-    return 0; // No seeds entered yet
+    // Verify that there are NO BYE vs BYE matches
+    long byeVsByeMatches = firstRound.getGames().stream()
+                                     .filter(g -> g.getTeamA() != null && g.getTeamA().isBye()
+                                                  && g.getTeamB() != null && g.getTeamB().isBye())
+                                     .count();
+
+    assertEquals(0, byeVsByeMatches,
+                 "There must be NO BYE vs BYE matches in the draw");
+
+    // Verify that all 40 real teams are placed in the draw
+    long realTeamsPlaced = firstRound.getGames().stream()
+                                     .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                     .filter(team -> team != null && !team.isBye() && !team.isQualifier())
+                                     .distinct()
+                                     .count();
+
+    assertEquals(40, realTeamsPlaced, "All 40 teams should be placed in the draw");
+
+    // Additional verification: check that non-seeded teams (seeds 17-40) play against each other
+    long nonSeedsPlayingEachOther = 0;
+    for (Game game : firstRound.getGames()) {
+      PlayerPair teamA = game.getTeamA();
+      PlayerPair teamB = game.getTeamB();
+
+      if (teamA == null || teamB == null) {
+        continue;
+      }
+
+      boolean teamAIsNonSeed = !teamA.isBye() && teamA.getSeed() > 16;
+      boolean teamBIsNonSeed = !teamB.isBye() && teamB.getSeed() > 16;
+
+      if (teamAIsNonSeed && teamBIsNonSeed) {
+        nonSeedsPlayingEachOther++;
+      }
+    }
+
+    assertEquals(8, nonSeedsPlayingEachOther,
+                 "The 24 non-seeded teams (seeds 17-40) should play against each other in 8 matches (16 teams), "
+                 + "while the remaining 8 non-seeds get BYEs");
   }
 
 }

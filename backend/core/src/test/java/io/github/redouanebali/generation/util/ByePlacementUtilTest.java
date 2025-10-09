@@ -4,8 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.github.redouanebali.generation.util.ByePlacementUtil;
-import io.github.redouanebali.generation.util.SeedPlacementUtil;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
@@ -204,22 +202,29 @@ public class ByePlacementUtilTest {
 
   @Test
   void testPlaceByeTeams_LastResortPlacement() {
-    // Arrange - create scenario that forces last resort BYE vs BYE placement
+    // Arrange - create scenario that requires BYE vs BYE in staggered entry mode
     Round round = TestFixtures.buildEmptyRound(4); // 2 games = 4 slots
 
-    // Block most positions to force BYE vs BYE
+    // Block one position to simulate staggered entry scenario
     List<PlayerPair> pairs = TestFixtures.createPlayerPairs(4);
     round.getGames().get(0).setTeamA(pairs.get(0));
 
-    // Act - need 3 BYEs but only 3 slots available
-    ByePlacementUtil.placeByeTeams(round, 1, 2, 4, 0);
+    // Act - need 3 BYEs with allowByeVsBye=true (staggered entry mode)
+    ByePlacementUtil.placeByeTeams(round, 1, 2, 4, 0, true);
 
-    // Assert - should place all BYEs even if some are BYE vs BYE
+    // Assert - should place all 3 BYEs, including BYE vs BYE match
     long actualByes = round.getGames().stream()
                            .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
                            .filter(p -> p != null && p.isBye())
                            .count();
-    assertEquals(3, actualByes, "Should place all BYEs using last resort if needed");
+    assertEquals(3, actualByes, "Should place all BYEs in staggered entry mode (allows BYE vs BYE)");
+
+    // Verify that at least one BYE vs BYE match exists (staggered entry scenario)
+    long byeVsByeMatches = round.getGames().stream()
+                                .filter(g -> g.getTeamA() != null && g.getTeamA().isBye()
+                                             && g.getTeamB() != null && g.getTeamB().isBye())
+                                .count();
+    assertTrue(byeVsByeMatches >= 1, "Should have at least one BYE vs BYE match in staggered entry mode");
   }
 
   @Test
@@ -256,5 +261,58 @@ public class ByePlacementUtilTest {
                            .filter(p -> p != null && p.isBye())
                            .count();
     assertEquals(expectedByes, actualByes, "BYE count should exclude qualifier slots");
+  }
+
+  @Test
+  void testPlaceByeTeams_noBYEvsBAYE_40Teams_64Slots_16Seeds() {
+    // Given: A 64-slot draw with 16 seeds and 40 total teams
+    int              drawSize   = 64;
+    int              nbSeeds    = 16;
+    int              totalPairs = 40;
+    Round            round      = TestFixtures.buildEmptyRound(drawSize);
+    List<PlayerPair> pairs      = TestFixtures.createPlayerPairs(totalPairs);
+    pairs.sort(Comparator.comparingInt(PlayerPair::getSeed));
+
+    // When: Place seeds first, then BYEs
+    SeedPlacementUtil.placeSeedTeams(round, pairs, nbSeeds, drawSize);
+    ByePlacementUtil.placeByeTeams(round, totalPairs, nbSeeds, drawSize, 0);
+
+    // Then: Verify no BYE vs BYE matches exist
+    long byeVsByeMatches = round.getGames().stream()
+                                .filter(g -> g.getTeamA() != null && g.getTeamA().isBye()
+                                             && g.getTeamB() != null && g.getTeamB().isBye())
+                                .count();
+
+    assertEquals(0, byeVsByeMatches,
+                 "There must be NO BYE vs BYE matches when placing BYEs");
+
+    // Verify that all 16 seeds play against a BYE
+    long seedsWithByeOpponent = round.getGames().stream()
+                                     .filter(g -> {
+                                       PlayerPair teamA = g.getTeamA();
+                                       PlayerPair teamB = g.getTeamB();
+                                       if (teamA == null || teamB == null) {
+                                         return false;
+                                       }
+
+                                       boolean teamAIsSeed = teamA.getSeed() >= 1 && teamA.getSeed() <= nbSeeds;
+                                       boolean teamBIsSeed = teamB.getSeed() >= 1 && teamB.getSeed() <= nbSeeds;
+                                       boolean teamAIsBye  = teamA.isBye();
+                                       boolean teamBIsBye  = teamB.isBye();
+
+                                       return (teamAIsSeed && teamBIsBye) || (teamBIsSeed && teamAIsBye);
+                                     })
+                                     .count();
+
+    assertEquals(16, seedsWithByeOpponent,
+                 "All 16 seeds should play against a BYE");
+
+    // Verify correct total number of BYEs
+    long totalByes = round.getGames().stream()
+                          .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                          .filter(p -> p != null && p.isBye())
+                          .count();
+
+    assertEquals(24, totalByes, "Should have exactly 24 BYEs for 40 teams in 64 slots");
   }
 }

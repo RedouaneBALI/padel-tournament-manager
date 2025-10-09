@@ -1,6 +1,7 @@
 package io.github.redouanebali.generation.draw;
 
 import io.github.redouanebali.generation.util.ByePlacementUtil;
+import io.github.redouanebali.generation.util.GameSlotUtil;
 import io.github.redouanebali.generation.util.RandomPlacementUtil;
 import io.github.redouanebali.generation.util.SeedPlacementUtil;
 import io.github.redouanebali.model.Game;
@@ -260,73 +261,304 @@ public class AutomaticDrawStrategy implements DrawStrategy {
   private void processMainDrawRound(Tournament tournament, Round initialRound, List<PlayerPair> allPairs, int roundDrawSize, int configuredSeeds) {
     TournamentFormat format = tournament.getConfig().getFormat();
 
-    // Step 1: Place seeds
-    SeedPlacementUtil.placeSeedTeams(initialRound, allPairs, configuredSeeds, roundDrawSize);
-
-    // Step 2: Place BYEs and qualifiers based on tournament format
-    if (format == TournamentFormat.QUALIF_KO) {
-      processQualifKOFormat(tournament, initialRound, allPairs, roundDrawSize, configuredSeeds);
+    if (format == TournamentFormat.KNOCKOUT) {
+      // Pure KNOCKOUT mode - use standard tennis/padel logic
+      processKnockoutStandard(initialRound, allPairs, roundDrawSize, configuredSeeds);
+    } else if (format == TournamentFormat.QUALIF_KO) {
+      // QUALIF_KO mode - different logic with qualifiers
+      processKnockoutWithQualifiers(tournament, initialRound, allPairs, roundDrawSize, configuredSeeds);
     } else {
-      processKnockoutFormat(initialRound, allPairs, roundDrawSize, configuredSeeds);
+      // Fallback for other formats
+      processKnockoutStandard(initialRound, allPairs, roundDrawSize, configuredSeeds);
     }
   }
 
   /**
-   * Processes main draw for QUALIF_KO format.
+   * Processes KNOCKOUT format using standard tennis/padel logic: 1. Place the best N teams (where N = nbByes) at standard seed positions 2. Place
+   * BYEs opposite these N teams 3. Place remaining teams in empty slots (they will play against each other)
    */
-  private void processQualifKOFormat(Tournament tournament, Round initialRound, List<PlayerPair> allPairs, int roundDrawSize, int configuredSeeds) {
+  private void processKnockoutStandard(Round initialRound, List<PlayerPair> allPairs, int roundDrawSize, int configuredSeeds) {
+    int nbTeams = allPairs.size();
+    int nbByes  = roundDrawSize - nbTeams;
+
+    if (nbByes == 0) {
+      // No BYES needed - draw is full
+      // Just place all teams at their standard seed positions
+      placeSeedsAtStandardPositions(initialRound, allPairs, nbTeams, roundDrawSize);
+      return;
+    }
+
+    // Standard tennis/padel logic for draws with BYEs:
+    // 1. The TOP N teams (where N = min(nbByes, nbTeams)) receive BYEs
+    // 2. The remaining teams play against each other in first round
+
+    // Important: We can't give BYEs to more teams than we have!
+    int nbTeamsReceivingByes     = Math.min(nbByes, nbTeams);
+    int nbTeamsPlayingFirstRound = nbTeams - nbTeamsReceivingByes;
+
+    // Step 1: Place teams receiving BYEs at standard positions
+    if (nbTeamsReceivingByes > 0) {
+      List<PlayerPair> teamsWithByes = allPairs.subList(0, nbTeamsReceivingByes);
+      placeSeedsAtStandardPositions(initialRound, teamsWithByes, nbTeamsReceivingByes, roundDrawSize);
+    }
+
+    // Step 2: Place BYEs opposite these teams
+    if (nbByes > 0) {
+      placeByesInEmptySlots(initialRound, nbByes, nbTeamsReceivingByes, roundDrawSize);
+    }
+
+    // Step 3: Place remaining teams that will play in first round
+    // These teams should be placed in pairs in the remaining empty slots
+    if (nbTeamsPlayingFirstRound > 0) {
+      List<PlayerPair> teamsPlayingFirstRound = allPairs.subList(nbTeamsReceivingByes, nbTeams);
+      placeTeamsInEmptySlots(initialRound, teamsPlayingFirstRound);
+    }
+  }
+
+  /**
+   * Places teams sequentially in remaining empty slots. This ensures teams are paired correctly for matches.
+   */
+  private void placeTeamsInEmptySlots(Round initialRound, List<PlayerPair> teams) {
+    if (teams.isEmpty()) {
+      return;
+    }
+
+    List<Game> games     = initialRound.getGames();
+    int        teamIndex = 0;
+
+    for (Game game : games) {
+      if (teamIndex >= teams.size()) {
+        break;
+      }
+
+      // Fill teamA if empty
+      if (game.getTeamA() == null) {
+        game.setTeamA(teams.get(teamIndex++));
+      }
+
+      if (teamIndex >= teams.size()) {
+        break;
+      }
+
+      // Fill teamB if empty
+      if (game.getTeamB() == null) {
+        game.setTeamB(teams.get(teamIndex++));
+      }
+    }
+  }
+
+  /**
+   * Places seeds at their standard positions (1, 2, 3-4, 5-8, etc.)
+   */
+  private void placeSeedsAtStandardPositions(Round initialRound, List<PlayerPair> seeds, int nbSeeds, int drawSize) {
+    List<Integer> seedPositions = SeedPlacementUtil.getSeedsPositions(drawSize, nbSeeds);
+    List<Game>    games         = initialRound.getGames();
+
+    for (int i = 0; i < Math.min(seeds.size(), seedPositions.size()); i++) {
+      int     slot      = seedPositions.get(i);
+      int     gameIndex = slot / 2;
+      boolean isTeamA   = (slot % 2 == 0);
+
+      Game game = games.get(gameIndex);
+      if (isTeamA) {
+        game.setTeamA(seeds.get(i));
+      } else {
+        game.setTeamB(seeds.get(i));
+      }
+    }
+  }
+
+  /**
+   * Places BYEs opposite seeds following standard tennis/padel logic. Seed 1 plays BYE, Seed 2 plays BYE, etc. until all BYEs are placed.
+   */
+  private void placeByesOppositeSeedsStandard(Round initialRound, int nbByes, int nbSeeds, int drawSize) {
+    List<Integer> seedPositions = SeedPlacementUtil.getSeedsPositions(drawSize, nbSeeds);
+    List<Game>    games         = initialRound.getGames();
+
+    int byesPlaced = 0;
+
+    // Step 1: Place BYEs opposite seeds (starting with seed 1)
+    for (int i = 0; i < seedPositions.size() && byesPlaced < nbByes; i++) {
+      int seedSlot     = seedPositions.get(i);
+      int oppositeSlot = GameSlotUtil.getOppositeSlot(seedSlot);
+
+      int     gameIndex = oppositeSlot / 2;
+      boolean isTeamA   = (oppositeSlot % 2 == 0);
+
+      Game       game        = games.get(gameIndex);
+      PlayerPair currentTeam = isTeamA ? game.getTeamA() : game.getTeamB();
+
+      // Only place BYE if slot is empty
+      if (currentTeam == null) {
+        if (isTeamA) {
+          game.setTeamA(PlayerPair.bye());
+        } else {
+          game.setTeamB(PlayerPair.bye());
+        }
+        byesPlaced++;
+      }
+    }
+
+    // Step 2: If we still have BYEs to place, place them in empty slots but AVOID creating BYE vs BYE
+    if (byesPlaced < nbByes) {
+      for (Game game : games) {
+        if (byesPlaced >= nbByes) {
+          break;
+        }
+
+        // Try to place in teamA slot
+        if (game.getTeamA() == null) {
+          PlayerPair opponent = game.getTeamB();
+          // Only place BYE if opponent is NOT a BYE (to avoid BYE vs BYE)
+          if (opponent != null && !opponent.isBye()) {
+            game.setTeamA(PlayerPair.bye());
+            byesPlaced++;
+          }
+        }
+
+        if (byesPlaced >= nbByes) {
+          break;
+        }
+
+        // Try to place in teamB slot
+        if (game.getTeamB() == null) {
+          PlayerPair opponent = game.getTeamA();
+          // Only place BYE if opponent is NOT a BYE (to avoid BYE vs BYE)
+          if (opponent != null && !opponent.isBye()) {
+            game.setTeamB(PlayerPair.bye());
+            byesPlaced++;
+          }
+        }
+      }
+    }
+
+    // Step 3: Final pass - place remaining BYEs only in completely empty games (both slots null)
+    // This creates BYE vs BYE matches only as a last resort
+    if (byesPlaced < nbByes) {
+      for (Game game : games) {
+        if (byesPlaced >= nbByes) {
+          break;
+        }
+
+        // Only place BYEs in completely empty games to create BYE vs BYE matches
+        if (game.getTeamA() == null && game.getTeamB() == null) {
+          game.setTeamA(PlayerPair.bye());
+          byesPlaced++;
+
+          if (byesPlaced >= nbByes) {
+            break;
+          }
+
+          game.setTeamB(PlayerPair.bye());
+          byesPlaced++;
+        }
+      }
+    }
+  }
+
+  /**
+   * Places BYEs in empty slots following standard tennis/padel logic. Rule: Place BYEs opposite the best N teams (where N = number of BYEs needed).
+   *
+   * Example: For 40 teams in a 64-draw, place 24 BYes opposite teams 1-24. The remaining 16 teams (25-40) will play against each other.
+   */
+  private void placeByesInEmptySlots(Round initialRound, int nbByes, int nbTeamsPlaced, int drawSize) {
+    List<Game> games      = initialRound.getGames();
+    int        byesPlaced = 0;
+
+    // Strategy: Place BYEs opposite all teams that have already been placed
+    // This ensures every team that was placed at a seed position gets a BYE
+    for (Game game : games) {
+      if (byesPlaced >= nbByes) {
+        break;
+      }
+
+      PlayerPair teamA = game.getTeamA();
+      PlayerPair teamB = game.getTeamB();
+
+      // Case 1: TeamA is placed, TeamB is empty -> place BYE at TeamB
+      if (teamA != null && !teamA.isBye() && teamB == null) {
+        game.setTeamB(PlayerPair.bye());
+        byesPlaced++;
+      }
+      // Case 2: TeamB is placed, TeamA is empty -> place BYE at TeamA
+      else if (teamB != null && !teamB.isBye() && teamA == null) {
+        game.setTeamA(PlayerPair.bye());
+        byesPlaced++;
+      }
+    }
+
+    // Fallback: if we still have BYEs to place (shouldn't happen with correct logic)
+    // Place them in any remaining empty slots to avoid leaving null slots
+    if (byesPlaced < nbByes) {
+      for (Game game : games) {
+        if (byesPlaced >= nbByes) {
+          break;
+        }
+
+        if (game.getTeamA() == null) {
+          game.setTeamA(PlayerPair.bye());
+          byesPlaced++;
+        }
+
+        if (byesPlaced >= nbByes) {
+          break;
+        }
+
+        if (game.getTeamB() == null) {
+          game.setTeamB(PlayerPair.bye());
+          byesPlaced++;
+        }
+      }
+    }
+  }
+
+  /**
+   * Processes KNOCKOUT with qualifiers (QUALIF_KO format)
+   */
+  private void processKnockoutWithQualifiers(Tournament tournament,
+                                             Round initialRound,
+                                             List<PlayerPair> allPairs,
+                                             int roundDrawSize,
+                                             int configuredSeeds) {
     int nbQualifiers  = tournament.getConfig().getNbQualifiers();
     int totalSlots    = tournament.getConfig().getMainDrawSize();
     int directEntries = Math.min(totalSlots - nbQualifiers, allPairs.size());
 
-    // Place BYEs for direct entries only, skipping qualifier slots
-    ByePlacementUtil.placeByeTeams(initialRound, directEntries, configuredSeeds, roundDrawSize, nbQualifiers);
+    // Step 1: Place only the actual seeds
+    int actualSeeds = Math.min(configuredSeeds, directEntries);
+    if (actualSeeds > 0) {
+      List<PlayerPair> seeds = allPairs.subList(0, actualSeeds);
+      placeSeedsAtStandardPositions(initialRound, seeds, actualSeeds, roundDrawSize);
+    }
 
-    // Place qualifiers randomly in available slots
+    // Step 2: Place qualifiers
     RandomPlacementUtil.placeQualifiers(initialRound, nbQualifiers);
 
-    // Place remaining teams randomly in available slots
-    placeRemainingTeamsForQualifKO(initialRound, allPairs, directEntries);
-  }
+    // Step 3: Place BYEs (accounting for direct entries and qualifiers)
+    int nbByes = roundDrawSize - directEntries - nbQualifiers;
+    if (nbByes > 0) {
+      placeByesOppositeSeedsStandard(initialRound, nbByes, actualSeeds, roundDrawSize);
+    }
 
-  /**
-   * Processes main draw for KNOCKOUT format.
-   */
-  private void processKnockoutFormat(Round initialRound, List<PlayerPair> allPairs, int roundDrawSize, int configuredSeeds) {
-    int nbTeams = allPairs.size();
-
-    // Place BYEs normally for all teams (no qualifiers)
-    ByePlacementUtil.placeByeTeams(initialRound, nbTeams, configuredSeeds, roundDrawSize);
-
-    // Place remaining teams randomly in available slots
-    placeRemainingTeamsForKnockout(initialRound, allPairs);
-  }
-
-  /**
-   * Places remaining teams for QUALIF_KO format.
-   */
-  private void placeRemainingTeamsForQualifKO(Round initialRound, List<PlayerPair> allPairs, int directEntries) {
-    Set<PlayerPair> alreadyPlaced = collectAlreadyPlacedTeamsExcludingQualifiers(initialRound);
+    // Step 4: Place remaining teams
+    Set<PlayerPair> alreadyPlaced = new HashSet<>();
+    for (Game game : initialRound.getGames()) {
+      if (game.getTeamA() != null && !game.getTeamA().isBye() && !game.getTeamA().isQualifier()) {
+        alreadyPlaced.add(game.getTeamA());
+      }
+      if (game.getTeamB() != null && !game.getTeamB().isBye() && !game.getTeamB().isQualifier()) {
+        alreadyPlaced.add(game.getTeamB());
+      }
+    }
 
     List<PlayerPair> remainingTeams = allPairs.stream()
                                               .filter(p -> !alreadyPlaced.contains(p))
                                               .limit(directEntries)
                                               .toList();
 
-    RandomPlacementUtil.placeRemainingTeamsRandomly(initialRound, remainingTeams);
-  }
-
-  /**
-   * Places remaining teams for KNOCKOUT format.
-   */
-  private void placeRemainingTeamsForKnockout(Round initialRound, List<PlayerPair> allPairs) {
-    Set<PlayerPair> alreadyPlaced = collectAlreadyPlacedTeamsIncludingAll(initialRound);
-
-    List<PlayerPair> remainingTeams = allPairs.stream()
-                                              .filter(p -> !alreadyPlaced.contains(p))
-                                              .toList();
-
-    RandomPlacementUtil.placeRemainingTeamsRandomly(initialRound, remainingTeams);
+    if (!remainingTeams.isEmpty()) {
+      RandomPlacementUtil.placeRemainingTeamsRandomly(initialRound, remainingTeams);
+    }
   }
 
   /**
