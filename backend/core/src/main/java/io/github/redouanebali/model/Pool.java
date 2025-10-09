@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -109,7 +108,7 @@ public class Pool {
                      .filter(round -> round.getStage() == Stage.GROUPS)
                      .flatMap(round -> round.getPools().stream())
                      .map(Pool::getPoolRanking)
-                     .collect(Collectors.toList());
+                     .toList();
   }
 
   public void addPair(PlayerPair pair) {

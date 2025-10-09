@@ -17,7 +17,6 @@ import jakarta.annotation.security.PermitAll;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -95,7 +94,7 @@ public class PublicTournamentController {
     List<RoundDTO> rounds = tournamentMapper.toDTORoundList(
         tournament.getRounds().stream()
                   .sorted(Comparator.comparing(r -> r.getStage().getOrder()))
-                  .collect(Collectors.toList())
+                  .toList()
     );
     return ResponseEntity.ok(rounds);
   }

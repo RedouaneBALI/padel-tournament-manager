@@ -122,7 +122,7 @@ public final class TournamentBuilder {
     drawStrategy.placePlayers(tempTournament, playerPairs);
     return tempTournament.getRounds().stream()
                          .filter(round -> TournamentStageUtil.isInitialRoundInTournament(round, tempTournament.getRounds()))
-                         .collect(Collectors.toList());
+                         .toList();
   }
 
   /**

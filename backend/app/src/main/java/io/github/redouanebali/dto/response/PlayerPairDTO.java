@@ -36,13 +36,18 @@ public class PlayerPairDTO {
   }
 
   /**
-   * Filtre personnalisé pour exclure PairType.NORMAL de la sérialisation JSON
+   * Custom filter to exclude PairType.NORMAL from the JSON serialization
    */
   public static class NormalTypeFilter {
 
     @Override
     public boolean equals(Object obj) {
       return obj == null || obj == PairType.NORMAL;
+    }
+
+    @Override
+    public int hashCode() {
+      return NormalTypeFilter.class.hashCode();
     }
   }
 }

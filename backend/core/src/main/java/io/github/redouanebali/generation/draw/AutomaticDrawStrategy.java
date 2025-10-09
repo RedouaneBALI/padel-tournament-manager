@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class AutomaticDrawStrategy implements DrawStrategy {
 
@@ -53,7 +52,7 @@ public class AutomaticDrawStrategy implements DrawStrategy {
       final Set<PlayerPair> excludedTeams = teamsPlacedInQualif; // Make it effectively final
       List<PlayerPair> pairsForMainDraw = allPairs.stream()
                                                   .filter(pair -> !excludedTeams.contains(pair))
-                                                  .collect(Collectors.toList());
+                                                  .toList();
 
       processInitialRound(tournament, firstMainDrawRound, pairsForMainDraw);
     }
@@ -324,7 +323,7 @@ public class AutomaticDrawStrategy implements DrawStrategy {
     List<PlayerPair> remainingTeams = allPairs.stream()
                                               .filter(p -> !alreadyPlaced.contains(p))
                                               .limit(directEntries)
-                                              .collect(Collectors.toList());
+                                              .toList();
 
     RandomPlacementUtil.placeRemainingTeamsRandomly(initialRound, remainingTeams);
   }
@@ -337,7 +336,7 @@ public class AutomaticDrawStrategy implements DrawStrategy {
 
     List<PlayerPair> remainingTeams = allPairs.stream()
                                               .filter(p -> !alreadyPlaced.contains(p))
-                                              .collect(Collectors.toList());
+                                              .toList();
 
     RandomPlacementUtil.placeRemainingTeamsRandomly(initialRound, remainingTeams);
   }
@@ -424,4 +423,3 @@ public class AutomaticDrawStrategy implements DrawStrategy {
     }
   }
 }
-

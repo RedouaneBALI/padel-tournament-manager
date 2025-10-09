@@ -44,31 +44,59 @@ public class PoolDistributionUtil {
     int unplaced = 0;
 
     for (int i = 0; i < teams.size(); i++) {
-      PlayerPair team       = teams.get(i);
-      int        poolIndex  = i % nbPools;
-      Pool       targetPool = pools.get(poolIndex);
+      PlayerPair team      = teams.get(i);
+      int        poolIndex = i % nbPools;
 
-      // Check if target pool has space
-      if (targetPool.getPairs().size() < maxPairsPerPool) {
-        targetPool.addPair(team);
-      } else {
-        // Try to find next available pool
-        boolean placed = false;
-        for (int j = 0; j < nbPools && !placed; j++) {
-          int  nextPoolIndex = (poolIndex + j) % nbPools;
-          Pool nextPool      = pools.get(nextPoolIndex);
-          if (nextPool.getPairs().size() < maxPairsPerPool) {
-            nextPool.addPair(team);
-            placed = true;
-          }
-        }
-        if (!placed) {
-          unplaced++;
-        }
+      boolean placed = tryPlaceInPool(pools, team, poolIndex, maxPairsPerPool, nbPools);
+      if (!placed) {
+        unplaced++;
       }
     }
 
     return unplaced;
+  }
+
+  /**
+   * Tries to place a team in the target pool or finds the next available pool.
+   *
+   * @param pools the list of pools
+   * @param team the team to place
+   * @param startPoolIndex the preferred pool index
+   * @param maxPairsPerPool maximum capacity per pool
+   * @param nbPools total number of pools
+   * @return true if the team was placed, false otherwise
+   */
+  private static boolean tryPlaceInPool(List<Pool> pools, PlayerPair team, int startPoolIndex, int maxPairsPerPool, int nbPools) {
+    Pool targetPool = pools.get(startPoolIndex);
+
+    if (targetPool.getPairs().size() < maxPairsPerPool) {
+      targetPool.addPair(team);
+      return true;
+    }
+
+    return findAndPlaceInNextAvailablePool(pools, team, startPoolIndex, maxPairsPerPool, nbPools);
+  }
+
+  /**
+   * Finds the next available pool with capacity and places the team.
+   *
+   * @param pools the list of pools
+   * @param team the team to place
+   * @param startPoolIndex the index to start searching from
+   * @param maxPairsPerPool maximum capacity per pool
+   * @param nbPools total number of pools
+   * @return true if a pool was found and team placed, false otherwise
+   */
+  private static boolean findAndPlaceInNextAvailablePool(List<Pool> pools, PlayerPair team, int startPoolIndex, int maxPairsPerPool, int nbPools) {
+    for (int j = 1; j < nbPools; j++) {
+      int  nextPoolIndex = (startPoolIndex + j) % nbPools;
+      Pool nextPool      = pools.get(nextPoolIndex);
+      if (nextPool.getPairs().size() < maxPairsPerPool) {
+        nextPool.addPair(team);
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -128,4 +156,3 @@ public class PoolDistributionUtil {
     }
   }
 }
-
