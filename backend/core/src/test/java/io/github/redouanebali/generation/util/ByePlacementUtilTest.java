@@ -134,7 +134,7 @@ public class ByePlacementUtilTest {
     Round round = TestFixtures.buildEmptyRound(8);
 
     // Manually place some BYEs first
-    round.getGames().get(0).setTeamA(PlayerPair.bye());
+    round.getGames().getFirst().setTeamA(PlayerPair.bye());
     round.getGames().get(1).setTeamB(PlayerPair.bye());
 
     // Act - should account for existing BYEs
@@ -186,7 +186,7 @@ public class ByePlacementUtilTest {
 
     // Place some teams at seed positions to block BYE placement
     List<PlayerPair> pairs = TestFixtures.createPlayerPairs(8);
-    round.getGames().get(0).setTeamA(pairs.get(0)); // Blocks position 0
+    round.getGames().getFirst().setTeamA(pairs.getFirst()); // Blocks position 0
     round.getGames().get(3).setTeamB(pairs.get(1)); // Blocks position 7
 
     // Act - need 4 BYEs but some seed positions are blocked
@@ -207,7 +207,7 @@ public class ByePlacementUtilTest {
 
     // Block one position to simulate staggered entry scenario
     List<PlayerPair> pairs = TestFixtures.createPlayerPairs(4);
-    round.getGames().get(0).setTeamA(pairs.get(0));
+    round.getGames().getFirst().setTeamA(pairs.getFirst());
 
     // Act - need 3 BYEs with allowByeVsBye=true (staggered entry mode)
     ByePlacementUtil.placeByeTeams(round, 1, 2, 4, 0, true);
@@ -233,8 +233,8 @@ public class ByePlacementUtilTest {
     Round            round = TestFixtures.buildEmptyRound(4); // 2 games = 4 slots
     List<PlayerPair> pairs = TestFixtures.createPlayerPairs(4);
 
-    round.getGames().get(0).setTeamA(pairs.get(0));
-    round.getGames().get(0).setTeamB(pairs.get(1));
+    round.getGames().getFirst().setTeamA(pairs.getFirst());
+    round.getGames().getFirst().setTeamB(pairs.get(1));
     round.getGames().get(1).setTeamA(pairs.get(2));
     // Only 1 slot left
 

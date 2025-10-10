@@ -62,7 +62,7 @@ public class TournamentDTO {
       return lastUsedStage;
     }
 
-    return rounds.get(0).getStage();
+    return rounds.getFirst().getStage();
   }
 
 }

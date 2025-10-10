@@ -89,7 +89,7 @@ public class SeedPlacementUtilTest {
     List<Integer> seedPositions = SeedPlacementUtil.getSeedsPositions(drawSize, nbSeeds);
 
     // Then - TS1 and TS2 should always be at fixed positions
-    assertEquals(expectedTS1, seedPositions.get(0), "TS1 must always be at position " + expectedTS1);
+    assertEquals(expectedTS1, seedPositions.getFirst(), "TS1 must always be at position " + expectedTS1);
     if (nbSeeds >= 2) {
       assertEquals(expectedTS2, seedPositions.get(1), "TS2 must always be at position " + expectedTS2);
     }
@@ -275,7 +275,7 @@ public class SeedPlacementUtilTest {
     List<PlayerPair> pairs = TestFixtures.createPlayerPairs(8);
 
     // Manually place a team at seed position 0 (game 0, team A)
-    round.getGames().get(0).setTeamA(pairs.get(7)); // Use a different pair
+    round.getGames().getFirst().setTeamA(pairs.get(7)); // Use a different pair
 
     // Act & Then
     assertThrows(IllegalStateException.class,
@@ -444,7 +444,7 @@ public class SeedPlacementUtilTest {
       Pool pool = round.getPools().get(i);
       assertEquals(1, pool.getPairs().size(), "Each pool should have exactly 1 seed");
 
-      PlayerPair seedInPool = pool.getPairs().get(0);
+      PlayerPair seedInPool = pool.getPairs().getFirst();
       assertEquals(i + 1, seedInPool.getSeed(),
                    "Pool " + i + " should contain TS" + (i + 1) + " but had TS" + seedInPool.getSeed());
     }
@@ -463,7 +463,7 @@ public class SeedPlacementUtilTest {
     // Pool 0: TS1, TS4, TS7 (3 seeds)
     // Pool 1: TS2, TS5 (2 seeds)
     // Pool 2: TS3, TS6 (2 seeds)
-    assertEquals(3, round.getPools().get(0).getPairs().size(), "Pool 0 should have 3 seeds");
+    assertEquals(3, round.getPools().getFirst().getPairs().size(), "Pool 0 should have 3 seeds");
     assertEquals(2, round.getPools().get(1).getPairs().size(), "Pool 1 should have 2 seeds");
     assertEquals(2, round.getPools().get(2).getPairs().size(), "Pool 2 should have 2 seeds");
 
@@ -550,10 +550,10 @@ public class SeedPlacementUtilTest {
     int              nbPairsPerPool = 3; // Each pool can hold max 3 teams
 
     // Pre-fill first pool to near capacity
-    PlayerPair existingTeam = createSeededPlayerPairs(1, 0).get(0);
+    PlayerPair existingTeam = createSeededPlayerPairs(1, 0).getFirst();
     existingTeam.setSeed(0); // Non-seeded team
-    round.getPools().get(0).addPair(existingTeam);
-    round.getPools().get(0).addPair(existingTeam); // 2 teams already in pool 0
+    round.getPools().getFirst().addPair(existingTeam);
+    round.getPools().getFirst().addPair(existingTeam); // 2 teams already in pool 0
 
     // Act
     SeedPlacementUtil.placeSeedTeamsInPools(round, teams, nbPairsPerPool);
@@ -574,11 +574,11 @@ public class SeedPlacementUtilTest {
     assertEquals(6, totalSeeds, "All 6 seeds should be placed");
 
     // Verify that pool 0 has exactly 1 seed (plus 2 existing non-seeded teams)
-    long seedsInPool0 = round.getPools().get(0).getPairs().stream()
+    long seedsInPool0 = round.getPools().getFirst().getPairs().stream()
                              .filter(pair -> pair.getSeed() > 0)
                              .count();
     assertEquals(1, seedsInPool0, "Pool 0 should have exactly 1 seed");
-    assertEquals(3, round.getPools().get(0).getPairs().size(), "Pool 0 should be at capacity");
+    assertEquals(3, round.getPools().getFirst().getPairs().size(), "Pool 0 should be at capacity");
 
     // Verify pool 1 and 2 have the remaining seeds (should be distributed evenly)
     long seedsInPool1 = round.getPools().get(1).getPairs().stream()

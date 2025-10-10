@@ -118,7 +118,7 @@ public class PlayerPairServiceTest {
 
     playerPairService.updatePlayerPair(1L, 10L, "New1", "New2", 5);
 
-    PlayerPair updated = tournament.getPlayerPairs().get(0);
+    PlayerPair updated = tournament.getPlayerPairs().getFirst();
     assertEquals("New1", updated.getPlayer1().getName());
     assertEquals("New2", updated.getPlayer2().getName());
     assertEquals(5, updated.getSeed());

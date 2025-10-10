@@ -132,7 +132,7 @@ public class RandomPlacementUtilTest {
     List<PlayerPair> existingTeams = allTeams.subList(0, 2);
     List<PlayerPair> newTeams      = allTeams.subList(2, 6);
 
-    round.getGames().get(0).setTeamA(existingTeams.get(0));
+    round.getGames().getFirst().setTeamA(existingTeams.getFirst());
     round.getGames().get(1).setTeamB(existingTeams.get(1));
 
     // Act
@@ -154,7 +154,7 @@ public class RandomPlacementUtilTest {
     assertTrue(allPlacedTeams.containsAll(newTeams), "New teams should be placed");
 
     // Verify existing placements are unchanged
-    assertEquals(existingTeams.get(0), round.getGames().get(0).getTeamA());
+    assertEquals(existingTeams.getFirst(), round.getGames().getFirst().getTeamA());
     assertEquals(existingTeams.get(1), round.getGames().get(1).getTeamB());
   }
 
@@ -168,7 +168,7 @@ public class RandomPlacementUtilTest {
     List<PlayerPair> existingTeams = allTeams.subList(0, 2);
     List<PlayerPair> newTeams      = allTeams.subList(2, 6);
 
-    round.getGames().get(0).setTeamA(existingTeams.get(0));
+    round.getGames().getFirst().setTeamA(existingTeams.getFirst());
     round.getGames().get(1).setTeamB(existingTeams.get(1));
 
     // Act
@@ -190,7 +190,7 @@ public class RandomPlacementUtilTest {
     assertTrue(allPlacedTeams.containsAll(newTeams), "New teams should be placed");
 
     // Verify existing placements are unchanged
-    assertEquals(existingTeams.get(0), round.getGames().get(0).getTeamA());
+    assertEquals(existingTeams.getFirst(), round.getGames().getFirst().getTeamA());
     assertEquals(existingTeams.get(1), round.getGames().get(1).getTeamB());
   }
 
@@ -341,7 +341,7 @@ public class RandomPlacementUtilTest {
     List<PlayerPair> existingTeams = allTeams.subList(0, 2); // First 2 teams
     List<PlayerPair> newTeams      = allTeams.subList(2, 6); // Teams 3-6
 
-    round.getPools().get(0).addPair(existingTeams.get(0));
+    round.getPools().getFirst().addPair(existingTeams.getFirst());
     round.getPools().get(1).addPair(existingTeams.get(1));
 
     // Act
@@ -358,7 +358,7 @@ public class RandomPlacementUtilTest {
     assertTrue(allPlacedTeams.containsAll(newTeams), "New teams should be placed");
 
     // Verify existing teams are still in their original pools
-    assertTrue(round.getPools().get(0).getPairs().contains(existingTeams.get(0)));
+    assertTrue(round.getPools().getFirst().getPairs().contains(existingTeams.getFirst()));
     assertTrue(round.getPools().get(1).getPairs().contains(existingTeams.get(1)));
   }
 
@@ -372,7 +372,7 @@ public class RandomPlacementUtilTest {
     RandomPlacementUtil.placeTeamsInOrder(round, teams);
 
     // Assert - teams should be distributed across pools in order
-    assertEquals(2, round.getPools().get(0).getPairs().size(), "First pool should have 2 teams");
+    assertEquals(2, round.getPools().getFirst().getPairs().size(), "First pool should have 2 teams");
     assertEquals(2, round.getPools().get(1).getPairs().size(), "Second pool should have 2 teams");
 
     // Verify all teams are placed

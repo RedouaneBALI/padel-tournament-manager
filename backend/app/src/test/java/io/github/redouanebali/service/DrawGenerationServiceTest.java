@@ -76,7 +76,7 @@ class DrawGenerationServiceTest {
     tournament.getPlayerPairs().addAll(TestFixtures.createPlayerPairs(36));
     List<PlayerPair> result = DrawGenerationService.capPairsToMax(tournament);
     assertEquals(32, result.size());
-    Assertions.assertEquals(1, result.get(0).getSeed());
+    Assertions.assertEquals(1, result.getFirst().getSeed());
     Assertions.assertEquals(32, result.get(31).getSeed());
   }
 
@@ -96,9 +96,9 @@ class DrawGenerationServiceTest {
     assertNotNull(semis);
     Assertions.assertEquals(2, semis.getGames().size());
     // Manual draw must keep original order (1v2, 3v4 with sequential fill A then B)
-    Game g1 = semis.getGames().get(0);
+    Game g1 = semis.getGames().getFirst();
     Game g2 = semis.getGames().get(1);
-    assertSame(pairs.get(0), g1.getTeamA());
+    assertSame(pairs.getFirst(), g1.getTeamA());
     assertSame(pairs.get(1), g1.getTeamB());
     assertSame(pairs.get(2), g2.getTeamA());
     assertSame(pairs.get(3), g2.getTeamB());

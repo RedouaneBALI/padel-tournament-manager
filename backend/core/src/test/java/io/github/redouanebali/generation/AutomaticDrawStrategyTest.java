@@ -64,7 +64,7 @@ public class AutomaticDrawStrategyTest {
     }
 
     // Verify that BYEs are placed instead (since we have 6 teams in 8 slots)
-    Round firstRound = tournament.getRounds().get(0);
+    Round firstRound = tournament.getRounds().getFirst();
     long byeCount = firstRound.getGames().stream()
                               .flatMap(g -> java.util.stream.Stream.of(g.getTeamA(), g.getTeamB()))
                               .filter(team -> team != null && team.isBye())
@@ -156,7 +156,7 @@ public class AutomaticDrawStrategyTest {
     strategy.placePlayers(tournament, teams);
 
     // Then: All 8 teams should be placed, no BYEs, no QUALIFIERs
-    Round firstRound = tournament.getRounds().get(0);
+    Round firstRound = tournament.getRounds().getFirst();
 
     long realTeamCount = firstRound.getGames().stream()
                                    .flatMap(g -> java.util.stream.Stream.of(g.getTeamA(), g.getTeamB()))
@@ -225,7 +225,7 @@ public class AutomaticDrawStrategyTest {
     strategy.placePlayers(tournament, teams);
 
     // Then: Verify the first round
-    Round firstRound = tournament.getRounds().get(0);
+    Round firstRound = tournament.getRounds().getFirst();
 
     // Count total BYEs in the draw
     long totalByes = firstRound.getGames().stream()
