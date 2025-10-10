@@ -261,15 +261,16 @@ public class AutomaticDrawStrategy implements DrawStrategy {
   private void processMainDrawRound(Tournament tournament, Round initialRound, List<PlayerPair> allPairs, int roundDrawSize, int configuredSeeds) {
     TournamentFormat format = tournament.getConfig().getFormat();
 
-    if (format == TournamentFormat.KNOCKOUT) {
-      // Pure KNOCKOUT mode - use standard tennis/padel logic
-      processKnockoutStandard(initialRound, allPairs, roundDrawSize, configuredSeeds);
-    } else if (format == TournamentFormat.QUALIF_KO) {
-      // QUALIF_KO mode - different logic with qualifiers
-      processKnockoutWithQualifiers(tournament, initialRound, allPairs, roundDrawSize, configuredSeeds);
-    } else {
-      // Fallback for other formats
-      processKnockoutStandard(initialRound, allPairs, roundDrawSize, configuredSeeds);
+    switch (format) {
+      case KNOCKOUT ->
+        // Pure KNOCKOUT mode - use standard tennis/padel logic
+          processKnockoutStandard(initialRound, allPairs, roundDrawSize, configuredSeeds);
+      case QUALIF_KO ->
+        // QUALIF_KO mode - different logic with qualifiers
+          processKnockoutWithQualifiers(tournament, initialRound, allPairs, roundDrawSize, configuredSeeds);
+      default ->
+        // Fallback for other formats
+          processKnockoutStandard(initialRound, allPairs, roundDrawSize, configuredSeeds);
     }
   }
 
@@ -277,7 +278,7 @@ public class AutomaticDrawStrategy implements DrawStrategy {
    * Processes KNOCKOUT format using standard tennis/padel logic: 1. The TOP N teams (where N = nbByes) receive BYEs at standard positions 2. The
    * remaining teams play against each other in first round
    *
-   * Standard tennis/padel rule: If you have X teams in a Y-slot draw, the best (Y-X) teams get BYEs, regardless of how many are officially "seeded"
+   * Standard tennis/padel rule: If you have X teams in a Y-slot draw, the best (Y-X) teams get BYES, regardless of how many are officially "seeded"
    */
   private void processKnockoutStandard(Round initialRound, List<PlayerPair> allPairs, int roundDrawSize, int configuredSeeds) {
     int nbTeams = allPairs.size();
