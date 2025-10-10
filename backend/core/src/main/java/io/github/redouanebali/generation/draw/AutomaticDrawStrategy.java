@@ -325,76 +325,94 @@ public class AutomaticDrawStrategy implements DrawStrategy {
     List<Game> games      = initialRound.getGames();
     int        byesPlaced = 0;
 
-    // Pass 1: Place BYes opposite teams that are already placed
-    for (Game game : games) {
-      if (byesPlaced >= maxByes) {
-        break;
-      }
+    // Pass 1: Place BYEs opposite teams that are already placed
+    byesPlaced = placeByesOppositeExistingTeams(games, byesPlaced, maxByes);
 
-      PlayerPair teamA = game.getTeamA();
-      PlayerPair teamB = game.getTeamB();
-
-      // If teamA is a real team and teamB is empty, place BYE at teamB
-      if (teamA != null && !teamA.isBye() && !teamA.isQualifier() && teamB == null) {
-        game.setTeamB(PlayerPair.bye());
-        byesPlaced++;
-      }
-      // If teamB is a real team and teamA is empty, place BYE at teamA
-      else if (teamB != null && !teamB.isBye() && !teamB.isQualifier() && teamA == null) {
-        game.setTeamA(PlayerPair.bye());
-        byesPlaced++;
-      }
-    }
-
-    // Pass 2: If we still need more BYEs, place them in any empty slot
-    // (avoiding BYE vs BYE matches)
+    // Pass 2: Place BYEs in empty slots (avoiding BYE vs BYE)
     if (byesPlaced < maxByes) {
-      for (Game game : games) {
-        if (byesPlaced >= maxByes) {
-          break;
-        }
-
-        PlayerPair teamA = game.getTeamA();
-        PlayerPair teamB = game.getTeamB();
-
-        // Try teamA slot if empty and opponent is not a BYE
-        if (teamA == null && teamB != null && !teamB.isBye()) {
-          game.setTeamA(PlayerPair.bye());
-          byesPlaced++;
-        }
-
-        if (byesPlaced >= maxByes) {
-          break;
-        }
-
-        // Try teamB slot if empty and opponent is not a BYE
-        if (teamB == null && teamA != null && !teamA.isBye()) {
-          game.setTeamB(PlayerPair.bye());
-          byesPlaced++;
-        }
-      }
+      byesPlaced = placeByesInEmptySlotsAvoidingByeVsBye(games, byesPlaced, maxByes);
     }
 
     // Pass 3: Last resort - place BYEs even if it creates BYE vs BYE
     if (byesPlaced < maxByes) {
-      for (Game game : games) {
-        if (byesPlaced >= maxByes) {
-          break;
-        }
+      placeRemainingByesInAnySlot(games, byesPlaced, maxByes);
+    }
+  }
 
-        if (game.getTeamA() == null) {
-          game.setTeamA(PlayerPair.bye());
-          byesPlaced++;
-        }
+  private int placeByesOppositeExistingTeams(List<Game> games, int byesPlaced, int maxByes) {
+    int placed = byesPlaced;
+    for (Game game : games) {
+      if (placed >= maxByes) {
+        break;
+      }
+      placed = tryPlaceByeOppositeTeam(game, placed);
+    }
+    return placed;
+  }
 
-        if (byesPlaced >= maxByes) {
-          break;
-        }
+  private int tryPlaceByeOppositeTeam(Game game, int byesPlaced) {
+    PlayerPair teamA = game.getTeamA();
+    PlayerPair teamB = game.getTeamB();
 
-        if (game.getTeamB() == null) {
-          game.setTeamB(PlayerPair.bye());
-          byesPlaced++;
-        }
+    if (isRealTeam(teamA) && teamB == null) {
+      game.setTeamB(PlayerPair.bye());
+      return byesPlaced + 1;
+    }
+    if (isRealTeam(teamB) && teamA == null) {
+      game.setTeamA(PlayerPair.bye());
+      return byesPlaced + 1;
+    }
+    return byesPlaced;
+  }
+
+  private boolean isRealTeam(PlayerPair team) {
+    return team != null && !team.isBye() && !team.isQualifier();
+  }
+
+  private int placeByesInEmptySlotsAvoidingByeVsBye(List<Game> games, int byesPlaced, int maxByes) {
+    int placed = byesPlaced;
+    for (Game game : games) {
+      if (placed >= maxByes) {
+        break;
+      }
+      placed = tryPlaceByeInEmptySlot(game, placed, maxByes);
+    }
+    return placed;
+  }
+
+  private int tryPlaceByeInEmptySlot(Game game, int byesPlaced, int maxByes) {
+    int        placed = byesPlaced;
+    PlayerPair teamA  = game.getTeamA();
+    PlayerPair teamB  = game.getTeamB();
+
+    if (teamA == null && teamB != null && !teamB.isBye()) {
+      game.setTeamA(PlayerPair.bye());
+      placed++;
+    }
+
+    if (placed < maxByes && teamB == null && teamA != null && !teamA.isBye()) {
+      game.setTeamB(PlayerPair.bye());
+      placed++;
+    }
+
+    return placed;
+  }
+
+  private void placeRemainingByesInAnySlot(List<Game> games, int byesPlaced, int maxByes) {
+    int placed = byesPlaced;
+    for (Game game : games) {
+      if (placed >= maxByes) {
+        break;
+      }
+
+      if (game.getTeamA() == null) {
+        game.setTeamA(PlayerPair.bye());
+        placed++;
+      }
+
+      if (placed < maxByes && game.getTeamB() == null) {
+        game.setTeamB(PlayerPair.bye());
+        placed++;
       }
     }
   }
@@ -601,7 +619,7 @@ public class AutomaticDrawStrategy implements DrawStrategy {
     List<Game> games      = initialRound.getGames();
     int        byesPlaced = 0;
 
-    // Strategy: Place BYEs opposite all teams that have already been placed
+    // Strategy: Place BYes opposite all teams that have already been placed
     // This ensures every team that was placed at a seed position gets a BYE
     for (Game game : games) {
       if (byesPlaced >= nbByes) {
