@@ -97,7 +97,7 @@ public class KnockoutPhaseTests {
    * non-null teams in the next round equals (Matches + DefaultQualif) FINAL rows are ignored (no subsequent round). Stage is resolved via
    * Stage.valueOf(roundName.toUpperCase()).
    */
-  @ParameterizedTest(name = "CSV propagateWinners: {0} – round={8}")
+  @ParameterizedTest(name = "CSV propagateWinners: {0} �� round={8}")
   @CsvFileSource(resources = "/io.github.redouanebali/tournament_scenarios.csv", numLinesToSkip = 1)
   void testPropagateWinners_FromCsvRow(String tournamentId,
                                        int nbPlayerPairs,
@@ -150,7 +150,7 @@ public class KnockoutPhaseTests {
       return;
     }
 
-    boolean isFirstRoundOfPhase = false;
+    boolean isFirstRoundOfPhase;
     if (currentStageEnum.isQualification()) {
       isFirstRoundOfPhase = currentStageEnum == Stage.Q1;
     } else {
@@ -377,9 +377,8 @@ public class KnockoutPhaseTests {
         prevRound.setStage(prevQualifStage);
       } else if (currentStageEnum.isQualification()) {
         // Previous qualification round
-        int currentQualifIndex = currentStageEnum == Stage.Q1 ? 1 :
-                                 currentStageEnum == Stage.Q2 ? 2 : 3;
-        Stage prevQualifStage = Stage.fromQualifIndex(currentQualifIndex - 1);
+        int   currentQualifIndex = currentStageEnum == Stage.Q2 ? 2 : 3;
+        Stage prevQualifStage    = Stage.fromQualifIndex(currentQualifIndex - 1);
         prevRound = TestFixtures.buildEmptyRound(totalPairs * 2);
         prevRound.setStage(prevQualifStage);
       } else {
@@ -472,7 +471,7 @@ public class KnockoutPhaseTests {
     phaseToUse.propagateWinners(t);
 
     // Assert: verify propagation in nextRound
-    Round nextRound = t.getRounds().get(t.getRounds().size() - 1);
+    Round nextRound = t.getRounds().getLast();
 
     // Count actual non-BYE winners from current round instead of using CSV values
     // This accounts for matches that may not have valid winners set
@@ -490,26 +489,6 @@ public class KnockoutPhaseTests {
 
     assertEquals(expectedQualified, actualNonNullNonByeTeams,
                  "Propagation mismatch for " + tournamentId + " at round " + roundName);
-  }
-
-  // Helper methods for staggered entry (moved from original class)
-  private int getSeedsEnteringAtStage(Stage stage, int mainDrawSize, int totalSeeds) {
-    if (totalSeeds <= 0) {
-      return 0;
-    }
-
-    // For 64-draw with 16 seeds: TS1-8 enter at R64, TS9-16 enter at R32
-    // For 32-draw with 16 seeds: TS1-8 enter at R32, TS9-16 enter at R16
-    Stage firstSeedsEnterAt  = Stage.fromNbTeams(mainDrawSize);     // R64 for 64-draw, R32 for 32-draw
-    Stage secondSeedsEnterAt = Stage.fromNbTeams(mainDrawSize / 2); // R32 for 64-draw, R16 for 32-draw
-
-    if (stage == firstSeedsEnterAt) {
-      return Math.min(totalSeeds, totalSeeds / 2); // Top half of seeds
-    } else if (stage == secondSeedsEnterAt) {
-      return Math.max(0, totalSeeds - totalSeeds / 2); // Bottom half of seeds
-    }
-
-    return 0; // No seeds enter at this stage
   }
 
   @Test
@@ -534,16 +513,16 @@ public class KnockoutPhaseTests {
     tournament.getRounds().addAll(rounds);
 
     // When: Place players using automatic strategy
-    mainDrawPhase.placeSeedTeams(rounds.get(0), teams);
-    mainDrawPhase.placeByeTeams(rounds.get(0), 40);
-    mainDrawPhase.placeRemainingTeamsRandomly(rounds.get(0),
+    mainDrawPhase.placeSeedTeams(rounds.getFirst(), teams);
+    mainDrawPhase.placeByeTeams(rounds.getFirst(), 40);
+    mainDrawPhase.placeRemainingTeamsRandomly(rounds.getFirst(),
                                               teams.stream()
-                                                   .filter(p -> rounds.get(0).getGames().stream()
+                                                   .filter(p -> rounds.getFirst().getGames().stream()
                                                                       .noneMatch(g -> g.getTeamA() == p || g.getTeamB() == p))
                                                    .toList());
 
     // Then: Verify the first round (R64)
-    Round firstRound = rounds.get(0);
+    Round firstRound = rounds.getFirst();
     assertEquals(Stage.R64, firstRound.getStage(), "First round should be R64");
     assertEquals(32, firstRound.getGames().size(), "R64 should have 32 games");
 
@@ -635,15 +614,15 @@ public class KnockoutPhaseTests {
 
     assertEquals(8, nonSeedsPlayingEachOther,
                  "The 24 non-seeded teams (seeds 17-40) should play against each other in 8 matches (16 teams), "
-                 + "while the remaining 8 non-seeds get BYEs");
+                 + "while the remaining 8 non-seeds get BYES");
   }
 
   /**
    * CRITICAL TEST: Verifies that seeds are properly separated according to tennis/padel standards.
-   *
+   * <p>
    * This test ensures that: - Seed 1 and Seed 2 can only meet in the FINAL - Seeds 1-4 can only meet in SEMI-FINALS or later - Seeds 1-8 can only
    * meet in QUARTER-FINALS or later - Seeds 1-16 can only meet in ROUND OF 16 or later
-   *
+   * <p>
    * This is the FUNDAMENTAL rule of seeded draws that was missing from all other tests!
    */
   @Test
@@ -749,6 +728,8 @@ public class KnockoutPhaseTests {
 
   /**
    * CRITICAL TEST: Verifies seed separation for a 64-draw with 16 seeds.
+   * <p>
+   * This test ensures proper seed distribution in a larger draw format.
    */
   @Test
   void testSeedSeparation_64Draw_16Seeds_verifiesStandardTennisPadelLogic() {
@@ -807,12 +788,8 @@ public class KnockoutPhaseTests {
 
   /**
    * CRITICAL TEST: Verifies that non-seeded teams are NOT placed sequentially.
-   *
+   * <p>
    * This test ensures there is random placement by checking that we DON'T have sequential matchups like Team10 vs Team11, Team12 vs Team13, etc.
-   *
-   * If teams were placed sequentially (the bug before the fix), we would have many consecutive seed numbers playing against each other.
-   *
-   * With random placement, consecutive seeds should rarely play each other.
    */
   @Test
   void testNonSeededTeams_AreNotPlacedSequentially_ProveRandomDraw() {
@@ -882,12 +859,9 @@ public class KnockoutPhaseTests {
 
   /**
    * STATISTICAL TEST: Verifies randomness by generating multiple draws and checking variance.
-   *
+   * <p>
    * This test generates the same tournament 10 times and verifies that the non-seeded teams are placed differently each time (proving there's
    * randomness).
-   *
-   * Note: This test has a small chance of false positive if we're VERY unlucky with RNG, but statistically it should pass 99.99% of the time with
-   * true randomness.
    */
   @Test
   void testRandomPlacement_GeneratesVariedDraws_ProvesTrueRandomness() {

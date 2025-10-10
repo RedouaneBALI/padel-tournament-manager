@@ -55,7 +55,7 @@ public class GroupPhaseTests {
     // Then
     assertEquals(1, rounds.size(), "Should have exactly one round for groups");
 
-    Round groupRound = rounds.get(0);
+    Round groupRound = rounds.getFirst();
     assertEquals(Stage.GROUPS, groupRound.getStage(), "Round should be GROUPS stage");
 
     // Verify pools are created
@@ -85,7 +85,7 @@ public class GroupPhaseTests {
                                               .build();
 
     List<Round> rounds     = groupPhase.initialize(config);
-    Round       groupRound = rounds.get(0);
+    Round       groupRound = rounds.getFirst();
 
     List<PlayerPair> teams = TestFixtures.createPlayerPairs(totalTeams);
 
@@ -133,7 +133,7 @@ public class GroupPhaseTests {
                                               .build();
 
     List<Round> rounds     = groupPhase.initialize(config);
-    Round       groupRound = rounds.get(0);
+    Round       groupRound = rounds.getFirst();
 
     List<PlayerPair> teams = TestFixtures.createPlayerPairs(totalTeams);
     // Set seeds for first nbSeeds teams
@@ -200,7 +200,7 @@ public class GroupPhaseTests {
                                               .build();
 
     List<Round> rounds     = groupPhase.initialize(config);
-    Round       groupRound = rounds.get(0);
+    Round       groupRound = rounds.getFirst();
 
     List<PlayerPair> teams = TestFixtures.createPlayerPairs(16);
 
@@ -300,7 +300,7 @@ public class GroupPhaseTests {
                                               .build();
 
     List<Round> rounds     = groupPhase.initialize(config);
-    Round       groupRound = rounds.get(0);
+    Round       groupRound = rounds.getFirst();
 
     // When
     groupPhase.placeRemainingTeamsRandomly(groupRound, List.of());

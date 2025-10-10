@@ -90,11 +90,11 @@ public class TournamentMapperTest {
     assertEquals(4, dto.getConfig().getNbSeeds());
     assertNotNull(dto.getPlayerPairs());
     assertEquals(1, dto.getPlayerPairs().size());
-    assertEquals("Alice", dto.getPlayerPairs().get(0).getPlayer1Name());
-    assertEquals("Bob", dto.getPlayerPairs().get(0).getPlayer2Name());
+    assertEquals("Alice", dto.getPlayerPairs().getFirst().getPlayer1Name());
+    assertEquals("Bob", dto.getPlayerPairs().getFirst().getPlayer2Name());
     assertNotNull(dto.getRounds());
     assertEquals(1, dto.getRounds().size());
-    assertEquals(Stage.FINAL, dto.getRounds().get(0).getStage());
+    assertEquals(Stage.FINAL, dto.getRounds().getFirst().getStage());
   }
 
   @Test
@@ -180,7 +180,7 @@ public class TournamentMapperTest {
     assertEquals(Stage.QUARTERS, dto.getStage());
     assertNotNull(dto.getGames());
     assertEquals(1, dto.getGames().size());
-    assertEquals(10L, dto.getGames().get(0).getId());
+    assertEquals(10L, dto.getGames().getFirst().getId());
   }
 
   @Test
@@ -206,9 +206,9 @@ public class TournamentMapperTest {
     req.setSeed(1);
     List<PlayerPair> pairs = mapper.toPlayerPairList(List.of(req));
     assertEquals(1, pairs.size());
-    Assertions.assertEquals("A", pairs.get(0).getPlayer1().getName());
-    Assertions.assertEquals("B", pairs.get(0).getPlayer2().getName());
-    Assertions.assertEquals(1, pairs.get(0).getSeed());
+    Assertions.assertEquals("A", pairs.getFirst().getPlayer1().getName());
+    Assertions.assertEquals("B", pairs.getFirst().getPlayer2().getName());
+    Assertions.assertEquals(1, pairs.getFirst().getSeed());
   }
 
   @Test

@@ -54,9 +54,9 @@ public class PoolTest {
     Pool pool = new Pool("A", defaultPairs);
 
     List<Game> games = new ArrayList<>();
-    games.add(buildGame(score1, defaultPairs.get(0), defaultPairs.get(1)));
+    games.add(buildGame(score1, defaultPairs.getFirst(), defaultPairs.get(1)));
     games.add(buildGame(score2, defaultPairs.get(1), defaultPairs.get(2)));
-    games.add(buildGame(score3, defaultPairs.get(0), defaultPairs.get(2)));
+    games.add(buildGame(score3, defaultPairs.getFirst(), defaultPairs.get(2)));
 
     Round round = new Round(Stage.GROUPS);
     games.forEach(round::addGame);
@@ -65,7 +65,7 @@ public class PoolTest {
     List<PlayerPair> expectedRanking = new ArrayList<>();
     for (String token : expectedRankingStr.split("\\|")) {
       switch (token) {
-        case "A:B" -> expectedRanking.add(defaultPairs.get(0));
+        case "A:B" -> expectedRanking.add(defaultPairs.getFirst());
         case "C:D" -> expectedRanking.add(defaultPairs.get(1));
         case "E:F" -> expectedRanking.add(defaultPairs.get(2));
         default -> throw new IllegalArgumentException("Unexpected token in expectedRankingStr: " + token);
