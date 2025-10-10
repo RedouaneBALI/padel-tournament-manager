@@ -290,14 +290,14 @@ public class AutomaticDrawStrategy implements DrawStrategy {
         SeedPlacementUtil.placeSeedTeams(initialRound, allPairs, configuredSeeds, roundDrawSize);
       }
       // Place remaining non-seeded teams RANDOMLY (not sequentially!)
-      placeRemainingNonSeededTeamsRandomly(initialRound, allPairs, configuredSeeds);
+      placeRemainingNonSeededTeamsRandomly(initialRound, allPairs);
       return;
     }
 
-    // Standard tennis/padel logic: The TOP N teams (where N = nbByes) receive BYEs
+    // Standard tennis/padel logic: The TOP N teams (where N = nbByes) receive BYES
     int nbTeamsReceivingByes = Math.min(nbByes, nbTeams);
 
-    // Step 1: Place the top N teams at standard seed positions (they will receive BYEs)
+    // Step 1: Place the top N teams at standard seed positions (they will receive BYES)
     List<PlayerPair> teamsWithByes = allPairs.subList(0, nbTeamsReceivingByes);
     if (nbTeamsReceivingByes > 0) {
       SeedPlacementUtil.placeSeedTeams(initialRound, teamsWithByes, nbTeamsReceivingByes, roundDrawSize);
@@ -417,36 +417,11 @@ public class AutomaticDrawStrategy implements DrawStrategy {
     }
   }
 
-  /**
-   * Places non-seeded teams in empty slots after seeds have been placed.
-   */
-  private void placeRemainingNonSeededTeams(Round initialRound, List<PlayerPair> allPairs, int configuredSeeds) {
-    // Find already placed teams
-    Set<PlayerPair> alreadyPlaced = new HashSet<>();
-    for (Game game : initialRound.getGames()) {
-      if (game.getTeamA() != null && !game.getTeamA().isBye()) {
-        alreadyPlaced.add(game.getTeamA());
-      }
-      if (game.getTeamB() != null && !game.getTeamB().isBye()) {
-        alreadyPlaced.add(game.getTeamB());
-      }
-    }
-
-    // Get remaining teams
-    List<PlayerPair> remainingTeams = allPairs.stream()
-                                              .filter(p -> !alreadyPlaced.contains(p))
-                                              .toList();
-
-    // Place them in empty slots
-    if (!remainingTeams.isEmpty()) {
-      placeTeamsInEmptySlots(initialRound, remainingTeams);
-    }
-  }
 
   /**
    * Places non-seeded teams RANDOMLY in empty slots after seeds have been placed.
    */
-  private void placeRemainingNonSeededTeamsRandomly(Round initialRound, List<PlayerPair> allPairs, int configuredSeeds) {
+  private void placeRemainingNonSeededTeamsRandomly(Round initialRound, List<PlayerPair> allPairs) {
     // Find already placed teams
     Set<PlayerPair> alreadyPlaced = new HashSet<>();
     for (Game game : initialRound.getGames()) {
@@ -708,19 +683,6 @@ public class AutomaticDrawStrategy implements DrawStrategy {
     }
   }
 
-  /**
-   * Collects already placed teams excluding qualifiers (for QUALIF_KO format).
-   */
-  private Set<PlayerPair> collectAlreadyPlacedTeamsExcludingQualifiers(Round initialRound) {
-    Set<PlayerPair> alreadyPlaced = new HashSet<>();
-
-    for (Game g : initialRound.getGames()) {
-      addTeamIfNotByeAndNotQualifier(g.getTeamA(), alreadyPlaced);
-      addTeamIfNotByeAndNotQualifier(g.getTeamB(), alreadyPlaced);
-    }
-
-    return alreadyPlaced;
-  }
 
   /**
    * Collects already placed teams including all types (for KNOCKOUT format).

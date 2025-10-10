@@ -779,8 +779,8 @@ public class KnockoutPhaseTests {
     boolean seed1InTopHalf = seed1GameIndex < 16;
     boolean seed2InTopHalf = seed2GameIndex < 16;
 
-    assertTrue(seed1InTopHalf != seed2InTopHalf,
-               "Seed 1 and Seed 2 MUST be in opposite halves in a 64-draw");
+    assertNotEquals(seed1InTopHalf, seed2InTopHalf,
+                    "Seed 1 and Seed 2 MUST be in opposite halves in a 64-draw");
 
     // Verify Seeds 1-4 are in different quarters (8 games per quarter)
     Set<Integer> quartersUsed = new HashSet<>();
