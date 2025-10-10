@@ -805,4 +805,147 @@ public class KnockoutPhaseTests {
     }
   }
 
+  /**
+   * CRITICAL TEST: Verifies that non-seeded teams are NOT placed sequentially.
+   *
+   * This test ensures there is random placement by checking that we DON'T have sequential matchups like Team10 vs Team11, Team12 vs Team13, etc.
+   *
+   * If teams were placed sequentially (the bug before the fix), we would have many consecutive seed numbers playing against each other.
+   *
+   * With random placement, consecutive seeds should rarely play each other.
+   */
+  @Test
+  void testNonSeededTeams_AreNotPlacedSequentially_ProveRandomDraw() {
+    // Given: A 32-draw tournament with 8 seeds and 32 teams
+    Tournament tournament = TestFixtures.makeTournament(
+        0,              // preQualDrawSize
+        0,              // nbQualifiers
+        32,             // mainDrawSize
+        8,              // nbSeeds
+        0,              // nbSeedsQualify
+        DrawMode.SEEDED
+    );
+
+    // Create 32 teams (seeds 1-32)
+    List<PlayerPair> teams = TestFixtures.createPlayerPairs(32);
+
+    // Initialize and populate tournament
+    TournamentBuilder.setupAndPopulateTournament(tournament, teams);
+
+    Round r32Round = tournament.getRoundByStage(Stage.R32);
+
+    // Count how many games have consecutive seeds playing against each other
+    // (e.g., Seed 10 vs Seed 11, Seed 12 vs Seed 13, etc.)
+    int consecutiveSeedMatches = 0;
+
+    for (Game game : r32Round.getGames()) {
+      PlayerPair teamA = game.getTeamA();
+      PlayerPair teamB = game.getTeamB();
+
+      if (teamA == null || teamB == null) {
+        continue;
+      }
+
+      // Skip if either team is a BYE or a seed (seeds 1-8 are placed at specific positions)
+      if (teamA.isBye() || teamB.isBye()) {
+        continue;
+      }
+
+      // Only check non-seeded teams (seeds > 8)
+      if (teamA.getSeed() <= 8 || teamB.getSeed() <= 8) {
+        continue;
+      }
+
+      int seed1 = Math.min(teamA.getSeed(), teamB.getSeed());
+      int seed2 = Math.max(teamA.getSeed(), teamB.getSeed());
+
+      // Check if they are consecutive (e.g., 10 vs 11, 12 vs 13)
+      if (seed2 == seed1 + 1) {
+        consecutiveSeedMatches++;
+      }
+    }
+
+    // CRITICAL ASSERTION: With random placement, we should have AT MOST 1-2 consecutive matches
+    // (could happen by chance, but very unlikely to have many)
+    //
+    // With sequential placement (the bug), we would have MANY consecutive matches
+    // (e.g., 10vs11, 12vs13, 14vs15, 16vs17, etc. = at least 8+ consecutive matches)
+    //
+    // Setting threshold to 3: if we have 3 or more consecutive matches, it's suspicious
+    // and likely means teams are placed sequentially
+    assertTrue(consecutiveSeedMatches < 3,
+               String.format("Too many consecutive seed matchups (%d)! " +
+                             "This suggests teams are placed SEQUENTIALLY instead of RANDOMLY. " +
+                             "Expected: < 3 (random), Actual: %d (likely sequential if >= 3)",
+                             consecutiveSeedMatches, consecutiveSeedMatches));
+  }
+
+  /**
+   * STATISTICAL TEST: Verifies randomness by generating multiple draws and checking variance.
+   *
+   * This test generates the same tournament 10 times and verifies that the non-seeded teams are placed differently each time (proving there's
+   * randomness).
+   *
+   * Note: This test has a small chance of false positive if we're VERY unlucky with RNG, but statistically it should pass 99.99% of the time with
+   * true randomness.
+   */
+  @Test
+  void testRandomPlacement_GeneratesVariedDraws_ProvesTrueRandomness() {
+    // Track the matchups for non-seeded teams across multiple draws
+    Set<String> uniqueMatchupPatterns = new HashSet<>();
+
+    // Generate the same tournament 10 times
+    for (int iteration = 0; iteration < 10; iteration++) {
+      Tournament tournament = TestFixtures.makeTournament(
+          0,              // preQualDrawSize
+          0,              // nbQualifiers
+          32,             // mainDrawSize
+          8,              // nbSeeds
+          0,              // nbSeedsQualify
+          DrawMode.SEEDED
+      );
+
+      List<PlayerPair> teams = TestFixtures.createPlayerPairs(32);
+      TournamentBuilder.setupAndPopulateTournament(tournament, teams);
+
+      Round r32Round = tournament.getRoundByStage(Stage.R32);
+
+      // Create a "fingerprint" of the non-seeded matchups
+      StringBuilder matchupPattern = new StringBuilder();
+
+      for (Game game : r32Round.getGames()) {
+        PlayerPair teamA = game.getTeamA();
+        PlayerPair teamB = game.getTeamB();
+
+        if (teamA == null || teamB == null || teamA.isBye() || teamB.isBye()) {
+          continue;
+        }
+
+        // Only track non-seeded teams (seeds > 8)
+        if (teamA.getSeed() > 8 && teamB.getSeed() > 8) {
+          int seed1 = Math.min(teamA.getSeed(), teamB.getSeed());
+          int seed2 = Math.max(teamA.getSeed(), teamB.getSeed());
+          matchupPattern.append(seed1).append("v").append(seed2).append(";");
+        }
+      }
+
+      uniqueMatchupPatterns.add(matchupPattern.toString());
+    }
+
+    // CRITICAL ASSERTION: With true randomness, we should have MULTIPLE different patterns
+    // If teams were placed sequentially (the bug), we would have THE SAME pattern every time
+    // (because sequential placement is deterministic)
+    //
+    // With 10 iterations, we expect at least 5-8 unique patterns with true randomness
+    // (some duplicates are possible but unlikely)
+    int uniquePatterns = uniqueMatchupPatterns.size();
+
+    assertTrue(uniquePatterns >= 5,
+               String.format("Not enough variation in draw generation! " +
+                             "Generated %d iterations but only got %d unique patterns. " +
+                             "This suggests teams are placed DETERMINISTICALLY instead of RANDOMLY. " +
+                             "Expected: >= 5 unique patterns (random), Actual: %d",
+                             10, uniquePatterns, uniquePatterns));
+  }
+
 }

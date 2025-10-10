@@ -284,13 +284,13 @@ public class AutomaticDrawStrategy implements DrawStrategy {
     int nbByes  = roundDrawSize - nbTeams;
 
     if (nbByes == 0) {
-      // No BYEs needed - draw is full
+      // No BYES needed - draw is full
       // Use SeedPlacementUtil for proper seed placement
       if (configuredSeeds > 0) {
         SeedPlacementUtil.placeSeedTeams(initialRound, allPairs, configuredSeeds, roundDrawSize);
       }
-      // Place remaining non-seeded teams
-      placeRemainingNonSeededTeams(initialRound, allPairs, configuredSeeds);
+      // Place remaining non-seeded teams RANDOMLY (not sequentially!)
+      placeRemainingNonSeededTeamsRandomly(initialRound, allPairs, configuredSeeds);
       return;
     }
 
@@ -309,10 +309,12 @@ public class AutomaticDrawStrategy implements DrawStrategy {
     placeByesOppositePlacedTeams(initialRound, nbByes);
 
     // Step 3: Place remaining teams that will play in first round
+    // CRITICAL FIX: Use RANDOM placement instead of sequential!
     int nbTeamsPlayingFirstRound = nbTeams - nbTeamsReceivingByes;
     if (nbTeamsPlayingFirstRound > 0) {
       List<PlayerPair> teamsPlayingFirstRound = allPairs.subList(nbTeamsReceivingByes, nbTeams);
-      placeTeamsInEmptySlots(initialRound, teamsPlayingFirstRound);
+      // Use RandomPlacementUtil instead of placeTeamsInEmptySlots to ensure random draw
+      RandomPlacementUtil.placeRemainingTeamsRandomly(initialRound, teamsPlayingFirstRound);
     }
   }
 
@@ -323,7 +325,7 @@ public class AutomaticDrawStrategy implements DrawStrategy {
     List<Game> games      = initialRound.getGames();
     int        byesPlaced = 0;
 
-    // Pass 1: Place BYEs opposite teams that are already placed
+    // Pass 1: Place BYes opposite teams that are already placed
     for (Game game : games) {
       if (byesPlaced >= maxByes) {
         break;
@@ -420,6 +422,32 @@ public class AutomaticDrawStrategy implements DrawStrategy {
     // Place them in empty slots
     if (!remainingTeams.isEmpty()) {
       placeTeamsInEmptySlots(initialRound, remainingTeams);
+    }
+  }
+
+  /**
+   * Places non-seeded teams RANDOMLY in empty slots after seeds have been placed.
+   */
+  private void placeRemainingNonSeededTeamsRandomly(Round initialRound, List<PlayerPair> allPairs, int configuredSeeds) {
+    // Find already placed teams
+    Set<PlayerPair> alreadyPlaced = new HashSet<>();
+    for (Game game : initialRound.getGames()) {
+      if (game.getTeamA() != null && !game.getTeamA().isBye()) {
+        alreadyPlaced.add(game.getTeamA());
+      }
+      if (game.getTeamB() != null && !game.getTeamB().isBye()) {
+        alreadyPlaced.add(game.getTeamB());
+      }
+    }
+
+    // Get remaining teams
+    List<PlayerPair> remainingTeams = allPairs.stream()
+                                              .filter(p -> !alreadyPlaced.contains(p))
+                                              .toList();
+
+    // Place them RANDOMLY in empty slots (not sequentially!)
+    if (!remainingTeams.isEmpty()) {
+      RandomPlacementUtil.placeRemainingTeamsRandomly(initialRound, remainingTeams);
     }
   }
 
