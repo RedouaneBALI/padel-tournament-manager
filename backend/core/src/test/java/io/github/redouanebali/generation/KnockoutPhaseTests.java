@@ -1,6 +1,8 @@
 package io.github.redouanebali.generation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.redouanebali.model.Game;
@@ -634,6 +636,173 @@ public class KnockoutPhaseTests {
     assertEquals(8, nonSeedsPlayingEachOther,
                  "The 24 non-seeded teams (seeds 17-40) should play against each other in 8 matches (16 teams), "
                  + "while the remaining 8 non-seeds get BYEs");
+  }
+
+  /**
+   * CRITICAL TEST: Verifies that seeds are properly separated according to tennis/padel standards.
+   *
+   * This test ensures that: - Seed 1 and Seed 2 can only meet in the FINAL - Seeds 1-4 can only meet in SEMI-FINALS or later - Seeds 1-8 can only
+   * meet in QUARTER-FINALS or later - Seeds 1-16 can only meet in ROUND OF 16 or later
+   *
+   * This is the FUNDAMENTAL rule of seeded draws that was missing from all other tests!
+   */
+  @Test
+  void testSeedSeparation_32Draw_8Seeds_verifiesStandardTennisPadelLogic() {
+    // Given: A 32-draw tournament with 8 seeds (standard configuration)
+    Tournament tournament = TestFixtures.makeTournament(
+        0,              // preQualDrawSize
+        0,              // nbQualifiers
+        32,             // mainDrawSize
+        8,              // nbSeeds
+        0,              // nbSeedsQualify
+        DrawMode.SEEDED
+    );
+
+    // Create 32 teams (seeds 1-32)
+    List<PlayerPair> teams = TestFixtures.createPlayerPairs(32);
+
+    // Initialize and populate tournament using the automatic draw strategy
+    TournamentBuilder.setupAndPopulateTournament(tournament, teams);
+
+    Round r32Round = tournament.getRoundByStage(Stage.R32);
+
+    // CRITICAL VERIFICATION 1: Seeds 1 and 2 must be in opposite halves of the draw
+    // They should only meet in the FINAL
+    Integer seed1GameIndex = findGameIndexForSeed(r32Round, 1);
+    Integer seed2GameIndex = findGameIndexForSeed(r32Round, 2);
+
+    assertTrue(seed1GameIndex != null && seed2GameIndex != null,
+               "Seeds 1 and 2 must be placed in the draw");
+
+    // In a 32-draw (16 games), games 0-7 are top half, games 8-15 are bottom half
+    boolean seed1InTopHalf = seed1GameIndex < 8;
+    boolean seed2InTopHalf = seed2GameIndex < 8;
+
+    assertTrue(seed1InTopHalf != seed2InTopHalf,
+               "Seed 1 and Seed 2 MUST be in opposite halves (can only meet in FINAL)");
+
+    // CRITICAL VERIFICATION 2: Seeds 1-4 must be in different quarters
+    // They should only meet in SEMI-FINALS or later
+    Integer seed3GameIndex = findGameIndexForSeed(r32Round, 3);
+    Integer seed4GameIndex = findGameIndexForSeed(r32Round, 4);
+
+    assertTrue(seed3GameIndex != null && seed4GameIndex != null,
+               "Seeds 3 and 4 must be placed in the draw");
+
+    // Check that top 4 seeds are in 4 different quarters
+    // Quarter 1: games 0-3, Quarter 2: games 4-7, Quarter 3: games 8-11, Quarter 4: games 12-15
+    int seed1Quarter = seed1GameIndex / 4;
+    int seed2Quarter = seed2GameIndex / 4;
+    int seed3Quarter = seed3GameIndex / 4;
+    int seed4Quarter = seed4GameIndex / 4;
+
+    Set<Integer> quartersUsed = Set.of(seed1Quarter, seed2Quarter, seed3Quarter, seed4Quarter);
+    assertEquals(4, quartersUsed.size(),
+                 "Seeds 1-4 MUST be in 4 different quarters (can only meet in SEMI-FINALS or later)");
+
+    // CRITICAL VERIFICATION 3: Seeds 1-8 must be in different eighths
+    // They should only meet in QUARTER-FINALS or later
+    Set<Integer> eighthsUsed = new HashSet<>();
+    for (int seed = 1; seed <= 8; seed++) {
+      Integer gameIndex = findGameIndexForSeed(r32Round, seed);
+      assertNotNull(gameIndex, "Seed " + seed + " must be placed in the draw");
+
+      // Each eighth contains 2 games (32 slots / 16 games = 2 games per eighth)
+      int eighth = gameIndex / 2;
+      eighthsUsed.add(eighth);
+    }
+
+    assertEquals(8, eighthsUsed.size(),
+                 "Seeds 1-8 MUST be in 8 different eighths (can only meet in QUARTER-FINALS or later)");
+
+    // VERIFICATION 4: Check that NO two seeds in top 8 are in the same game (would meet in R32!)
+    for (int seed1 = 1; seed1 <= 8; seed1++) {
+      for (int seed2 = seed1 + 1; seed2 <= 8; seed2++) {
+        Integer game1 = findGameIndexForSeed(r32Round, seed1);
+        Integer game2 = findGameIndexForSeed(r32Round, seed2);
+
+        assertTrue(game1 != null && game2 != null,
+                   "Seeds " + seed1 + " and " + seed2 + " must be placed");
+
+        assertNotEquals(game1, game2, String.format("Seeds %d and %d MUST NOT be in the same game (they would meet in R32!)",
+                                                    seed1, seed2));
+      }
+    }
+  }
+
+  /**
+   * Helper method to find the game index where a specific seed is placed. Returns null if the seed is not found.
+   */
+  private Integer findGameIndexForSeed(Round round, int seedNumber) {
+    for (int i = 0; i < round.getGames().size(); i++) {
+      Game game = round.getGames().get(i);
+
+      if (game.getTeamA() != null && game.getTeamA().getSeed() == seedNumber) {
+        return i;
+      }
+      if (game.getTeamB() != null && game.getTeamB().getSeed() == seedNumber) {
+        return i;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * CRITICAL TEST: Verifies seed separation for a 64-draw with 16 seeds.
+   */
+  @Test
+  void testSeedSeparation_64Draw_16Seeds_verifiesStandardTennisPadelLogic() {
+    // Given: A 64-draw tournament with 16 seeds
+    Tournament tournament = TestFixtures.makeTournament(
+        0,              // preQualDrawSize
+        0,              // nbQualifiers
+        64,             // mainDrawSize
+        16,             // nbSeeds
+        0,              // nbSeedsQualify
+        DrawMode.SEEDED
+    );
+
+    // Create 64 teams (seeds 1-64)
+    List<PlayerPair> teams = TestFixtures.createPlayerPairs(64);
+
+    // Initialize and populate tournament
+    TournamentBuilder.setupAndPopulateTournament(tournament, teams);
+
+    Round r64Round = tournament.getRoundByStage(Stage.R64);
+
+    // Verify Seeds 1 and 2 are in opposite halves (32 games: 0-15 top, 16-31 bottom)
+    Integer seed1GameIndex = findGameIndexForSeed(r64Round, 1);
+    Integer seed2GameIndex = findGameIndexForSeed(r64Round, 2);
+
+    assertTrue(seed1GameIndex != null && seed2GameIndex != null);
+
+    boolean seed1InTopHalf = seed1GameIndex < 16;
+    boolean seed2InTopHalf = seed2GameIndex < 16;
+
+    assertTrue(seed1InTopHalf != seed2InTopHalf,
+               "Seed 1 and Seed 2 MUST be in opposite halves in a 64-draw");
+
+    // Verify Seeds 1-4 are in different quarters (8 games per quarter)
+    Set<Integer> quartersUsed = new HashSet<>();
+    for (int seed = 1; seed <= 4; seed++) {
+      Integer gameIndex = findGameIndexForSeed(r64Round, seed);
+      assertNotNull(gameIndex);
+      quartersUsed.add(gameIndex / 8);
+    }
+    assertEquals(4, quartersUsed.size(),
+                 "Seeds 1-4 MUST be in 4 different quarters in a 64-draw");
+
+    // Verify Seeds 1-16 are properly distributed (no two seeds in same game)
+    for (int seed1 = 1; seed1 <= 16; seed1++) {
+      for (int seed2 = seed1 + 1; seed2 <= 16; seed2++) {
+        Integer game1 = findGameIndexForSeed(r64Round, seed1);
+        Integer game2 = findGameIndexForSeed(r64Round, seed2);
+
+        assertTrue(game1 != null && game2 != null);
+        assertNotEquals(game1, game2, String.format("Seeds %d and %d MUST NOT be in the same game in R64",
+                                                    seed1, seed2));
+      }
+    }
   }
 
 }

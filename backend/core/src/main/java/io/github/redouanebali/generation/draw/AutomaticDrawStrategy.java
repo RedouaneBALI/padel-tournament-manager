@@ -274,44 +274,152 @@ public class AutomaticDrawStrategy implements DrawStrategy {
   }
 
   /**
-   * Processes KNOCKOUT format using standard tennis/padel logic: 1. Place the best N teams (where N = nbByes) at standard seed positions 2. Place
-   * BYEs opposite these N teams 3. Place remaining teams in empty slots (they will play against each other)
+   * Processes KNOCKOUT format using standard tennis/padel logic: 1. The TOP N teams (where N = nbByes) receive BYEs at standard positions 2. The
+   * remaining teams play against each other in first round
+   *
+   * Standard tennis/padel rule: If you have X teams in a Y-slot draw, the best (Y-X) teams get BYEs, regardless of how many are officially "seeded"
    */
   private void processKnockoutStandard(Round initialRound, List<PlayerPair> allPairs, int roundDrawSize, int configuredSeeds) {
     int nbTeams = allPairs.size();
     int nbByes  = roundDrawSize - nbTeams;
 
     if (nbByes == 0) {
-      // No BYES needed - draw is full
-      // Just place all teams at their standard seed positions
-      placeSeedsAtStandardPositions(initialRound, allPairs, nbTeams, roundDrawSize);
+      // No BYEs needed - draw is full
+      // Use SeedPlacementUtil for proper seed placement
+      if (configuredSeeds > 0) {
+        SeedPlacementUtil.placeSeedTeams(initialRound, allPairs, configuredSeeds, roundDrawSize);
+      }
+      // Place remaining non-seeded teams
+      placeRemainingNonSeededTeams(initialRound, allPairs, configuredSeeds);
       return;
     }
 
-    // Standard tennis/padel logic for draws with BYEs:
-    // 1. The TOP N teams (where N = min(nbByes, nbTeams)) receive BYEs
-    // 2. The remaining teams play against each other in first round
+    // Standard tennis/padel logic: The TOP N teams (where N = nbByes) receive BYEs
+    int nbTeamsReceivingByes = Math.min(nbByes, nbTeams);
 
-    // Important: We can't give BYEs to more teams than we have!
-    int nbTeamsReceivingByes     = Math.min(nbByes, nbTeams);
-    int nbTeamsPlayingFirstRound = nbTeams - nbTeamsReceivingByes;
-
-    // Step 1: Place teams receiving BYEs at standard positions
+    // Step 1: Place the top N teams at standard seed positions (they will receive BYEs)
+    List<PlayerPair> teamsWithByes = allPairs.subList(0, nbTeamsReceivingByes);
     if (nbTeamsReceivingByes > 0) {
-      List<PlayerPair> teamsWithByes = allPairs.subList(0, nbTeamsReceivingByes);
-      placeSeedsAtStandardPositions(initialRound, teamsWithByes, nbTeamsReceivingByes, roundDrawSize);
+      SeedPlacementUtil.placeSeedTeams(initialRound, teamsWithByes, nbTeamsReceivingByes, roundDrawSize);
     }
 
-    // Step 2: Place BYEs opposite these teams
-    if (nbByes > 0) {
-      placeByesInEmptySlots(initialRound, nbByes, nbTeamsReceivingByes, roundDrawSize);
-    }
+    // Step 2: Place BYEs opposite ALL teams that have been placed (not just configured seeds)
+    // This is the key fix: we place BYEs opposite the teams that were actually placed,
+    // not based on theoretical seed positions
+    placeByesOppositePlacedTeams(initialRound, nbByes);
 
     // Step 3: Place remaining teams that will play in first round
-    // These teams should be placed in pairs in the remaining empty slots
+    int nbTeamsPlayingFirstRound = nbTeams - nbTeamsReceivingByes;
     if (nbTeamsPlayingFirstRound > 0) {
       List<PlayerPair> teamsPlayingFirstRound = allPairs.subList(nbTeamsReceivingByes, nbTeams);
       placeTeamsInEmptySlots(initialRound, teamsPlayingFirstRound);
+    }
+  }
+
+  /**
+   * Places BYEs opposite all teams that have already been placed in the round. This ensures every placed team gets a BYE opponent.
+   */
+  private void placeByesOppositePlacedTeams(Round initialRound, int maxByes) {
+    List<Game> games      = initialRound.getGames();
+    int        byesPlaced = 0;
+
+    // Pass 1: Place BYEs opposite teams that are already placed
+    for (Game game : games) {
+      if (byesPlaced >= maxByes) {
+        break;
+      }
+
+      PlayerPair teamA = game.getTeamA();
+      PlayerPair teamB = game.getTeamB();
+
+      // If teamA is a real team and teamB is empty, place BYE at teamB
+      if (teamA != null && !teamA.isBye() && !teamA.isQualifier() && teamB == null) {
+        game.setTeamB(PlayerPair.bye());
+        byesPlaced++;
+      }
+      // If teamB is a real team and teamA is empty, place BYE at teamA
+      else if (teamB != null && !teamB.isBye() && !teamB.isQualifier() && teamA == null) {
+        game.setTeamA(PlayerPair.bye());
+        byesPlaced++;
+      }
+    }
+
+    // Pass 2: If we still need more BYEs, place them in any empty slot
+    // (avoiding BYE vs BYE matches)
+    if (byesPlaced < maxByes) {
+      for (Game game : games) {
+        if (byesPlaced >= maxByes) {
+          break;
+        }
+
+        PlayerPair teamA = game.getTeamA();
+        PlayerPair teamB = game.getTeamB();
+
+        // Try teamA slot if empty and opponent is not a BYE
+        if (teamA == null && teamB != null && !teamB.isBye()) {
+          game.setTeamA(PlayerPair.bye());
+          byesPlaced++;
+        }
+
+        if (byesPlaced >= maxByes) {
+          break;
+        }
+
+        // Try teamB slot if empty and opponent is not a BYE
+        if (teamB == null && teamA != null && !teamA.isBye()) {
+          game.setTeamB(PlayerPair.bye());
+          byesPlaced++;
+        }
+      }
+    }
+
+    // Pass 3: Last resort - place BYEs even if it creates BYE vs BYE
+    if (byesPlaced < maxByes) {
+      for (Game game : games) {
+        if (byesPlaced >= maxByes) {
+          break;
+        }
+
+        if (game.getTeamA() == null) {
+          game.setTeamA(PlayerPair.bye());
+          byesPlaced++;
+        }
+
+        if (byesPlaced >= maxByes) {
+          break;
+        }
+
+        if (game.getTeamB() == null) {
+          game.setTeamB(PlayerPair.bye());
+          byesPlaced++;
+        }
+      }
+    }
+  }
+
+  /**
+   * Places non-seeded teams in empty slots after seeds have been placed.
+   */
+  private void placeRemainingNonSeededTeams(Round initialRound, List<PlayerPair> allPairs, int configuredSeeds) {
+    // Find already placed teams
+    Set<PlayerPair> alreadyPlaced = new HashSet<>();
+    for (Game game : initialRound.getGames()) {
+      if (game.getTeamA() != null && !game.getTeamA().isBye()) {
+        alreadyPlaced.add(game.getTeamA());
+      }
+      if (game.getTeamB() != null && !game.getTeamB().isBye()) {
+        alreadyPlaced.add(game.getTeamB());
+      }
+    }
+
+    // Get remaining teams
+    List<PlayerPair> remainingTeams = allPairs.stream()
+                                              .filter(p -> !alreadyPlaced.contains(p))
+                                              .toList();
+
+    // Place them in empty slots
+    if (!remainingTeams.isEmpty()) {
+      placeTeamsInEmptySlots(initialRound, remainingTeams);
     }
   }
 
