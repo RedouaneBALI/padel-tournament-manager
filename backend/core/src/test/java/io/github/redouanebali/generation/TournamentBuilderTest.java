@@ -588,14 +588,6 @@ public class TournamentBuilderTest {
                                           .filter(p -> !p.isBye() && !p.isQualifier()) // Exclure BYE et placeholders QUALIFIER
                                           .collect(Collectors.toList());
 
-    System.out.println("=== DEBUG: Teams in Q1 ===");
-    teamsInQ1.forEach(p -> System.out.println("  Seed " + p.getSeed() + ": " +
-                                              p.getPlayer1().getName() + "/" + p.getPlayer2().getName()));
-
-    System.out.println("=== DEBUG: Teams in R32 ===");
-    teamsInR32.forEach(p -> System.out.println("  Seed " + p.getSeed() + ": " +
-                                               p.getPlayer1().getName() + "/" + p.getPlayer2().getName()));
-
     // Vérifier qu'aucune équipe n'est présente dans les deux rounds
     for (PlayerPair teamInQ1 : teamsInQ1) {
       boolean isDuplicateInR32 = teamsInR32.stream()
@@ -624,9 +616,6 @@ public class TournamentBuilderTest {
                                    .filter(seed -> seed > 0 && seed < Integer.MAX_VALUE) // Exclure les seeds spéciales
                                    .min()
                                    .orElse(Integer.MAX_VALUE);
-
-      System.out.println("Max seed in Q1: " + maxSeedInQ1);
-      System.out.println("Min seed in R32: " + minSeedInR32);
 
       // Les seeds en Q1 doivent être plus élevées (moins bonnes) que celles en R32
       assertTrue(maxSeedInQ1 > minSeedInR32,

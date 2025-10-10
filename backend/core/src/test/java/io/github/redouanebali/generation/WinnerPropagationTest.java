@@ -50,15 +50,6 @@ public class WinnerPropagationTest {
                             .filter(p -> p != null && !p.isBye() && !p.isQualifier())
                             .count();
 
-    for (int i = 0; i < Math.min(q1Round.getGames().size(), 3); i++) {
-      Game game = q1Round.getGames().get(i);
-      System.out.printf("  Q1 Game %d: %s vs %s%n",
-                        i + 1,
-                        game.getTeamA() != null ? (game.getTeamA().isBye() ? "BYE" : "Seed " + game.getTeamA().getSeed()) : "NULL",
-                        game.getTeamB() != null ? (game.getTeamB().isBye() ? "BYE" : "Seed " + game.getTeamB().getSeed()) : "NULL");
-    }
-    System.out.println("  ... (total: " + q1Round.getGames().size() + " matchs)");
-
     // Vérifier que Q1 contient bien des équipes
     assertTrue(teamsInQ1 > 0, "Q1 doit contenir des équipes après génération du draw");
 
@@ -86,14 +77,6 @@ public class WinnerPropagationTest {
                             .filter(p -> p != null && !p.isBye() && !p.isQualifier())
                             .count();
 
-    for (int i = 0; i < q2Round.getGames().size(); i++) {
-      Game game = q2Round.getGames().get(i);
-      System.out.printf("  Q2 Game %d: %s vs %s%n",
-                        i + 1,
-                        game.getTeamA() != null ? (game.getTeamA().isBye() ? "BYE" : "Seed " + game.getTeamA().getSeed()) : "NULL",
-                        game.getTeamB() != null ? (game.getTeamB().isBye() ? "BYE" : "Seed " + game.getTeamB().getSeed()) : "NULL");
-    }
-
     // Vérifier que Q2 est rempli
     assertTrue(teamsInQ2 > 0, "Q2 doit avoir des équipes après propagation depuis Q1");
 
@@ -117,11 +100,6 @@ public class WinnerPropagationTest {
       }
     }
 
-    System.out.println("\n=== GAGNANTS DE Q2 ===");
-    for (int i = 0; i < q2Winners.size(); i++) {
-      System.out.printf("  Match Q2-%d winner: Seed %d%n", i + 1, q2Winners.get(i).getSeed());
-    }
-
     // Collecter les slots QUALIFIER dans R32 AVANT propagation
     List<QualifierSlotInfo> qualifierSlotsBefore = new ArrayList<>();
     for (int gameIdx = 0; gameIdx < r32Round.getGames().size(); gameIdx++) {
@@ -135,20 +113,10 @@ public class WinnerPropagationTest {
       }
     }
 
-    System.out.println("\n=== AVANT PROPAGATION Q2 → R32 ===");
-    System.out.println("Nombre de slots QUALIFIER dans R32 : " + qualifierSlotsBefore.size());
-    for (int i = 0; i < qualifierSlotsBefore.size(); i++) {
-      QualifierSlotInfo slot = qualifierSlotsBefore.get(i);
-      System.out.printf("  Slot Q%d : Game[%d].%s%n", i + 1, slot.gameIndex, slot.side);
-    }
-
     // When: Propager les gagnants de Q2 vers R32 (deuxième propagation)
-    System.out.println("\n=== PROPAGATION Q2 → R32 ===");
     TournamentBuilder.propagateWinners(tournament);
 
     // Then: Vérifier que chaque gagnant de Q2 est placé dans le bon ordre dans R32
-    System.out.println("\n=== APRÈS PROPAGATION Q2 → R32 ===");
-
     for (int i = 0; i < q2Winners.size() && i < qualifierSlotsBefore.size(); i++) {
       PlayerPair        expectedWinner = q2Winners.get(i);
       QualifierSlotInfo targetSlot     = qualifierSlotsBefore.get(i);
@@ -156,21 +124,9 @@ public class WinnerPropagationTest {
       Game       r32Game    = r32Round.getGames().get(targetSlot.gameIndex);
       PlayerPair actualTeam = targetSlot.isTeamA ? r32Game.getTeamA() : r32Game.getTeamB();
 
-      System.out.printf("Q2 Match %d winner (seed %d) → R32 Game[%d].%s",
-                        i + 1,
-                        expectedWinner.getSeed(),
-                        targetSlot.gameIndex,
-                        targetSlot.side);
-
       assertNotNull(actualTeam,
                     String.format("Le slot R32[%d].%s ne doit pas être null après propagation",
                                   targetSlot.gameIndex, targetSlot.side));
-
-      if (actualTeam.getSeed() == expectedWinner.getSeed()) {
-        System.out.println(" ✓");
-      } else {
-        System.out.printf(" ✗ (trouvé seed %d)%n", actualTeam.getSeed());
-      }
 
       assertEquals(expectedWinner.getSeed(), actualTeam.getSeed(),
                    String.format("Le gagnant du match Q2-%d (seed %d) doit être placé dans le slot Q%d (R32[%d].%s), " +
@@ -186,8 +142,6 @@ public class WinnerPropagationTest {
                    String.format("Le gagnant du match Q2-%d doit être correctement placé dans le slot Q%d",
                                  i + 1, i + 1));
     }
-
-    System.out.println("\n✅ Tous les gagnants de Q2 ont été placés dans l'ordre correct dans R32 !");
   }
 
   @Test
@@ -223,11 +177,8 @@ public class WinnerPropagationTest {
     // Match 4 termine en premier, puis Match 2, puis Match 1, puis Match 3
     int[] executionOrder = {3, 1, 0, 2}; // Index des matchs qui se terminent dans cet ordre
 
-    System.out.println("=== SCÉNARIO : Matchs terminés dans le désordre ===");
     for (int execIdx = 0; execIdx < executionOrder.length; execIdx++) {
       int matchIdx = executionOrder[execIdx];
-      System.out.printf("Étape %d : Match Q2-%d termine%n", execIdx + 1, matchIdx + 1);
-
       Game       game   = q2Round.getGames().get(matchIdx);
       PlayerPair winner = q2Winners.get(matchIdx);
       game.setTeamA(winner);
@@ -251,7 +202,6 @@ public class WinnerPropagationTest {
       }
     }
 
-    System.out.println("\n=== RÉSULTAT FINAL ===");
     for (int i = 0; i < qualifierSlots.size(); i++) {
       QualifierSlotInfo slot       = qualifierSlots.get(i);
       Game              r32Game    = r32Round.getGames().get(slot.gameIndex);
@@ -260,19 +210,11 @@ public class WinnerPropagationTest {
       int expectedMatchIndex = i; // Le slot Q1 doit contenir le gagnant du match Q2-1, etc.
       int actualMatchIndex   = actualTeam.getSeed() - 200;
 
-      System.out.printf("Slot Q%d (R32[%d].%s) : Match Q2-%d winner (seed %d)%n",
-                        i + 1,
-                        slot.gameIndex,
-                        slot.side,
-                        actualMatchIndex + 1,
-                        actualTeam.getSeed());
 
       assertEquals(expectedMatchIndex, actualMatchIndex,
                    String.format("Le slot Q%d doit contenir le gagnant du match Q2-%d, mais contient le gagnant du match Q2-%d",
                                  i + 1, expectedMatchIndex + 1, actualMatchIndex + 1));
     }
-
-    System.out.println("\n✅ Les gagnants sont dans le bon ordre malgré l'exécution désordonnée !");
   }
 
   /**

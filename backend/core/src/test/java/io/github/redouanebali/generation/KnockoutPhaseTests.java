@@ -233,37 +233,6 @@ public class KnockoutPhaseTests {
           }
         }
 
-        // Debug logging for tournament 7
-        if (tournamentId.equals("7") && roundName.equals("Q1")) {
-          System.out.println("\n=== DIAGNOSTIC TOURNOI 7 Q1 ===");
-          System.out.println("Total allPairs: " + allPairs.size());
-          System.out.println("nbQualifSeeds: " + nbQualifSeeds);
-          System.out.println("Already placed (true seeds 1-" + nbQualifSeeds + "): " + alreadyPlaced.size());
-          int nullSlots = 0, byeSlots = 0, seedSlots = 0, teamSlots = 0;
-          for (Game g : currentRound.getGames()) {
-            if (g.getTeamA() == null) {
-              nullSlots++;
-            } else if (g.getTeamA().isBye()) {
-              byeSlots++;
-            } else if (g.getTeamA().getSeed() >= 1 && g.getTeamA().getSeed() <= nbQualifSeeds) {
-              seedSlots++;
-            } else {
-              teamSlots++;
-            }
-
-            if (g.getTeamB() == null) {
-              nullSlots++;
-            } else if (g.getTeamB().isBye()) {
-              byeSlots++;
-            } else if (g.getTeamB().getSeed() >= 1 && g.getTeamB().getSeed() <= nbQualifSeeds) {
-              seedSlots++;
-            } else {
-              teamSlots++;
-            }
-          }
-          System.out.println("Before placing remaining: Seeds=" + seedSlots + ", Teams=" + teamSlots + ", BYEs=" + byeSlots + ", Nulls=" + nullSlots);
-        }
-
         // Place remaining teams in available slots
         // Since placeSeedTeams sorts and may create new references, we need to filter by checking
         // if the team is already in the round, not by Set.contains()
@@ -280,33 +249,7 @@ public class KnockoutPhaseTests {
             remainingPairs.add(pair);
           }
         }
-
-        if (tournamentId.equals("7") && roundName.equals("Q1")) {
-          System.out.println("Remaining pairs to place: " + remainingPairs.size());
-        }
         phaseToUse.placeRemainingTeamsRandomly(currentRound, remainingPairs);
-
-        if (tournamentId.equals("7") && roundName.equals("Q1")) {
-          int nullSlots = 0, byeSlots = 0, teamSlots = 0;
-          for (Game g : currentRound.getGames()) {
-            if (g.getTeamA() == null) {
-              nullSlots++;
-            } else if (g.getTeamA().isBye()) {
-              byeSlots++;
-            } else {
-              teamSlots++;
-            }
-
-            if (g.getTeamB() == null) {
-              nullSlots++;
-            } else if (g.getTeamB().isBye()) {
-              byeSlots++;
-            } else {
-              teamSlots++;
-            }
-          }
-          System.out.println("After placing remaining: Teams=" + teamSlots + ", BYEs=" + byeSlots + ", Nulls=" + nullSlots);
-        }
 
         // Fill any remaining empty slots with BYEs to ensure all games are complete
         for (Game g : currentRound.getGames()) {
