@@ -325,7 +325,7 @@ public class AutomaticDrawStrategy implements DrawStrategy {
     List<Game> games      = initialRound.getGames();
     int        byesPlaced = 0;
 
-    // Pass 1: Place BYEs opposite teams that are already placed
+    // Pass 1: Place BYes opposite teams that are already placed
     byesPlaced = placeByesOppositeExistingTeams(games, byesPlaced, maxByes);
 
     // Pass 2: Place BYEs in empty slots (avoiding BYE vs BYE)
@@ -532,7 +532,26 @@ public class AutomaticDrawStrategy implements DrawStrategy {
     int byesPlaced = 0;
 
     // Step 1: Place BYEs opposite seeds (starting with seed 1)
-    for (int i = 0; i < seedPositions.size() && byesPlaced < nbByes; i++) {
+    byesPlaced = placeByesOppositeSeedsPhase1(games, seedPositions, byesPlaced, nbByes, drawSize);
+
+    // Step 2: If we still have BYEs to place, place them in empty slots but AVOID creating BYE vs BYE
+    if (byesPlaced < nbByes) {
+      byesPlaced = placeByesAvoidingByeVsByePhase2(games, byesPlaced, nbByes);
+    }
+
+    // Step 3: Final pass - place remaining BYEs only in completely empty games (both slots null)
+    if (byesPlaced < nbByes) {
+      placeRemainingByesInEmptyGamesPhase3(games, byesPlaced, nbByes);
+    }
+  }
+
+  /**
+   * Phase 1: Place BYEs opposite seeds at their standard positions.
+   */
+  private int placeByesOppositeSeedsPhase1(List<Game> games, List<Integer> seedPositions, int byesPlaced, int nbByes, int drawSize) {
+    int placed = byesPlaced;
+
+    for (int i = 0; i < seedPositions.size() && placed < nbByes; i++) {
       int seedSlot     = seedPositions.get(i);
       int oppositeSlot = GameSlotUtil.getOppositeSlot(seedSlot);
 
@@ -549,119 +568,93 @@ public class AutomaticDrawStrategy implements DrawStrategy {
         } else {
           game.setTeamB(PlayerPair.bye());
         }
-        byesPlaced++;
+        placed++;
       }
     }
 
-    // Step 2: If we still have BYEs to place, place them in empty slots but AVOID creating BYE vs BYE
-    if (byesPlaced < nbByes) {
-      for (Game game : games) {
-        if (byesPlaced >= nbByes) {
-          break;
-        }
-
-        // Try to place in teamA slot
-        if (game.getTeamA() == null) {
-          PlayerPair opponent = game.getTeamB();
-          // Only place BYE if opponent is NOT a BYE (to avoid BYE vs BYE)
-          if (opponent != null && !opponent.isBye()) {
-            game.setTeamA(PlayerPair.bye());
-            byesPlaced++;
-          }
-        }
-
-        if (byesPlaced >= nbByes) {
-          break;
-        }
-
-        // Try to place in teamB slot
-        if (game.getTeamB() == null) {
-          PlayerPair opponent = game.getTeamA();
-          // Only place BYE if opponent is NOT a BYE (to avoid BYE vs BYE)
-          if (opponent != null && !opponent.isBye()) {
-            game.setTeamB(PlayerPair.bye());
-            byesPlaced++;
-          }
-        }
-      }
-    }
-
-    // Step 3: Final pass - place remaining BYEs only in completely empty games (both slots null)
-    // This creates BYE vs BYE matches only as a last resort
-    if (byesPlaced < nbByes) {
-      for (Game game : games) {
-        if (byesPlaced >= nbByes) {
-          break;
-        }
-
-        // Only place BYEs in completely empty games to create BYE vs BYE matches
-        if (game.getTeamA() == null && game.getTeamB() == null) {
-          game.setTeamA(PlayerPair.bye());
-          byesPlaced++;
-
-          if (byesPlaced >= nbByes) {
-            break;
-          }
-
-          game.setTeamB(PlayerPair.bye());
-          byesPlaced++;
-        }
-      }
-    }
+    return placed;
   }
 
   /**
-   * Places BYEs in empty slots following standard tennis/padel logic. Rule: Place BYEs opposite the best N teams (where N = number of BYEs needed).
-   *
-   * Example: For 40 teams in a 64-draw, place 24 BYes opposite teams 1-24. The remaining 16 teams (25-40) will play against each other.
+   * Phase 2: Place BYEs in empty slots while avoiding BYE vs BYE matches.
    */
-  private void placeByesInEmptySlots(Round initialRound, int nbByes, int nbTeamsPlaced, int drawSize) {
-    List<Game> games      = initialRound.getGames();
-    int        byesPlaced = 0;
+  private int placeByesAvoidingByeVsByePhase2(List<Game> games, int byesPlaced, int nbByes) {
+    int placed = byesPlaced;
 
-    // Strategy: Place BYes opposite all teams that have already been placed
-    // This ensures every team that was placed at a seed position gets a BYE
     for (Game game : games) {
-      if (byesPlaced >= nbByes) {
+      if (placed >= nbByes) {
         break;
       }
 
-      PlayerPair teamA = game.getTeamA();
-      PlayerPair teamB = game.getTeamB();
+      placed = tryPlaceByeInTeamASlotAvoidingByeVsBye(game, placed, nbByes);
+      placed = tryPlaceByeInTeamBSlotAvoidingByeVsBye(game, placed, nbByes);
+    }
 
-      // Case 1: TeamA is placed, TeamB is empty -> place BYE at TeamB
-      if (teamA != null && !teamA.isBye() && teamB == null) {
-        game.setTeamB(PlayerPair.bye());
-        byesPlaced++;
-      }
-      // Case 2: TeamB is placed, TeamA is empty -> place BYE at TeamA
-      else if (teamB != null && !teamB.isBye() && teamA == null) {
+    return placed;
+  }
+
+  /**
+   * Tries to place a BYE in teamA slot if opponent is not a BYE.
+   */
+  private int tryPlaceByeInTeamASlotAvoidingByeVsBye(Game game, int byesPlaced, int nbByes) {
+    if (byesPlaced >= nbByes) {
+      return byesPlaced;
+    }
+
+    if (game.getTeamA() == null) {
+      PlayerPair opponent = game.getTeamB();
+      // Only place BYE if opponent is NOT a BYE (to avoid BYE vs BYE)
+      if (opponent != null && !opponent.isBye()) {
         game.setTeamA(PlayerPair.bye());
-        byesPlaced++;
+        return byesPlaced + 1;
       }
     }
 
-    // Fallback: if we still have BYEs to place (shouldn't happen with correct logic)
-    // Place them in any remaining empty slots to avoid leaving null slots
-    if (byesPlaced < nbByes) {
-      for (Game game : games) {
-        if (byesPlaced >= nbByes) {
+    return byesPlaced;
+  }
+
+  /**
+   * Tries to place a BYE in teamB slot if opponent is not a BYE.
+   */
+  private int tryPlaceByeInTeamBSlotAvoidingByeVsBye(Game game, int byesPlaced, int nbByes) {
+    if (byesPlaced >= nbByes) {
+      return byesPlaced;
+    }
+
+    if (game.getTeamB() == null) {
+      PlayerPair opponent = game.getTeamA();
+      // Only place BYE if opponent is NOT a BYE (to avoid BYE vs BYE)
+      if (opponent != null && !opponent.isBye()) {
+        game.setTeamB(PlayerPair.bye());
+        return byesPlaced + 1;
+      }
+    }
+
+    return byesPlaced;
+  }
+
+  /**
+   * Phase 3: Place remaining BYEs only in completely empty games (both slots null). This creates BYE vs BYE matches only as a last resort.
+   */
+  private void placeRemainingByesInEmptyGamesPhase3(List<Game> games, int byesPlaced, int nbByes) {
+    int placed = byesPlaced;
+
+    for (Game game : games) {
+      if (placed >= nbByes) {
+        break;
+      }
+
+      // Only place BYEs in completely empty games to create BYE vs BYE matches
+      if (game.getTeamA() == null && game.getTeamB() == null) {
+        game.setTeamA(PlayerPair.bye());
+        placed++;
+
+        if (placed >= nbByes) {
           break;
         }
 
-        if (game.getTeamA() == null) {
-          game.setTeamA(PlayerPair.bye());
-          byesPlaced++;
-        }
-
-        if (byesPlaced >= nbByes) {
-          break;
-        }
-
-        if (game.getTeamB() == null) {
-          game.setTeamB(PlayerPair.bye());
-          byesPlaced++;
-        }
+        game.setTeamB(PlayerPair.bye());
+        placed++;
       }
     }
   }
