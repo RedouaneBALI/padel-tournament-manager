@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import io.github.redouanebali.util.TestFixtures;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -72,7 +71,7 @@ public class PoolTest {
       }
     }
     List<PoolRankingDetails> ranking = Pool.computeRanking(pool, round.getGames());
-    assertEquals(expectedRanking, ranking.stream().map(PoolRankingDetails::getPlayerPair).collect(Collectors.toList()));
+    assertEquals(expectedRanking, ranking.stream().map(PoolRankingDetails::getPlayerPair).toList());
 
     Tournament tournament = new Tournament();
     tournament.setId(1L);

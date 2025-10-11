@@ -2,7 +2,6 @@ package io.github.redouanebali.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.github.redouanebali.model.Player;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +24,7 @@ public class PlayerTest {
   }
 
   @Test
-  @Disabled
+  @Disabled("Test disabled: Player.toString() implementation may change and is not critical for business logic")
   public void testPlayerToString() {
     Player player = new Player();
     player.setName("Jane Doe");

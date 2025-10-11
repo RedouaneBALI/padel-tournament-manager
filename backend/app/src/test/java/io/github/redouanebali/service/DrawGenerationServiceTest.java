@@ -154,9 +154,7 @@ class DrawGenerationServiceTest {
   void generateDrawManual_throwsException_whenInitialRoundsIsEmpty() {
     Tournament tournament = baseTournamentKO(4, 0);
     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                                                      () -> {
-                                                        drawGenerationService.generateDrawManual(tournament, List.of());
-                                                      });
+                                                      () -> drawGenerationService.generateDrawManual(tournament, List.of()));
     assertEquals("Manual draw generation requires initial rounds to be provided. Use generateDrawAuto() for automatic generation instead.",
                  exception.getMessage());
   }

@@ -272,32 +272,25 @@ public class KnockoutPhaseTests {
 
           if (!teamABye && !teamBBye && !teamAQualifier && !teamBQualifier) {
             // Real match between two teams
-            game.setFormat(TestFixtures.createSimpleFormat(1));
-            game.setScore(TestFixtures.createScoreWithWinner(game, game.getTeamA()));
+            setGameWinner(game, game.getTeamA());
           } else if (teamABye && !teamBBye && !teamBQualifier) {
             // TeamB qualified by default (against BYE)
-            game.setFormat(TestFixtures.createSimpleFormat(1));
-            game.setScore(TestFixtures.createScoreWithWinner(game, game.getTeamB()));
+            setGameWinner(game, game.getTeamB());
           } else if (teamBBye && !teamABye && !teamAQualifier) {
             // TeamA qualified by default (against BYE)
-            game.setFormat(TestFixtures.createSimpleFormat(1));
-            game.setScore(TestFixtures.createScoreWithWinner(game, game.getTeamA()));
+            setGameWinner(game, game.getTeamA());
           } else if (teamAQualifier && !teamBBye && !teamBQualifier) {
             // TeamB qualified by default (QUALIFIER vs real team)
-            game.setFormat(TestFixtures.createSimpleFormat(1));
-            game.setScore(TestFixtures.createScoreWithWinner(game, game.getTeamB()));
+            setGameWinner(game, game.getTeamB());
           } else if (teamBQualifier && !teamABye && !teamAQualifier) {
             // TeamA qualified by default (real team vs QUALIFIER)
-            game.setFormat(TestFixtures.createSimpleFormat(1));
-            game.setScore(TestFixtures.createScoreWithWinner(game, game.getTeamA()));
+            setGameWinner(game, game.getTeamA());
           } else if (teamAQualifier && teamBBye) {
             // QUALIFIER vs BYE: BYE wins (simulation of seed entering later)
-            game.setFormat(TestFixtures.createSimpleFormat(1));
-            game.setScore(TestFixtures.createScoreWithWinner(game, game.getTeamB()));
+            setGameWinner(game, game.getTeamB());
           } else if (teamBQualifier && teamABye) {
             // BYE vs QUALIFIER: BYE wins (simulation of seed entering later)
-            game.setFormat(TestFixtures.createSimpleFormat(1));
-            game.setScore(TestFixtures.createScoreWithWinner(game, game.getTeamA()));
+            setGameWinner(game, game.getTeamA());
           }
           // BYE vs BYE or QUALIFIER vs QUALIFIER does not generate a winner
         }
@@ -863,6 +856,14 @@ public class KnockoutPhaseTests {
                              "This suggests teams are placed DETERMINISTICALLY instead of RANDOMLY. " +
                              "Expected: >= 5 unique patterns (random), Actual: %d",
                              10, uniquePatterns, uniquePatterns));
+  }
+
+  /**
+   * Helper method to set the winner of a game and update its score.
+   */
+  private void setGameWinner(Game game, PlayerPair winner) {
+    game.setFormat(TestFixtures.createSimpleFormat(1));
+    game.setScore(TestFixtures.createScoreWithWinner(game, winner));
   }
 
 }

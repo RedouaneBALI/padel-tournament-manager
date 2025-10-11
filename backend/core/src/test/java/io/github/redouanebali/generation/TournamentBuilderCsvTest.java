@@ -475,7 +475,7 @@ class TournamentBuilderCsvTest {
   // @todo still KO
   @ParameterizedTest(name = "Full tournament group KO CSV flow: {0}")
   @MethodSource("tournamentsFromGroupsCsv")
-  @Disabled
+  @Disabled("Test disabled: requires full CSV implementation for group phase scenarios")
   void testBuildAndPropagate_FullTournamentGroupKo_FromCsv(Long tournamentId, List<String[]> rows) {
     // Utilisation des colonnes du CSV : nbPlayerPairs, nbPools, nbPairsPerPool, nbQualifiedByPool, mainDrawSize, nbSeeds, Round, etc.
     String[] first             = rows.getFirst();

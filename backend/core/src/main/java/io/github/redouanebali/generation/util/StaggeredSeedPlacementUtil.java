@@ -112,7 +112,6 @@ public class StaggeredSeedPlacementUtil {
       return 0;
     }
 
-    Stage firstSeedsEnterAt  = Stage.fromNbTeams(mainDrawSize);
     Stage secondSeedsEnterAt = Stage.fromNbTeams(mainDrawSize / 2);
 
     if (stage == secondSeedsEnterAt) {

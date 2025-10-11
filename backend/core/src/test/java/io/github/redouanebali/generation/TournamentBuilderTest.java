@@ -577,14 +577,14 @@ public class TournamentBuilderTest {
                                         .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
                                         .filter(Objects::nonNull)
                                         .filter(p -> !p.isBye() && !p.isQualifier()) // Exclure BYE et placeholders QUALIFIER
-                                        .collect(Collectors.toList());
+                                        .toList();
 
     // Collecter toutes les équipes NON-BYE et NON-QUALIFIER dans R32
     List<PlayerPair> teamsInR32 = r32Round.getGames().stream()
                                           .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
                                           .filter(Objects::nonNull)
                                           .filter(p -> !p.isBye() && !p.isQualifier()) // Exclure BYE et placeholders QUALIFIER
-                                          .collect(Collectors.toList());
+                                          .toList();
 
     // Vérifier qu'aucune équipe n'est présente dans les deux rounds
     for (PlayerPair teamInQ1 : teamsInQ1) {
@@ -677,13 +677,13 @@ public class TournamentBuilderTest {
                                               .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
                                               .filter(Objects::nonNull)
                                               .filter(p -> !p.isBye() && !p.isQualifier())
-                                              .collect(Collectors.toList());
+                                              .toList();
 
       List<PlayerPair> teamsInMain = mainRound.getGames().stream()
                                               .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
                                               .filter(Objects::nonNull)
                                               .filter(p -> !p.isBye() && !p.isQualifier())
-                                              .collect(Collectors.toList());
+                                              .toList();
 
       // Check no team is in both rounds
       for (PlayerPair teamInQual : teamsInQual) {
