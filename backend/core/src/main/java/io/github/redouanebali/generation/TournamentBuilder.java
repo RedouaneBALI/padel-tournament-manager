@@ -77,7 +77,7 @@ public final class TournamentBuilder {
       initializeEmptyRounds(tournament);
       return;
     }
-    List<Round> allRounds = createEmptyRounds(tournament.getConfig());
+    List<Round> allRounds = new ArrayList<>(createEmptyRounds(tournament.getConfig()));
     Map<Stage, Round> providedRoundsByStage = initialRounds.stream()
                                                            .collect(Collectors.toMap(Round::getStage, Function.identity()));
     for (int i = 0; i < allRounds.size(); i++) {
@@ -155,7 +155,7 @@ public final class TournamentBuilder {
     validateConfig(config);
     return buildPhases(config).stream()
                               .flatMap(phase -> phase.initialize(config).stream())
-                              .collect(Collectors.toList());
+                              .toList();
   }
 
   /**

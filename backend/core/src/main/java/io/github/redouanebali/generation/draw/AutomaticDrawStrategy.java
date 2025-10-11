@@ -445,37 +445,6 @@ public class AutomaticDrawStrategy implements DrawStrategy {
     }
   }
 
-  /**
-   * Places teams sequentially in remaining empty slots. This ensures teams are paired correctly for matches.
-   */
-  private void placeTeamsInEmptySlots(Round initialRound, List<PlayerPair> teams) {
-    if (teams.isEmpty()) {
-      return;
-    }
-
-    List<Game> games     = initialRound.getGames();
-    int        teamIndex = 0;
-
-    for (Game game : games) {
-      if (teamIndex >= teams.size()) {
-        break;
-      }
-
-      // Fill teamA if empty
-      if (game.getTeamA() == null) {
-        game.setTeamA(teams.get(teamIndex++));
-      }
-
-      if (teamIndex >= teams.size()) {
-        break;
-      }
-
-      // Fill teamB if empty
-      if (game.getTeamB() == null) {
-        game.setTeamB(teams.get(teamIndex++));
-      }
-    }
-  }
 
   /**
    * Places seeds at their standard positions (1, 2, 3-4, 5-8, etc.)
@@ -508,7 +477,7 @@ public class AutomaticDrawStrategy implements DrawStrategy {
     int byesPlaced = 0;
 
     // Step 1: Place BYEs opposite seeds (starting with seed 1)
-    byesPlaced = placeByesOppositeSeedsPhase1(games, seedPositions, byesPlaced, nbByes, drawSize);
+    byesPlaced = placeByesOppositeSeedsPhase1(games, seedPositions, byesPlaced, nbByes);
 
     // Step 2: If we still have BYEs to place, place them in empty slots but AVOID creating BYE vs BYE
     if (byesPlaced < nbByes) {
@@ -524,7 +493,7 @@ public class AutomaticDrawStrategy implements DrawStrategy {
   /**
    * Phase 1: Place BYEs opposite seeds at their standard positions.
    */
-  private int placeByesOppositeSeedsPhase1(List<Game> games, List<Integer> seedPositions, int byesPlaced, int nbByes, int drawSize) {
+  private int placeByesOppositeSeedsPhase1(List<Game> games, List<Integer> seedPositions, int byesPlaced, int nbByes) {
     int placed = byesPlaced;
 
     for (int i = 0; i < seedPositions.size() && placed < nbByes; i++) {
@@ -684,29 +653,6 @@ public class AutomaticDrawStrategy implements DrawStrategy {
     }
   }
 
-
-  /**
-   * Collects already placed teams including all types (for KNOCKOUT format).
-   */
-  private Set<PlayerPair> collectAlreadyPlacedTeamsIncludingAll(Round initialRound) {
-    Set<PlayerPair> alreadyPlaced = new HashSet<>();
-
-    for (Game g : initialRound.getGames()) {
-      addTeamIfNotBye(g.getTeamA(), alreadyPlaced);
-      addTeamIfNotBye(g.getTeamB(), alreadyPlaced);
-    }
-
-    return alreadyPlaced;
-  }
-
-  /**
-   * Adds team if it's not null, not BYE and not QUALIFIER.
-   */
-  private void addTeamIfNotByeAndNotQualifier(PlayerPair team, Set<PlayerPair> collection) {
-    if (team != null && !team.isBye() && !team.isQualifier()) {
-      collection.add(team);
-    }
-  }
 
   /**
    * Adds team if it's not null and not BYE.

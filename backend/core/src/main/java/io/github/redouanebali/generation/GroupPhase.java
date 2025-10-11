@@ -19,7 +19,7 @@ import lombok.AllArgsConstructor;
  *
  * @deprecated Use the new draw strategies instead (AutomaticDrawStrategy or ManualDrawStrategy)
  */
-@Deprecated
+@Deprecated(since = "1.0", forRemoval = true)
 @AllArgsConstructor
 public class GroupPhase implements TournamentPhase {
 

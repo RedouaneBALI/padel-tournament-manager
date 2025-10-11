@@ -7,6 +7,7 @@ import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Round;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -137,12 +138,12 @@ public class SeedPlacementUtil {
       List<String>  sortedFields = getSortedFieldNames(nbSeedsNode);
       List<Integer> positions    = processAllSeedGroups(nbSeedsNode, sortedFields);
       return positions.subList(0, Math.min(nbSeeds, positions.size()));
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to load seed positions from JSON", e);
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to load seed positions from JSON", e);
     }
   }
 
-  private static JsonNode loadAndNavigateToSeedNode(int drawSize, int nbSeeds) throws Exception {
+  private static JsonNode loadAndNavigateToSeedNode(int drawSize, int nbSeeds) throws IOException {
     InputStream inputStream = SeedPlacementUtil.class.getResourceAsStream("/seed_positions.json");
     if (inputStream == null) {
       throw new IllegalStateException("seed_positions.json not found in resources");

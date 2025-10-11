@@ -6,11 +6,13 @@ import io.github.redouanebali.model.PlayerPair;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Generic strategy: propagates winners in non-classic cases. Used when the bracket structure is not strictly binary, for example for qualification
  * rounds, lucky losers, or any round where the number of matches in the next round does not match half of the current round.
  */
+@Slf4j
 @RequiredArgsConstructor
 public class QualifierSlotPropagationStrategy implements PropagationStrategy {
 
@@ -30,8 +32,8 @@ public class QualifierSlotPropagationStrategy implements PropagationStrategy {
       cachedNextGames      = nextGames;
       cachedQualifierSlots = collectInitialQualifierSlots(nextGames);
 
-      System.out.printf("[QualifierSlotPropagationStrategy] Initialized with %d qualifier slots for round%n",
-                        cachedQualifierSlots.size());
+      log.debug("[QualifierSlotPropagationStrategy] Initialized with {} qualifier slots for round",
+                cachedQualifierSlots.size());
     }
 
     // Check that the match index is valid
@@ -46,13 +48,13 @@ public class QualifierSlotPropagationStrategy implements PropagationStrategy {
     // Check that the slot is still a QUALIFIER (in case it was modified)
     PlayerPair currentTeam = targetSlot.isTeamA ? targetGame.getTeamA() : targetGame.getTeamB();
     if (currentTeam == null || currentTeam.getType() != PairType.QUALIFIER) {
-      System.out.printf("[QualifierSlotPropagationStrategy] WARNING: Slot Q%d (Game[%d].%s) is no longer a QUALIFIER, using fallback%n",
-                        currentGameIndex + 1, targetSlot.gameIndex, targetSlot.isTeamA ? "TeamA" : "TeamB");
+      log.debug("[QualifierSlotPropagationStrategy] WARNING: Slot Q{} (Game[{}].{}) is no longer a QUALIFIER, using fallback",
+                currentGameIndex + 1, targetSlot.gameIndex, targetSlot.isTeamA ? "TeamA" : "TeamB");
       return util.placeWinnerInQualifierOrAvailableSlot(nextGames, winner);
     }
 
-    System.out.printf("[QualifierSlotPropagationStrategy] Placing winner (seed %d) in slot Q%d -> Game[%d].%s%n",
-                      winner.getSeed(), currentGameIndex + 1, targetSlot.gameIndex, targetSlot.isTeamA ? "TeamA" : "TeamB");
+    log.debug("[QualifierSlotPropagationStrategy] Placing winner (seed {}) in slot Q{} -> Game[{}].{}",
+              winner.getSeed(), currentGameIndex + 1, targetSlot.gameIndex, targetSlot.isTeamA ? "TeamA" : "TeamB");
 
     if (targetSlot.isTeamA) {
       targetGame.setTeamA(winner);

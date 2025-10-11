@@ -159,7 +159,6 @@ public class TournamentServiceTest {
     Tournament updated = tournamentService.updateTournament(7L, input);
 
     assertEquals("New name", updated.getName());
-    //  assertEquals(4, updated.getNbSeeds());
     assertEquals(TournamentFormat.KNOCKOUT, updated.getConfig().getFormat());
   }
 

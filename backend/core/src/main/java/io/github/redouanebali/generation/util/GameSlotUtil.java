@@ -92,11 +92,11 @@ public class GameSlotUtil {
   }
 
   /**
-   * Checks if a slot is empty (null). Does not consider BYEs or QUALIFIERs as empty.
+   * Checks if a slot is empty (null). BYEs and QUALIFIERs are NOT considered empty.
    *
    * @param game the game
    * @param side the team side
-   * @return true if the slot is empty (null)
+   * @return true if the slot is null
    */
   public static boolean isSlotEmpty(Game game, TeamSide side) {
     PlayerPair team = getTeam(game, side);
@@ -114,10 +114,8 @@ public class GameSlotUtil {
    * @return true if the slot is available for a real team
    */
   public static boolean isSlotAvailableForTeam(Game game, TeamSide side) {
-    PlayerPair team = getTeam(game, side);
-    // A slot is available for a team only if it's null
-    // Do NOT allow overwriting BYEs or QUALIFIERs
-    return team == null;
+    // Delegate to isSlotEmpty - same logic
+    return isSlotEmpty(game, side);
   }
 
   /**

@@ -33,7 +33,7 @@ public class StaggeredSeedPlacementUtil {
     if (isFirstRound) {
       // First round of main draw: no seeds enter
       // Seed positions are filled with QUALIFIER placeholders
-      placeQualifierPlaceholders(round, totalSeeds, mainDrawSize);
+      placeQualifierPlaceholders(round, totalSeeds);
       return;
     }
 
@@ -62,7 +62,7 @@ public class StaggeredSeedPlacementUtil {
   /**
    * Place QUALIFIER placeholders for seeds that will enter in later rounds
    */
-  private static void placeQualifierPlaceholders(Round round, int totalSeeds, int mainDrawSize) {
+  private static void placeQualifierPlaceholders(Round round, int totalSeeds) {
     if (totalSeeds == 0) {
       return;
     }

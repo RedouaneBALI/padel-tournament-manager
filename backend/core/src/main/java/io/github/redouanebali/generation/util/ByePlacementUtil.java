@@ -106,7 +106,7 @@ public class ByePlacementUtil {
     int placed = 0;
 
     // Strategy 1: Place BYEs opposite seeds
-    placed += placeByesOppositeSeedsStrategy(games, byesToPlace, nbSeeds, drawSize, placed, allowByeVsBye);
+    placed += placeByesOppositeSeedsStrategy(games, byesToPlace, nbSeeds, drawSize, placed);
 
     // Strategy 2: Fallback placement in any available slot
     placed += placeByesFallbackStrategy(games, byesToPlace, placed, allowByeVsBye);
@@ -122,8 +122,7 @@ public class ByePlacementUtil {
                                                     int byesToPlace,
                                                     int nbSeeds,
                                                     int drawSize,
-                                                    int alreadyPlaced,
-                                                    boolean allowByeVsBye) {
+                                                    int alreadyPlaced) {
     List<Integer> seedSlots = SeedPlacementUtil.getSeedsPositions(drawSize, nbSeeds);
     int           placed    = alreadyPlaced;
 
@@ -131,7 +130,8 @@ public class ByePlacementUtil {
       if (placed >= byesToPlace) {
         break;
       }
-      placed += tryPlaceByeAtOppositeSlot(games, slot, placed < byesToPlace);
+      int result = tryPlaceByeAtOppositeSlot(games, slot, placed < byesToPlace);
+      placed += result;
     }
 
     return placed - alreadyPlaced;
@@ -215,13 +215,6 @@ public class ByePlacementUtil {
     if (actuallyPlaced < byesToPlace) {
       throw new IllegalStateException("Not enough empty slots to place all BYEs: remaining=" + (byesToPlace - actuallyPlaced));
     }
-  }
-
-  // Helper to check if a slot is reserved for a qualifier (to be implemented in main draw logic)
-  private static boolean isReservedForQualifier(Game g, boolean isTeamA) {
-    // Deprecated: Use GameSlotUtil.isReservedForQualifier instead
-    TeamSide side = isTeamA ? io.github.redouanebali.model.TeamSide.TEAM_A : io.github.redouanebali.model.TeamSide.TEAM_B;
-    return GameSlotUtil.isReservedForQualifier(g, side);
   }
 
   /**

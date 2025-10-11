@@ -8,10 +8,12 @@ import io.github.redouanebali.model.Round;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Utility for randomly placing remaining teams in tournaments. Extracted logic from KnockoutPhase to make it reusable.
  */
+@Slf4j
 public class RandomPlacementUtil {
 
   private RandomPlacementUtil() {
@@ -108,7 +110,7 @@ public class RandomPlacementUtil {
    * Logs a warning when not all teams could be placed.
    */
   private static void logUnplacedTeamsWarning(int unplacedCount) {
-    System.err.println("WARNING: Could not place all teams. " + unplacedCount + " teams remaining.");
+    log.warn("Could not place all teams. {} teams remaining.", unplacedCount);
   }
 
   /**
@@ -179,7 +181,7 @@ public class RandomPlacementUtil {
       int  endIndex    = Math.min(startIndex + nbPairsPerPool, teams.size());
 
       for (int i = startIndex; i < endIndex; i++) {
-        System.out.println("adding player " + i + " to pool " + poolIndex);
+        log.debug("Adding player {} to pool {}", i, poolIndex);
         currentPool.addPair(teams.get(i));
       }
     }
