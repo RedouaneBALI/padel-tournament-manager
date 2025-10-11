@@ -13,6 +13,10 @@ import java.util.List;
  */
 public class StaggeredSeedPlacementUtil {
 
+  private StaggeredSeedPlacementUtil() {
+    throw new IllegalStateException("Utility class");
+  }
+
   /**
    * Place seeds teams for staggered entry tournaments with proper stage management.
    */

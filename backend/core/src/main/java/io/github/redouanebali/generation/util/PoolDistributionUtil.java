@@ -9,6 +9,10 @@ import java.util.List;
  */
 public class PoolDistributionUtil {
 
+  private PoolDistributionUtil() {
+    throw new IllegalStateException("Utility class");
+  }
+
   /**
    * Distributes teams across pools using simple round-robin distribution. Team i goes to pool (i % nbPools).
    *

@@ -14,8 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 
+/**
+ * Groups/Poules phase handling - distributes teams into pools for round-robin play.
+ *
+ * @deprecated Use the new draw strategies instead (AutomaticDrawStrategy or ManualDrawStrategy)
+ */
+@Deprecated
 @AllArgsConstructor
-@Deprecated(forRemoval = false)
 public class GroupPhase implements TournamentPhase {
 
   private int nbPools;

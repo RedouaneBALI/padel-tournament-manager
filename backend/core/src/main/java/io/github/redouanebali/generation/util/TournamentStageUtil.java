@@ -9,6 +9,10 @@ import java.util.List;
  */
 public class TournamentStageUtil {
 
+  private TournamentStageUtil() {
+    throw new IllegalStateException("Utility class");
+  }
+
   /**
    * Determines if a round is an initial round where players first enter the tournament. Initial rounds are: - Q1 (first qualification round) - GROUPS
    * (group phase) - First main draw round (R64, R32, R16, etc. depending on tournament structure)

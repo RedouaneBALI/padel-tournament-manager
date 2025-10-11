@@ -12,6 +12,10 @@ import java.util.List;
  */
 public class ByePlacementUtil {
 
+  private ByePlacementUtil() {
+    throw new IllegalStateException("Utility class");
+  }
+
   /**
    * Places BYE teams in a round based on the total number of pairs.
    */

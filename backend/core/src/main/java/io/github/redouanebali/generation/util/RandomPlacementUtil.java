@@ -14,6 +14,10 @@ import java.util.List;
  */
 public class RandomPlacementUtil {
 
+  private RandomPlacementUtil() {
+    throw new IllegalStateException("Utility class");
+  }
+
   /**
    * Randomly places remaining teams in the empty slots of a round. Supports both knockout rounds (with games) and group rounds (with pools).
    *

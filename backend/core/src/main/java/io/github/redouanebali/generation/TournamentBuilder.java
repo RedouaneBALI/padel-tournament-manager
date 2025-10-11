@@ -18,6 +18,10 @@ import java.util.stream.Collectors;
 
 public final class TournamentBuilder {
 
+  private TournamentBuilder() {
+    throw new IllegalStateException("Utility class");
+  }
+
   /**
    * Propagate winners across all phases sequentially.
    */

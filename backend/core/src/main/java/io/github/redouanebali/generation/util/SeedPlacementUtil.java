@@ -19,6 +19,10 @@ import java.util.List;
  */
 public class SeedPlacementUtil {
 
+  private SeedPlacementUtil() {
+    throw new IllegalStateException("Utility class");
+  }
+
   /**
    * Places seeded teams in their theoretical positions in a round.
    *

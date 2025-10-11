@@ -359,8 +359,7 @@ public class TournamentBuilderTest {
     Tournament tournament = new Tournament();
     tournament.setConfig(config);
 
-    TournamentBuilder builder = new TournamentBuilder();
-    List<PlayerPair>  pairs   = TestFixtures.createPlayerPairs(totalPairs);
+    List<PlayerPair> pairs = TestFixtures.createPlayerPairs(totalPairs);
     TournamentBuilder.setupAndPopulateTournament(tournament, pairs);
 
     Round groupsRound = tournament.getRounds().stream()
@@ -406,8 +405,7 @@ public class TournamentBuilderTest {
     Tournament tournament = new Tournament();
     tournament.setConfig(config);
 
-    TournamentBuilder builder = new TournamentBuilder();
-    List<PlayerPair>  pairs   = TestFixtures.createPlayerPairs(totalPairs);
+    List<PlayerPair> pairs = TestFixtures.createPlayerPairs(totalPairs);
     // Affecte les seeds 1 à 4 aux 4 premières paires
     for (int i = 0; i < nbSeedsMain; i++) {
       pairs.get(i).setSeed(i + 1);

@@ -1,13 +1,15 @@
 package io.github.redouanebali.security;
 
 import java.util.Set;
-import lombok.NoArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
-@NoArgsConstructor
 public final class SecurityUtil {
+
+  private SecurityUtil() {
+    throw new IllegalStateException("Utility class");
+  }
 
   // Return the stable user id we use as ownerId (e.g., the JWT "sub")
   public static String currentUserId() {
