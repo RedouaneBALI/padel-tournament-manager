@@ -112,11 +112,11 @@ public class TournamentBuilderTest {
     List<Integer> expectedMatches = TestFixtures.parseInts(expectedMatchesCsv);
     List<Stage> actualStages = tournament.getRounds().stream()
                                          .map(Round::getStage)
-                                         .collect(Collectors.toList());
+                                         .toList();
     Assertions.assertEquals(expectedStages, actualStages);
     List<Integer> actualMatches = tournament.getRounds().stream()
                                             .map(r -> r.getGames().size())
-                                            .collect(Collectors.toList());
+                                            .toList();
     Assertions.assertEquals(expectedMatches, actualMatches);
   }
 
@@ -142,11 +142,11 @@ public class TournamentBuilderTest {
     List<Integer> expectedMatches = parseInts(expectedMatchesCsv);
     List<Stage> actualStages = tournament.getRounds().stream()
                                          .map(Round::getStage)
-                                         .collect(Collectors.toList());
+                                         .toList();
 
     List<Integer> actualMatches = tournament.getRounds().stream()
                                             .map(r -> r.getGames() == null ? 0 : r.getGames().size())
-                                            .collect(Collectors.toList());
+                                            .toList();
 
     assertEquals(expectedStages, actualStages, "Stages sequence must match");
     assertEquals(expectedMatches, actualMatches, "Matches per stage must match");

@@ -600,8 +600,8 @@ public class KnockoutPhaseTests {
     boolean seed1InTopHalf = seed1GameIndex < 8;
     boolean seed2InTopHalf = seed2GameIndex < 8;
 
-    assertTrue(seed1InTopHalf != seed2InTopHalf,
-               "Seed 1 and Seed 2 MUST be in opposite halves (can only meet in FINAL)");
+    assertNotEquals(seed1InTopHalf, seed2InTopHalf,
+                    "Seed 1 and Seed 2 MUST be in opposite halves (can only meet in FINAL)");
 
     // CRITICAL VERIFICATION 2: Seeds 1-4 must be in different quarters
     // They should only meet in SEMI-FINALS or later

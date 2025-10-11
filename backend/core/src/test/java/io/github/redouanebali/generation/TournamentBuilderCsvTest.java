@@ -23,7 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -160,8 +159,8 @@ class TournamentBuilderCsvTest {
     List<Stage> expectedStages = rows.stream()
                                      .map(r -> stringValue(r, "Round").toUpperCase())
                                      .map(Stage::valueOf)
-                                     .collect(Collectors.toList());
-    List<Stage> actualStages = tournament.getRounds().stream().map(Round::getStage).collect(Collectors.toList());
+                                     .toList();
+    List<Stage> actualStages = tournament.getRounds().stream().map(Round::getStage).toList();
     assertEquals(expectedStages, actualStages, "Stage order mismatch for " + tournamentId);
 
     Stage firstMainStage = expectedStages.stream()
@@ -506,8 +505,8 @@ class TournamentBuilderCsvTest {
     List<Stage> expectedStages = rows.stream()
                                      .map(r -> stringValue(r, "Round").toUpperCase())
                                      .map(Stage::valueOf)
-                                     .collect(Collectors.toList());
-    List<Stage> actualStages = tournament.getRounds().stream().map(Round::getStage).collect(Collectors.toList());
+                                     .toList();
+    List<Stage> actualStages = tournament.getRounds().stream().map(Round::getStage).toList();
     assertEquals(expectedStages, actualStages, "Stage order mismatch for " + tournamentId);
 
     Stage firstMainStage = expectedStages.stream()
