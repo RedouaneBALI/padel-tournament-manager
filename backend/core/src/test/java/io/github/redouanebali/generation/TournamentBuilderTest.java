@@ -50,7 +50,7 @@ public class TournamentBuilderTest {
     if (lines.size() <= 1) {
       throw new IllegalStateException("CSV appears empty");
     }
-    buildHeaderIndex(lines.getFirst());
+    buildHeaderIndex(lines.get(0));
 
     Map<String, List<String[]>> byTid = new LinkedHashMap<>();
     for (int r = 1; r < lines.size(); r++) {
@@ -329,7 +329,7 @@ public class TournamentBuilderTest {
 
   @Test
   void testAutomaticDrawStrategy_groupsMode_placesPairsInPools() {
-    // Paramètres pour un tournoi à 2 poules de 4 paires
+    // Parameters for a tournament with 2 pools of 4 pairs
     int nbPools           = 2;
     int nbPairsPerPool    = 4;
     int nbQualifiedByPool = 2;
@@ -357,24 +357,24 @@ public class TournamentBuilderTest {
                                   .findFirst()
                                   .orElseThrow();
 
-    // Vérifie le nombre de pools
-    assertEquals(nbPools, groupsRound.getPools().size(), "Le nombre de pools doit être correct");
-    // Vérifie le nombre de paires par pool
+    // Verify the number of pools
+    assertEquals(nbPools, groupsRound.getPools().size(), "Number of pools must be correct");
+    // Verify the number of pairs per pool
     for (int i = 0; i < nbPools; i++) {
-      assertEquals(nbPairsPerPool, groupsRound.getPools().get(i).getPairs().size(), "Chaque pool doit contenir le bon nombre de paires");
+      assertEquals(nbPairsPerPool, groupsRound.getPools().get(i).getPairs().size(), "Each pool must contain the correct number of pairs");
     }
-    // Vérifie que toutes les paires sont placées et aucune n'est dupliquée
+    // Verify that all pairs are placed and none are duplicated
     List<PlayerPair> allPlaced = groupsRound.getPools().stream()
                                             .flatMap(pool -> pool.getPairs().stream())
                                             .toList();
-    assertEquals(totalPairs, allPlaced.size(), "Toutes les paires doivent être placées dans les pools");
+    assertEquals(totalPairs, allPlaced.size(), "All pairs must be placed in pools");
     long uniquePairs = allPlaced.stream().distinct().count();
-    assertEquals(totalPairs, uniquePairs, "Aucune paire ne doit être dupliquée dans les pools");
+    assertEquals(totalPairs, uniquePairs, "No pair should be duplicated in pools");
   }
 
   @Test
   void testAutomaticDrawStrategy_groupsMode_seedsAreSnakeDistributed() {
-    // 4 poules, 4 seeds
+    // 4 pools, 4 seeds
     int nbPools           = 4;
     int nbPairsPerPool    = 4;
     int nbQualifiedByPool = 2;
@@ -396,7 +396,7 @@ public class TournamentBuilderTest {
     tournament.setConfig(config);
 
     List<PlayerPair> pairs = TestFixtures.createPlayerPairs(totalPairs);
-    // Affecte les seeds 1 à 4 aux 4 premières paires
+    // Assign seeds 1 to 4 to the first 4 pairs
     for (int i = 0; i < nbSeedsMain; i++) {
       pairs.get(i).setSeed(i + 1);
     }
@@ -407,8 +407,8 @@ public class TournamentBuilderTest {
                                   .findFirst()
                                   .orElseThrow();
 
-    // Vérifie la répartition snake des seeds dans les pools
-    // TS1 en A, TS2 en D, TS3 en C, TS4 en B
+    // Verify snake distribution of seeds in pools
+    // TS1 in A, TS2 in D, TS3 in C, TS4 in B
     String[] expectedPools = {"Pool A", "Pool D", "Pool C", "Pool B"};
     int[]    expectedSeeds = {1, 2, 3, 4};
     for (int i = 0; i < nbSeedsMain; i++) {
@@ -418,12 +418,12 @@ public class TournamentBuilderTest {
         Pool    pool    = groupsRound.getPools().get(p);
         boolean hasSeed = pool.getPairs().stream().anyMatch(pair -> pair.getSeed() == seedToFind);
         if (hasSeed) {
-          assertEquals(expectedPools[i], pool.getName(), "La seed " + expectedSeeds[i] + " doit être dans " + expectedPools[i]);
+          assertEquals(expectedPools[i], pool.getName(), "Seed " + expectedSeeds[i] + " must be in " + expectedPools[i]);
           found.set(true);
           break;
         }
       }
-      assertTrue(found.get(), "La seed " + expectedSeeds[i] + " doit être placée dans une pool");
+      assertTrue(found.get(), "Seed " + expectedSeeds[i] + " must be placed in a pool");
     }
   }
 
@@ -457,7 +457,7 @@ public class TournamentBuilderTest {
 
     List<Stage> expectedStages = parseStages(expectedStagesCsv);
     List<Stage> actualStages   = tournament.getRounds().stream().map(Round::getStage).toList();
-    assertEquals(expectedStages, actualStages, "La séquence des rounds doit être correcte");
+    assertEquals(expectedStages, actualStages, "Rounds sequence must be correct");
   }
 
   @ParameterizedTest(name = "Config sans qualifs: mainDraw={0}, stages={1}")
@@ -482,13 +482,12 @@ public class TournamentBuilderTest {
 
     List<Stage> expectedStages = parseStages(expectedStagesCsv);
     List<Stage> actualStages   = tournament.getRounds().stream().map(Round::getStage).toList();
-    assertEquals(expectedStages, actualStages, "La séquence des rounds doit être correcte");
+    assertEquals(expectedStages, actualStages, "Rounds sequence must be correct");
   }
 
 
   @ParameterizedTest(name = "QUALIF_KO: preQual={0}, nbQualifiers={1}, mainDraw={2}, nbSeeds={3}")
   @CsvSource({
-      // preQualDrawSize, nbQualifiers, mainDrawSize, nbSeeds
       "8, 4, 32, 4",
       "16, 8, 32, 8",
       "32, 16, 64, 16",
@@ -529,23 +528,20 @@ public class TournamentBuilderTest {
                                        .filter(p -> p != null && !p.isQualifier() && !p.isBye())
                                        .count();
 
-    assertEquals(expectedQualifiers, qualifierCount, "Le main draw doit contenir exactement " + expectedQualifiers + " emplacements QUALIFIER.");
-    assertEquals(expectedTeams, realTeamsCount, "Le main draw doit contenir exactement " + expectedTeams + " équipes directes.");
+    assertEquals(expectedQualifiers, qualifierCount, "Main draw must contain exactly " + expectedQualifiers + " QUALIFIER slots.");
+    assertEquals(expectedTeams, realTeamsCount, "Main draw must contain exactly " + expectedTeams + " direct entry teams.");
   }
 
-  // ============= TEST POUR DÉTECTER LE BUG DE DUPLICATION QUALIF/MAIN DRAW =============
+  // ============= TEST TO DETECT QUALIF/MAIN DRAW DUPLICATION BUG =============
 
   @Test
   void testQualifKO_noTeamShouldBeInBothQualifAndMainDraw() {
-    // Given: Tournament QUALIF_KO avec 16 équipes en qualif (-> 4 qualifiers) et 32 places en main draw
-    // On crée 28 équipes au total : les 12 meilleurs doivent aller directement en R32,
-    // les 16 moins bons doivent aller en Q1
     Tournament tournament = TestFixtures.makeTournament(
-        16,           // preQualSize = 16 places en qualif
-        4,            // nbQualifiers = 4 qualifiers passent en main draw
-        32,           // mainDrawSize = 32 places en phase finale
-        8,            // nbSeedsMain = 8 seeds en main draw
-        4,            // nbSeedsQual = 4 seeds en qualif
+        16,           // preQualSize = 16 places in qualif
+        4,            // nbQualifiers = 4 qualifiers advance to main draw
+        32,           // mainDrawSize = 32 places in final phase
+        8,            // nbSeedsMain = 8 seeds in main draw
+        4,            // nbSeedsQual = 4 seeds in qualif
         DrawMode.SEEDED
     );
 
@@ -562,21 +558,21 @@ public class TournamentBuilderTest {
     Round q1Round  = tournament.getRoundByStage(Stage.Q1);
     Round r32Round = tournament.getRoundByStage(Stage.R32);
 
-    // Collecter toutes les équipes NON-BYE et NON-QUALIFIER dans Q1
+    // Collect all NON-BYE and NON-QUALIFIER teams in Q1
     List<PlayerPair> teamsInQ1 = q1Round.getGames().stream()
                                         .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
                                         .filter(Objects::nonNull)
-                                        .filter(p -> !p.isBye() && !p.isQualifier()) // Exclure BYE et placeholders QUALIFIER
+                                        .filter(p -> !p.isBye() && !p.isQualifier()) // Exclude BYE and QUALIFIER placeholders
                                         .toList();
 
-    // Collecter toutes les équipes NON-BYE et NON-QUALIFIER dans R32
+    // Collect all NON-BYE and NON-QUALIFIER teams in R32
     List<PlayerPair> teamsInR32 = r32Round.getGames().stream()
                                           .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
                                           .filter(Objects::nonNull)
-                                          .filter(p -> !p.isBye() && !p.isQualifier()) // Exclure BYE et placeholders QUALIFIER
+                                          .filter(p -> !p.isBye() && !p.isQualifier()) // Exclude BYE and QUALIFIER placeholders
                                           .toList();
 
-    // Vérifier qu'aucune équipe n'est présente dans les deux rounds
+    // Verify that no team is present in both rounds
     for (PlayerPair teamInQ1 : teamsInQ1) {
       boolean isDuplicateInR32 = teamsInR32.stream()
                                            .anyMatch(teamInR32 ->
@@ -585,14 +581,14 @@ public class TournamentBuilderTest {
                                            );
 
       Assertions.assertFalse(isDuplicateInR32,
-                             String.format("BUG DÉTECTÉ ! L'équipe %s/%s (seed %d) est présente à la fois en Q1 ET en R32 !",
+                             String.format("BUG DETECTED! Team %s/%s (seed %d) is present in both Q1 AND R32!",
                                            teamInQ1.getPlayer1().getName(),
                                            teamInQ1.getPlayer2().getName(),
                                            teamInQ1.getSeed()));
     }
 
-    // Vérification supplémentaire : les seeds les plus faibles doivent être en Q1
-    // et les seeds les plus fortes doivent être en R32
+    // Additional verification: weakest seeds should be in Q1
+    // and strongest seeds should be in R32
     if (!teamsInQ1.isEmpty() && !teamsInR32.isEmpty()) {
       int maxSeedInQ1 = teamsInQ1.stream()
                                  .mapToInt(PlayerPair::getSeed)
@@ -601,17 +597,17 @@ public class TournamentBuilderTest {
 
       int minSeedInR32 = teamsInR32.stream()
                                    .mapToInt(PlayerPair::getSeed)
-                                   .filter(seed -> seed > 0 && seed < Integer.MAX_VALUE) // Exclure les seeds spéciales
+                                   .filter(seed -> seed > 0 && seed < Integer.MAX_VALUE) // Exclude special seeds
                                    .min()
                                    .orElse(Integer.MAX_VALUE);
 
-      // Les seeds en Q1 doivent être plus élevées (moins bonnes) que celles en R32
+      // Seeds in Q1 must be higher (weaker) than those in R32
       assertTrue(maxSeedInQ1 > minSeedInR32,
-                 String.format("Les seeds en qualif (%d max) doivent être moins bonnes que celles en main draw (%d min)",
+                 String.format("Seeds in qualif (%d max) must be weaker than those in main draw (%d min)",
                                maxSeedInQ1, minSeedInR32));
     }
 
-    // Vérification du nombre total d'équipes uniques
+    // Verify total number of unique teams
     List<PlayerPair> allRealTeams = new ArrayList<>();
     allRealTeams.addAll(teamsInQ1);
     allRealTeams.addAll(teamsInR32);
@@ -622,15 +618,15 @@ public class TournamentBuilderTest {
                                         .count();
 
     assertEquals(allRealTeams.size(), uniqueTeamsCount,
-                 "Toutes les équipes doivent être uniques (pas de duplication entre Q1 et R32)");
+                 "All teams must be unique (no duplication between Q1 and R32)");
   }
 
   @ParameterizedTest(name = "QUALIF_KO: preQual={0}, qualifiers={1}, mainDraw={2}, teams={3}")
   @CsvSource({
-      "16, 4, 32, 28",   // 16 en qualif, 12 direct en R32 (28 total)
-      "32, 8, 32, 32",   // 32 en qualif, 0 direct en R32 (32 total)
-      "32, 8, 64, 60",   // 32 en qualif, 28 direct en R64 (60 total)
-      "16, 4, 16, 16"    // 16 en qualif, 0 direct en R16 (16 total)
+      "16, 4, 32, 28",   // 16 in qualif, 12 direct in R32 (28 total)
+      "32, 8, 32, 32",   // 32 in qualif, 0 direct in R32 (32 total)
+      "32, 8, 64, 60",   // 32 in qualif, 28 direct in R64 (60 total)
+      "16, 4, 16, 16"    // 16 in qualif, 0 direct in R16 (16 total)
   })
   void testQualifKO_variousConfigurations_noTeamDuplication(int preQual, int nbQualifiers, int mainDraw, int totalTeams) {
     // Given: Various QUALIF_KO configurations
