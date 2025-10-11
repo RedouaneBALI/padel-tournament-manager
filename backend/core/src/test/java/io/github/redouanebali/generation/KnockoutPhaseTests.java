@@ -220,19 +220,6 @@ public class KnockoutPhaseTests {
         // NOTE: We do NOT call placeByeTeams here to avoid conflicts with remaining teams placement
         // BYEs will be placed at the end to fill empty slots
 
-        // Collect already placed teams (seeds) - use a Set to track by reference
-        // NOTE: placeSeedTeams may place more teams than nbSeeds at theoretical positions
-        // Only the first nbSeeds teams (seed >= 1 && seed <= nbSeeds) are actual seeds
-        Set<PlayerPair> alreadyPlaced = new HashSet<>();
-        for (Game g : currentRound.getGames()) {
-          if (g.getTeamA() != null && !g.getTeamA().isBye() && g.getTeamA().getSeed() >= 1 && g.getTeamA().getSeed() <= nbQualifSeeds) {
-            alreadyPlaced.add(g.getTeamA());
-          }
-          if (g.getTeamB() != null && !g.getTeamB().isBye() && g.getTeamB().getSeed() >= 1 && g.getTeamB().getSeed() <= nbQualifSeeds) {
-            alreadyPlaced.add(g.getTeamB());
-          }
-        }
-
         // Place remaining teams in available slots
         // Since placeSeedTeams sorts and may create new references, we need to filter by checking
         // if the team is already in the round, not by Set.contains()

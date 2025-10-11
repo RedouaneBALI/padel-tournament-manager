@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -86,13 +85,6 @@ public class TournamentBuilderTest {
     return idx;
   }
 
-  private static int intValue(String[] row, String key) {
-    return Integer.parseInt(row[headerIndexFor(key)].trim());
-  }
-
-  private static String stringValue(String[] row, String key) {
-    return row[headerIndexFor(key)].trim();
-  }
 
   @ParameterizedTest(name = "Main draw only: mainDraw={0}")
   @CsvSource({
