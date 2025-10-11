@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Shared test data builders to avoid duplication across tests.
@@ -312,5 +313,23 @@ public final class TestFixtures {
       pairs.add(pair);
     }
     return pairs;
+  }
+
+  public static List<Game> createGamesWithTeams(List<PlayerPair> pairs) {
+    return IntStream.range(0, pairs.size() / 2)
+                    .mapToObj(i -> {
+                      Game game = new Game();
+                      game.setTeamA(pairs.get(i * 2));
+                      game.setTeamB(pairs.get(i * 2 + 1));
+                      return game;
+                    })
+                    .toList();
+  }
+
+  public static List<Round> createRoundsWithGames(List<Game> games, Stage stage) {
+    Round round = new Round(stage);
+    round.addGames(new ArrayList<>(games));
+    return List.of(round).stream()
+               .toList();
   }
 }

@@ -129,8 +129,6 @@ public class GameServiceTest {
     UpdateScoreDTO result = gameService.updateGame(tournamentId, gameId, req);
     assertEquals("Court 1", game.getCourt());
     assertEquals(6, game.getScore().getSets().getFirst().getTeamAScore());
-    // On ne teste plus result.finished(), car la classe UpdateScoreDTO n'a pas ce champ
-    // assertEquals(true, result.finished());
     assertEquals(TeamSide.TEAM_A, result.getWinner());
   }
 

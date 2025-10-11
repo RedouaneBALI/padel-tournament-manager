@@ -199,4 +199,18 @@ public class TournamentServiceTest {
     tournamentService.listAll();
     verify(tournamentRepository, times(1)).findAll();
   }
+
+  @Test
+  void testGetTournamentsByOwner() {
+    Tournament tournament = new Tournament();
+    tournament.setId(1L);
+    tournament.setOwnerId("bali.redouane@gmail.com");
+
+    when(tournamentRepository.findAllByOwnerId("bali.redouane@gmail.com")).thenReturn(List.of(tournament));
+
+    List<Tournament> result = tournamentService.getTournamentsByOwner("bali.redouane@gmail.com");
+
+    assertEquals(1, result.size());
+    assertEquals(tournament, result.get(0));
+  }
 }

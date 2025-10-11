@@ -192,4 +192,14 @@ public class TournamentService {
   public List<Tournament> listAll() {
     return tournamentRepository.findAll();
   }
+
+  /**
+   * Retrieves all tournaments owned by a specific user.
+   *
+   * @param ownerId the owner's user ID
+   * @return list of tournaments owned by the user
+   */
+  public List<Tournament> getTournamentsByOwner(String ownerId) {
+    return tournamentRepository.findAllByOwnerId(ownerId);
+  }
 }
