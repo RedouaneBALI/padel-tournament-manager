@@ -69,20 +69,118 @@ public class PlayerPairService {
   }
 
   /**
-   * Retrieves all player pairs for a tournament. Can optionally exclude BYE pairs from the result.
+   * Retrieves all player pairs for a tournament. Can optionally exclude BYE pairs from the result. When including BYEs, they are reorganized to be
+   * placed opposite seeds for better UX in manual mode.
    *
    * @param tournamentId the tournament ID
    * @param includeByes whether to include BYE pairs in the result
-   * @return list of player pairs, optionally excluding BYEs
+   * @return list of player pairs, with BYEs reorganized opposite seeds if includeByes is true
    * @throws IllegalArgumentException if tournament is not found
    */
   public List<PlayerPair> getPairsByTournamentId(Long tournamentId, boolean includeByes) {
     Tournament tournament = tournamentRepository.findById(tournamentId)
                                                 .orElseThrow(() -> new IllegalArgumentException(TOURNAMENT_NOT_FOUND));
     if (includeByes) {
-      return new ArrayList<>(tournament.getPlayerPairs());
+      return reorderPairsWithByesAtCorrectPositions(tournament);
     } else {
       return tournament.getPlayerPairs().stream().filter(pp -> !pp.isBye()).toList();
+    }
+  }
+
+  /**
+   * Reorders player pairs by inserting BYEs at the correct absolute positions. Uses bye_positions.json to determine where BYEs should be placed.
+   */
+  private List<PlayerPair> reorderPairsWithByesAtCorrectPositions(Tournament tournament) {
+    List<PlayerPair> allPairs     = new ArrayList<>(tournament.getPlayerPairs());
+    Integer          mainDrawSize = tournament.getConfig().getMainDrawSize();
+    Integer          nbSeeds      = tournament.getConfig().getNbSeeds();
+
+    // If no draw size or seeds configured, return pairs as-is
+    if (mainDrawSize == null || mainDrawSize <= 0 || nbSeeds == null || nbSeeds <= 0) {
+      return allPairs;
+    }
+
+    // Separate BYEs and real pairs
+    List<PlayerPair> realPairs = allPairs.stream().filter(pp -> !pp.isBye()).toList();
+    List<PlayerPair> byePairs  = allPairs.stream().filter(PlayerPair::isBye).toList();
+
+    // If no BYEs, return real pairs only
+    if (byePairs.isEmpty()) {
+      return realPairs;
+    }
+
+    // Load BYE positions from JSON (positions are in seed order, NOT sorted)
+    List<Integer> byePositions = loadByePositionsFromJson(mainDrawSize, nbSeeds, byePairs.size());
+
+    // Convert to set for O(1) lookup
+    java.util.Set<Integer> byePositionSet = new java.util.HashSet<>(byePositions);
+
+    // Build result array with BYEs at correct absolute positions
+    PlayerPair[] resultArray = new PlayerPair[mainDrawSize];
+    int          byeIndex    = 0;
+    int          realIndex   = 0;
+
+    for (int position = 0; position < mainDrawSize; position++) {
+      // Check if this position should have a BYE
+      if (byePositionSet.contains(position)) {
+        // Place BYE at this absolute position
+        if (byeIndex < byePairs.size()) {
+          resultArray[position] = byePairs.get(byeIndex);
+          byeIndex++;
+        }
+      } else {
+        // Place a real pair at this position
+        if (realIndex < realPairs.size()) {
+          resultArray[position] = realPairs.get(realIndex);
+          realIndex++;
+        }
+      }
+    }
+
+    // Convert array to list, filtering out nulls
+    List<PlayerPair> result = new ArrayList<>(mainDrawSize);
+    for (PlayerPair pair : resultArray) {
+      if (pair != null) {
+        result.add(pair);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Loads BYE positions from bye_positions.json file. Similar to SeedPlacementUtil.getSeedsPositions() but for BYEs.
+   */
+  private List<Integer> loadByePositionsFromJson(int drawSize, int nbSeeds, int nbByes) {
+    try {
+      com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+      java.io.InputStream                         is     = getClass().getClassLoader().getResourceAsStream("bye_positions.json");
+
+      if (is == null) {
+        log.warn("bye_positions.json not found, returning empty list");
+        return new ArrayList<>();
+      }
+
+      com.fasterxml.jackson.databind.JsonNode root = mapper.readTree(is);
+      com.fasterxml.jackson.databind.JsonNode byePositionsNode = root.path(String.valueOf(drawSize))
+                                                                     .path(String.valueOf(nbSeeds))
+                                                                     .path(String.valueOf(nbByes));
+
+      if (byePositionsNode.isMissingNode()) {
+        log.warn("No BYE positions found for drawSize={}, nbSeeds={}, nbByes={}", drawSize, nbSeeds, nbByes);
+        return new ArrayList<>();
+      }
+
+      List<Integer> positions = new ArrayList<>();
+      for (com.fasterxml.jackson.databind.JsonNode position : byePositionsNode) {
+        positions.add(position.asInt());
+      }
+
+      return positions;
+
+    } catch (Exception e) {
+      log.error("Failed to load BYE positions from JSON", e);
+      return new ArrayList<>();
     }
   }
 
