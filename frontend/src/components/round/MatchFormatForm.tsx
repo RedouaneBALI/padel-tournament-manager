@@ -20,7 +20,18 @@ export default function MatchFormatForm({
 
   const handleChange = (key: keyof MatchFormat, value: MatchFormatValue) => {
     if (!onChange) return;
-    onChange({ ...format, [key]: value });
+
+    const newFormat = { ...format, [key]: value };
+
+    // Si on change le nombre de jeux ou le nombre de sets, ajuster automatiquement tieBreakAt
+    if (key === 'gamesPerSet') {
+      newFormat.tieBreakAt = value as number;
+    } else if (key === 'numberOfSetsToWin') {
+      // Quand on change numberOfSetsToWin, s'assurer que tieBreakAt est cohérent avec gamesPerSet
+      newFormat.tieBreakAt = format.gamesPerSet;
+    }
+
+    onChange(newFormat);
   };
 
   return (
@@ -85,6 +96,33 @@ export default function MatchFormatForm({
             </select>
           )}
         </label>
+
+        {/* Tie-break à - affiché uniquement si numberOfSetsToWin = 1 */}
+        {format.numberOfSetsToWin === 1 && (
+          <label className="flex flex-col text-sm">
+            Super tie-break à
+            {readOnly ? (
+              <select
+                value={format.tieBreakAt}
+                disabled
+                aria-readonly
+                className="mt-1 rounded border border-input bg-background px-3 py-2 text-foreground pointer-events-none opacity-60"
+              >
+                <option value={format.gamesPerSet}>{format.gamesPerSet}-{format.gamesPerSet}</option>
+                <option value={format.gamesPerSet - 1}>{format.gamesPerSet - 1}-{format.gamesPerSet - 1}</option>
+              </select>
+            ) : (
+              <select
+                value={format.tieBreakAt}
+                onChange={(e) => handleChange('tieBreakAt', parseInt(e.target.value))}
+                className="mt-1 rounded border border-input bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value={format.gamesPerSet}>{format.gamesPerSet}-{format.gamesPerSet}</option>
+                <option value={format.gamesPerSet - 1}>{format.gamesPerSet - 1}-{format.gamesPerSet - 1}</option>
+              </select>
+            )}
+          </label>
+        )}
 
         {/* Avantages */}
         <div className="flex items-center justify-between mt-2">

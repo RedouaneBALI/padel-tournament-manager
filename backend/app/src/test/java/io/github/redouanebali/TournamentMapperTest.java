@@ -190,12 +190,14 @@ public class TournamentMapperTest {
     mf.setGamesPerSet(5);
     mf.setAdvantage(true);
     mf.setSuperTieBreakInFinalSet(false);
+    mf.setTieBreakAt(5); // tieBreakAt should be automatically set to gamesPerSet by setGamesPerSet
     MatchFormatDTO dto = mapper.toDTO(mf);
     assertNotNull(dto);
     assertEquals(3, dto.getNumberOfSetsToWin());
     assertEquals(5, dto.getGamesPerSet());
     assertTrue(dto.isAdvantage());
     assertFalse(dto.isSuperTieBreakInFinalSet());
+    assertEquals(5, dto.getTieBreakAt());
   }
 
   @Test

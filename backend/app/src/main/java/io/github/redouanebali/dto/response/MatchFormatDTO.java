@@ -9,4 +9,5 @@ public class MatchFormatDTO {
   private int     gamesPerSet;
   private boolean advantage;
   private boolean superTieBreakInFinalSet;
+  private int     tieBreakAt;
 }

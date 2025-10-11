@@ -139,6 +139,23 @@ public class Game {
   }
 
   private int evaluateRegularSet(SetScore set, int pointsPerSet) {
+    int a             = set.getTeamAScore();
+    int b             = set.getTeamBScore();
+    int tieBreakScore = format.getTieBreakAt();
+
+    // If both teams reach tieBreakScore, the tie-break is triggered
+    // The winner must reach tieBreakScore + 1 with at least 1 game difference
+    if (a >= tieBreakScore && b >= tieBreakScore) {
+      if (a >= tieBreakScore + 1 && a > b) {
+        return 1; // Team A won
+      }
+      if (b >= tieBreakScore + 1 && b > a) {
+        return 2; // Team B won
+      }
+      return 0; // Tie-break in progress
+    }
+
+    // Classic logic before tie-break
     if (isSetWonBy(set.getTeamAScore(), set.getTeamBScore(), pointsPerSet)) {
       return 1; // Team A won
     }
@@ -149,17 +166,20 @@ public class Game {
   }
 
   public boolean isSetWonBy(int teamScore, int opponentScore, int maxPointsPerSet) {
+    int tieBreakScore = format.getTieBreakAt();
+
+    // If maxPointsPerSet is not reached, the set is not won
     if (teamScore < maxPointsPerSet) {
       return false;
     }
 
-    // If both teams reached maxPointsPerSet - 1, play up to maxPointsPerSet + 1
-    int tieThreshold = maxPointsPerSet - 1;
-    if (opponentScore >= tieThreshold) {
-      return teamScore == maxPointsPerSet + 1 && (teamScore - opponentScore) >= 1;
+    // If both teams have reached tieBreakScore, we are in tie-break mode
+    // In this case, the victory only requires having 1 more game (handled by evaluateRegularSet)
+    if (teamScore >= tieBreakScore && opponentScore >= tieBreakScore) {
+      return false; // The tie-break will be handled by evaluateRegularSet
     }
 
-    // Otherwise, 2 points difference needed after reaching maxPointsPerSet
+    // Otherwise, classic victory: having reached maxPointsPerSet with 2 games difference
     return (teamScore - opponentScore) >= 2;
   }
 

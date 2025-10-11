@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS match_format (
     advantage BOOLEAN NOT NULL DEFAULT true,
     number_of_sets_to_win INTEGER NOT NULL DEFAULT 2 CHECK (number_of_sets_to_win >= 1),
     games_per_set INTEGER NOT NULL DEFAULT 6 CHECK (games_per_set >= 1),
-    super_tie_break_in_final_set BOOLEAN NOT NULL DEFAULT false
+    super_tie_break_in_final_set BOOLEAN NOT NULL DEFAULT false,
+    tie_break_at INTEGER NOT NULL DEFAULT 6 CHECK (tie_break_at >= 1)
 );
 
 CREATE TABLE IF NOT EXISTS player (
@@ -124,4 +125,3 @@ CREATE INDEX IF NOT EXISTS idx_game_teamb_id ON game(teamb_id);
 CREATE INDEX IF NOT EXISTS idx_game_score_id ON game(score_id);
 
 -- End V1
-

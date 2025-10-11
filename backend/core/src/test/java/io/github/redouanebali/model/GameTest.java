@@ -3,8 +3,10 @@ package io.github.redouanebali.model;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -104,9 +106,9 @@ public class GameTest {
 
   @ParameterizedTest
   @CsvSource({
-      // Format : nbSetsToWin, ptsPerSet, scoreString, superTieBreakFinalSet, expected
+      // Format: nbSetsToWin, ptsPerSet, scoreString, superTieBreakFinalSet, expected
 
-      // --- 1 set gagnant, 6 jeux par set ---
+      // --- 1 winning set, 6 games per set ---
       "1, 6, '6-3', false, true",
       "1, 6, '7-5', false, true",
       "1, 6, '7-6', false, true",
@@ -114,15 +116,15 @@ public class GameTest {
       "1, 6, '5-7', false, true",
       "1, 6, '6-7', false, true",
       "1, 6, '5-5', false, false",
-      // --- 1 set gagnant, 9 jeux par set ---
+      // --- 1 winning set, 9 games per set ---
       "1, 9, '9-7', false, true",
       "1, 9, '8-6', false, false",
-      // --- 1 set gagnant, 4 jeux par set (tie-break à 4-4) ---
+      // --- 1 winning set, 4 games per set (tie-break at 4-4) ---
       "1, 4, '4-2', false, true",
       "1, 4, '5-4', false, true",
       "1, 4, '3-4', false, false",
       "1, 4, '3-3', false, false",
-      // --- 2 sets gagnants, 6 jeux par set ---
+      // --- 2 winning sets, 6 games per set ---
       "2, 6, '6-0,6-0', false, true",
       "2, 6, '6-4,6-3', false, true",
       "2, 6, '6-3,4-6', false, false",
@@ -132,13 +134,13 @@ public class GameTest {
       "2, 6, '6-4,4-6,7-5', false, true",
       "2, 6, '7-6,6-4', false, true",
       "2, 6, '7-6,6-5', false, false",
-      // --- 2 sets gagnants, 4 jeux par set ---
+      // --- 2 winning sets, 4 games per set ---
       "2, 4, '4-2,4-2', false, true",
       "2, 4, '4-2,2-4', false, false",
       "2, 4, '4-2,2-4,4-3', false, false",
       "2, 4, '4-2,2-4,3-3', false, false",
       "2, 4, '4-2,2-4,5-4', false, true",
-      // --- Super tie-break en 3e set ---
+      // --- Super tie-break in 3rd set ---
       "2, 6, '6-4,4-6,10-8', true, true",
       "2, 6, '6-4,4-6,10-9', true, false",
       "2, 6, '6-4,4-6,8-10', true, true",
@@ -178,32 +180,32 @@ public class GameTest {
 
   @ParameterizedTest
   @CsvSource({
-      // Format : nbSetsToWin, ptsPerSet, scoreString, superTieBreakFinalSet, expectedWinner
+      // Format: nbSetsToWin, ptsPerSet, scoreString, superTieBreakFinalSet, expectedWinner
 
-      // Matchs terminés et non terminés, divers formats
+      // Completed and ongoing matches, various formats
 
-      // 2 sets gagnants, 6 jeux par set, sans super tie-break
+      // 2 winning sets, 6 games per set, without super tie-break
       "2, 6, '6-3,6-1', false, A",
       "2, 6, '4-6,3-6', false, B",
       "2, 6, '6-4,3-6,6-2', false, A",
       "2, 6, '6-3,5-5', false, NONE",
 
-      // 1 set gagnant, 6 jeux par set
+      // 1 winning set, 6 games per set
       "1, 6, '6-3', false, A",
       "1, 6, '5-7', false, B",
 
-      // 1 set gagnant, 9 jeux par set
+      // 1 winning set, 9 games per set
       "1, 9, '9-7', false, A",
 
-      // 1 set gagnant, 4 jeux par set
+      // 1 winning set, 4 games per set
       "1, 4, '3-4', false, NONE",
       "1, 4, '4-2', false, A",
 
-      // 2 sets gagnants, 4 jeux par set
+      // 2 winning sets, 4 games per set
       "2, 4, '4-2,2-4', false, NONE",
       "2, 4, '4-2,2-4,4-3', false, NONE",
 
-      // Super tie-break activé - fin au 3e set, 10 points gagnants
+      // Super tie-break enabled - end in 3rd set, 10 winning points
       "2, 6, '6-4,4-6,10-8', true, A",
       "2, 6, '6-4,4-6,10-9', true, NONE",
       "2, 6, '6-4,4-6,8-10', true, B",
@@ -250,6 +252,71 @@ public class GameTest {
       case "NONE" -> assertNull(actual);
       default -> fail("Invalid expectedWinner value: " + expectedWinner);
     }
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+      // Format: 1 set of 9 games, tie-break at 8-8
+      // Score, isFinished, expectedWinner
+      "'9-7', true, A",      // Classic victory (2 games difference before 8-8)
+      "'9-8', true, A",      // Victory after tie-break at 8-8
+      "'8-9', true, B",      // Victory after tie-break at 8-8
+      "'9-6', true, A",      // Classic victory
+      "'6-9', true, B",      // Classic victory
+      "'8-8', false, NONE",  // Match in progress, tie-break upcoming
+      "'8-7', false, NONE",  // Match in progress
+      "'7-8', false, NONE",  // Match in progress
+      "'8-6', false, NONE",  // Match in progress (not enough games to win)
+      "'10-8', true, A",     // Victory after extension
+      "'8-10', true, B",     // Victory after extension
+  })
+  void testFormat_1Set9Games_TieBreakAt8(String scoreString, boolean expectedFinished, String expectedWinner) {
+    // Format: 1 set of 9 games, tie-break at 8-8
+    MatchFormat format = new MatchFormat(1L, 1, 9, false, false, 8);
+
+    PlayerPair teamA = new PlayerPair();
+    teamA.setId(1L);
+    PlayerPair teamB = new PlayerPair();
+    teamB.setId(2L);
+
+    Game game = new Game(format);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+
+    Score score = new Score();
+    for (String set : scoreString.split(",")) {
+      String[] parts = set.trim().split("-");
+      score.addSetScore(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+    }
+    game.setScore(score);
+
+    // Test isFinished
+    assertEquals(expectedFinished, game.isFinished(),
+                 "isFinished should be " + expectedFinished + " for score " + scoreString);
+
+    // Test getWinner
+    PlayerPair actual = game.getWinner();
+    switch (expectedWinner) {
+      case "A" -> assertEquals(teamA, actual, "Winner should be team A for score " + scoreString);
+      case "B" -> assertEquals(teamB, actual, "Winner should be team B for score " + scoreString);
+      case "NONE" -> assertNull(actual, "Winner should be null for score " + scoreString);
+      default -> fail("Invalid expectedWinner value: " + expectedWinner);
+    }
+  }
+
+  @Test
+  void testMatchFormat_TieBreakAt_Validation() {
+    // Test that tieBreakAt must be gamesPerSet or gamesPerSet-1
+    MatchFormat format = new MatchFormat();
+    format.setGamesPerSet(9);
+
+    // Valid values
+    format.setTieBreakAt(9);  // OK
+    format.setTieBreakAt(8);  // OK
+
+    // Invalid value
+    assertThrows(IllegalArgumentException.class, () -> format.setTieBreakAt(7));
+    assertThrows(IllegalArgumentException.class, () -> format.setTieBreakAt(10));
   }
 
   private MatchFormat createSimpleFormat() {

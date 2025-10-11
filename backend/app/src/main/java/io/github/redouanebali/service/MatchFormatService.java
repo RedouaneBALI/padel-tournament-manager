@@ -69,6 +69,7 @@ public class MatchFormatService {
       currentFormat.setGamesPerSet(newFormat.getGamesPerSet());
       currentFormat.setAdvantage(newFormat.isAdvantage());
       currentFormat.setSuperTieBreakInFinalSet(newFormat.isSuperTieBreakInFinalSet());
+      currentFormat.setTieBreakAt(newFormat.getTieBreakAt());
     }
 
     tournamentRepository.save(tournament);
