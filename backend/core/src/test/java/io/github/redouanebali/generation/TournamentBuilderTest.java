@@ -88,7 +88,6 @@ public class TournamentBuilderTest {
 
   @ParameterizedTest(name = "Main draw only: mainDraw={0}")
   @CsvSource({
-      // mainDraw, nbSeedsMain, drawMode, expectedStages, expectedMatches
       "32, 8, SEEDED, R32;R16;QUARTERS;SEMIS;FINAL, 16;8;4;2;1",
       "64, 16, SEEDED, R64;R32;R16;QUARTERS;SEMIS;FINAL, 32;16;8;4;2;1"
   })

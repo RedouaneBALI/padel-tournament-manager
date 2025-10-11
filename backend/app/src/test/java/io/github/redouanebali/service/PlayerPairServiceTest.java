@@ -79,7 +79,11 @@ public class PlayerPairServiceTest {
   @Test
   void testAddPairs_shouldThrowIfTournamentNotFound() {
     when(tournamentRepository.findById(1L)).thenReturn(Optional.empty());
-    assertThrows(IllegalArgumentException.class, () -> playerPairService.addPairs(1L, List.of()));
+    assertThrows(IllegalArgumentException.class, () -> addPairsToTournament());
+  }
+
+  private void addPairsToTournament() {
+    playerPairService.addPairs(1L, List.of());
   }
 
   @Test
