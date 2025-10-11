@@ -107,7 +107,7 @@ export async function updateGameDetails(tournamentId: string, gameId: string, sc
   return await response.json();
 }
 
-export async function updateMatchFormat(tournamentId: string, stage: string, matchFormat: MatchFormat) {
+export async function updateMatchFormat(tournamentId: string, stage: string, matchFormat: MatchFormat, showToast: boolean = true) {
   const response = await fetchWithAuth(api(`/admin/tournaments/${tournamentId}/rounds/${stage}/match-format`), {
     method: 'PUT',
     body: JSON.stringify(matchFormat),
@@ -115,11 +115,15 @@ export async function updateMatchFormat(tournamentId: string, stage: string, mat
 
   if (!response.ok) {
     const text = await response.text().catch(() => '');
-    toast.error('Erreur lors de la mise à jour des rounds.');
+    if (showToast) {
+      toast.error('Erreur lors de la mise à jour des rounds.');
+    }
     throw new Error(`Erreur lors de la mise à jour du MatchFormat (${response.status}) ${text}`);
   }
 
-  toast.success('Format du match enregistré avec succès.');
+  if (showToast) {
+    toast.success('Format du match enregistré avec succès.');
+  }
   return await response.json();
 }
 

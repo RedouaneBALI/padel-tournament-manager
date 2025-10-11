@@ -95,56 +95,78 @@ public class PlayerPairService {
     Integer          mainDrawSize = tournament.getConfig().getMainDrawSize();
     Integer          nbSeeds      = tournament.getConfig().getNbSeeds();
 
-    // If no draw size or seeds configured, return pairs as-is
-    if (mainDrawSize == null || mainDrawSize <= 0 || nbSeeds == null || nbSeeds <= 0) {
+    if (!isValidDrawConfiguration(mainDrawSize, nbSeeds)) {
       return allPairs;
     }
 
-    // Separate BYEs and real pairs
     List<PlayerPair> realPairs = allPairs.stream().filter(pp -> !pp.isBye()).toList();
     List<PlayerPair> byePairs  = allPairs.stream().filter(PlayerPair::isBye).toList();
 
-    // If no BYEs, return real pairs only
     if (byePairs.isEmpty()) {
       return realPairs;
     }
 
-    // Load BYE positions from JSON (positions are in seed order, NOT sorted)
-    List<Integer> byePositions = loadByePositionsFromJson(mainDrawSize, nbSeeds, byePairs.size());
+    return buildReorderedPairsList(mainDrawSize, nbSeeds, realPairs, byePairs);
+  }
 
-    // Convert to set for O(1) lookup
+  /**
+   * Validates that the draw configuration has valid mainDrawSize and nbSeeds values.
+   */
+  private boolean isValidDrawConfiguration(Integer mainDrawSize, Integer nbSeeds) {
+    return mainDrawSize != null && mainDrawSize > 0 && nbSeeds != null && nbSeeds > 0;
+  }
+
+  /**
+   * Builds the reordered list of pairs with BYEs at correct positions.
+   */
+  private List<PlayerPair> buildReorderedPairsList(int mainDrawSize, int nbSeeds, List<PlayerPair> realPairs, List<PlayerPair> byePairs) {
+    List<Integer>          byePositions   = loadByePositionsFromJson(mainDrawSize, nbSeeds, byePairs.size());
     java.util.Set<Integer> byePositionSet = new java.util.HashSet<>(byePositions);
+    PlayerPair[]           resultArray    = new PlayerPair[mainDrawSize];
 
-    // Build result array with BYEs at correct absolute positions
-    PlayerPair[] resultArray = new PlayerPair[mainDrawSize];
-    int          byeIndex    = 0;
-    int          realIndex   = 0;
+    fillResultArrayWithPairs(resultArray, byePositionSet, realPairs, byePairs);
 
-    for (int position = 0; position < mainDrawSize; position++) {
-      // Check if this position should have a BYE
+    return convertArrayToList(resultArray);
+  }
+
+  /**
+   * Fills the result array with BYEs and real pairs at their correct positions.
+   */
+  private void fillResultArrayWithPairs(PlayerPair[] resultArray, java.util.Set<Integer> byePositionSet,
+                                        List<PlayerPair> realPairs, List<PlayerPair> byePairs) {
+    int byeIndex  = 0;
+    int realIndex = 0;
+
+    for (int position = 0; position < resultArray.length; position++) {
       if (byePositionSet.contains(position)) {
-        // Place BYE at this absolute position
-        if (byeIndex < byePairs.size()) {
-          resultArray[position] = byePairs.get(byeIndex);
-          byeIndex++;
-        }
+        byeIndex = placePairAtPosition(resultArray, position, byePairs, byeIndex);
       } else {
-        // Place a real pair at this position
-        if (realIndex < realPairs.size()) {
-          resultArray[position] = realPairs.get(realIndex);
-          realIndex++;
-        }
+        realIndex = placePairAtPosition(resultArray, position, realPairs, realIndex);
       }
     }
+  }
 
-    // Convert array to list, filtering out nulls
-    List<PlayerPair> result = new ArrayList<>(mainDrawSize);
+  /**
+   * Places a pair at a specific position in the result array if available. Returns the updated index.
+   */
+  private int placePairAtPosition(PlayerPair[] resultArray, int position, List<PlayerPair> pairs, int currentIndex) {
+    if (currentIndex < pairs.size()) {
+      resultArray[position] = pairs.get(currentIndex);
+      return currentIndex + 1;
+    }
+    return currentIndex;
+  }
+
+  /**
+   * Converts the result array to a list, filtering out null values.
+   */
+  private List<PlayerPair> convertArrayToList(PlayerPair[] resultArray) {
+    List<PlayerPair> result = new ArrayList<>(resultArray.length);
     for (PlayerPair pair : resultArray) {
       if (pair != null) {
         result.add(pair);
       }
     }
-
     return result;
   }
 

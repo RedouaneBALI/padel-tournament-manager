@@ -31,12 +31,18 @@ export default function MatchFormatActions({
   const handleApplyAll = async () => {
     if (!matchFormat) return;
     setIsLoading(true);
+    try {
       await Promise.all(
         rounds.map((round) =>
-          updateMatchFormat(tournamentId, round.stage, matchFormat)
+          updateMatchFormat(tournamentId, round.stage, matchFormat, false)
         )
       );
+      toast.success(`Le format de match a été appliqué avec succès à l'ensemble des ${rounds.length} rounds.`);
+    } catch (error) {
+      toast.error('Erreur lors de l\'application du format à tous les rounds');
+    } finally {
       setIsLoading(false);
+    }
   };
 
   const isFirstRoundEmpty = rounds[0]?.games.every(

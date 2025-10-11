@@ -49,7 +49,7 @@ export default function RoundFormatTab({ tournamentId, pairs }: RoundFormatTabPr
 
   const saveFormat = async (newFormat: MatchFormat) => {
     if (!currentStage) return;
-    await updateMatchFormat(tournamentId, currentStage, newFormat);
+    await updateMatchFormat(tournamentId, currentStage, newFormat, false);
   };
 
   return (
