@@ -98,7 +98,6 @@ public class TournamentBuilderTest {
                                                               String expectedStagesCsv,
                                                               String expectedMatchesCsv) {
     Tournament tournament = TestFixtures.makeTournament(0, 0, mainDraw, nbSeedsMain, 0, drawMode);
-    // Utilisation de TestFixtures.createPairs pour générer les joueurs
     TournamentBuilder.setupAndPopulateTournament(tournament, TestFixtures.createPlayerPairs(mainDraw));
     List<Stage>   expectedStages  = TestFixtures.parseStages(expectedStagesCsv);
     List<Integer> expectedMatches = TestFixtures.parseInts(expectedMatchesCsv);
