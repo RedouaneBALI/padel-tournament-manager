@@ -2,7 +2,7 @@ package io.github.redouanebali.generation;
 
 import io.github.redouanebali.generation.draw.DrawStrategy;
 import io.github.redouanebali.generation.draw.DrawStrategyFactory;
-import io.github.redouanebali.generation.util.TournamentStageUtil;
+import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
@@ -73,10 +73,22 @@ public final class TournamentBuilder {
     if (tournament == null || tournament.getConfig() == null) {
       throw new IllegalArgumentException("Tournament and config cannot be null");
     }
+
     if (initialRounds == null || initialRounds.isEmpty()) {
-      initializeEmptyRounds(tournament);
+      // Only initialize if tournament has no rounds yet
+      if (tournament.getRounds().isEmpty()) {
+        initializeEmptyRounds(tournament);
+      }
       return;
     }
+
+    // If tournament already has rounds, update them instead of recreating
+    if (!tournament.getRounds().isEmpty()) {
+      updateExistingRoundsWithNewGames(tournament, initialRounds);
+      return;
+    }
+
+    // First time setup: create all rounds from scratch
     List<Round> allRounds = new ArrayList<>(createEmptyRounds(tournament.getConfig()));
     Map<Stage, Round> providedRoundsByStage = initialRounds.stream()
                                                            .collect(Collectors.toMap(Round::getStage, Function.identity()));
@@ -89,6 +101,66 @@ public final class TournamentBuilder {
     }
     tournament.getRounds().clear();
     tournament.getRounds().addAll(allRounds);
+  }
+
+  /**
+   * Updates existing rounds with new games from initial rounds. This preserves MatchFormat and other round configurations.
+   *
+   * @param tournament tournament with existing rounds
+   * @param initialRounds rounds with new games to copy
+   */
+  private static void updateExistingRoundsWithNewGames(Tournament tournament, List<Round> initialRounds) {
+    Map<Stage, Round> newRoundsByStage = initialRounds.stream()
+                                                      .collect(Collectors.toMap(Round::getStage, Function.identity()));
+
+    for (Round existingRound : tournament.getRounds()) {
+      Round newRound = newRoundsByStage.get(existingRound.getStage());
+      if (newRound != null) {
+        // Copy games and pools from newRound to existingRound
+        copyGamesAndPools(existingRound, newRound);
+      } else {
+        // Clear games in rounds that are not in initialRounds
+        clearGamesInRound(existingRound);
+      }
+    }
+  }
+
+  /**
+   * Copies games and pools from source round to target round, preserving MatchFormat.
+   *
+   * @param targetRound the round to update
+   * @param sourceRound the round with new data
+   */
+  private static void copyGamesAndPools(Round targetRound, Round sourceRound) {
+    // Clear existing games and pools
+    targetRound.getGames().clear();
+    targetRound.getPools().clear();
+
+    // Copy games with proper format assignment
+    for (Game sourceGame : sourceRound.getGames()) {
+      Game newGame = new Game();
+      newGame.setTeamA(sourceGame.getTeamA());
+      newGame.setTeamB(sourceGame.getTeamB());
+      newGame.setFormat(targetRound.getMatchFormat()); // Use the preserved MatchFormat
+      targetRound.getGames().add(newGame);
+    }
+
+    // Copy pools if present
+    if (sourceRound.getPools() != null && !sourceRound.getPools().isEmpty()) {
+      targetRound.getPools().addAll(sourceRound.getPools());
+    }
+  }
+
+  /**
+   * Clears all games in a round (used for non-initial rounds during draw generation).
+   *
+   * @param round the round to clear
+   */
+  private static void clearGamesInRound(Round round) {
+    round.getGames().forEach(game -> {
+      game.setTeamA(null);
+      game.setTeamB(null);
+    });
   }
 
   /**
@@ -106,27 +178,14 @@ public final class TournamentBuilder {
       setupTournamentWithInitialRounds(tournament, List.of());
       return;
     }
-    List<Round> automaticRounds = buildAutomaticRounds(tournament, playerPairs);
-    setupTournamentWithInitialRounds(tournament, automaticRounds);
-  }
 
-  /**
-   * Builds initial rounds automatically using the SEEDED strategy. This method creates only the initial rounds that need to be populated (Q1, first
-   * main round, etc.).
-   *
-   * @param tournament tournament configuration
-   * @param playerPairs players to place
-   * @return list of populated initial rounds
-   */
-  private static List<Round> buildAutomaticRounds(Tournament tournament, List<PlayerPair> playerPairs) {
-    Tournament tempTournament = new Tournament();
-    tempTournament.setConfig(tournament.getConfig());
-    initializeEmptyRounds(tempTournament);
+    // Directly place players in the tournament's rounds
+    if (tournament.getRounds().isEmpty()) {
+      initializeEmptyRounds(tournament);
+    }
+
     DrawStrategy drawStrategy = DrawStrategyFactory.createStrategy(DrawMode.SEEDED);
-    drawStrategy.placePlayers(tempTournament, playerPairs);
-    return tempTournament.getRounds().stream()
-                         .filter(round -> TournamentStageUtil.isInitialRoundInTournament(round, tempTournament.getRounds()))
-                         .toList();
+    drawStrategy.placePlayers(tournament, playerPairs);
   }
 
   /**
