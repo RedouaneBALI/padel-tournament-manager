@@ -69,6 +69,11 @@ public class Game {
     if (isByeFinished()) {
       return true;
     }
+
+    if (score != null && score.isForfeit()) {
+      return true;
+    }
+
     if (!hasValidScore()) {
       return false;
     }
@@ -190,6 +195,11 @@ public class Game {
       return byeWinner;
     }
 
+    // Check for forfeit winner
+    if (score != null && score.isForfeit()) {
+      return resolveForfeitWinner();
+    }
+
     if (!isFinished()) {
       return null;
     }
@@ -211,6 +221,20 @@ public class Game {
       return teamA;
     }
     return null;
+  }
+
+  /**
+   * Determines the winner when a forfeit occurred. The team that did NOT forfeit wins.
+   *
+   * @return the winning team (opposite of the team that forfeited)
+   */
+  private PlayerPair resolveForfeitWinner() {
+    if (score.getForfeitedBy() == null) {
+      // If forfeitedBy is not specified, cannot determine winner
+      return null;
+    }
+
+    return score.getForfeitedBy() == TeamSide.TEAM_A ? teamB : teamA;
   }
 
   private PlayerPair determineWinnerByScore() {

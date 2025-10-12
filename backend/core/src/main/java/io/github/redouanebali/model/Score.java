@@ -2,6 +2,8 @@ package io.github.redouanebali.model;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -32,6 +34,13 @@ public class Score {
   @OrderColumn(name = "order_index") // persists list order
   private List<SetScore> sets = new ArrayList<>();
 
+  // Indicates if the match ended by forfeit/retirement
+  private boolean forfeit = false;
+
+  // Indicates which team forfeited (TEAM_A or TEAM_B)
+  @Enumerated(EnumType.STRING)
+  private TeamSide forfeitedBy;
+
   public static Score fromString(String scoreStr) {
     Score score = new Score();
     if (scoreStr == null || scoreStr.isBlank()) {
@@ -55,6 +64,45 @@ public class Score {
     return score;
   }
 
+  /**
+   * Creates a forfeit score indicating which team forfeited. The current score (if any) is preserved.
+   *
+   * @param forfeitedBy the side that forfeited (TEAM_A or TEAM_B)
+   * @return a Score marked as forfeit
+   */
+  public static Score forfeit(TeamSide forfeitedBy) {
+    Score score = new Score();
+    score.setForfeit(true);
+    score.setForfeitedBy(forfeitedBy);
+    return score;
+  }
+
+  /**
+   * Creates a forfeit score with partial score preserved.
+   *
+   * @param partialScore the score at the moment of forfeit
+   * @param forfeitedBy the side that forfeited
+   * @return a Score with partial results marked as forfeit
+   */
+  public static Score forfeitWithPartialScore(Score partialScore, TeamSide forfeitedBy) {
+    if (partialScore == null) {
+      return forfeit(forfeitedBy);
+    }
+    partialScore.setForfeit(true);
+    partialScore.setForfeitedBy(forfeitedBy);
+    return partialScore;
+  }
+
+  /**
+   * Marks this score as forfeit.
+   *
+   * @param forfeitedBy the side that forfeited
+   */
+  public void markAsForfeit(TeamSide forfeitedBy) {
+    this.forfeit     = true;
+    this.forfeitedBy = forfeitedBy;
+  }
+
   public void addSetScore(int teamAScore, int teamBScore) {
     sets.add(new SetScore(teamAScore, teamBScore));
   }
@@ -65,9 +113,16 @@ public class Score {
 
   @Override
   public String toString() {
-    return sets.stream()
-               .map(set -> set.getTeamAScore() + "-" + set.getTeamBScore())
-               .collect(Collectors.joining(" "));
+    String setsStr = sets.stream()
+                         .map(set -> set.getTeamAScore() + "-" + set.getTeamBScore())
+                         .collect(Collectors.joining(" "));
+
+    if (forfeit) {
+      String forfeitInfo = forfeitedBy != null ? " (Forfeit by " + forfeitedBy + ")" : " (Forfeit)";
+      return setsStr.isEmpty() ? forfeitInfo.trim() : setsStr + forfeitInfo;
+    }
+
+    return setsStr;
   }
 
 }

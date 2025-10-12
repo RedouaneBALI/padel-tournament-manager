@@ -18,7 +18,9 @@ CREATE TABLE IF NOT EXISTS player (
 );
 
 CREATE TABLE IF NOT EXISTS score (
-    id BIGSERIAL PRIMARY KEY
+    id BIGSERIAL PRIMARY KEY,
+    forfeit BOOLEAN NOT NULL DEFAULT false,
+    forfeited_by VARCHAR(16) CHECK (forfeited_by IN ('TEAM_A', 'TEAM_B') OR forfeited_by IS NULL)
 );
 
 CREATE TABLE IF NOT EXISTS set_score (

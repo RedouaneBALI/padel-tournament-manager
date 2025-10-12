@@ -1,5 +1,6 @@
 package io.github.redouanebali.dto.response;
 
+import io.github.redouanebali.model.TeamSide;
 import java.util.List;
 import lombok.Data;
 
@@ -7,4 +8,6 @@ import lombok.Data;
 public class ScoreDTO {
 
   private List<SetScoreDTO> sets;
+  private boolean           forfeit;
+  private TeamSide          forfeitedBy;
 }

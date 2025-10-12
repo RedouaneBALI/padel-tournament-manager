@@ -1,6 +1,9 @@
 package io.github.redouanebali.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -29,5 +32,102 @@ public class ScoreTest {
     assertEquals(7, score.getSets().get(2).getTeamBScore());
   }
 
+  // ============= FORFEIT TESTS =============
 
+  @Test
+  public void testForfeit_withTeamA() {
+    Score score = Score.forfeit(TeamSide.TEAM_A);
+
+    assertNotNull(score);
+    assertTrue(score.isForfeit(), "Score should be marked as forfeit");
+    assertEquals(TeamSide.TEAM_A, score.getForfeitedBy(), "Team A should be marked as forfeiter");
+    assertTrue(score.getSets().isEmpty(), "No sets should be recorded for a forfeit without score");
+  }
+
+  @Test
+  public void testForfeit_withTeamB() {
+    Score score = Score.forfeit(TeamSide.TEAM_B);
+
+    assertNotNull(score);
+    assertTrue(score.isForfeit(), "Score should be marked as forfeit");
+    assertEquals(TeamSide.TEAM_B, score.getForfeitedBy(), "Team B should be marked as forfeiter");
+    assertTrue(score.getSets().isEmpty(), "No sets should be recorded for a forfeit without score");
+  }
+
+  @Test
+  public void testForfeitWithPartialScore_preservesSets() {
+    // Create a partial score
+    Score partialScore = new Score();
+    partialScore.addSetScore(6, 2);
+    partialScore.addSetScore(2, 0);
+
+    // Mark as forfeit
+    Score finalScore = Score.forfeitWithPartialScore(partialScore, TeamSide.TEAM_B);
+
+    assertNotNull(finalScore);
+    assertTrue(finalScore.isForfeit(), "Score should be marked as forfeit");
+    assertEquals(TeamSide.TEAM_B, finalScore.getForfeitedBy(), "Team B should be marked as forfeiter");
+    assertEquals(2, finalScore.getSets().size(), "Partial score should be preserved");
+    assertEquals(6, finalScore.getSets().get(0).getTeamAScore());
+    assertEquals(2, finalScore.getSets().get(0).getTeamBScore());
+  }
+
+  @Test
+  public void testForfeitWithPartialScore_nullScore() {
+    Score finalScore = Score.forfeitWithPartialScore(null, TeamSide.TEAM_A);
+
+    assertNotNull(finalScore);
+    assertTrue(finalScore.isForfeit(), "Score should be marked as forfeit");
+    assertEquals(TeamSide.TEAM_A, finalScore.getForfeitedBy());
+    assertTrue(finalScore.getSets().isEmpty(), "No sets should exist when partial score is null");
+  }
+
+  @Test
+  public void testMarkAsForfeit_onExistingScore() {
+    Score score = new Score();
+    score.addSetScore(6, 4);
+    score.addSetScore(3, 2);
+
+    assertFalse(score.isForfeit(), "Initially not a forfeit");
+
+    score.markAsForfeit(TeamSide.TEAM_A);
+
+    assertTrue(score.isForfeit(), "Should now be marked as forfeit");
+    assertEquals(TeamSide.TEAM_A, score.getForfeitedBy());
+    assertEquals(2, score.getSets().size(), "Sets should be preserved");
+  }
+
+  @Test
+  public void testToString_forfeitWithoutScore() {
+    Score score = Score.forfeit(TeamSide.TEAM_A);
+
+    String result = score.toString();
+
+    assertEquals("(Forfeit by TEAM_A)", result);
+  }
+
+  @Test
+  public void testToString_forfeitWithPartialScore() {
+    Score score = new Score();
+    score.addSetScore(6, 2);
+    score.addSetScore(2, 0);
+    score.markAsForfeit(TeamSide.TEAM_B);
+
+    String result = score.toString();
+
+    assertEquals("6-2 2-0 (Forfeit by TEAM_B)", result);
+  }
+
+  @Test
+  public void testToString_normalScore() {
+    Score score = new Score();
+    score.addSetScore(6, 4);
+    score.addSetScore(4, 6);
+    score.addSetScore(7, 5);
+
+    String result = score.toString();
+
+    assertEquals("6-4 4-6 7-5", result);
+    assertFalse(score.isForfeit());
+  }
 }

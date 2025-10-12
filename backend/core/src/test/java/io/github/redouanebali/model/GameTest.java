@@ -1,9 +1,11 @@
 package io.github.redouanebali.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import org.junit.jupiter.api.Test;
@@ -325,6 +327,178 @@ public class GameTest {
     format.setGamesPerSet(6);
     format.setSuperTieBreakInFinalSet(false);
     return format;
+  }
+
+  // ============= FORFEIT TESTS =============
+
+  @Test
+  void testForfeit_teamAForfeits_teamBWins() {
+    MatchFormat standardFormat = new MatchFormat(null, 2, 6, false, true);
+    PlayerPair  teamA          = new PlayerPair("Alice", "Bob", 1);
+    PlayerPair  teamB          = new PlayerPair("Charlie", "Dave", 2);
+
+    Game game = new Game();
+    game.setFormat(standardFormat);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+
+    Score forfeitScore = Score.forfeit(TeamSide.TEAM_A);
+    game.setScore(forfeitScore);
+
+    assertTrue(game.isFinished(), "Game should be finished when forfeit");
+    assertEquals(teamB, game.getWinner(), "Team B should win when Team A forfeits");
+    assertEquals(TeamSide.TEAM_B, game.getWinnerSide(), "Winner side should be TEAM_B");
+  }
+
+  @Test
+  void testForfeit_teamBForfeits_teamAWins() {
+    MatchFormat standardFormat = new MatchFormat(null, 2, 6, false, true);
+    PlayerPair  teamA          = new PlayerPair("Alice", "Bob", 1);
+    PlayerPair  teamB          = new PlayerPair("Charlie", "Dave", 2);
+
+    Game game = new Game();
+    game.setFormat(standardFormat);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+
+    Score forfeitScore = Score.forfeit(TeamSide.TEAM_B);
+    game.setScore(forfeitScore);
+
+    assertTrue(game.isFinished(), "Game should be finished when forfeit");
+    assertEquals(teamA, game.getWinner(), "Team A should win when Team B forfeits");
+    assertEquals(TeamSide.TEAM_A, game.getWinnerSide(), "Winner side should be TEAM_A");
+  }
+
+  @Test
+  void testForfeit_noForfeitedBySpecified_noWinner() {
+    MatchFormat standardFormat = new MatchFormat(null, 2, 6, false, true);
+    PlayerPair  teamA          = new PlayerPair("Alice", "Bob", 1);
+    PlayerPair  teamB          = new PlayerPair("Charlie", "Dave", 2);
+
+    Game game = new Game();
+    game.setFormat(standardFormat);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+
+    Score score = new Score();
+    score.setForfeit(true);
+    game.setScore(score);
+
+    assertTrue(game.isFinished(), "Game should be finished");
+    assertNull(game.getWinner(), "No winner should be determined if forfeitedBy is not specified");
+    assertNull(game.getWinnerSide(), "Winner side should be null");
+  }
+
+  @Test
+  void testForfeit_withPartialScore_teamALeading() {
+    MatchFormat standardFormat = new MatchFormat(null, 2, 6, false, true);
+    PlayerPair  teamA          = new PlayerPair("Alice", "Bob", 1);
+    PlayerPair  teamB          = new PlayerPair("Charlie", "Dave", 2);
+
+    Game game = new Game();
+    game.setFormat(standardFormat);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+
+    Score partialScore = new Score();
+    partialScore.addSetScore(6, 2);
+    partialScore.addSetScore(2, 0);
+    Score forfeitScore = Score.forfeitWithPartialScore(partialScore, TeamSide.TEAM_B);
+    game.setScore(forfeitScore);
+
+    assertTrue(game.isFinished(), "Game should be finished");
+    assertEquals(teamA, game.getWinner(), "Team A should win when Team B forfeits");
+    assertEquals(TeamSide.TEAM_A, game.getWinnerSide());
+    assertEquals(2, game.getScore().getSets().size(), "Partial score should be preserved");
+    assertEquals("6-2 2-0 (Forfeit by TEAM_B)", game.getScore().toString());
+  }
+
+  @Test
+  void testForfeit_withPartialScore_evenScore() {
+    MatchFormat standardFormat = new MatchFormat(null, 2, 6, false, true);
+    PlayerPair  teamA          = new PlayerPair("Alice", "Bob", 1);
+    PlayerPair  teamB          = new PlayerPair("Charlie", "Dave", 2);
+
+    Game game = new Game();
+    game.setFormat(standardFormat);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+
+    Score partialScore = new Score();
+    partialScore.addSetScore(6, 4);
+    partialScore.addSetScore(3, 6);
+    partialScore.addSetScore(2, 2);
+    Score forfeitScore = Score.forfeitWithPartialScore(partialScore, TeamSide.TEAM_A);
+    game.setScore(forfeitScore);
+
+    assertTrue(game.isFinished(), "Game should be finished");
+    assertEquals(teamB, game.getWinner(), "Team B should win when Team A forfeits, regardless of score");
+    assertEquals(TeamSide.TEAM_B, game.getWinnerSide());
+  }
+
+  @Test
+  void testMarkAsForfeit_duringMatch() {
+    MatchFormat standardFormat = new MatchFormat(null, 2, 6, false, true);
+    PlayerPair  teamA          = new PlayerPair("Alice", "Bob", 1);
+    PlayerPair  teamB          = new PlayerPair("Charlie", "Dave", 2);
+
+    Game game = new Game();
+    game.setFormat(standardFormat);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+
+    Score score = new Score();
+    score.addSetScore(6, 4);
+    score.addSetScore(2, 3);
+    game.setScore(score);
+
+    assertFalse(game.isFinished(), "Initially not finished");
+    assertNull(game.getWinner());
+
+    score.markAsForfeit(TeamSide.TEAM_B);
+    game.setScore(score);
+
+    assertTrue(game.isFinished(), "Should be finished after forfeit");
+    assertEquals(teamA, game.getWinner(), "Team A should win after Team B forfeits");
+    assertEquals(TeamSide.TEAM_A, game.getWinnerSide());
+  }
+
+  @Test
+  void testBye_overridesForfeitLogic() {
+    MatchFormat standardFormat = new MatchFormat(null, 2, 6, false, true);
+    PlayerPair  teamA          = new PlayerPair("Alice", "Bob", 1);
+
+    Game game = new Game();
+    game.setFormat(standardFormat);
+    game.setTeamA(teamA);
+    game.setTeamB(PlayerPair.bye());
+
+    assertTrue(game.isFinished(), "Game with BYE should be finished");
+    assertEquals(teamA, game.getWinner(), "Team A should win against BYE");
+  }
+
+  @Test
+  void testForfeit_afterCompletedMatch_forfeitTakesPrecedence() {
+    MatchFormat standardFormat = new MatchFormat(null, 2, 6, false, true);
+    PlayerPair  teamA          = new PlayerPair("Alice", "Bob", 1);
+    PlayerPair  teamB          = new PlayerPair("Charlie", "Dave", 2);
+
+    Game game = new Game();
+    game.setFormat(standardFormat);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+
+    Score normalScore = new Score();
+    normalScore.addSetScore(6, 4);
+    normalScore.addSetScore(6, 2);
+    game.setScore(normalScore);
+
+    assertEquals(teamA, game.getWinner(), "Team A is the winner");
+
+    normalScore.markAsForfeit(TeamSide.TEAM_A);
+    game.setScore(normalScore);
+
+    assertEquals(teamB, game.getWinner(), "Team B should win if Team A is marked as forfeiter");
   }
 
 }
