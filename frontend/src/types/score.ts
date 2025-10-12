@@ -5,4 +5,6 @@ export interface SetScore {
 
 export interface Score {
   sets: SetScore[];
+  forfeit?: boolean;
+  forfeitedBy?: 'TEAM_A' | 'TEAM_B' | null;
 }

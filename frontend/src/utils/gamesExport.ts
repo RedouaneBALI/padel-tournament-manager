@@ -12,11 +12,27 @@ export function exportGamesAsCSV(games: Game[], roundStage: string, roundName?: 
       ? `${game.teamB.player1Name || ''} / ${game.teamB.player2Name || ''}`.trim()
       : 'TBD';
 
-    const scoreText = game.score && game.score.sets && game.score.sets.length > 0
-      ? game.score.sets.map((set) => `${set.teamAScore}-${set.teamBScore}`).join(' ')
+    let scoreText: string;
+    let status: string;
+
+    // Build score text first
+    const hasScore = game.score && game.score.sets && game.score.sets.length > 0;
+    const baseScore = hasScore
+      ? game.score?.sets?.map((set) => `${set.teamAScore}-${set.teamBScore}`).join(' ') ?? '-'
       : '-';
 
-    const status = game.finished ? 'Terminé' : game.scheduledTime ? 'Planifié' : 'À planifier';
+    // Check for forfeit and add it to the score if present
+    if (game.score?.forfeit) {
+      const forfeiterTeam = game.score.forfeitedBy === 'TEAM_A' ? 'Équipe A' : 'Équipe B';
+      scoreText = baseScore !== '-' ? `${baseScore} - Abandon (${forfeiterTeam})` : `Abandon (${forfeiterTeam})`;
+      status = 'Abandon';
+    } else if (hasScore) {
+      scoreText = baseScore;
+      status = game.finished ? 'Terminé' : 'En cours';
+    } else {
+      scoreText = '-';
+      status = game.scheduledTime ? 'Planifié' : 'À planifier';
+    }
 
     const time = game.scheduledTime || '-';
     const court = game.court || '-';
@@ -46,4 +62,3 @@ export function exportGamesAsCSV(games: Game[], roundStage: string, roundName?: 
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
-

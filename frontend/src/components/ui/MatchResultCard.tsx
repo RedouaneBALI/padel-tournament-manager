@@ -37,7 +37,7 @@ export default function MatchResultCard({
   score,
   tournamentId,
   onInfoSaved,
-  onTimeChanged, // Nouvelle prop
+  onTimeChanged,
   winnerSide,
   stage,
   court,
@@ -51,6 +51,9 @@ export default function MatchResultCard({
   const [localScheduledTime, setLocalScheduledTime] = useState(scheduledTime || '00:00');
   const [editing, setEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isForfeit, setIsForfeit] = useState(score?.forfeit || false);
+  const [forfeitedBy, setForfeitedBy] = useState<'TEAM_A' | 'TEAM_B' | null>(score?.forfeitedBy || null);
+
   const [scores, setScores] = useState<string[][]>(() => {
     const initialScores: string[][] = [[], []];
     for (let i = 0; i < 3; i++) {
@@ -109,7 +112,7 @@ export default function MatchResultCard({
     visibleSets = 3;
   }
 
-  function convertToScoreObject(scores: string[][]) {
+  function convertToScoreObject(scores: string[][], isForfeit: boolean, forfeitedBy: 'TEAM_A' | 'TEAM_B' | null) {
     const sets = scores[0].map((_, i) => {
       const teamAStr = scores[0][i];
       const teamBStr = scores[1][i];
@@ -124,7 +127,11 @@ export default function MatchResultCard({
       };
     }).filter(set => set !== null);
 
-    return { sets };
+    return {
+      sets,
+      forfeit: isForfeit,
+      forfeitedBy: isForfeit ? forfeitedBy : null
+    };
   }
 
   const handleKeyDown = (e: React.KeyboardEvent, teamIndex: number, setIndex: number) => {
@@ -154,15 +161,13 @@ export default function MatchResultCard({
 
   const saveGameDetails = async () => {
     try {
-      const scorePayload = convertToScoreObject(scores);
+      const scorePayload = convertToScoreObject(scores, isForfeit, forfeitedBy);
       const result = await updateGameDetails(tournamentId, gameId, scorePayload, localCourt, localScheduledTime);
 
-      // Mise à jour locale de l'heure si elle a changé
       if (onTimeChanged && localScheduledTime !== scheduledTime) {
         onTimeChanged(gameId, localScheduledTime);
       }
 
-      // Appel de l'ancien callback si présent
       if (onInfoSaved) {
         onInfoSaved(result);
       }
@@ -217,6 +222,8 @@ export default function MatchResultCard({
                   setScores([...initialScores]);
                   setLocalCourt(court || 'Court central');
                   setLocalScheduledTime(scheduledTime || '00:00');
+                  setIsForfeit(score?.forfeit || false);
+                  setForfeitedBy(score?.forfeitedBy || null);
                   setEditing(false);
                 }}
                 bindEnter={editing}
@@ -244,9 +251,19 @@ export default function MatchResultCard({
           setScores={(newScores) => setScores((prev) => [newScores, prev[1]])}
           inputRefs={{ current: inputRefs.current[0] }}
           handleKeyDown={handleKeyDown}
-          winnerSide={winnerSide}
+          winnerSide={isForfeit ? (forfeitedBy === 'TEAM_B' ? 0 : undefined) : winnerSide}
           visibleSets={visibleSets}
           computeTabIndex={(tIdx, sIdx) => sIdx * 2 + (tIdx + 1)}
+          forfeited={isForfeit && forfeitedBy === 'TEAM_A'}
+          onToggleForfeit={() => {
+            if (isForfeit && forfeitedBy === 'TEAM_A') {
+              setIsForfeit(false);
+              setForfeitedBy(null);
+            } else {
+              setIsForfeit(true);
+              setForfeitedBy('TEAM_A');
+            }
+          }}
         />
         <TeamScoreRow
           team={teamB}
@@ -256,11 +273,22 @@ export default function MatchResultCard({
           setScores={(newScores) => setScores((prev) => [prev[0], newScores])}
           inputRefs={{ current: inputRefs.current[1] }}
           handleKeyDown={handleKeyDown}
-          winnerSide={winnerSide}
+          winnerSide={isForfeit ? (forfeitedBy === 'TEAM_A' ? 1 : undefined) : winnerSide}
           visibleSets={visibleSets}
           computeTabIndex={(tIdx, sIdx) => sIdx * 2 + (tIdx + 1)}
+          forfeited={isForfeit && forfeitedBy === 'TEAM_B'}
+          onToggleForfeit={() => {
+            if (isForfeit && forfeitedBy === 'TEAM_B') {
+              setIsForfeit(false);
+              setForfeitedBy(null);
+            } else {
+              setIsForfeit(true);
+              setForfeitedBy('TEAM_B');
+            }
+          }}
         />
       </div>
+
       <div
         className={[
           'border-t border-border px-4 py-2 text-sm',

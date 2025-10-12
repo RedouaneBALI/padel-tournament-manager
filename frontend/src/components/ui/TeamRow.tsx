@@ -13,7 +13,7 @@ interface Props {
 export default function TeamRow({ team, winnerSide, teamIndex }: Props) {
   return (
     <div
-      className={`flex flex-1 items-center ${
+      className={`flex flex-1 items-center gap-2 ${
         winnerSide !== undefined && winnerSide === teamIndex ? 'font-bold' : ''
       }`}
     >
@@ -23,7 +23,7 @@ export default function TeamRow({ team, winnerSide, teamIndex }: Props) {
       </div>
 
       {team?.displaySeed && (
-        <span className="text-xs text-muted-foreground font-medium self-center px-2">
+        <span className="text-xs text-muted-foreground font-medium">
           ({team.displaySeed})
         </span>
       )}

@@ -26,6 +26,7 @@ export const TournamentFormatConfigSchema = z.object({
     return isNaN(n) ? null : Math.trunc(n);
   }, z.number().nullable()).default(null),
   drawMode: z.preprocess((v) => (v === '' || v === undefined ? 'SEEDED' : v), z.enum(['SEEDED', 'MANUAL'])).default('SEEDED'),
+  staggeredEntry: z.preprocess((v) => v === undefined ? false : v, z.boolean()).default(false),
   nbPools: z.preprocess((v) => {
     if (v === '' || v === undefined || v === null) return null;
     const n = Number(v);
