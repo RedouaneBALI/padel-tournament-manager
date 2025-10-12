@@ -1,12 +1,13 @@
 'use client';
 
 import { useRouter, usePathname } from 'next/navigation';
-import { Settings, Share2 } from 'lucide-react';
+import { Settings, Share2, Download } from 'lucide-react';
 import { toast } from 'react-toastify';
 import AdminTournamentTabs from './AdminTournamentTabs';
 import type { Tournament } from '@/src/types/tournament';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
 import PageHeader from '@/src/components/ui/PageHeader';
+import { useExport } from '@/src/contexts/ExportContext';
 
 interface Props {
   tournament: Tournament | null;
@@ -16,6 +17,7 @@ interface Props {
 export default function AdminTournamentHeader({ tournament, tournamentId }: Props) {
   const router = useRouter();
   const pathname = usePathname() ?? '';
+  const { onExport } = useExport();
 
   const handleCopyLink = () => {
     const FRONT_URL = (process.env.NEXT_PUBLIC_FRONTEND_URL ?? '').replace(/\/$/, '');
@@ -46,6 +48,15 @@ export default function AdminTournamentHeader({ tournament, tournamentId }: Prop
           >
             <Share2 className="h-5 w-5 text-muted-foreground hover:text-primary" />
           </button>
+          {onExport && (
+            <button
+              onClick={onExport}
+              className="p-2 rounded hover:bg-muted transition-colors cursor-pointer"
+              title="Télécharger"
+            >
+              <Download className="h-5 w-5 text-muted-foreground hover:text-primary" />
+            </button>
+          )}
           <button
             onClick={() => router.push(`/admin/tournament/${tournamentId}/edit`)}
             className="p-2 rounded hover:bg-muted transition-colors cursor-pointer"

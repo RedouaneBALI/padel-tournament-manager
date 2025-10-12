@@ -70,7 +70,7 @@ public class PlayerPairServiceByeReorderingTest {
     when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
 
     // When: Get pairs with BYEs included
-    List<PlayerPair> result = service.getPairsByTournamentId(1L, true);
+    List<PlayerPair> result = service.getPairsByTournamentId(1L, true, false);
 
     // Then: Verify structure
     assertEquals(drawSize, result.size(),

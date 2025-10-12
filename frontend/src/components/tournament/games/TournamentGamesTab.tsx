@@ -11,6 +11,8 @@ import { Stage } from '@/src/types/stage';
 import { fetchTournament } from '@/src/api/tournamentApi';
 import GroupSelector from '@/src/components/tournament/games/GroupSelector';
 import GamesList from '@/src/components/tournament/games/GamesList';
+import { exportGamesAsCSV } from '@/src/utils/gamesExport';
+import { useExport } from '@/src/contexts/ExportContext';
 
 interface TournamentGamesTabProps {
   tournamentId: string;
@@ -52,6 +54,7 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const stageParam = searchParams?.get('stage') ?? null;
+  const { setExportFunction } = useExport();
 
   const getValidGamesSortedByTime = useCallback((games: Game[]) => {
     return games
@@ -184,6 +187,16 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
           (g) => pickGroupValue((g as any).pool ?? (g as any).group ?? (g as any).poule) === selectedGroup
         )
   ), [sortedGames, selectedGroup]);
+
+  // Register export function with context
+  useEffect(() => {
+    if (currentRound && displayedGames.length > 0) {
+      setExportFunction(() => exportGamesAsCSV(displayedGames, currentRound.stage));
+    } else {
+      setExportFunction(null);
+    }
+    return () => setExportFunction(null);
+  }, [displayedGames, currentRound, setExportFunction]);
 
   if (isLoading) {
     return <CenteredLoader />;

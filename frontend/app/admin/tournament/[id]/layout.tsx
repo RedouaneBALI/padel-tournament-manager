@@ -12,6 +12,7 @@ import { FiList } from 'react-icons/fi';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
 import BottomNav from '@/src/components/ui/BottomNav';
 import { getAdminTournamentItems } from '@/src/components/ui/bottomNavPresets';
+import { ExportProvider } from '@/src/contexts/ExportContext';
 
 export default function AdminTournamentLayout({
   children,
@@ -72,11 +73,13 @@ export default function AdminTournamentLayout({
   }
 
   return (
-    <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
-      <AdminTournamentHeader tournament={tournament} tournamentId={id} />
-      <div className="mb-15">{children}</div>
-      <BottomNav items={items} pathname={pathname} />
-      <ToastContainer />
-    </div>
+    <ExportProvider>
+      <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
+        <AdminTournamentHeader tournament={tournament} tournamentId={id} />
+        <div className="mb-15">{children}</div>
+        <BottomNav items={items} pathname={pathname} />
+        <ToastContainer />
+      </div>
+    </ExportProvider>
   );
 }

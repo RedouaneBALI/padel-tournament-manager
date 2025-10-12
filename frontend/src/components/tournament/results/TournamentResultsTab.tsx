@@ -9,6 +9,8 @@ import { VIEW_CLASSEMENT, VIEW_PHASE_FINALE } from '@/src/constants/views';
 import GroupStageView from './GroupStageView';
 import QualifStageView from './QualifStageView';
 import FinalsStageView from './FinalsStageView';
+import { useExport } from '@/src/contexts/ExportContext';
+import { exportBracketAsImage } from '@/src/utils/imageExport';
 
 const VIEW_QUALIF = 'qualif';
 
@@ -23,6 +25,7 @@ export default function TournamentResultsTab({ tournamentId }: TournamentResults
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { setExportFunction } = useExport();
 
   useEffect(() => {
     async function load() {
@@ -63,6 +66,25 @@ export default function TournamentResultsTab({ tournamentId }: TournamentResults
     params.set('view', view);
     router.replace(`${pathname}?${params.toString()}`);
   };
+
+  // Register export function based on active view
+  useEffect(() => {
+    if (isLoading || !tournament) {
+      setExportFunction(null);
+      return;
+    }
+
+    if (activeView === VIEW_CLASSEMENT) {
+      // No export for group stage view (tables)
+      setExportFunction(null);
+    } else if (activeView === VIEW_QUALIF) {
+      setExportFunction(() => exportBracketAsImage('qualif-bracket-container', 'qualifications.png'));
+    } else if (activeView === VIEW_PHASE_FINALE) {
+      setExportFunction(() => exportBracketAsImage('finals-bracket-container', 'phase_finale.png'));
+    }
+
+    return () => setExportFunction(null);
+  }, [activeView, isLoading, tournament, setExportFunction]);
 
   if (isLoading) return <CenteredLoader />;
   if (!tournament) return <CenteredLoader />;

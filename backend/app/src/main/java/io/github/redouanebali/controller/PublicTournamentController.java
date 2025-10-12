@@ -63,19 +63,21 @@ public class PublicTournamentController {
   }
 
   /**
-   * Retrieves all player pairs for a tournament. Can optionally exclude BYE pairs from the result.
+   * Retrieves all player pairs for a tournament. Can optionally exclude BYE pairs and QUALIFIER placeholders from the result.
    *
    * @param id the tournament ID
    * @param includeByes whether to include BYE pairs in the result (default: false)
+   * @param includeQualified whether to include QUALIFIER placeholders in the result (default: false)
    * @return ResponseEntity containing list of player pair DTOs
    * @throws IllegalArgumentException if tournament is not found
    */
   @GetMapping("/{id}/pairs")
   public ResponseEntity<List<PlayerPairDTO>> getPairs(@PathVariable Long id,
-                                                      @RequestParam(defaultValue = "false") boolean includeByes) {
-    log.debug("Getting pairs for tournament {} (includeByes: {})", id, includeByes);
+                                                      @RequestParam(defaultValue = "false") boolean includeByes,
+                                                      @RequestParam(defaultValue = "false") boolean includeQualified) {
+    log.debug("Getting pairs for tournament {} (includeByes: {}, includeQualified: {})", id, includeByes, includeQualified);
     List<PlayerPairDTO> pairs = tournamentMapper.toDTOPlayerPairList(
-        playerPairService.getPairsByTournamentId(id, includeByes)
+        playerPairService.getPairsByTournamentId(id, includeByes, includeQualified)
     );
     return ResponseEntity.ok(pairs);
   }

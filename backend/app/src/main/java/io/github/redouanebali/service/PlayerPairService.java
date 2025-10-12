@@ -69,21 +69,28 @@ public class PlayerPairService {
   }
 
   /**
-   * Retrieves all player pairs for a tournament. Can optionally exclude BYE pairs from the result. When including BYEs, they are reorganized to be
-   * placed opposite seeds for better UX in manual mode.
+   * Retrieves all player pairs for a tournament. Can optionally exclude BYE pairs and QUALIFIER placeholders from the result. When including BYEs,
+   * they are reorganized to be placed opposite seeds for better UX in manual mode.
    *
    * @param tournamentId the tournament ID
    * @param includeByes whether to include BYE pairs in the result
+   * @param includeQualified whether to include QUALIFIER placeholders in the result
    * @return list of player pairs, with BYEs reorganized opposite seeds if includeByes is true
    * @throws IllegalArgumentException if tournament is not found
    */
-  public List<PlayerPair> getPairsByTournamentId(Long tournamentId, boolean includeByes) {
+  public List<PlayerPair> getPairsByTournamentId(Long tournamentId, boolean includeByes, boolean includeQualified) {
     Tournament tournament = tournamentRepository.findById(tournamentId)
                                                 .orElseThrow(() -> new IllegalArgumentException(TOURNAMENT_NOT_FOUND));
     if (includeByes) {
-      return reorderPairsWithByesAtCorrectPositions(tournament);
+      List<PlayerPair> pairs = reorderPairsWithByesAtCorrectPositions(tournament);
+      if (!includeQualified) {
+        return pairs.stream().filter(pp -> !pp.isQualifier()).toList();
+      }
+      return pairs;
     } else {
-      return tournament.getPlayerPairs().stream().filter(pp -> !pp.isBye()).toList();
+      return tournament.getPlayerPairs().stream()
+                       .filter(pp -> !pp.isBye() && (includeQualified || !pp.isQualifier()))
+                       .toList();
     }
   }
 

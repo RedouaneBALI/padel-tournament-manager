@@ -1,7 +1,5 @@
 import KnockoutBracket from '@/src/components/round/KnockoutBracket';
-import BracketHeader from '@/src/components/tournament/BracketHeader';
 import { calculateMatchPositions } from '@/src/utils/bracket';
-import { exportBracketAsImage } from '@/src/utils/imageExport';
 import type { Tournament } from '@/src/types/tournament';
 
 export default function FinalsStageView({
@@ -35,9 +33,8 @@ export default function FinalsStageView({
 
   return (
     <div className="w-full">
-      <BracketHeader onExport={() => exportBracketAsImage('bracket-container')} />
       <div
-        id="bracket-container"
+        id="finals-bracket-container"
         className="relative overflow-auto border border-border rounded-lg px-2 py-6 md:p-8 bg-background"
         style={{ minHeight: maxPosition ? `${maxPosition}px` : undefined }}
       >
@@ -48,4 +45,3 @@ export default function FinalsStageView({
     </div>
   );
 }
-

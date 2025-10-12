@@ -95,7 +95,7 @@ public class PlayerPairServiceTest {
 
     when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
 
-    List<PlayerPair> result = playerPairService.getPairsByTournamentId(1L, false);
+    List<PlayerPair> result = playerPairService.getPairsByTournamentId(1L, false, false);
     assertEquals(1, result.size());
   }
 
@@ -103,7 +103,7 @@ public class PlayerPairServiceTest {
   void testGetPairsByTournamentId_shouldThrowIfTournamentNotFound() {
     when(tournamentRepository.findById(1L)).thenReturn(Optional.empty());
     assertThrows(IllegalArgumentException.class,
-                 () -> playerPairService.getPairsByTournamentId(1L, false));
+                 () -> playerPairService.getPairsByTournamentId(1L, false, false));
   }
 
   @Test
