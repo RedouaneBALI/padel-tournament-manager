@@ -1,138 +1,70 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Tournament } from '@/src/types/tournament';
 import { PlayerPair } from '@/src/types/playerPair';
 import GameAssignmentBloc from '@/src/components/admin/GameAssignmentBloc';
-import { fetchGamesByStage } from '@/src/api/tournamentApi';
 
 interface Props {
   tournament: Tournament;
   playerPairs: PlayerPair[];
 }
 
+// Constants for auto-scroll behavior
+const SCROLL_CONFIG = {
+  THRESHOLD: 180,     // px near top/bottom to trigger scroll
+  MAX_SPEED: 28,      // px per frame (capped)
+  MIN_SPEED: 6,       // minimum scroll speed
+} as const;
+
 export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Props) {
   const [slots, setSlots] = useState<Array<PlayerPair | null>>([]);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  const matchRefs = React.useRef<Array<HTMLDivElement | null>>([]);
-  const scrollRef = React.useRef<HTMLDivElement | null>(null);
-  const autoScrollRAF = React.useRef<number | null>(null);
-  const autoScrollDir = React.useRef<0 | 1 | -1>(0);
+  const matchRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const autoScrollRAF = useRef<number | null>(null);
+  const autoScrollDir = useRef<0 | 1 | -1>(0);
 
-  const onDragStart = (index: number) => (e: React.DragEvent<HTMLLIElement>) => {
-    setDragIndex(index);
-    setHoveredIndex(null);
-    // For Firefox compatibility
-    e.dataTransfer.setData('text/plain', String(index));
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const onDragOver = (index: number) => (e: React.DragEvent<HTMLLIElement>) => {
-    e.preventDefault(); // allow drop
-    e.dataTransfer.dropEffect = 'move';
-    setHoveredIndex(index);
-  };
-
-  const performDrop = (index: number, e: React.DragEvent) => {
-    e.preventDefault();
-    const from = dragIndex ?? parseInt(e.dataTransfer.getData('text/plain') || '-1', 10);
-    if (from === -1) return;
-
-    setSlots((prev) => {
-      if (from === index) return prev;
-      const next = prev.slice();
-      const tmp = next[index] ?? null;
-      next[index] = next[from] ?? null;
-      next[from] = tmp;
-      return next;
-    });
-    setDragIndex(null);
-    setHoveredIndex(null);
-  };
-
-  const onDrop = (index: number) => (e: React.DragEvent<HTMLLIElement>) => {
-    e.stopPropagation();
-    performDrop(index, e);
-  };
-
-  const onMatchDragOver = (m: number) => (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    const el = matchRefs.current[m];
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const midY = rect.top + rect.height / 2;
-    const iA = m * 2;
-    const iB = iA + 1;
-    setHoveredIndex(e.clientY <= midY ? iA : iB);
-  };
-
-  const onMatchDrop = (m: number) => (e: React.DragEvent<HTMLDivElement>) => {
-    e.stopPropagation();
-    const el = matchRefs.current[m];
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const midY = rect.top + rect.height / 2;
-    const iA = m * 2;
-    const iB = iA + 1;
-    const targetIndex = e.clientY <= midY ? iA : iB;
-    performDrop(targetIndex, e);
-  };
-
-  const onKeyReorder = (index: number, dir: -1 | 1) => () => {
-    const target = index + dir;
-    if (target < 0 || target >= slots.length) return;
-    setSlots((prev) => {
-      const next = prev.slice();
-      const moved = next[index] ?? null;
-      const dest = next[target] ?? null;
-      next[index] = dest;
-      next[target] = moved;
-      return next;
-    });
-  };
-
-  const matchIndexOf = (rowIndex: number) => Math.floor(rowIndex / 2) + 1;
-
+  // Memoize computed values
   const mainDrawSize = (tournament as any)?.config?.mainDrawSize ?? (playerPairs?.length || 0);
   const matchesCount = Math.max(1, Math.floor((mainDrawSize || 0) / 2));
+  const slotsSize = matchesCount * 2;
 
-  // Determine the first non-GROUPS round's stage name for display
-  const rounds = (tournament as any)?.rounds as Array<any> | undefined;
-  let firstRoundStageName = `R${matchesCount}`;
-  if (Array.isArray(rounds) && rounds.length > 0) {
-    const firstBracket = rounds.find((r) => r?.stage && r.stage !== 'GROUPS');
-    if (firstBracket && firstBracket.stage) {
-      firstRoundStageName = firstBracket.stage;
-    }
-  }
-
-  // Build a fixed-size slots array so empty positions are real drop targets.
-  // Prefer the saved order from the tournament's first bracket round (teamA/teamB per game),
-  // fall back to the raw playerPairs list otherwise.
-  useEffect(() => {
-    const size = matchesCount * 2;
+  // Extract first non-GROUPS round stage name
+  const firstRoundStageName = React.useMemo(() => {
     const rounds = (tournament as any)?.rounds as Array<any> | undefined;
+    if (!Array.isArray(rounds) || rounds.length === 0) {
+      return `R${matchesCount}`;
+    }
+
+    const firstBracket = rounds.find((r) => r?.stage && r.stage !== 'GROUPS');
+    return firstBracket?.stage || `R${matchesCount}`;
+  }, [tournament, matchesCount]);
+
+  // Initialize slots from tournament data or playerPairs
+  useEffect(() => {
+    const rounds = (tournament as any)?.rounds as Array<any> | undefined;
+    let derived: Array<PlayerPair | null> | null = null;
 
     // Try to derive slots from the first non-GROUPS round
-    let derived: Array<PlayerPair | null> | null = null;
     if (Array.isArray(rounds) && rounds.length > 0) {
       const firstBracket = rounds.find((r) => r?.stage && r.stage !== 'GROUPS');
       const games: Array<any> = firstBracket?.games || [];
-      if (games.length > 0) {
-        // Check if at least one game has actual team data
-        const hasTeamData = games.some((g) => g?.teamA || g?.teamB);
 
-        if (hasTeamData) {
-          const next: Array<PlayerPair | null> = new Array(size).fill(null);
-          for (let m = 0; m < Math.min(games.length, size / 2); m++) {
-            const g = games[m];
-            // Keep BYE objects as-is so they remain draggable; null remains null.
-            next[m * 2] = (g?.teamA ?? null) as PlayerPair | null;
-            next[m * 2 + 1] = (g?.teamB ?? null) as PlayerPair | null;
-          }
-          derived = next;
+      // Check if at least one game has actual team data
+      const hasTeamData = games.some((g) => g?.teamA || g?.teamB);
+
+      if (hasTeamData && games.length > 0) {
+        const next: Array<PlayerPair | null> = new Array(slotsSize).fill(null);
+        const maxGames = Math.min(games.length, slotsSize / 2);
+
+        for (let m = 0; m < maxGames; m++) {
+          const g = games[m];
+          // Keep BYE objects as-is so they remain draggable; null remains null
+          next[m * 2] = (g?.teamA ?? null) as PlayerPair | null;
+          next[m * 2 + 1] = (g?.teamB ?? null) as PlayerPair | null;
         }
+        derived = next;
       }
     }
 
@@ -142,14 +74,14 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
     }
 
     // Fallback: seed from the flat playerPairs list
-    const next: Array<PlayerPair | null> = new Array(size).fill(null);
-    (playerPairs ?? []).forEach((p, i) => {
-      if (i < size) next[i] = p;
+    const next: Array<PlayerPair | null> = new Array(slotsSize).fill(null);
+    playerPairs.forEach((p, i) => {
+      if (i < slotsSize) next[i] = p;
     });
     setSlots(next);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tournament.id, matchesCount, playerPairs.length]);
+  }, [tournament.id, slotsSize, playerPairs]);
 
+  // Dispatch custom event when slots change
   useEffect(() => {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('knockout:pairs-reordered', {
@@ -161,15 +93,16 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
     }
   }, [slots, tournament.id]);
 
-  const cancelAutoScroll = () => {
+  // Auto-scroll utilities
+  const cancelAutoScroll = useCallback(() => {
     if (autoScrollRAF.current != null) {
       cancelAnimationFrame(autoScrollRAF.current);
       autoScrollRAF.current = null;
     }
     autoScrollDir.current = 0;
-  };
+  }, []);
 
-  const startAutoScroll = (dy: number) => {
+  const startAutoScroll = useCallback((dy: number) => {
     const container = scrollRef.current;
     const step = () => {
       if (container && container.scrollHeight > container.clientHeight) {
@@ -180,42 +113,134 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
       autoScrollRAF.current = requestAnimationFrame(step);
     };
     autoScrollRAF.current = requestAnimationFrame(step);
-  };
+  }, []);
 
-  const onRootDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+  // Calculate scroll speed based on distance from edge
+  const calculateScrollSpeed = useCallback((distanceFromEdge: number): number => {
+    if (distanceFromEdge > SCROLL_CONFIG.THRESHOLD) return 0;
+    const ratio = (SCROLL_CONFIG.THRESHOLD - distanceFromEdge) / SCROLL_CONFIG.THRESHOLD;
+    return Math.max(SCROLL_CONFIG.MIN_SPEED, Math.floor(ratio * SCROLL_CONFIG.MAX_SPEED));
+  }, []);
+
+  // Swap two slots
+  const swapSlots = useCallback((fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return;
+
+    setSlots((prev) => {
+      if (fromIndex >= prev.length || toIndex >= prev.length) return prev;
+
+      const next = [...prev];
+      const temp = next[toIndex] ?? null;
+      next[toIndex] = next[fromIndex] ?? null;
+      next[fromIndex] = temp;
+      return next;
+    });
+  }, []);
+
+  // Drag and drop handlers
+  const onDragStart = useCallback((index: number) => (e: React.DragEvent<HTMLLIElement>) => {
+    setDragIndex(index);
+    setHoveredIndex(null);
+    // For Firefox compatibility
+    e.dataTransfer.setData('text/plain', String(index));
+    e.dataTransfer.effectAllowed = 'move';
+  }, []);
+
+  const onDragOver = useCallback((index: number) => (e: React.DragEvent<HTMLLIElement>) => {
     e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setHoveredIndex(index);
+  }, []);
+
+  const performDrop = useCallback((targetIndex: number, e: React.DragEvent) => {
+    e.preventDefault();
+    const fromIndex = dragIndex ?? parseInt(e.dataTransfer.getData('text/plain') || '-1', 10);
+
+    if (fromIndex === -1) return;
+
+    swapSlots(fromIndex, targetIndex);
+    setDragIndex(null);
+    setHoveredIndex(null);
+  }, [dragIndex, swapSlots]);
+
+  const onDrop = useCallback((index: number) => (e: React.DragEvent<HTMLLIElement>) => {
+    e.stopPropagation();
+    performDrop(index, e);
+  }, [performDrop]);
+
+  // Match-level drag handlers (drop between two slots)
+  const onMatchDragOver = useCallback((matchIndex: number) => (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+
+    const el = matchRefs.current[matchIndex];
+    if (!el) return;
+
+    const rect = el.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    const slotIndexA = matchIndex * 2;
+    const slotIndexB = slotIndexA + 1;
+
+    setHoveredIndex(e.clientY <= midY ? slotIndexA : slotIndexB);
+  }, []);
+
+  const onMatchDrop = useCallback((matchIndex: number) => (e: React.DragEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+
+    const el = matchRefs.current[matchIndex];
+    if (!el) return;
+
+    const rect = el.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    const slotIndexA = matchIndex * 2;
+    const slotIndexB = slotIndexA + 1;
+    const targetIndex = e.clientY <= midY ? slotIndexA : slotIndexB;
+
+    performDrop(targetIndex, e);
+  }, [performDrop]);
+
+  // Keyboard reordering
+  const onKeyReorder = useCallback((index: number, direction: -1 | 1) => () => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= slots.length) return;
+
+    swapSlots(index, targetIndex);
+  }, [slots.length, swapSlots]);
+
+  // Root-level drag handlers for auto-scroll
+  const onRootDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+
     const container = scrollRef.current;
+    const rect = container
+      ? container.getBoundingClientRect()
+      : { top: 0, bottom: window.innerHeight };
 
-    // Wider trigger zone and faster min speed for easier activation
-    const threshold = 180;  // px near top/bottom to trigger scroll
-    const maxSpeed = 28;    // px per frame (capped)
-
-    const rect = container ? container.getBoundingClientRect() : { top: 0, bottom: window.innerHeight } as any;
     const y = e.clientY;
     const distTop = y - rect.top;
     const distBottom = rect.bottom - y;
 
-    const speedFromDist = (d: number) => {
-      if (d > threshold) return 0;
-      const ratio = (threshold - d) / threshold; // 0..1
-      return Math.max(6, Math.floor(ratio * maxSpeed));
-    };
-
-    const up = speedFromDist(distTop);
-    const down = speedFromDist(distBottom);
+    const upSpeed = calculateScrollSpeed(distTop);
+    const downSpeed = calculateScrollSpeed(distBottom);
 
     let dir: 0 | 1 | -1 = 0;
     let speed = 0;
-    if (up > 0) { dir = -1; speed = up; }
-    else if (down > 0) { dir = 1; speed = down; }
 
+    if (upSpeed > 0) {
+      dir = -1;
+      speed = upSpeed;
+    } else if (downSpeed > 0) {
+      dir = 1;
+      speed = downSpeed;
+    }
+
+    // Not in scroll zone - cancel auto-scroll
     if (dir === 0) {
-      // Leave the zone
       cancelAutoScroll();
       return;
     }
 
-    // If direction changed, restart the RAF with the new speed
+    // Direction changed or no scroll active - restart with new speed
     const desiredDy = dir * speed;
     const currentDir = autoScrollDir.current;
 
@@ -224,12 +249,18 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
       autoScrollDir.current = dir;
       startAutoScroll(desiredDy);
     }
-  };
+  }, [calculateScrollSpeed, cancelAutoScroll, startAutoScroll]);
 
-  const onRootDragEnd = () => {
+  const onRootDragEnd = useCallback(() => {
     cancelAutoScroll();
-  };
+  }, [cancelAutoScroll]);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cancelAutoScroll();
+    };
+  }, [cancelAutoScroll]);
 
   return (
     <div
@@ -239,51 +270,55 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
       onDrop={onRootDragEnd}
       onDragEnd={onRootDragEnd}
     >
-      <p className="text-sm text-center text-tab-inactive m-2">Faites glisser les équipes pour les ordonner.</p>
+      <p className="text-sm text-center text-tab-inactive m-2">
+        Faites glisser les équipes pour les ordonner.
+      </p>
 
       <div className="flex items-center">
         <div className="h-px flex-1 bg-border my-2" />
-          <h3 className="text-s sm:text-sm uppercase tracking-wider text-muted-foreground select-none">{firstRoundStageName}</h3>
-        <div className="h-px flex-1 bg-border" />
+        <h3 className="text-s sm:text-sm uppercase tracking-wider text-muted-foreground select-none px-4">
+          {firstRoundStageName}
+        </h3>
+        <div className="h-px flex-1 bg-border my-2" />
       </div>
 
-
       <div className="rounded-md border border-border bg-card divide-y">
-        {Array.from({ length: matchesCount }).map((_, m) => {
-          const iA = m * 2;
-          const iB = iA + 1;
-          const pairA = slots[iA];
-          const pairB = slots[iB];
+        {Array.from({ length: matchesCount }).map((_, matchIndex) => {
+          const slotIndexA = matchIndex * 2;
+          const slotIndexB = slotIndexA + 1;
+          const pairA = slots[slotIndexA];
+          const pairB = slots[slotIndexB];
+
           return (
             <div
-              key={`match-${m}`}
-              ref={(el) => { matchRefs.current[m] = el; }}
-              onDragOver={onMatchDragOver(m)}
-              onDrop={onMatchDrop(m)}
+              key={`match-${matchIndex}`}
+              ref={(el) => { matchRefs.current[matchIndex] = el; }}
+              onDragOver={onMatchDragOver(matchIndex)}
+              onDrop={onMatchDrop(matchIndex)}
               className="relative"
             >
               <GameAssignmentBloc
-                title={`Match ${m + 1}/${matchesCount}`}
+                title={`Match ${matchIndex + 1}/${matchesCount}`}
                 pairA={pairA}
                 pairB={pairB}
                 handlersA={{
-                  onDragStart: onDragStart(iA),
-                  onDragOver: onDragOver(iA),
-                  onDrop: onDrop(iA),
-                  onMoveUp: onKeyReorder(iA, -1),
-                  onMoveDown: onKeyReorder(iA, 1)
+                  onDragStart: onDragStart(slotIndexA),
+                  onDragOver: onDragOver(slotIndexA),
+                  onDrop: onDrop(slotIndexA),
+                  onMoveUp: onKeyReorder(slotIndexA, -1),
+                  onMoveDown: onKeyReorder(slotIndexA, 1)
                 }}
                 handlersB={{
-                  onDragStart: onDragStart(iB),
-                  onDragOver: onDragOver(iB),
-                  onDrop: onDrop(iB),
-                  onMoveUp: onKeyReorder(iB, -1),
-                  onMoveDown: onKeyReorder(iB, 1)
+                  onDragStart: onDragStart(slotIndexB),
+                  onDragOver: onDragOver(slotIndexB),
+                  onDrop: onDrop(slotIndexB),
+                  onMoveUp: onKeyReorder(slotIndexB, -1),
+                  onMoveDown: onKeyReorder(slotIndexB, 1)
                 }}
-                isActiveA={dragIndex === iA}
-                isActiveB={dragIndex === iB}
-                isOverA={hoveredIndex === iA}
-                isOverB={hoveredIndex === iB}
+                isActiveA={dragIndex === slotIndexA}
+                isActiveB={dragIndex === slotIndexB}
+                isOverA={hoveredIndex === slotIndexA}
+                isOverB={hoveredIndex === slotIndexB}
               />
             </div>
           );

@@ -206,7 +206,7 @@ export default function MatchResultCard({
         {(pool?.name || stage) && (
           <div
             className={[
-              'inline-block text-xs font-medium rounded mt-1 mx-1 px-3 py-0.5',
+              'inline-block text-xs font-medium rounded mt-1 mx-1 px-3 py-0.5 bg-border',
               pool?.name ? groupBadgeClasses(group) : 'bg-muted text-foreground'
             ].join(' ')}
           >
