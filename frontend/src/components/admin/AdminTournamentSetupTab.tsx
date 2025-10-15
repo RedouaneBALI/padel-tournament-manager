@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { ToastContainer } from 'react-toastify';
 import PlayerPairsTextarea from '@/src/components/tournament/players/PlayerPairsTextarea';
 import PlayerPairsList from '@/src/components/tournament/players/PlayerPairsList';
@@ -32,6 +32,11 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
   const [activeTab, setActiveTab] = useState<'players' | 'assignment'>('players');
 
   const [assignedSlots, setAssignedSlots] = useState<Array<PlayerPair | null>>([]);
+  const [qualifSlots, setQualifSlots] = useState<Array<PlayerPair | null>>([]);
+  const [mainSlots, setMainSlots] = useState<Array<PlayerPair | null>>([]);
+  const assignedSlotsRef = useRef<Array<PlayerPair | null>>([]);
+  const qualifSlotsRef = useRef<Array<PlayerPair | null>>([]);
+  const mainSlotsRef = useRef<Array<PlayerPair | null>>([]);
   const mainDrawSize = (tournament as any)?.config?.mainDrawSize ?? (pairs?.length || 0);
   const matchesCount = Math.max(1, Math.floor((mainDrawSize || 0) / 2));
 
@@ -49,39 +54,80 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
             try {
               const manual = (tournament?.config as any)?.drawMode === 'MANUAL';
               if (manual) {
-                // Build a single Round from the current assignment slots
-                const size = matchesCount * 2;
-                const slots = (assignedSlots.length === size ? assignedSlots : ((): Array<PlayerPair | null> => {
-                  const next: Array<PlayerPair | null> = new Array(size).fill(null);
-                  (pairs ?? []).forEach((p, i) => { if (i < size) next[i] = p; });
-                  return next;
-                })());
+                const isQualifKo = (tournament?.config as any)?.format === 'QUALIF_KO';
 
-                const games = Array.from({ length: matchesCount }).map((_, m) => {
-                  const iA = m * 2;
-                  const iB = iA + 1;
-                  const a = slots[iA];
-                  const b = slots[iB];
+                if (isQualifKo) {
+                  // Build two rounds: qualif and main
+                  console.log('QUALIF_KO mode: qualifSlotsRef.current:', qualifSlotsRef.current);
+                  console.log('QUALIF_KO mode: mainSlotsRef.current:', mainSlotsRef.current);
 
                   const toTeamSlot = (p: PlayerPair | null) => {
                     if (!p || !p.id) return { type: 'BYE' as const };
                     return { type: 'NORMAL' as const, pairId: p.id };
                   };
 
-                  return {
-                    teamA: toTeamSlot(a),
-                    teamB: toTeamSlot(b),
+                  const buildGames = (slots: (PlayerPair | null)[]) => {
+                    const games = [];
+                    for (let i = 0; i < slots.length; i += 2) {
+                      const a = slots[i];
+                      const b = slots[i + 1];
+                      games.push({
+                        teamA: toTeamSlot(a),
+                        teamB: toTeamSlot(b),
+                      });
+                    }
+                    return games;
                   };
-                });
 
-                const rounds = [
-                  {
-                    stage: tournament?.rounds?.[0]?.stage ?? undefined as any,
-                    games,
-                  },
-                ];
+                  const rounds = [
+                    {
+                      stage: 'Q1',
+                      games: buildGames(qualifSlotsRef.current),
+                    },
+                    {
+                      stage: `R${mainDrawSize}`, // @TODO not working for stages lower than R16 (ex: QUARTERS)
+                      games: buildGames(mainSlotsRef.current),
+                    },
+                  ];
 
-                await generateDraw(tournamentId, { mode: 'manual', rounds });
+                  console.log('QUALIF_KO rounds to send:', rounds);
+
+                  await generateDraw(tournamentId, { mode: 'manual', rounds });
+                } else {
+                  // Build a single Round from the current assignment slots
+                  console.log('Classic mode: assignedSlotsRef.current:', assignedSlotsRef.current);
+
+                  const size = matchesCount * 2;
+                  const slots = assignedSlotsRef.current;
+
+                  const games = Array.from({ length: matchesCount }).map((_, m) => {
+                    const iA = m * 2;
+                    const iB = iA + 1;
+                    const a = slots[iA];
+                    const b = slots[iB];
+
+                    const toTeamSlot = (p: PlayerPair | null) => {
+                      if (!p || !p.id) return { type: 'BYE' as const };
+                      return { type: 'NORMAL' as const, pairId: p.id };
+                    };
+
+                    return {
+                      teamA: toTeamSlot(a),
+                      teamB: toTeamSlot(b),
+                    };
+                  });
+
+                  const rounds = [
+                    {
+                      stage: tournament?.rounds?.[0]?.stage ?? undefined as any,
+                      games,
+                    },
+                  ];
+
+                  console.log('Classic rounds to send:', rounds);
+
+                  await generateDraw(tournamentId, { mode: 'manual', rounds });
+                }
               } else {
                 await generateDraw(tournamentId, { mode: 'auto' });
               }
@@ -140,6 +186,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
     const onReorder = (e: any) => {
       if (!e?.detail) return;
       // Optionally, check tournament id
+      assignedSlotsRef.current = e.detail.slots || [];
       setAssignedSlots(e.detail.slots || []);
     };
     if (typeof window !== 'undefined') {
@@ -149,6 +196,31 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
       if (typeof window !== 'undefined') {
         window.removeEventListener('knockout:pairs-reordered', onReorder as any);
       }
+    };
+  }, []);
+
+
+  // Listen to slots updates
+  useEffect(() => {
+    const handleSlotsUpdate = (event: CustomEvent) => {
+      console.log('Received event:', event.type, event.detail);
+      if (event.type === 'knockout:pairs-reordered') {
+        assignedSlotsRef.current = event.detail.slots;
+        setAssignedSlots(event.detail.slots);
+      } else if (event.type === 'qualifko:pairs-reordered') {
+        qualifSlotsRef.current = event.detail.qualifSlots;
+        mainSlotsRef.current = event.detail.mainSlots;
+        setQualifSlots(event.detail.qualifSlots);
+        setMainSlots(event.detail.mainSlots);
+      }
+    };
+
+    window.addEventListener('knockout:pairs-reordered', handleSlotsUpdate as EventListener);
+    window.addEventListener('qualifko:pairs-reordered', handleSlotsUpdate as EventListener);
+
+    return () => {
+      window.removeEventListener('knockout:pairs-reordered', handleSlotsUpdate as EventListener);
+      window.removeEventListener('qualifko:pairs-reordered', handleSlotsUpdate as EventListener);
     };
   }, []);
 

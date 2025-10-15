@@ -113,7 +113,7 @@ export default function TournamentConfigSection({
             <option value="SEEDED">
               {(typeof formData.config?.nbSeeds === 'number' && formData.config.nbSeeds > 0) ? 'Automatique (par TS)' : 'Aléatoire'}
             </option>
-            <option value="MANUAL" disabled={formData.config?.format !== 'KNOCKOUT'}>Manuel</option>
+            <option value="MANUAL" /*disabled={formData.config?.format !== 'KNOCKOUT'}*/>Manuel</option>
           </select>
         </div>
 
