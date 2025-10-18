@@ -181,9 +181,9 @@ public final class TestFixtures {
    * Simulates pool winners for a round and pool.
    */
   static void simulatePoolWinners(Round groups,
-                                         Pool pool,
-                                         PlayerPair top1,
-                                         PlayerPair top2) {
+                                  Pool pool,
+                                  PlayerPair top1,
+                                  PlayerPair top2) {
     for (Game g : groups.getGames()) {
       if (!(pool.getPairs().contains(g.getTeamA()) || pool.getPairs().contains(g.getTeamB()))) {
         continue;
@@ -250,7 +250,7 @@ public final class TestFixtures {
    * @param pairs the list of teams to place
    * @return list containing a single filled RoundRequest
    */
-  static List<RoundRequest> createManualRoundRequestsFromPairs(Stage stage, List<PlayerPair> pairs) {
+  public static List<RoundRequest> createManualRoundRequestsFromPairs(Stage stage, List<PlayerPair> pairs) {
     RoundRequest roundRequest = new RoundRequest();
     roundRequest.setStage(stage.name());
     List<GameRequest> gameRequests = new ArrayList<>();
@@ -272,11 +272,11 @@ public final class TestFixtures {
    * Creates a tournament with the given configuration.
    */
   static Tournament makeTournament(int preQualDrawSize,
-                                          int nbQualifiers,
-                                          int mainDrawSize,
-                                          int nbSeeds,
-                                          int nbSeedsQualify,
-                                          io.github.redouanebali.model.format.DrawMode drawMode) {
+                                   int nbQualifiers,
+                                   int mainDrawSize,
+                                   int nbSeeds,
+                                   int nbSeedsQualify,
+                                   io.github.redouanebali.model.format.DrawMode drawMode) {
     Tournament tournament = new Tournament();
     TournamentConfig cfg = TournamentConfig.builder()
                                            .preQualDrawSize(preQualDrawSize)
@@ -302,7 +302,7 @@ public final class TestFixtures {
    *
    * @param count total number of pairs to create
    */
-  static List<PlayerPair> createPlayerPairs(int count) {
+  public static List<PlayerPair> createPlayerPairs(int count) {
     List<PlayerPair> pairs = new ArrayList<>();
     for (int i = 1; i <= count; i++) {
       Player     player1 = new Player((long) i, "Player" + i + "A", i, 0, 1990);
