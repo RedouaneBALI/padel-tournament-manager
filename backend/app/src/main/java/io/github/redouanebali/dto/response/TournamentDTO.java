@@ -36,24 +36,20 @@ public class TournamentDTO {
 
     // Iterate from earliest to latest
     for (RoundDTO r : rounds) {
-      if (r.getGames() == null || r.getGames().isEmpty()) {
-        continue;
-      }
+      if (r.getGames() != null && !r.getGames().isEmpty()) {
+        // A round is considered "used" if at least one game has a team assigned (A or B)
+        boolean hasAssigned = r.getGames().stream()
+                               .anyMatch(g -> g.getTeamA() != null || g.getTeamB() != null);
+        if (hasAssigned) {
+          lastUsedStage = r.getStage();
 
-      // A round is considered "used" if at least one game has a team assigned (A or B)
-      boolean hasAssigned = r.getGames().stream()
-                             .anyMatch(g -> g.getTeamA() != null || g.getTeamB() != null);
-      if (!hasAssigned) {
-        continue; // placeholder round → ignore
-      }
-
-      lastUsedStage = r.getStage();
-
-      // Current round = first (earliest) used round where there exists a game to play
-      boolean existsUnfinished = r.getGames().stream()
-                                  .anyMatch(g -> (g.getTeamA() != null || g.getTeamB() != null) && !g.isFinished());
-      if (existsUnfinished) {
-        return r.getStage();
+          // Current round = first (earliest) used round where there exists a game to play
+          boolean existsUnfinished = r.getGames().stream()
+                                      .anyMatch(g -> (g.getTeamA() != null || g.getTeamB() != null) && !g.isFinished());
+          if (existsUnfinished) {
+            return r.getStage();
+          }
+        }
       }
     }
 
