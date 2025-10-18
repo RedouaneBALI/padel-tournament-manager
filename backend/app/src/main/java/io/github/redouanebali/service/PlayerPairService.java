@@ -308,28 +308,46 @@ public class PlayerPairService {
    */
   private int calculateByesNeeded(Tournament tournament, int currentPairs) {
     switch (tournament.getConfig().getFormat()) {
-      case KNOCKOUT: {
-        Integer mainDrawSize = tournament.getConfig().getMainDrawSize();
-        return mainDrawSize != null && currentPairs < mainDrawSize ? mainDrawSize - currentPairs : 0;
-      }
-      case QUALIF_KO: {
-        Integer preQualDrawSize = tournament.getConfig().getPreQualDrawSize();
-        Integer mainDrawSize    = tournament.getConfig().getMainDrawSize();
-        Integer nbQualifiers    = tournament.getConfig().getNbQualifiers();
-        int totalRequired = (preQualDrawSize != null ? preQualDrawSize : 0) +
-                            (mainDrawSize != null ? mainDrawSize : 0) -
-                            (nbQualifiers != null ? nbQualifiers : 0);
-        return currentPairs < totalRequired ? totalRequired - currentPairs : 0;
-      }
-      case GROUPS_KO: {
-        Integer nbPools        = tournament.getConfig().getNbPools();
-        Integer nbPairsPerPool = tournament.getConfig().getNbPairsPerPool();
-        int     totalRequired  = (nbPools != null ? nbPools : 0) * (nbPairsPerPool != null ? nbPairsPerPool : 0);
-        return currentPairs < totalRequired ? totalRequired - currentPairs : 0;
-      }
+      case KNOCKOUT:
+        return calculateByesForKnockout(tournament, currentPairs);
+      case QUALIF_KO:
+        return calculateByesForQualifKo(tournament, currentPairs);
+      case GROUPS_KO:
+        return calculateByesForGroupsKo(tournament, currentPairs);
       default:
         throw new IllegalArgumentException("Unsupported tournament format: " + tournament.getConfig().getFormat());
     }
+  }
+
+  /**
+   * Calculates BYEs for KNOCKOUT format.
+   */
+  private int calculateByesForKnockout(Tournament tournament, int currentPairs) {
+    Integer mainDrawSize = tournament.getConfig().getMainDrawSize();
+    return mainDrawSize != null && currentPairs < mainDrawSize ? mainDrawSize - currentPairs : 0;
+  }
+
+  /**
+   * Calculates BYEs for QUALIF_KO format.
+   */
+  private int calculateByesForQualifKo(Tournament tournament, int currentPairs) {
+    Integer preQualDrawSize = tournament.getConfig().getPreQualDrawSize();
+    Integer mainDrawSize    = tournament.getConfig().getMainDrawSize();
+    Integer nbQualifiers    = tournament.getConfig().getNbQualifiers();
+    int totalRequired = (preQualDrawSize != null ? preQualDrawSize : 0) +
+                        (mainDrawSize != null ? mainDrawSize : 0) -
+                        (nbQualifiers != null ? nbQualifiers : 0);
+    return currentPairs < totalRequired ? totalRequired - currentPairs : 0;
+  }
+
+  /**
+   * Calculates BYEs for GROUPS_KO format.
+   */
+  private int calculateByesForGroupsKo(Tournament tournament, int currentPairs) {
+    Integer nbPools        = tournament.getConfig().getNbPools();
+    Integer nbPairsPerPool = tournament.getConfig().getNbPairsPerPool();
+    int     totalRequired  = (nbPools != null ? nbPools : 0) * (nbPairsPerPool != null ? nbPairsPerPool : 0);
+    return currentPairs < totalRequired ? totalRequired - currentPairs : 0;
   }
 
   /**

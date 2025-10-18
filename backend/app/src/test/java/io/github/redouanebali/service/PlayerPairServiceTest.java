@@ -82,7 +82,7 @@ public class PlayerPairServiceTest {
   @Test
   void testAddPairs_shouldThrowIfTournamentNotFound() {
     when(tournamentRepository.findById(1L)).thenReturn(Optional.empty());
-    assertThrows(IllegalArgumentException.class, () -> addPairsToTournament());
+    assertThrows(IllegalArgumentException.class, this::addPairsToTournament);
   }
 
   private void addPairsToTournament() {
