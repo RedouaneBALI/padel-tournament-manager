@@ -421,8 +421,8 @@ public class TournamentMapperTest {
     assertNull(byeDto.getDisplaySeed());
 
     // Test displaySeed for QUALIFIER
-    PlayerPair    qualifierPair = PlayerPair.qualifier();
+    PlayerPair    qualifierPair = PlayerPair.qualifier(1);
     PlayerPairDTO qualifierDto  = mapper.toDTO(qualifierPair);
-    assertEquals("Q", qualifierDto.getDisplaySeed());
+    assertEquals("Q1", qualifierDto.getDisplaySeed());
   }
 }

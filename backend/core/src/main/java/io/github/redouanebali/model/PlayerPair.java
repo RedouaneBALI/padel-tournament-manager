@@ -74,6 +74,18 @@ public class PlayerPair {
     return qPair;
   }
 
+  public static PlayerPair qualifier(int index) {
+    Player     q1    = new Player("Q" + index);
+    Player     q2    = new Player("Q" + index);
+    PlayerPair qPair = new PlayerPair();
+    qPair.setPlayer1(q1);
+    qPair.setPlayer2(q2);
+    qPair.setSeed(Integer.MAX_VALUE);
+    qPair.setType(PairType.QUALIFIER);
+    return qPair;
+  }
+
+
   public boolean isBye() {
     return type == PairType.BYE;
   }
@@ -88,7 +100,7 @@ public class PlayerPair {
       return "BYE";
     }
     if (type == PairType.QUALIFIER) {
-      return "Q";
+      return player1.getName();
     }
     return (player1 != null && player2 != null)
            ? player1.getName() + " / " + player2.getName()

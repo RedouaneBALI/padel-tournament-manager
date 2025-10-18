@@ -125,7 +125,6 @@ public class RandomPlacementUtil {
     }
 
     List<TeamSlot> availableSlots = GameSlotUtil.collectEmptySlots(round.getGames());
-    Collections.shuffle(availableSlots);
     placeQualifiersInSlots(round.getGames(), availableSlots, nbQualifiers);
   }
 
@@ -139,7 +138,7 @@ public class RandomPlacementUtil {
         break;
       }
       Game game = games.get(slot.gameIndex());
-      GameSlotUtil.setTeam(game, slot.side(), PlayerPair.qualifier());
+      GameSlotUtil.setTeam(game, slot.side(), PlayerPair.qualifier(placed + 1));
       placed++;
     }
   }

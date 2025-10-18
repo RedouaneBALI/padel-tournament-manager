@@ -26,7 +26,7 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface TournamentMapper {
-  
+
   TournamentDTO toDTO(Tournament tournament);
 
   List<TournamentDTO> toDTO(List<Tournament> tournaments);
@@ -51,7 +51,7 @@ public interface TournamentMapper {
     // Cas 1 : C'est un QUALIFIER (placeholder pour une paire qui viendra des qualifications)
     if (playerPair.isQualifier()) {
       dto.setQualifierSlot(true);
-      dto.setDisplaySeed("Q");
+      dto.setDisplaySeed(playerPair.toString());
       // Important : PAS de noms de joueurs pour les qualifiers
       // Le front affichera juste "Q"
       return dto;

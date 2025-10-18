@@ -1,5 +1,7 @@
 package io.github.redouanebali.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
 import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.PlayerPair;
@@ -199,18 +201,18 @@ public class PlayerPairService {
    */
   private List<Integer> loadByePositionsFromJson(int drawSize, int nbSeeds, int nbByes) {
     try {
-      com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-      java.io.InputStream                         is     = getClass().getClassLoader().getResourceAsStream("bye_positions.json");
+      ObjectMapper        mapper = new ObjectMapper();
+      java.io.InputStream is     = getClass().getClassLoader().getResourceAsStream("bye_positions.json");
 
       if (is == null) {
         log.warn("bye_positions.json not found, returning empty list");
         return new ArrayList<>();
       }
 
-      com.fasterxml.jackson.databind.JsonNode root = mapper.readTree(is);
-      com.fasterxml.jackson.databind.JsonNode byePositionsNode = root.path(String.valueOf(drawSize))
-                                                                     .path(String.valueOf(nbSeeds))
-                                                                     .path(String.valueOf(nbByes));
+      JsonNode root = mapper.readTree(is);
+      JsonNode byePositionsNode = root.path(String.valueOf(drawSize))
+                                      .path(String.valueOf(nbSeeds))
+                                      .path(String.valueOf(nbByes));
 
       if (byePositionsNode.isMissingNode()) {
         log.warn("No BYE positions found for drawSize={}, nbSeeds={}, nbByes={}", drawSize, nbSeeds, nbByes);
@@ -218,7 +220,7 @@ public class PlayerPairService {
       }
 
       List<Integer> positions = new ArrayList<>();
-      for (com.fasterxml.jackson.databind.JsonNode position : byePositionsNode) {
+      for (JsonNode position : byePositionsNode) {
         positions.add(position.asInt());
       }
 
@@ -342,7 +344,7 @@ public class PlayerPairService {
         if (nbQualifiers != null) {
           log.debug("Adding {} QUALIFIER pairs for main draw in QUALIF_KO", nbQualifiers);
           for (int i = 0; i < nbQualifiers; i++) {
-            tournament.getPlayerPairs().add(PlayerPair.qualifier());
+            tournament.getPlayerPairs().add(PlayerPair.qualifier(i + 1));
           }
         }
       }
