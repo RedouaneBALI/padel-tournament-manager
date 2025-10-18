@@ -294,39 +294,41 @@ public class PlayerPairService {
    */
   private void addByesIfNeeded(Tournament tournament) {
     List<PlayerPair> pairs      = tournament.getPlayerPairs();
-    int              byesNeeded = 0;
-    switch (tournament.getConfig().getFormat()) {
-      case KNOCKOUT -> {
-        Integer mainDrawSize = tournament.getConfig().getMainDrawSize();
-        if (mainDrawSize != null && pairs.size() < mainDrawSize) {
-          byesNeeded = mainDrawSize - pairs.size();
-        }
+    int              byesNeeded = calculateByesNeeded(tournament, pairs.size());
+    if (byesNeeded > 0) {
+      log.debug("Adding {} BYE pairs to reach required draw size for format {}", byesNeeded, tournament.getConfig().getFormat());
+      for (int i = 0; i < byesNeeded; i++) {
+        tournament.getPlayerPairs().add(PlayerPair.bye());
       }
-      case QUALIF_KO -> {
+    }
+  }
+
+  /**
+   * Calculates the number of BYE pairs needed based on the tournament format.
+   */
+  private int calculateByesNeeded(Tournament tournament, int currentPairs) {
+    switch (tournament.getConfig().getFormat()) {
+      case KNOCKOUT: {
+        Integer mainDrawSize = tournament.getConfig().getMainDrawSize();
+        return mainDrawSize != null && currentPairs < mainDrawSize ? mainDrawSize - currentPairs : 0;
+      }
+      case QUALIF_KO: {
         Integer preQualDrawSize = tournament.getConfig().getPreQualDrawSize();
         Integer mainDrawSize    = tournament.getConfig().getMainDrawSize();
         Integer nbQualifiers    = tournament.getConfig().getNbQualifiers();
         int totalRequired = (preQualDrawSize != null ? preQualDrawSize : 0) +
                             (mainDrawSize != null ? mainDrawSize : 0) -
                             (nbQualifiers != null ? nbQualifiers : 0);
-        if (pairs.size() < totalRequired) {
-          byesNeeded = totalRequired - pairs.size();
-        }
+        return currentPairs < totalRequired ? totalRequired - currentPairs : 0;
       }
-      case GROUPS_KO -> {
+      case GROUPS_KO: {
         Integer nbPools        = tournament.getConfig().getNbPools();
         Integer nbPairsPerPool = tournament.getConfig().getNbPairsPerPool();
         int     totalRequired  = (nbPools != null ? nbPools : 0) * (nbPairsPerPool != null ? nbPairsPerPool : 0);
-        if (pairs.size() < totalRequired) {
-          byesNeeded = totalRequired - pairs.size();
-        }
+        return currentPairs < totalRequired ? totalRequired - currentPairs : 0;
       }
-    }
-    if (byesNeeded > 0) {
-      log.debug("Adding {} BYE pairs to reach required draw size for format {}", byesNeeded, tournament.getConfig().getFormat());
-      for (int i = 0; i < byesNeeded; i++) {
-        tournament.getPlayerPairs().add(PlayerPair.bye());
-      }
+      default:
+        throw new IllegalArgumentException("Unsupported tournament format: " + tournament.getConfig().getFormat());
     }
   }
 
@@ -337,31 +339,38 @@ public class PlayerPairService {
    * @param tournament the tournament to add QUALIFIER pairs to
    */
   private void addQualifiersIfNeeded(Tournament tournament) {
-    List<PlayerPair> pairs = tournament.getPlayerPairs();
-    switch (tournament.getConfig().getFormat()) {
-      case QUALIF_KO -> {
-        Integer nbQualifiers = tournament.getConfig().getNbQualifiers();
-        if (nbQualifiers != null) {
-          log.debug("Adding {} QUALIFIER pairs for main draw in QUALIF_KO", nbQualifiers);
-          for (int i = 0; i < nbQualifiers; i++) {
-            tournament.getPlayerPairs().add(PlayerPair.qualifier(i + 1));
-          }
-        }
+    int qualifiersToAdd = calculateQualifiersToAdd(tournament);
+    if (qualifiersToAdd > 0) {
+      log.debug("Adding {} QUALIFIER pairs for format {}", qualifiersToAdd, tournament.getConfig().getFormat());
+      for (int i = 0; i < qualifiersToAdd; i++) {
+        tournament.getPlayerPairs().add(PlayerPair.qualifier(i + 1));
       }
-      case GROUPS_KO -> {
+    }
+  }
+
+  /**
+   * Calculates the number of QUALIFIER pairs to add based on the tournament format.
+   */
+  private int calculateQualifiersToAdd(Tournament tournament) {
+    switch (tournament.getConfig().getFormat()) {
+      case QUALIF_KO: {
+        Integer nbQualifiers = tournament.getConfig().getNbQualifiers();
+        return nbQualifiers != null ? nbQualifiers : 0;
+      }
+      case GROUPS_KO: {
         Integer nbPools        = tournament.getConfig().getNbPools();
         Integer nbPairsPerPool = tournament.getConfig().getNbPairsPerPool();
         if (nbPools != null && nbPairsPerPool != null) {
           int totalPairsNeeded = nbPools * nbPairsPerPool;
-          int qualifiersToAdd  = totalPairsNeeded - pairs.size();
-          if (qualifiersToAdd > 0) {
-            log.debug("Adding {} QUALIFIER pairs to fill group draw sizes", qualifiersToAdd);
-            for (int i = 0; i < qualifiersToAdd; i++) {
-              tournament.getPlayerPairs().add(PlayerPair.qualifier());
-            }
-          }
+          int currentPairs     = tournament.getPlayerPairs().size();
+          return Math.max(0, totalPairsNeeded - currentPairs);
         }
+        return 0;
       }
+      case KNOCKOUT:
+        return 0;
+      default:
+        throw new IllegalArgumentException("Unsupported tournament format: " + tournament.getConfig().getFormat());
     }
   }
 }
