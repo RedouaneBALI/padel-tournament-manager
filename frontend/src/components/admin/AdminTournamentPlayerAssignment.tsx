@@ -16,7 +16,7 @@ export default function AdminTournamentPlayerAssignment({ tournament }: Props) {
 
   useEffect(() => {
     async function loadPairs() {
-      const pairs = await fetchPairs(tournament.id, true);
+      const pairs = await fetchPairs(tournament.id, true, true);
       setPlayerPairs(pairs);
     }
     loadPairs();

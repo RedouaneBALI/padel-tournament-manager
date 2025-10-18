@@ -73,11 +73,12 @@ export async function fetchRounds(tournamentId: string): Promise<Round[]> {
   return await response.json();
 }
 
-export async function fetchPairs(tournamentId: string | number, includeByes: boolean = false): Promise<PlayerPair[]> {
-  const response = await fetch(api(`/tournaments/${tournamentId}/pairs?includeByes=${includeByes}`));
+export async function fetchPairs(tournamentId: string | number, includeByes: boolean = false, includeQualified: boolean = false): Promise<PlayerPair[]> {
+  const response = await fetch(api(`/tournaments/${tournamentId}/pairs?includeByes=${includeByes}&includeQualified=${includeQualified}`));
   if (!response.ok) {
     throw new Error('Erreur de récupération des PlayerPair');
   }
+  console.log(includeByes + "  " + includeQualified);
   return await response.json();
 }
 

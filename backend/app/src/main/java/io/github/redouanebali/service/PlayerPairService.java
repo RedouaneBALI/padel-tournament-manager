@@ -4,6 +4,7 @@ import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
 import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.format.TournamentFormat;
 import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
@@ -56,15 +57,8 @@ public class PlayerPairService {
     List<PlayerPair> pairs = tournamentMapper.toPlayerPairList(requests);
     tournament.getPlayerPairs().clear();
     tournament.getPlayerPairs().addAll(pairs);
-    // Add BYE pairs if needed to reach main draw size
-    Integer mainDrawSize = tournament.getConfig().getMainDrawSize();
-    if (mainDrawSize != null && pairs.size() < mainDrawSize) {
-      int byesNeeded = mainDrawSize - pairs.size();
-      log.debug("Adding {} BYE pairs to reach main draw size of {}", byesNeeded, mainDrawSize);
-      for (int i = 0; i < byesNeeded; i++) {
-        tournament.getPlayerPairs().add(PlayerPair.bye());
-      }
-    }
+    addByesIfNeeded(tournament);
+    addQualifiersIfNeeded(tournament);
     return tournamentRepository.save(tournament);
   }
 
@@ -98,22 +92,44 @@ public class PlayerPairService {
    * Reorders player pairs by inserting BYEs at the correct absolute positions. Uses bye_positions.json to determine where BYEs should be placed.
    */
   private List<PlayerPair> reorderPairsWithByesAtCorrectPositions(Tournament tournament) {
-    List<PlayerPair> allPairs     = new ArrayList<>(tournament.getPlayerPairs());
-    Integer          mainDrawSize = tournament.getConfig().getMainDrawSize();
-    Integer          nbSeeds      = tournament.getConfig().getNbSeeds();
+    List<PlayerPair> allPairs;
+    List<PlayerPair> preQualPairs = new ArrayList<>();
+    if (tournament.getConfig().getFormat() == TournamentFormat.QUALIF_KO) {
+      Integer preQualDrawSize = tournament.getConfig().getPreQualDrawSize();
+      if (preQualDrawSize != null && preQualDrawSize < tournament.getPlayerPairs().size()) {
+        preQualPairs = new ArrayList<>(tournament.getPlayerPairs().subList(0, preQualDrawSize));
+        allPairs     = new ArrayList<>(tournament.getPlayerPairs().subList(preQualDrawSize, tournament.getPlayerPairs().size()));
+      } else {
+        allPairs = new ArrayList<>(tournament.getPlayerPairs());
+      }
+    } else {
+      allPairs = new ArrayList<>(tournament.getPlayerPairs());
+    }
+    Integer mainDrawSize = tournament.getConfig().getMainDrawSize();
+    Integer nbSeeds      = tournament.getConfig().getNbSeeds();
 
     if (!isValidDrawConfiguration(mainDrawSize, nbSeeds)) {
-      return allPairs;
+      return tournament.getPlayerPairs(); // Return all pairs if config invalid
     }
 
     List<PlayerPair> realPairs = allPairs.stream().filter(pp -> !pp.isBye()).toList();
     List<PlayerPair> byePairs  = allPairs.stream().filter(PlayerPair::isBye).toList();
 
+    List<PlayerPair> reorderedMainDraw;
     if (byePairs.isEmpty()) {
-      return realPairs;
+      reorderedMainDraw = realPairs;
+    } else {
+      reorderedMainDraw = buildReorderedPairsList(mainDrawSize, nbSeeds, realPairs, byePairs);
     }
 
-    return buildReorderedPairsList(mainDrawSize, nbSeeds, realPairs, byePairs);
+    // For QUALIF_KO, prepend preQual pairs
+    if (!preQualPairs.isEmpty()) {
+      List<PlayerPair> fullList = new ArrayList<>(preQualPairs);
+      fullList.addAll(reorderedMainDraw);
+      return fullList;
+    } else {
+      return reorderedMainDraw;
+    }
   }
 
   /**
@@ -267,4 +283,82 @@ public class PlayerPairService {
     tournamentRepository.save(tournament);
   }
 
+  /**
+   * Adds BYE pairs to the tournament if needed to reach the required draw sizes based on the tournament format. For KNOCKOUT: adds BYE to reach
+   * mainDrawSize. For QUALIF_KO: adds BYE to reach preQualDrawSize + mainDrawSize. For GROUPS_KO: adds BYE to reach nbPools * nbPairsPerPool.
+   *
+   * @param tournament the tournament to add BYE pairs to
+   */
+  private void addByesIfNeeded(Tournament tournament) {
+    List<PlayerPair> pairs      = tournament.getPlayerPairs();
+    int              byesNeeded = 0;
+    switch (tournament.getConfig().getFormat()) {
+      case KNOCKOUT -> {
+        Integer mainDrawSize = tournament.getConfig().getMainDrawSize();
+        if (mainDrawSize != null && pairs.size() < mainDrawSize) {
+          byesNeeded = mainDrawSize - pairs.size();
+        }
+      }
+      case QUALIF_KO -> {
+        Integer preQualDrawSize = tournament.getConfig().getPreQualDrawSize();
+        Integer mainDrawSize    = tournament.getConfig().getMainDrawSize();
+        Integer nbQualifiers    = tournament.getConfig().getNbQualifiers();
+        int totalRequired = (preQualDrawSize != null ? preQualDrawSize : 0) +
+                            (mainDrawSize != null ? mainDrawSize : 0) -
+                            (nbQualifiers != null ? nbQualifiers : 0);
+        if (pairs.size() < totalRequired) {
+          byesNeeded = totalRequired - pairs.size();
+        }
+      }
+      case GROUPS_KO -> {
+        Integer nbPools        = tournament.getConfig().getNbPools();
+        Integer nbPairsPerPool = tournament.getConfig().getNbPairsPerPool();
+        int     totalRequired  = (nbPools != null ? nbPools : 0) * (nbPairsPerPool != null ? nbPairsPerPool : 0);
+        if (pairs.size() < totalRequired) {
+          byesNeeded = totalRequired - pairs.size();
+        }
+      }
+    }
+    if (byesNeeded > 0) {
+      log.debug("Adding {} BYE pairs to reach required draw size for format {}", byesNeeded, tournament.getConfig().getFormat());
+      for (int i = 0; i < byesNeeded; i++) {
+        tournament.getPlayerPairs().add(PlayerPair.bye());
+      }
+    }
+  }
+
+  /**
+   * Adds QUALIFIER pairs to the tournament if needed based on the tournament format. For QUALIF_KO: adds QUALIFIER to fill mainDrawSize with
+   * qualifiers. For GROUPS_KO: adds QUALIFIER to fill nbPools * currentPoolSizes.
+   *
+   * @param tournament the tournament to add QUALIFIER pairs to
+   */
+  private void addQualifiersIfNeeded(Tournament tournament) {
+    List<PlayerPair> pairs = tournament.getPlayerPairs();
+    switch (tournament.getConfig().getFormat()) {
+      case QUALIF_KO -> {
+        Integer nbQualifiers = tournament.getConfig().getNbQualifiers();
+        if (nbQualifiers != null) {
+          log.debug("Adding {} QUALIFIER pairs for main draw in QUALIF_KO", nbQualifiers);
+          for (int i = 0; i < nbQualifiers; i++) {
+            tournament.getPlayerPairs().add(PlayerPair.qualifier());
+          }
+        }
+      }
+      case GROUPS_KO -> {
+        Integer nbPools        = tournament.getConfig().getNbPools();
+        Integer nbPairsPerPool = tournament.getConfig().getNbPairsPerPool();
+        if (nbPools != null && nbPairsPerPool != null) {
+          int totalPairsNeeded = nbPools * nbPairsPerPool;
+          int qualifiersToAdd  = totalPairsNeeded - pairs.size();
+          if (qualifiersToAdd > 0) {
+            log.debug("Adding {} QUALIFIER pairs to fill group draw sizes", qualifiersToAdd);
+            for (int i = 0; i < qualifiersToAdd; i++) {
+              tournament.getPlayerPairs().add(PlayerPair.qualifier());
+            }
+          }
+        }
+      }
+    }
+  }
 }

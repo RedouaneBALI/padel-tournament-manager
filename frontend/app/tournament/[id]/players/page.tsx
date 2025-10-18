@@ -16,7 +16,7 @@ export default function TournamentPlayersTab({ params }: {   params: Promise<{ i
     async function load() {
       setLoading(true);
       try {
-        const data = await fetchPairs(id);
+        const data = await fetchPairs(id, false, false);
         if (!cancelled) setPlayerPairs(data);
       } catch (error) {
         console.error('Erreur lors du chargement des joueurs : ' + error);

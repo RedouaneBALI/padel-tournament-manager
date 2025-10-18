@@ -170,7 +170,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
     async function loadPairs() {
       setLoadingPairs(true);
       try {
-        const data = await fetchPairs(tournamentId, false);
+        const data = await fetchPairs(tournamentId, false, false);
         if (!cancelled) setPairs(data);
       } finally {
         if (!cancelled) setLoadingPairs(false);

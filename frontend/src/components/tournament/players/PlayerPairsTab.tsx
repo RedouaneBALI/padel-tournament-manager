@@ -16,7 +16,7 @@ export default function PlayerPairsTab({ tournamentId }: Props) {
 
   useEffect(() => {
     setLoading(true);
-    fetchPairs(tournamentId)
+    fetchPairs(tournamentId, false, false)
       .then(setPlayerPairs)
       .catch((err) => {
         console.error("Erreur lors du chargement des paires :", err);
