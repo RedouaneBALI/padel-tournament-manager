@@ -235,17 +235,12 @@ public class GameSlotUtil {
   public static int placeTeamsSequentially(List<Game> games, List<PlayerPair> teams) {
     int index = 0;
 
-    for (Game game : games) {
-      if (index >= teams.size()) {
-        break;
-      }
+    for (int i = 0; i < games.size() && index < teams.size(); i++) {
+      Game game = games.get(i);
       if (isSlotEmpty(game, TeamSide.TEAM_A)) {
         setTeam(game, TeamSide.TEAM_A, teams.get(index++));
       }
-      if (index >= teams.size()) {
-        break;
-      }
-      if (isSlotEmpty(game, TeamSide.TEAM_B)) {
+      if (index < teams.size() && isSlotEmpty(game, TeamSide.TEAM_B)) {
         setTeam(game, TeamSide.TEAM_B, teams.get(index++));
       }
     }

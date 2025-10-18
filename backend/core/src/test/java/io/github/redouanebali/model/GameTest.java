@@ -35,7 +35,7 @@ public class GameTest {
       "'6-4,4-6,7-10', 2, 6, true, true",
       "'6-4,4-6,7-8', 2, 6, true, false"
   })
-  public void testGameCompletionParameterized(String scores,
+  void testGameCompletionParameterized(String scores,
                                               int numberOfSetsToWin,
                                               int pointsPerSet,
                                               boolean superTieBreakInFinalSet,
@@ -74,7 +74,7 @@ public class GameTest {
       "'4-5,5-4', 2, 4, false, null",
       "'6-0,4-6,6-4', 2, 6, true, null",
   })
-  public void testGetWinner(String scores,
+  void testGetWinner(String scores,
                             int numberOfSetsToWin,
                             int pointsPerSet,
                             boolean superTieBreakInFinalSet,

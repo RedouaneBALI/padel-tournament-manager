@@ -99,7 +99,7 @@ public class Pool {
                                               .toList();
     PoolRanking poolRanking = new PoolRanking();
     poolRanking.setDetails(result);
-    pool.setPoolRanking(poolRanking); // @todo to fix
+    pool.setPoolRanking(poolRanking); 
     return result;
   }
 

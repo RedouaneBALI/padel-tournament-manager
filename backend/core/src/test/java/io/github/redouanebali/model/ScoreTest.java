@@ -7,10 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-public class ScoreTest {
+class ScoreTest {
 
   @Test
-  public void testAddSetScore() {
+  void testAddSetScore() {
     Score score = new Score();
     score.addSetScore(6, 4);
     score.addSetScore(7, 5);
@@ -21,7 +21,7 @@ public class ScoreTest {
   }
 
   @Test
-  public void testCompleteScoreRecording() {
+  void testCompleteScoreRecording() {
     Score score = new Score();
     score.addSetScore(6, 4);
     score.addSetScore(4, 6);
@@ -35,7 +35,7 @@ public class ScoreTest {
   // ============= FORFEIT TESTS =============
 
   @Test
-  public void testForfeit_withTeamA() {
+  void testForfeit_withTeamA() {
     Score score = Score.forfeit(TeamSide.TEAM_A);
 
     assertNotNull(score);
@@ -45,7 +45,7 @@ public class ScoreTest {
   }
 
   @Test
-  public void testForfeit_withTeamB() {
+  void testForfeit_withTeamB() {
     Score score = Score.forfeit(TeamSide.TEAM_B);
 
     assertNotNull(score);
@@ -55,7 +55,7 @@ public class ScoreTest {
   }
 
   @Test
-  public void testForfeitWithPartialScore_preservesSets() {
+  void testForfeitWithPartialScore_preservesSets() {
     // Create a partial score
     Score partialScore = new Score();
     partialScore.addSetScore(6, 2);
@@ -73,7 +73,7 @@ public class ScoreTest {
   }
 
   @Test
-  public void testForfeitWithPartialScore_nullScore() {
+  void testForfeitWithPartialScore_nullScore() {
     Score finalScore = Score.forfeitWithPartialScore(null, TeamSide.TEAM_A);
 
     assertNotNull(finalScore);
@@ -83,7 +83,7 @@ public class ScoreTest {
   }
 
   @Test
-  public void testMarkAsForfeit_onExistingScore() {
+  void testMarkAsForfeit_onExistingScore() {
     Score score = new Score();
     score.addSetScore(6, 4);
     score.addSetScore(3, 2);
@@ -98,7 +98,7 @@ public class ScoreTest {
   }
 
   @Test
-  public void testToString_forfeitWithoutScore() {
+  void testToString_forfeitWithoutScore() {
     Score score = Score.forfeit(TeamSide.TEAM_A);
 
     String result = score.toString();
@@ -107,7 +107,7 @@ public class ScoreTest {
   }
 
   @Test
-  public void testToString_forfeitWithPartialScore() {
+  void testToString_forfeitWithPartialScore() {
     Score score = new Score();
     score.addSetScore(6, 2);
     score.addSetScore(2, 0);
@@ -119,7 +119,7 @@ public class ScoreTest {
   }
 
   @Test
-  public void testToString_normalScore() {
+  void testToString_normalScore() {
     Score score = new Score();
     score.addSetScore(6, 4);
     score.addSetScore(4, 6);

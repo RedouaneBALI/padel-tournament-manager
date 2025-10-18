@@ -34,7 +34,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 class TournamentBuilderCsvTest {
 
   // --- Small header index helpers shared by provider and test ---
-  private static Map<String, Integer> HEADER_INDEX;
+  private static Map<String, Integer> headerIndex;
 
   // --- Provider that groups CSV rows by TournamentId ---
   static Stream<Arguments> tournamentsFromCsv() throws Exception {
@@ -92,14 +92,14 @@ class TournamentBuilderCsvTest {
     for (int i = 0; i < cols.length; i++) {
       map.put(cols[i].trim(), i);
     }
-    HEADER_INDEX = map;
+    headerIndex = map;
   }
 
   private static int headerIndexFor(String key) {
-    if (HEADER_INDEX == null) {
+    if (headerIndex == null) {
       throw new IllegalStateException("Header index not initialized");
     }
-    Integer idx = HEADER_INDEX.get(key);
+    Integer idx = headerIndex.get(key);
     if (idx == null) {
       throw new IllegalArgumentException("Unknown CSV column: " + key);
     }

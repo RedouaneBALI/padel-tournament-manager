@@ -584,22 +584,18 @@ public class AutomaticDrawStrategy implements DrawStrategy {
   private void placeRemainingByesInEmptyGamesPhase3(List<Game> games, int byesPlaced, int nbByes) {
     int placed = byesPlaced;
 
-    for (Game game : games) {
-      if (placed >= nbByes) {
-        break;
-      }
+    for (int i = 0; i < games.size() && placed < nbByes; i++) {
+      Game game = games.get(i);
 
       // Only place BYEs in completely empty games to create BYE vs BYE matches
       if (game.getTeamA() == null && game.getTeamB() == null) {
         game.setTeamA(PlayerPair.bye());
         placed++;
 
-        if (placed >= nbByes) {
-          break;
+        if (placed < nbByes) {
+          game.setTeamB(PlayerPair.bye());
+          placed++;
         }
-
-        game.setTeamB(PlayerPair.bye());
-        placed++;
       }
     }
   }

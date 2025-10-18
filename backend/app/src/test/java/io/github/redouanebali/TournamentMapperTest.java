@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
-public class TournamentMapperTest {
+class TournamentMapperTest {
 
   private final TournamentMapper mapper       = Mappers.getMapper(TournamentMapper.class);
   private final ObjectMapper     objectMapper = new ObjectMapper();

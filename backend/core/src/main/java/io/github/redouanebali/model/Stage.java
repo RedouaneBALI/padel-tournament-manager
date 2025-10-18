@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 public enum Stage {
 
-  GROUPS("Groups", 0, false, 0), // @todo not yet working
+  GROUPS("Groups", 0, false, 0), 
   Q1("Qualifications 1", 0, true, 1),
   Q2("Qualifications 2", 0, true, 2),
   Q3("Qualifications 3", 0, true, 3),

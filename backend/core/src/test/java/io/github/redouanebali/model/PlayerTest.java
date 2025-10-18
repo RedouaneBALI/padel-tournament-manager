@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 public class PlayerTest {
 
   @Test
-  public void testPlayerAttributes() {
+  void testPlayerAttributes() {
     Player player = new Player();
     player.setId(1L);
     player.setName("John Doe");
@@ -25,7 +25,7 @@ public class PlayerTest {
 
   @Test
   @Disabled("Test disabled: Player.toString() implementation may change and is not critical for business logic")
-  public void testPlayerToString() {
+  void testPlayerToString() {
     Player player = new Player();
     player.setName("Jane Doe");
 
