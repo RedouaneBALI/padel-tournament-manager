@@ -14,6 +14,7 @@ import { Tournament } from '@/src/types/tournament';
 import { fetchTournament, fetchPairs } from '@/src/api/tournamentApi';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
 import AdminTournamentPlayerAssignment from '@/src/components/admin/AdminTournamentPlayerAssignment';
+import { getStageFromSize } from '@/src/types/stage';
 
 interface Props {
   tournamentId: string;
@@ -85,7 +86,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
                       games: buildGames(qualifSlotsRef.current),
                     },
                     {
-                      stage: `R${mainDrawSize}`, // @TODO not working for stages lower than R16 (ex: QUARTERS)
+                      stage: getStageFromSize(mainDrawSize),
                       games: buildGames(mainSlotsRef.current),
                     },
                   ];
@@ -232,6 +233,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
   const showGenerateButton = !tournamentStarted && !loadingTournament && !loadingPairs && (
     (!manual) || (manual && activeTab === 'assignment')
   );
+
 
   return (
     <div className="container mx-auto max-w-3xl">

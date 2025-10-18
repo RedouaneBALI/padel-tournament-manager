@@ -76,7 +76,7 @@ public class PlayerPairService {
     Tournament tournament = tournamentRepository.findById(tournamentId)
                                                 .orElseThrow(() -> new IllegalArgumentException(TOURNAMENT_NOT_FOUND));
     if (includeByes) {
-      List<PlayerPair> pairs = reorderPairsWithByesAtCorrectPositions(tournament);
+      List<PlayerPair> pairs = reorderPairsWithByesAndQualifiersAtCorrectPositions(tournament);
       if (!includeQualified) {
         return pairs.stream().filter(pp -> !pp.isQualifier()).toList();
       }
@@ -89,9 +89,10 @@ public class PlayerPairService {
   }
 
   /**
-   * Reorders player pairs by inserting BYEs at the correct absolute positions. Uses bye_positions.json to determine where BYEs should be placed.
+   * Reorders player pairs by inserting BYEs and QUALIFIERS at the correct absolute positions. Uses bye_positions.json to determine where BYEs should
+   * be placed.
    */
-  private List<PlayerPair> reorderPairsWithByesAtCorrectPositions(Tournament tournament) {
+  private List<PlayerPair> reorderPairsWithByesAndQualifiersAtCorrectPositions(Tournament tournament) {
     List<PlayerPair> allPairs;
     List<PlayerPair> preQualPairs = new ArrayList<>();
     if (tournament.getConfig().getFormat() == TournamentFormat.QUALIF_KO) {

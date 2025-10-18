@@ -33,14 +33,14 @@ export function useDualPlayerAssignment(
     const nextQualif: Array<PlayerPair | null> = new Array(qualifSlotsSize).fill(null);
     const nextMain: Array<PlayerPair | null> = new Array(mainSlotsSize).fill(null);
 
-    // Distribute players alternately or based on some logic
-    playerPairs.forEach((p, i) => {
-      if (i % 2 === 0 && i / 2 < qualifSlotsSize) {
-        nextQualif[i / 2] = p;
-      } else if (i / 2 < mainSlotsSize) {
-        nextMain[Math.floor(i / 2)] = p;
+    // Assign players in the order received
+    for (let i = 0; i < playerPairs.length; i++) {
+      if (i < qualifSlotsSize) {
+        nextQualif[i] = playerPairs[i];
+      } else if (i < qualifSlotsSize + mainSlotsSize) {
+        nextMain[i - qualifSlotsSize] = playerPairs[i];
       }
-    });
+    }
 
     setQualifSlots(nextQualif);
     setMainSlots(nextMain);

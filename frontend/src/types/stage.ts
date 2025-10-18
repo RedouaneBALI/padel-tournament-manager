@@ -25,3 +25,19 @@ export const stageLabels: Record<Stage, string> = {
   FINAL: 'Finale',
   WINNER: 'Vainqueur',
 };
+
+export const getStageFromSize = (size: number): Stage => {
+  if (size === 64) return Stage.R64;
+  if (size === 32) return Stage.R32;
+  if (size === 16) return Stage.R16;
+  if (size === 8) return Stage.QUARTERS;
+  if (size === 4) return Stage.SEMIS;
+  if (size === 2) return Stage.FINAL;
+  // Pour d'autres tailles, approximation à la valeur la plus proche
+  if (size > 32) return Stage.R64;
+  if (size > 16) return Stage.R32;
+  if (size > 8) return Stage.R16;
+  if (size > 4) return Stage.QUARTERS;
+  if (size > 2) return Stage.SEMIS;
+  return Stage.FINAL;
+};
