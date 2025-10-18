@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-public class GameTest {
+class GameTest {
 
   @ParameterizedTest
   @CsvSource({
@@ -36,10 +36,10 @@ public class GameTest {
       "'6-4,4-6,7-8', 2, 6, true, false"
   })
   void testGameCompletionParameterized(String scores,
-                                              int numberOfSetsToWin,
-                                              int pointsPerSet,
-                                              boolean superTieBreakInFinalSet,
-                                              boolean expectedComplete) {
+                                       int numberOfSetsToWin,
+                                       int pointsPerSet,
+                                       boolean superTieBreakInFinalSet,
+                                       boolean expectedComplete) {
     PlayerPair teamA = new PlayerPair(new Player(), new Player(), 1);
     PlayerPair teamB = new PlayerPair(new Player(), new Player(), 2);
     Game       game  = new Game(new MatchFormat(1L, numberOfSetsToWin, pointsPerSet, superTieBreakInFinalSet, false));
@@ -75,10 +75,10 @@ public class GameTest {
       "'6-0,4-6,6-4', 2, 6, true, null",
   })
   void testGetWinner(String scores,
-                            int numberOfSetsToWin,
-                            int pointsPerSet,
-                            boolean superTieBreakInFinalSet,
-                            String expectedWinner) {
+                     int numberOfSetsToWin,
+                     int pointsPerSet,
+                     boolean superTieBreakInFinalSet,
+                     String expectedWinner) {
 
     PlayerPair teamA = new PlayerPair(new Player("A1"), new Player("A2"), 1);
     PlayerPair teamB = new PlayerPair(new Player("B1"), new Player("B2"), 2);

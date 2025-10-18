@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-public class SeedPlacementUtilTest {
+class SeedPlacementUtilTest {
 
   @ParameterizedTest(name = "getSeedsPositions for drawSize={0}, nbSeeds={1}")
   @CsvSource({

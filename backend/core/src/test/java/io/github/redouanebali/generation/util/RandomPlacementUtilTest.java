@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-public class RandomPlacementUtilTest {
+class RandomPlacementUtilTest {
 
   @ParameterizedTest(name = "placeRemainingTeamsRandomly with {0} teams in {1} slots")
   @CsvSource({

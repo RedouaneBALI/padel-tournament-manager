@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-public class GroupPhaseTests {
+class GroupPhaseTests {
 
   @ParameterizedTest(name = "Groups: {0} teams, {1} pools of {2}, {3} qualified per pool")
   @CsvSource({

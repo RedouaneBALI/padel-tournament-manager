@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests pour la propagation des gagnants entre les rounds, notamment pour les qualifiers.
  */
-public class WinnerPropagationTest {
+class WinnerPropagationTest {
 
   @Test
   void testQualifierPropagation_winnersPlacedInCorrectOrder() {
@@ -178,9 +178,9 @@ public class WinnerPropagationTest {
     int[] executionOrder = {3, 1, 0, 2}; // Index des matchs qui se terminent dans cet ordre
 
     for (int execIdx = 0; execIdx < executionOrder.length; execIdx++) {
-      int matchIdx = executionOrder[execIdx];
-      Game       game   = q2Round.getGames().get(matchIdx);
-      PlayerPair winner = q2Winners.get(matchIdx);
+      int        matchIdx = executionOrder[execIdx];
+      Game       game     = q2Round.getGames().get(matchIdx);
+      PlayerPair winner   = q2Winners.get(matchIdx);
       game.setTeamA(winner);
       game.setTeamB(PlayerPair.bye());
       game.setWinnerSide(TeamSide.TEAM_A);
@@ -209,7 +209,6 @@ public class WinnerPropagationTest {
 
       int expectedMatchIndex = i; // Le slot Q1 doit contenir le gagnant du match Q2-1, etc.
       int actualMatchIndex   = actualTeam.getSeed() - 200;
-
 
       assertEquals(expectedMatchIndex, actualMatchIndex,
                    String.format("Le slot Q%d doit contenir le gagnant du match Q2-%d, mais contient le gagnant du match Q2-%d",

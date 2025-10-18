@@ -22,7 +22,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 /**
  * Tests for AutomaticDrawStrategy to verify correct behavior based on tournament format.
  */
-public class AutomaticDrawStrategyTest {
+class AutomaticDrawStrategyTest {
 
   @Test
   void testKnockoutMode_noQualifiersPlaced() {

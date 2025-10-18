@@ -29,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest(classes = PadelTournamentManagerApplication.class)
 @ActiveProfiles("h2")
 @Transactional
-public class TournamentIntegrationTest {
+class TournamentIntegrationTest {
 
   @Autowired
   private TournamentRepository tournamentRepository;
@@ -183,4 +183,3 @@ public class TournamentIntegrationTest {
     }
   }
 }
-

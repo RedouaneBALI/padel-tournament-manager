@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-public class StaggeredSeedPlacementUtilTest {
+class StaggeredSeedPlacementUtilTest {
 
   @ParameterizedTest(name = "First round: all seed slots are QUALIFIER for drawSize={0}, totalSeeds={1}")
   @CsvSource({

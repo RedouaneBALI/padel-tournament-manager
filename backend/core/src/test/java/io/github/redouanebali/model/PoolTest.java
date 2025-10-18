@@ -14,7 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 
 @WithMockUser(username = "bali.redouane@gmail.com")
-public class PoolTest {
+class PoolTest {
 
   private List<PlayerPair> defaultPairs;
 

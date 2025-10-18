@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-public class StageTest {
+class StageTest {
 
   @ParameterizedTest(name = "fromNbTeams({0}) should return {1}")
   @CsvSource({

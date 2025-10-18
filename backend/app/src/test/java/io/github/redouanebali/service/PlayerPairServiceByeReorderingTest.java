@@ -23,7 +23,7 @@ import org.mockito.Mockito;
  * Parameterized test to verify that getPairsByTournamentId correctly reorders BYEs at the right absolute positions (opposite seeds) to improve UX in
  * manual mode.
  */
-public class PlayerPairServiceByeReorderingTest {
+class PlayerPairServiceByeReorderingTest {
 
   @ParameterizedTest(name = "Reorder BYEs: {0} teams, {1} seeds, {2} BYEs (drawSize={3})")
   @CsvSource({

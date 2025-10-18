@@ -24,7 +24,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 @ExtendWith(MockitoExtension.class)
-public class MatchFormatServiceTest {
+class MatchFormatServiceTest {
 
   @Mock
   private TournamentRepository tournamentRepository;
