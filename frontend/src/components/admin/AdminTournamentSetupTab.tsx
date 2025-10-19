@@ -6,7 +6,7 @@ import PlayerPairsTextarea from '@/src/components/tournament/players/PlayerPairs
 import PlayerPairsList from '@/src/components/tournament/players/PlayerPairsList';
 import { useRouter } from 'next/navigation';
 import { confirmAlert } from 'react-confirm-alert';
-import { generateDraw, initializeDraw } from '@/src/api/tournamentApi';
+import { generateDraw, initializeDraw, savePlayerPairs } from '@/src/api/tournamentApi';
 import type { InitializeDrawRequest } from '@/src/types/api/InitializeDrawRequest';
 import { FileText } from 'lucide-react';
 import { PlayerPair } from '@/src/types/playerPair';
@@ -204,7 +204,6 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
   // Listen to slots updates
   useEffect(() => {
     const handleSlotsUpdate = (event: CustomEvent) => {
-      console.log('Received event:', event.type, event.detail);
       if (event.type === 'knockout:pairs-reordered') {
         assignedSlotsRef.current = event.detail.slots;
         setAssignedSlots(event.detail.slots);
@@ -233,6 +232,22 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
   const showGenerateButton = !tournamentStarted && !loadingTournament && !loadingPairs && (
     (!manual) || (manual && activeTab === 'assignment')
   );
+
+  const isValidPlayerPair = (pair: PlayerPair) => {
+    return pair.player1Name && pair.player2Name && pair.type;
+  };
+
+  const onPairsChangeRef = useRef<typeof setPairs | null>(null);
+
+  useEffect(() => {
+    onPairsChangeRef.current = async (pairs: PlayerPair[]) => {
+      setPairs(pairs);
+      // Ne sauvegarde que si toutes les paires sont valides et non vides
+      if (pairs.length > 0 && pairs.every(isValidPlayerPair)) {
+        await savePlayerPairs(tournamentId, pairs);
+      }
+    };
+  }, [tournamentId]);
 
 
   return (
@@ -303,7 +318,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
                     </div>
                     <p className="p-1 text-tab-inactive"><i>Joueur1,Joueur2,Seed (optionnel)</i></p>
                     <PlayerPairsTextarea
-                      onPairsChange={setPairs}
+                      onPairsChange={onPairsChangeRef.current}
                       tournamentId={tournamentId}
                       hasStarted={tournamentStarted}
                       onSaveSuccess={handleSaveSuccess}

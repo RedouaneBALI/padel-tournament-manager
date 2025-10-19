@@ -78,7 +78,6 @@ export async function fetchPairs(tournamentId: string | number, includeByes: boo
   if (!response.ok) {
     throw new Error('Erreur de récupération des PlayerPair');
   }
-  console.log(includeByes + "  " + includeQualified);
   return await response.json();
 }
 

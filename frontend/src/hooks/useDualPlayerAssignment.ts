@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Tournament } from '@/src/types/tournament';
 import { PlayerPair } from '@/src/types/playerPair';
+import { savePlayerPairs } from '@/src/api/tournamentApi';
 
 // Constants for auto-scroll behavior
 const SCROLL_CONFIG = {
@@ -100,7 +101,6 @@ export function useDualPlayerAssignment(
 
       // Dispatch updated slots
       if (typeof window !== 'undefined') {
-        console.log('Dispatching qualifko:pairs-reordered for same list with qualifSlots:', fromList === 'qualif' ? newSlots : qualifSlots, 'mainSlots:', fromList === 'main' ? newSlots : mainSlots);
         window.dispatchEvent(new CustomEvent('qualifko:pairs-reordered', {
           detail: {
             tournamentId: (tournament as any)?.id,
@@ -129,7 +129,6 @@ export function useDualPlayerAssignment(
 
       // Dispatch updated slots
       if (typeof window !== 'undefined') {
-        console.log('Dispatching qualifko:pairs-reordered with qualifSlots:', fromList === 'qualif' ? newFrom : newTo, 'mainSlots:', fromList === 'main' ? newFrom : newTo);
         window.dispatchEvent(new CustomEvent('qualifko:pairs-reordered', {
           detail: {
             tournamentId: (tournament as any)?.id,
@@ -275,6 +274,15 @@ export function useDualPlayerAssignment(
       cancelAutoScroll();
     };
   }, [cancelAutoScroll]);
+
+  // Ajout d'un effet pour sauvegarder à chaque drag & drop
+  useEffect(() => {
+    const allPairs: PlayerPair[] = [...qualifSlots, ...mainSlots].filter((p): p is PlayerPair => !!p);
+    // On sauvegarde l'ordre même si certains slots sont vides
+    if ((qualifSlots.length > 0 || mainSlots.length > 0) && allPairs.length > 0) {
+      savePlayerPairs((tournament as any)?.id, allPairs);
+    }
+  }, [qualifSlots, mainSlots, tournament]);
 
   return {
     qualifSlots,

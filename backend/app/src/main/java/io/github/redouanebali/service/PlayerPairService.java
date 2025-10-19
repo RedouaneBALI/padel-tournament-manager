@@ -78,7 +78,8 @@ public class PlayerPairService {
     Tournament tournament = tournamentRepository.findById(tournamentId)
                                                 .orElseThrow(() -> new IllegalArgumentException(TOURNAMENT_NOT_FOUND));
     if (includeByes) {
-      List<PlayerPair> pairs = reorderPairsWithByesAndQualifiersAtCorrectPositions(tournament);
+      //List<PlayerPair> pairs = reorderPairsWithByesAndQualifiersAtCorrectPositions(tournament);
+      List<PlayerPair> pairs = tournament.getPlayerPairs();
       if (!includeQualified) {
         return pairs.stream().filter(pp -> !pp.isQualifier()).toList();
       }
