@@ -2,6 +2,7 @@ package io.github.redouanebali.generation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.redouanebali.model.Game;
@@ -11,6 +12,7 @@ import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.format.DrawMode;
 import io.github.redouanebali.util.TestFixtures;
 import java.util.ArrayList;
 import java.util.List;
@@ -214,6 +216,54 @@ class WinnerPropagationTest {
                    String.format("Le slot Q%d doit contenir le gagnant du match Q2-%d, mais contient le gagnant du match Q2-%d",
                                  i + 1, expectedMatchIndex + 1, actualMatchIndex + 1));
     }
+  }
+
+  @Test
+  void testWinnerModificationAndCancellation() {
+    // Given: Un tournoi simple avec R32 et R16
+    Tournament tournament = TestFixtures.makeTournament(0, 0, 32, 0, 0, DrawMode.SEEDED);
+
+    List<PlayerPair> teams = TestFixtures.createPlayerPairs(32);
+    TournamentBuilder.setupAndPopulateTournament(tournament, teams);
+
+    Round r32Round = tournament.getRoundByStage(Stage.R32);
+    Round r16Round = tournament.getRoundByStage(Stage.R16);
+
+    assertNotNull(r32Round);
+    assertNotNull(r16Round);
+
+    // Prendre le premier match de R32
+    Game       game  = r32Round.getGames().get(0);
+    PlayerPair teamA = game.getTeamA();
+    PlayerPair teamB = game.getTeamB();
+
+    assertNotNull(teamA);
+    assertNotNull(teamB);
+
+    // Définir le vainqueur comme teamA
+    game.setScore(TestFixtures.createScoreWithWinner(game, teamA));
+    TournamentBuilder.propagateWinners(tournament);
+
+    // Vérifier que le vainqueur est propagé vers R16
+    Game       nextGame   = r16Round.getGames().get(0);
+    PlayerPair propagated = nextGame.getTeamA();
+    assertEquals(teamA, propagated, "Le vainqueur teamA doit être propagé vers R16");
+
+    // Modifier le vainqueur pour désigner teamB
+    game.setScore(TestFixtures.createScoreWithWinner(game, teamB));
+    TournamentBuilder.propagateWinners(tournament);
+
+    // Vérifier que maintenant c'est teamB
+    propagated = nextGame.getTeamA();
+    assertEquals(teamB, propagated, "Le vainqueur modifié doit être teamB en R16");
+
+    // Annuler la victoire
+    game.setScore(null);
+    TournamentBuilder.propagateWinners(tournament);
+
+    // Vérifier que le match suivant est réinitialisé
+    propagated = nextGame.getTeamA();
+    assertNull(propagated, "Après annulation, le slot en R16 doit être réinitialisé");
   }
 
   /**
