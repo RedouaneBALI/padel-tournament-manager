@@ -39,8 +39,9 @@ public class PlayerPairService {
    * @throws IllegalArgumentException if tournament is not found
    * @throws AccessDeniedException if user lacks modification rights
    */
+  @Transactional
   public Tournament addPairs(Long tournamentId, List<CreatePlayerPairRequest> requests) {
-    Tournament tournament = tournamentRepository.findById(tournamentId)
+    Tournament tournament = tournamentRepository.findByIdWithLock(tournamentId)
                                                 .orElseThrow(() -> new IllegalArgumentException(TOURNAMENT_NOT_FOUND));
     String      me          = SecurityUtil.currentUserId();
     Set<String> superAdmins = securityProps.getSuperAdmins();
@@ -248,7 +249,7 @@ public class PlayerPairService {
    */
   @Transactional
   public void updatePlayerPair(Long tournamentId, Long pairId, String player1Name, String player2Name, Integer seed) {
-    Tournament tournament = tournamentRepository.findById(tournamentId)
+    Tournament tournament = tournamentRepository.findByIdWithLock(tournamentId)
                                                 .orElseThrow(() -> new IllegalArgumentException(TOURNAMENT_NOT_FOUND));
 
     String      me          = SecurityUtil.currentUserId();

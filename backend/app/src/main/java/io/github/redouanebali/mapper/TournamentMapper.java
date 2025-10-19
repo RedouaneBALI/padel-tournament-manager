@@ -12,6 +12,7 @@ import io.github.redouanebali.dto.response.RoundDTO;
 import io.github.redouanebali.dto.response.TournamentDTO;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.MatchFormat;
+import io.github.redouanebali.model.PairType;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Pool;
@@ -132,7 +133,12 @@ public interface TournamentMapper {
     PlayerPair pair = new PlayerPair();
     pair.setPlayer1(toPlayer(request.getPlayer1Name()));
     pair.setPlayer2(toPlayer(request.getPlayer2Name()));
-    pair.setSeed(request.getSeed() != null ? request.getSeed() : 0); // Assigner la seed
+    pair.setType(request.getType() != null ? request.getType() : PairType.NORMAL);
+    if (request.getType() == PairType.BYE) {
+      pair.setSeed(Integer.MAX_VALUE);
+    } else {
+      pair.setSeed(request.getSeed() != null ? request.getSeed() : 0);
+    }
     return pair;
   }
 
