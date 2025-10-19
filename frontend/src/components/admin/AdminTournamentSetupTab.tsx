@@ -237,7 +237,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
     return pair.player1Name && pair.player2Name && pair.type;
   };
 
-  const onPairsChangeRef = useRef<typeof setPairs | null>(null);
+  const onPairsChangeRef = useRef<((pairs: PlayerPair[]) => Promise<void>) | undefined>(undefined);
 
   useEffect(() => {
     onPairsChangeRef.current = async (pairs: PlayerPair[]) => {

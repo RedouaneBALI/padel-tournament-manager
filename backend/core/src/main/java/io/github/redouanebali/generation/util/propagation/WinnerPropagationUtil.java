@@ -27,7 +27,7 @@ public class WinnerPropagationUtil {
   }
 
   /**
-   * Propagate winners from one round to the next
+   * Propagate winners from one round to the next Réinitialise d'abord les slots dépendants, puis propage les vainqueurs.
    */
   private void propagateFromRoundToNext(Round currentRound, Round nextRound) {
     if (currentRound == null || nextRound == null) {
@@ -40,7 +40,6 @@ public class WinnerPropagationUtil {
       return;
     }
 
-    // Skip empty rounds (no teams set at all)
     final boolean currentEmpty = curGames.stream().allMatch(g -> g.getTeamA() == null && g.getTeamB() == null);
     if (currentEmpty) {
       return;
@@ -48,20 +47,59 @@ public class WinnerPropagationUtil {
 
     PropagationStrategy strategy = determinePropagationStrategy(curGames.size(), nextGames.size());
 
+    // --- Knockout : réinitialiser tous les slots du tour suivant ---
+    if (strategy instanceof KnockoutPropagationStrategy) {
+      for (int i = 0; i < curGames.size(); i++) {
+        int idx = i / 2;
+        if (idx < nextGames.size()) {
+          Game ng = nextGames.get(idx);
+          if (i % 2 == 0) {
+            ng.setTeamA(null);
+          } else {
+            ng.setTeamB(null);
+          }
+        }
+      }
+    }
+    // --- Qualifier : réinitialiser tous les slots QUALIFIER ---
+    if (strategy instanceof QualifierSlotPropagationStrategy) {
+      for (Game ng : nextGames) {
+        if (ng.getTeamA() != null && ng.getTeamA().getType() == PairType.QUALIFIER) {
+          ng.setTeamA(null);
+        }
+        if (ng.getTeamB() != null && ng.getTeamB().getType() == PairType.QUALIFIER) {
+          ng.setTeamB(null);
+        }
+      }
+    }
+
     for (int i = 0; i < curGames.size(); i++) {
       final Game currentGame = curGames.get(i);
       PlayerPair winner      = currentGame.getWinner();
-
-      if (!shouldPropagateWinner(winner, currentGame, nextGames)) {
-        continue;
+      if (winner == null) {
+        boolean teamABye = currentGame.getTeamA() != null && currentGame.getTeamA().isBye();
+        boolean teamBBye = currentGame.getTeamB() != null && currentGame.getTeamB().isBye();
+        if (teamABye && teamBBye) {
+          winner = PlayerPair.bye();
+        }
       }
+      strategy.placeWinner(nextGames, i, winner);
+    }
+  }
 
-      boolean placed = strategy.placeWinner(nextGames, i, winner);
-      if (!placed) {
-        // Fallback: single scan
-        placeWinnerInQualifierOrAvailableSlot(nextGames, winner);
+  /**
+   * Vérifie si une équipe du tour suivant dépend d'un match du tour courant (par référence).
+   */
+  private boolean isDependentOnCurrentRound(PlayerPair team, List<Game> curGames) {
+    if (team == null) {
+      return false;
+    }
+    for (Game g : curGames) {
+      if (team == g.getWinner()) {
+        return true;
       }
     }
+    return false;
   }
 
   /**

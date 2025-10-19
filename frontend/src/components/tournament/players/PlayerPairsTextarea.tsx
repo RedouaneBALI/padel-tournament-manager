@@ -8,7 +8,7 @@ import CenteredLoader from '@/src/components/ui/CenteredLoader';
 
 interface Props {
   tournamentId: string;
-  onPairsChange?: (pairs: PlayerPair[]) => void; // OK dans interface
+  onPairsChange?: (pairs: PlayerPair[]) => void | Promise<void>; // OK dans interface
   hasStarted?: boolean;
   onSaveSuccess?: () => void;
 }

@@ -53,15 +53,23 @@ public class QualifierSlotPropagationStrategy implements PropagationStrategy {
       return util.placeWinnerInQualifierOrAvailableSlot(nextGames, winner);
     }
 
+    // Si winner est null, on réinitialise le slot QUALIFIER
+    if (winner == null) {
+      if (targetSlot.isTeamA) {
+        targetGame.setTeamA(null);
+      } else {
+        targetGame.setTeamB(null);
+      }
+      return true;
+    }
+
     log.debug("[QualifierSlotPropagationStrategy] Placing winner (seed {}) in slot Q{} -> Game[{}].{}",
               winner.getSeed(), currentGameIndex + 1, targetSlot.gameIndex, targetSlot.isTeamA ? "TeamA" : "TeamB");
-
     if (targetSlot.isTeamA) {
       targetGame.setTeamA(winner);
     } else {
       targetGame.setTeamB(winner);
     }
-
     return true;
   }
 

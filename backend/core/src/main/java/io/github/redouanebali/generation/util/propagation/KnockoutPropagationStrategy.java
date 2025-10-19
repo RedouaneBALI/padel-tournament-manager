@@ -20,6 +20,18 @@ public class KnockoutPropagationStrategy implements PropagationStrategy {
     int idx = currentGameIndex / 2;
     if (idx < nextGames.size()) {
       Game ng = nextGames.get(idx);
+      // Si winner est null, on réinitialise le slot
+      if (currentGameIndex % 2 == 0) {
+        if (winner == null) {
+          ng.setTeamA(null);
+          return true;
+        }
+      } else {
+        if (winner == null) {
+          ng.setTeamB(null);
+          return true;
+        }
+      }
       return util.assignWinnerToSlot(ng, (currentGameIndex % 2 == 0), winner);
     }
     return false;
