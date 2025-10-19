@@ -9,6 +9,7 @@ import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.model.Tournament;
@@ -19,44 +20,44 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests pour la propagation des gagnants entre les rounds, notamment pour les qualifiers.
+ * Tests for winner propagation between rounds, especially for qualifiers.
  */
 class WinnerPropagationTest {
 
   @Test
   void testQualifierPropagation_winnersPlacedInCorrectOrder() {
-    // Given: Un tournoi avec Q2 (4 matchs) qui propage vers R32 (4 slots QUALIFIER)
-    // Configuration : preQual=16, nbQualifiers=4, mainDraw=32
-    // On doit avoir 28 équipes : 12 vont directement en R32, 16 passent par Q1
+    // Given: A tournament with Q2 (4 matches) propagating to R32 (4 QUALIFIER slots)
+    // Config: preQual=16, nbQualifiers=4, mainDraw=32
+    // There should be 28 teams: 12 go directly to R32, 16 go through Q1
     Tournament tournament = TestFixtures.makeTournament(16, 4, 32, 8, 4, io.github.redouanebali.model.format.DrawMode.SEEDED);
 
-    // Créer 28 équipes TOUTES avec des seeds (1-28)
+    // Create 28 teams ALL with seeds (1-28)
     List<PlayerPair> teams = TestFixtures.createPlayerPairs(28);
-    // Les équipes sont déjà créées avec seeds 1, 2, 3, ..., 28
+    // Teams are already created with seeds 1, 2, 3, ..., 28
 
-    // Générer le draw
+    // Generate the draw
     TournamentBuilder.setupAndPopulateTournament(tournament, teams);
 
-    // Récupérer Q1, Q2 et R32
+    // Get Q1, Q2 and R32
     Round q1Round  = tournament.getRoundByStage(Stage.Q1);
     Round q2Round  = tournament.getRoundByStage(Stage.Q2);
     Round r32Round = tournament.getRoundByStage(Stage.R32);
 
-    assertNotNull(q1Round, "Q1 doit exister");
-    assertNotNull(q2Round, "Q2 doit exister");
-    assertNotNull(r32Round, "R32 doit exister");
+    assertNotNull(q1Round, "Q1 must exist");
+    assertNotNull(q2Round, "Q2 must exist");
+    assertNotNull(r32Round, "R32 must exist");
 
-    // DEBUG : Afficher le contenu de Q1
+    // DEBUG: Display Q1 content
     long teamsInQ1 = q1Round.getGames().stream()
                             .flatMap(g -> java.util.stream.Stream.of(g.getTeamA(), g.getTeamB()))
                             .filter(p -> p != null && !p.isBye() && !p.isQualifier())
                             .count();
 
-    // Vérifier que Q1 contient bien des équipes
-    assertTrue(teamsInQ1 > 0, "Q1 doit contenir des équipes après génération du draw");
+    // Check that Q1 contains teams
+    assertTrue(teamsInQ1 > 0, "Q1 must contain teams after draw generation");
 
-    // Simuler les résultats de Q1 (8 matchs → 8 gagnants vers Q2)
-    // IMPORTANT : Utiliser TestFixtures.createScoreWithWinner() pour créer des scores valides
+    // Simulate Q1 results (8 matches → 8 winners to Q2)
+    // IMPORTANT: Use TestFixtures.createScoreWithWinner() to create valid scores
     for (Game game : q1Round.getGames()) {
       PlayerPair winner = null;
       if (game.getTeamA() != null && !game.getTeamA().isBye()) {
@@ -66,12 +67,12 @@ class WinnerPropagationTest {
       }
 
       if (winner != null) {
-        // Créer un score valide avec le gagnant
+        // Create a valid score with the winner
         game.setScore(TestFixtures.createScoreWithWinner(game, winner));
       }
     }
 
-    // Propager Q1 → Q2 (première propagation)
+    // Propagate Q1 → Q2 (first propagation)
     TournamentBuilder.propagateWinners(tournament);
 
     long teamsInQ2 = q2Round.getGames().stream()
@@ -79,15 +80,15 @@ class WinnerPropagationTest {
                             .filter(p -> p != null && !p.isBye() && !p.isQualifier())
                             .count();
 
-    // Vérifier que Q2 est rempli
-    assertTrue(teamsInQ2 > 0, "Q2 doit avoir des équipes après propagation depuis Q1");
+    // Check that Q2 is filled
+    assertTrue(teamsInQ2 > 0, "Q2 must have teams after propagation from Q1");
 
-    // Simuler les résultats de Q2 et générer des gagnants avec des scores valides
+    // Simulate Q2 results and generate winners with valid scores
     List<PlayerPair> q2Winners = new ArrayList<>();
     for (int i = 0; i < q2Round.getGames().size(); i++) {
       Game game = q2Round.getGames().get(i);
 
-      // Utiliser l'équipe A comme gagnante (ou B si A est null/BYE)
+      // Use team A as the winner (or B if A is null/BYE)
       PlayerPair winner = null;
       if (game.getTeamA() != null && !game.getTeamA().isBye()) {
         winner = game.getTeamA();
@@ -96,13 +97,13 @@ class WinnerPropagationTest {
       }
 
       if (winner != null) {
-        // Créer un score valide pour ce match
+        // Create a valid score for this match
         game.setScore(TestFixtures.createScoreWithWinner(game, winner));
         q2Winners.add(winner);
       }
     }
 
-    // Collecter les slots QUALIFIER dans R32 AVANT propagation
+    // Collect QUALIFIER slots in R32 BEFORE propagation
     List<QualifierSlotInfo> qualifierSlotsBefore = new ArrayList<>();
     for (int gameIdx = 0; gameIdx < r32Round.getGames().size(); gameIdx++) {
       Game game = r32Round.getGames().get(gameIdx);
@@ -115,10 +116,10 @@ class WinnerPropagationTest {
       }
     }
 
-    // When: Propager les gagnants de Q2 vers R32 (deuxième propagation)
+    // When: Propagate Q2 winners to R32 (second propagation)
     TournamentBuilder.propagateWinners(tournament);
 
-    // Then: Vérifier que chaque gagnant de Q2 est placé dans le bon ordre dans R32
+    // Then: Check that each Q2 winner is placed in the correct order in R32
     for (int i = 0; i < q2Winners.size() && i < qualifierSlotsBefore.size(); i++) {
       PlayerPair        expectedWinner = q2Winners.get(i);
       QualifierSlotInfo targetSlot     = qualifierSlotsBefore.get(i);
@@ -127,12 +128,12 @@ class WinnerPropagationTest {
       PlayerPair actualTeam = targetSlot.isTeamA ? r32Game.getTeamA() : r32Game.getTeamB();
 
       assertNotNull(actualTeam,
-                    String.format("Le slot R32[%d].%s ne doit pas être null après propagation",
+                    String.format("Slot R32[%d].%s must not be null after propagation",
                                   targetSlot.gameIndex, targetSlot.side));
 
       assertEquals(expectedWinner.getSeed(), actualTeam.getSeed(),
-                   String.format("Le gagnant du match Q2-%d (seed %d) doit être placé dans le slot Q%d (R32[%d].%s), " +
-                                 "mais on trouve seed %d",
+                   String.format("The winner of match Q2-%d (seed %d) must be placed in slot Q%d (R32[%d].%s), " +
+                                 "but found seed %d",
                                  i + 1,
                                  expectedWinner.getSeed(),
                                  i + 1,
@@ -141,14 +142,14 @@ class WinnerPropagationTest {
                                  actualTeam.getSeed()));
 
       assertEquals(expectedWinner.getPlayer1().getName(), actualTeam.getPlayer1().getName(),
-                   String.format("Le gagnant du match Q2-%d doit être correctement placé dans le slot Q%d",
+                   String.format("The winner of match Q2-%d must be correctly placed in slot Q%d",
                                  i + 1, i + 1));
     }
   }
 
   @Test
   void testQualifierPropagation_outOfOrderExecution() {
-    // Given: Un tournoi avec Q2 → R32
+    // Given: A tournament with Q2 → R32
     Tournament       tournament = TestFixtures.makeTournament(16, 4, 32, 8, 4, io.github.redouanebali.model.format.DrawMode.SEEDED);
     List<PlayerPair> teams      = TestFixtures.createPlayerPairs(16);
     TournamentBuilder.setupAndPopulateTournament(tournament, teams);
@@ -157,7 +158,7 @@ class WinnerPropagationTest {
     Round q2Round  = tournament.getRoundByStage(Stage.Q2);
     Round r32Round = tournament.getRoundByStage(Stage.R32);
 
-    // Simuler Q1 et propager vers Q2
+    // Simulate Q1 and propagate to Q2
     for (Game game : q1Round.getGames()) {
       if (game.getTeamA() != null && !game.getTeamA().isBye()) {
         game.setWinnerSide(TeamSide.TEAM_A);
@@ -165,7 +166,7 @@ class WinnerPropagationTest {
     }
     TournamentBuilder.propagateWinners(tournament);
 
-    // Créer 4 gagnants identifiables pour Q2
+    // Create 4 identifiable winners for Q2
     List<PlayerPair> q2Winners = new ArrayList<>();
     for (int i = 0; i < 4; i++) {
       PlayerPair winner = new PlayerPair();
@@ -175,9 +176,9 @@ class WinnerPropagationTest {
       q2Winners.add(winner);
     }
 
-    // Scénario : Les matchs se terminent dans le DÉSORDRE
-    // Match 4 termine en premier, puis Match 2, puis Match 1, puis Match 3
-    int[] executionOrder = {3, 1, 0, 2}; // Index des matchs qui se terminent dans cet ordre
+    // Scenario: Matches finish OUT OF ORDER
+    // Match 4 finishes first, then Match 2, then Match 1, then Match 3
+    int[] executionOrder = {3, 1, 0, 2}; // Indices of matches finishing in this order
 
     for (int execIdx = 0; execIdx < executionOrder.length; execIdx++) {
       int        matchIdx = executionOrder[execIdx];
@@ -187,11 +188,11 @@ class WinnerPropagationTest {
       game.setTeamB(PlayerPair.bye());
       game.setWinnerSide(TeamSide.TEAM_A);
 
-      // Propager immédiatement après chaque match
+      // Propagate immediately after each match
       TournamentBuilder.propagateWinners(tournament);
     }
 
-    // Then: Vérifier que les gagnants sont QUAND MÊME dans le bon ordre
+    // Then: Check that winners are STILL in the correct order
     List<QualifierSlotInfo> qualifierSlots = new ArrayList<>();
     for (int gameIdx = 0; gameIdx < r32Round.getGames().size(); gameIdx++) {
       Game game = r32Round.getGames().get(gameIdx);
@@ -209,18 +210,18 @@ class WinnerPropagationTest {
       Game              r32Game    = r32Round.getGames().get(slot.gameIndex);
       PlayerPair        actualTeam = slot.isTeamA ? r32Game.getTeamA() : r32Game.getTeamB();
 
-      int expectedMatchIndex = i; // Le slot Q1 doit contenir le gagnant du match Q2-1, etc.
+      int expectedMatchIndex = i; // Slot Q1 must contain the winner of match Q2-1, etc.
       int actualMatchIndex   = actualTeam.getSeed() - 200;
 
       assertEquals(expectedMatchIndex, actualMatchIndex,
-                   String.format("Le slot Q%d doit contenir le gagnant du match Q2-%d, mais contient le gagnant du match Q2-%d",
+                   String.format("Slot Q%d must contain the winner of match Q2-%d, but contains the winner of match Q2-%d",
                                  i + 1, expectedMatchIndex + 1, actualMatchIndex + 1));
     }
   }
 
   @Test
   void testWinnerModificationAndCancellation() {
-    // Given: Un tournoi simple avec R32 et R16
+    // Given: A simple tournament with R32 and R16
     Tournament tournament = TestFixtures.makeTournament(0, 0, 32, 0, 0, DrawMode.SEEDED);
 
     List<PlayerPair> teams = TestFixtures.createPlayerPairs(32);
@@ -232,7 +233,7 @@ class WinnerPropagationTest {
     assertNotNull(r32Round);
     assertNotNull(r16Round);
 
-    // Prendre le premier match de R32
+    // Take the first match of R32
     Game       game  = r32Round.getGames().get(0);
     PlayerPair teamA = game.getTeamA();
     PlayerPair teamB = game.getTeamB();
@@ -240,34 +241,41 @@ class WinnerPropagationTest {
     assertNotNull(teamA);
     assertNotNull(teamB);
 
-    // Définir le vainqueur comme teamA
+    // Set the winner as teamA
     game.setScore(TestFixtures.createScoreWithWinner(game, teamA));
     TournamentBuilder.propagateWinners(tournament);
 
-    // Vérifier que le vainqueur est propagé vers R16
+    // Check that the winner is propagated to R16
     Game       nextGame   = r16Round.getGames().get(0);
     PlayerPair propagated = nextGame.getTeamA();
-    assertEquals(teamA, propagated, "Le vainqueur teamA doit être propagé vers R16");
+    assertEquals(teamA, propagated, "The winner teamA must be propagated to R16");
 
-    // Modifier le vainqueur pour désigner teamB
+    // Change the winner to teamB
     game.setScore(TestFixtures.createScoreWithWinner(game, teamB));
     TournamentBuilder.propagateWinners(tournament);
 
-    // Vérifier que maintenant c'est teamB
+    // Check that now it's teamB
     propagated = nextGame.getTeamA();
-    assertEquals(teamB, propagated, "Le vainqueur modifié doit être teamB en R16");
+    assertEquals(teamB, propagated, "The modified winner must be teamB in R16");
 
-    // Annuler la victoire
+    // Cancel the victory
     game.setScore(null);
     TournamentBuilder.propagateWinners(tournament);
 
-    // Vérifier que le match suivant est réinitialisé
     propagated = nextGame.getTeamA();
-    assertNull(propagated, "Après annulation, le slot en R16 doit être réinitialisé");
+    assertNull(propagated, "After cancellation, the slot in R16 must be reset");
+
+    // Intermediate score: unfinished match, no winner
+    game.setScore(new Score()); // empty score, no winner
+    TournamentBuilder.propagateWinners(tournament);
+
+    // Check that no team is propagated
+    propagated = nextGame.getTeamA();
+    assertNull(propagated, "No team should be propagated until there is a winner");
   }
 
   /**
-   * Classe helper pour stocker l'info d'un slot QUALIFIER
+   * Helper class to store info about a QUALIFIER slot
    */
   private record QualifierSlotInfo(int gameIndex, boolean isTeamA, String side) {
 
