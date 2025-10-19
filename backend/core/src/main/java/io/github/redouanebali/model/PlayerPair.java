@@ -100,7 +100,7 @@ public class PlayerPair {
       return "BYE";
     }
     if (type == PairType.QUALIFIER) {
-      return player1.getName();
+      return player1 != null ? player1.getName() : "Q";
     }
     return (player1 != null && player2 != null)
            ? player1.getName() + " / " + player2.getName()
