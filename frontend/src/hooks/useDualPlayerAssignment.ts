@@ -89,6 +89,17 @@ export function useDualPlayerAssignment(
 
   // Move item from one list to another
   const moveBetweenLists = useCallback((fromList: 'qualif' | 'main', fromIndex: number, toList: 'qualif' | 'main', toIndex: number) => {
+    const persistOrder = async (newQualif: Array<PlayerPair | null>, newMain: Array<PlayerPair | null>) => {
+      // Concaténer les paires non nulles dans l'ordre qualif puis main
+      const orderedPairs = [...newQualif, ...newMain].filter(Boolean) as PlayerPair[];
+      try {
+        await savePlayerPairs((tournament as any)?.id, orderedPairs);
+      } catch (e) {
+        // Optionnel : afficher une erreur ou logger
+        // toast.error("Erreur lors de la sauvegarde de l'ordre des paires");
+      }
+    };
+
     if (fromList === toList) {
       // Same list, swap
       const setter = fromList === 'qualif' ? setQualifSlots : setMainSlots;
@@ -109,6 +120,8 @@ export function useDualPlayerAssignment(
           },
         }));
       }
+      // Sauvegarder l'ordre
+      persistOrder(fromList === 'qualif' ? newSlots : qualifSlots, fromList === 'main' ? newSlots : mainSlots);
     } else {
       // Different lists, swap
       const fromSetter = fromList === 'qualif' ? setQualifSlots : setMainSlots;
@@ -120,25 +133,26 @@ export function useDualPlayerAssignment(
       const itemTo = toGetter[toIndex];
 
       const newFrom = [...fromGetter];
-      newFrom[fromIndex] = itemTo;
       const newTo = [...toGetter];
+      newFrom[fromIndex] = itemTo;
       newTo[toIndex] = itemFrom;
 
       fromSetter(newFrom);
       toSetter(newTo);
 
-      // Dispatch updated slots
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('qualifko:pairs-reordered', {
           detail: {
             tournamentId: (tournament as any)?.id,
-            qualifSlots: fromList === 'qualif' ? newFrom : newTo,
-            mainSlots: fromList === 'main' ? newFrom : newTo,
+            qualifSlots: toList === 'qualif' ? newTo : newFrom,
+            mainSlots: toList === 'main' ? newTo : newFrom,
           },
         }));
       }
+      // Sauvegarder l'ordre
+      persistOrder(toList === 'qualif' ? newTo : newFrom, toList === 'main' ? newTo : newFrom);
     }
-  }, [qualifSlots, mainSlots, tournament.id]);
+  }, [qualifSlots, mainSlots, tournament]);
 
   // Drag and drop handlers
   const onDragStart = useCallback((list: 'qualif' | 'main', index: number) => (e: React.DragEvent<HTMLLIElement>) => {
@@ -157,6 +171,7 @@ export function useDualPlayerAssignment(
     setHoveredList(list);
   }, []);
 
+  // Ajout de la sauvegarde explicite lors d'une action utilisateur (drag & drop effectif)
   const performDrop = useCallback((targetList: 'qualif' | 'main', targetIndex: number, e: React.DragEvent) => {
     e.preventDefault();
     const data = e.dataTransfer.getData('text/plain');
@@ -274,15 +289,6 @@ export function useDualPlayerAssignment(
       cancelAutoScroll();
     };
   }, [cancelAutoScroll]);
-
-  // Ajout d'un effet pour sauvegarder à chaque drag & drop
-  useEffect(() => {
-    const allPairs: PlayerPair[] = [...qualifSlots, ...mainSlots].filter((p): p is PlayerPair => !!p);
-    // On sauvegarde l'ordre même si certains slots sont vides
-    if ((qualifSlots.length > 0 || mainSlots.length > 0) && allPairs.length > 0) {
-      savePlayerPairs((tournament as any)?.id, allPairs);
-    }
-  }, [qualifSlots, mainSlots, tournament]);
 
   return {
     qualifSlots,

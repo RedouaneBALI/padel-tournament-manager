@@ -244,6 +244,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
       setPairs(pairs);
       // Ne sauvegarde que si toutes les paires sont valides et non vides
       if (pairs.length > 0 && pairs.every(isValidPlayerPair)) {
+        console.log("Save from AdminTournamentSetupTab.tsx");
         await savePlayerPairs(tournamentId, pairs);
       }
     };

@@ -64,7 +64,7 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
           displaySeed: seed.toString(),
         };
       });
-
+      console.log("save from PlayerPairsTextarea.tsx");
       await savePlayerPairs(tournamentId, pairs);
       if (onSaveSuccess) onSaveSuccess();
     } catch {

@@ -19,4 +19,10 @@ public class CreatePlayerPairRequest {
     this.player1Name = player1Name;
     this.player2Name = player2Name;
   }
+
+  public CreatePlayerPairRequest(String player1Name, String player2Name, Integer seed) {
+    this.player1Name = player1Name;
+    this.player2Name = player2Name;
+    this.seed        = seed;
+  }
 }

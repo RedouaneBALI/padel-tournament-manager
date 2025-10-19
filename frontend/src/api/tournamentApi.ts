@@ -178,6 +178,7 @@ export async function updateTournament(tournamentId: string, updatedTournament: 
 }
 
 export async function savePlayerPairs(tournamentId: string, pairs: PlayerPair[]) {
+  console.log("savePlayerPairs");
   const response = await fetchWithAuth(api(`/admin/tournaments/${tournamentId}/pairs`), {
     method: 'POST',
     body: JSON.stringify(pairs),

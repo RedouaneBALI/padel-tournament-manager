@@ -71,7 +71,7 @@ class PlayerPairServiceTest {
     when(tournamentMapper.toPlayerPairList(pairs)).thenReturn(
         List.of(new PlayerPair("Alice", "Bob", 1), new PlayerPair("Charlie", "Dave", 2))
     );
-    when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
+    when(tournamentRepository.findByIdWithLock(1L)).thenReturn(Optional.of(tournament));
     when(tournamentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
     Tournament updated = playerPairService.addPairs(1L, pairs);
@@ -81,7 +81,7 @@ class PlayerPairServiceTest {
 
   @Test
   void testAddPairs_shouldThrowIfTournamentNotFound() {
-    when(tournamentRepository.findById(1L)).thenReturn(Optional.empty());
+    when(tournamentRepository.findByIdWithLock(1L)).thenReturn(Optional.empty());
     assertThrows(IllegalArgumentException.class, this::addPairsToTournament);
   }
 
@@ -119,7 +119,7 @@ class PlayerPairServiceTest {
     pair.setId(10L);
     tournament.getPlayerPairs().add(pair);
 
-    when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
+    when(tournamentRepository.findByIdWithLock(1L)).thenReturn(Optional.of(tournament));
     when(tournamentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
     playerPairService.updatePlayerPair(1L, 10L, "New1", "New2", 5);
@@ -140,7 +140,7 @@ class PlayerPairServiceTest {
     byePair.setId(11L);
     tournament.getPlayerPairs().add(byePair);
 
-    when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
+    when(tournamentRepository.findByIdWithLock(1L)).thenReturn(Optional.of(tournament));
 
     assertThrows(IllegalStateException.class,
                  () -> playerPairService.updatePlayerPair(1L, 11L, "Someone", null, null));
@@ -173,7 +173,7 @@ class PlayerPairServiceTest {
     when(tournamentMapper.toPlayerPairList(requests)).thenReturn(
         requests.stream().map(r -> new PlayerPair(r.getPlayer1Name(), r.getPlayer2Name(), r.getSeed())).toList()
     );
-    when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
+    when(tournamentRepository.findByIdWithLock(1L)).thenReturn(Optional.of(tournament));
     when(tournamentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
     Tournament updated = playerPairService.addPairs(1L, requests);
@@ -217,7 +217,7 @@ class PlayerPairServiceTest {
     when(tournamentMapper.toPlayerPairList(requests)).thenReturn(
         requests.stream().map(r -> new PlayerPair(r.getPlayer1Name(), r.getPlayer2Name(), r.getSeed())).toList()
     );
-    when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
+    when(tournamentRepository.findByIdWithLock(1L)).thenReturn(Optional.of(tournament));
     when(tournamentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
     Tournament updated = playerPairService.addPairs(1L, requests);
@@ -251,7 +251,7 @@ class PlayerPairServiceTest {
     when(tournamentMapper.toPlayerPairList(requests)).thenReturn(
         requests.stream().map(r -> new PlayerPair(r.getPlayer1Name(), r.getPlayer2Name(), r.getSeed())).toList()
     );
-    when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
+    when(tournamentRepository.findByIdWithLock(1L)).thenReturn(Optional.of(tournament));
     when(tournamentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
     Tournament updated = playerPairService.addPairs(1L, requests);

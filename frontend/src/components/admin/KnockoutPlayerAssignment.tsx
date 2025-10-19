@@ -54,7 +54,6 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
       <p className="text-sm text-center text-tab-inactive m-2">
         Faites glisser les équipes pour les ordonner.
       </p>
-
       <div className="flex items-center">
         <div className="h-px flex-1 bg-border my-2" />
         <h3 className="text-s sm:text-sm uppercase tracking-wider text-muted-foreground select-none px-4">

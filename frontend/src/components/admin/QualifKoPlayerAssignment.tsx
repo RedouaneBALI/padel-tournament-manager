@@ -50,7 +50,6 @@ export default function QualifKoPlayerAssignment({ tournament, playerPairs }: Pr
       <p className="text-sm text-center text-tab-inactive m-2">
         Faites glisser les équipes entre les tableaux pour les ordonner.
       </p>
-
       {/* Qualif Section */}
       <div className="mb-8">
         <div className="flex items-center">
@@ -60,7 +59,6 @@ export default function QualifKoPlayerAssignment({ tournament, playerPairs }: Pr
           </h3>
           <div className="h-px flex-1 bg-border my-2" />
         </div>
-
         <div className="rounded-md border border-border bg-card divide-y">
           {Array.from({ length: qualifMatchesCount }).map((_, matchIndex) => {
             const slotIndexA = matchIndex * 2;
@@ -104,7 +102,6 @@ export default function QualifKoPlayerAssignment({ tournament, playerPairs }: Pr
           })}
         </div>
       </div>
-
       {/* Main Draw Section */}
       <div>
         <div className="flex items-center">
