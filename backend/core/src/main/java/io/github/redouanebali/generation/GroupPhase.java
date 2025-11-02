@@ -15,7 +15,8 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 
 /**
- * Groups/Poules phase handling - distributes teams into pools for round-robin play. Note: Use ManualDrawStrategy for new implementations.
+ * Groups/Poules phase handling - distributes teams into pools for round-robin play. Teams are placed manually via
+ * TournamentBuilder.setupTournamentWithInitialRounds().
  */
 @AllArgsConstructor
 public class GroupPhase implements TournamentPhase {
