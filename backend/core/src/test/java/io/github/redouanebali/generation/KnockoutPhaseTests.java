@@ -95,7 +95,7 @@ class KnockoutPhaseTests {
    * non-null teams in the next round equals (Matches + DefaultQualif) FINAL rows are ignored (no subsequent round). Stage is resolved via
    * Stage.valueOf(roundName.toUpperCase()).
    */
-  @ParameterizedTest(name = "CSV propagateWinners: {0} �� round={8}")
+  @ParameterizedTest(name = "CSV propagateWinners: {0} -> round={8}")
   @CsvFileSource(resources = "/io.github.redouanebali/tournament_scenarios.csv", numLinesToSkip = 1)
   void testPropagateWinners_FromCsvRow(String tournamentId,
                                        int nbPlayerPairs,

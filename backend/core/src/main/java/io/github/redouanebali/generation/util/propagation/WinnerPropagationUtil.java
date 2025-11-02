@@ -30,76 +30,114 @@ public class WinnerPropagationUtil {
    * Propagate winners from one round to the next Réinitialise d'abord les slots dépendants, puis propage les vainqueurs.
    */
   private void propagateFromRoundToNext(Round currentRound, Round nextRound) {
-    if (currentRound == null || nextRound == null) {
+    if (!canPropagateRounds(currentRound, nextRound)) {
       return;
     }
 
     final List<Game> curGames  = currentRound.getGames();
     final List<Game> nextGames = nextRound.getGames();
-    if (curGames == null || nextGames == null || nextGames.isEmpty()) {
-      return;
-    }
 
-    final boolean currentEmpty = curGames.stream().allMatch(g -> g.getTeamA() == null && g.getTeamB() == null);
-    if (currentEmpty) {
+    if (isCurrentRoundEmpty(curGames)) {
       return;
     }
 
     PropagationStrategy strategy = determinePropagationStrategy(curGames.size(), nextGames.size());
 
-    // --- Knockout : réinitialiser tous les slots du tour suivant ---
-    if (strategy instanceof KnockoutPropagationStrategy) {
-      for (int i = 0; i < curGames.size(); i++) {
-        int idx = i / 2;
-        if (idx < nextGames.size()) {
-          Game ng = nextGames.get(idx);
-          if (i % 2 == 0) {
-            ng.setTeamA(null);
-          } else {
-            ng.setTeamB(null);
-          }
-        }
-      }
+    resetNextRoundSlots(strategy, curGames, nextGames);
+    propagateWinnersToNextRound(strategy, curGames, nextGames);
+  }
+
+  /**
+   * Check if rounds can be propagated
+   */
+  private boolean canPropagateRounds(Round currentRound, Round nextRound) {
+    if (currentRound == null || nextRound == null) {
+      return false;
     }
-    // --- Qualifier : réinitialiser tous les slots QUALIFIER ---
-    if (strategy instanceof QualifierSlotPropagationStrategy) {
-      for (Game ng : nextGames) {
-        if (ng.getTeamA() != null && ng.getTeamA().getType() == PairType.QUALIFIER) {
+
+    final List<Game> curGames  = currentRound.getGames();
+    final List<Game> nextGames = nextRound.getGames();
+
+    return curGames != null && nextGames != null && !nextGames.isEmpty();
+  }
+
+  /**
+   * Check if current round is empty
+   */
+  private boolean isCurrentRoundEmpty(List<Game> curGames) {
+    return curGames.stream().allMatch(g -> g.getTeamA() == null && g.getTeamB() == null);
+  }
+
+  /**
+   * Reset slots in next round based on strategy
+   */
+  private void resetNextRoundSlots(PropagationStrategy strategy, List<Game> curGames, List<Game> nextGames) {
+    if (strategy instanceof KnockoutPropagationStrategy) {
+      resetKnockoutSlots(curGames, nextGames);
+    } else if (strategy instanceof QualifierSlotPropagationStrategy) {
+      resetQualifierSlots(nextGames);
+    }
+  }
+
+  /**
+   * Reset knockout slots
+   */
+  private void resetKnockoutSlots(List<Game> curGames, List<Game> nextGames) {
+    for (int i = 0; i < curGames.size(); i++) {
+      int idx = i / 2;
+      if (idx < nextGames.size()) {
+        Game ng = nextGames.get(idx);
+        if (i % 2 == 0) {
           ng.setTeamA(null);
-        }
-        if (ng.getTeamB() != null && ng.getTeamB().getType() == PairType.QUALIFIER) {
+        } else {
           ng.setTeamB(null);
         }
       }
     }
+  }
 
-    for (int i = 0; i < curGames.size(); i++) {
-      final Game currentGame = curGames.get(i);
-      PlayerPair winner      = currentGame.getWinner();
-      if (winner == null) {
-        boolean teamABye = currentGame.getTeamA() != null && currentGame.getTeamA().isBye();
-        boolean teamBBye = currentGame.getTeamB() != null && currentGame.getTeamB().isBye();
-        if (teamABye && teamBBye) {
-          winner = PlayerPair.bye();
-        }
+  /**
+   * Reset qualifier slots
+   */
+  private void resetQualifierSlots(List<Game> nextGames) {
+    for (Game ng : nextGames) {
+      if (ng.getTeamA() != null && ng.getTeamA().getType() == PairType.QUALIFIER) {
+        ng.setTeamA(null);
       }
+      if (ng.getTeamB() != null && ng.getTeamB().getType() == PairType.QUALIFIER) {
+        ng.setTeamB(null);
+      }
+    }
+  }
+
+  /**
+   * Propagate all winners to next round
+   */
+  private void propagateWinnersToNextRound(PropagationStrategy strategy, List<Game> curGames, List<Game> nextGames) {
+    for (int i = 0; i < curGames.size(); i++) {
+      PlayerPair winner = determineWinner(curGames.get(i));
       strategy.placeWinner(nextGames, i, winner);
     }
   }
 
   /**
-   * Vérifie si une équipe du tour suivant dépend d'un match du tour courant (par référence).
+   * Determine winner of a game (handles BYE vs BYE case)
    */
-  private boolean isDependentOnCurrentRound(PlayerPair team, List<Game> curGames) {
-    if (team == null) {
-      return false;
+  private PlayerPair determineWinner(Game currentGame) {
+    PlayerPair winner = currentGame.getWinner();
+    if (winner == null && isByeVsBye(currentGame)) {
+      winner = PlayerPair.bye();
     }
-    for (Game g : curGames) {
-      if (team == g.getWinner()) {
-        return true;
-      }
-    }
-    return false;
+    return winner;
+  }
+
+  /**
+   * Check if game is BYE vs BYE
+   */
+  private boolean isByeVsBye(Game game) {
+    boolean teamABye = game.getTeamA() != null && game.getTeamA().isBye();
+    boolean teamBBye = game.getTeamB() != null && game.getTeamB().isBye();
+    return teamABye && teamBBye;
   }
 
   /**
@@ -111,29 +149,6 @@ public class WinnerPropagationUtil {
     } else {
       return new QualifierSlotPropagationStrategy(this);
     }
-  }
-
-  /**
-   * Check if a winner should be propagated
-   */
-  private boolean shouldPropagateWinner(PlayerPair winner, Game currentGame, List<Game> nextGames) {
-    // Skip if no winner determined
-    if (winner == null) {
-      return false;
-    }
-
-    // Special case: BYE vs BYE should propagate a BYE
-    boolean teamABye   = currentGame.getTeamA() != null && currentGame.getTeamA().isBye();
-    boolean teamBBye   = currentGame.getTeamB() != null && currentGame.getTeamB().isBye();
-    boolean isByeVsBye = teamABye && teamBBye;
-
-    // Skip BYE winners unless it's from a BYE vs BYE match
-    if (winner.isBye() && !isByeVsBye) {
-      return false;
-    }
-
-    // Avoid duplicate placement
-    return !isAlreadyAssignedInNextByReference(nextGames, winner);
   }
 
   /**
@@ -182,15 +197,4 @@ public class WinnerPropagationUtil {
     return false;
   }
 
-  /**
-   * Checks by reference (==) if the winner is already assigned anywhere in nextGames.
-   */
-  private boolean isAlreadyAssignedInNextByReference(List<Game> nextGames, PlayerPair winner) {
-    for (Game g : nextGames) {
-      if (g.getTeamA() == winner || g.getTeamB() == winner) {
-        return true;
-      }
-    }
-    return false;
-  }
 }

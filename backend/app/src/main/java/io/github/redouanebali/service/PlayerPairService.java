@@ -1,16 +1,12 @@
 package io.github.redouanebali.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
 import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.model.format.TournamentFormat;
 import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -79,7 +75,6 @@ public class PlayerPairService {
     Tournament tournament = tournamentRepository.findById(tournamentId)
                                                 .orElseThrow(() -> new IllegalArgumentException(TOURNAMENT_NOT_FOUND));
     if (includeByes) {
-      //List<PlayerPair> pairs = reorderPairsWithByesAndQualifiersAtCorrectPositions(tournament);
       List<PlayerPair> pairs = tournament.getPlayerPairs();
       if (!includeQualified) {
         return pairs.stream().filter(pp -> !pp.isQualifier()).toList();
@@ -89,148 +84,6 @@ public class PlayerPairService {
       return tournament.getPlayerPairs().stream()
                        .filter(pp -> !pp.isBye() && (includeQualified || !pp.isQualifier()))
                        .toList();
-    }
-  }
-
-  /**
-   * Reorders player pairs by inserting BYEs and QUALIFIERS at the correct absolute positions. Uses bye_positions.json to determine where BYEs should
-   * be placed.
-   */
-  private List<PlayerPair> reorderPairsWithByesAndQualifiersAtCorrectPositions(Tournament tournament) {
-    List<PlayerPair> allPairs;
-    List<PlayerPair> preQualPairs = new ArrayList<>();
-    if (tournament.getConfig().getFormat() == TournamentFormat.QUALIF_KO) {
-      Integer preQualDrawSize = tournament.getConfig().getPreQualDrawSize();
-      if (preQualDrawSize != null && preQualDrawSize < tournament.getPlayerPairs().size()) {
-        preQualPairs = new ArrayList<>(tournament.getPlayerPairs().subList(0, preQualDrawSize));
-        allPairs     = new ArrayList<>(tournament.getPlayerPairs().subList(preQualDrawSize, tournament.getPlayerPairs().size()));
-      } else {
-        allPairs = new ArrayList<>(tournament.getPlayerPairs());
-      }
-    } else {
-      allPairs = new ArrayList<>(tournament.getPlayerPairs());
-    }
-    Integer mainDrawSize = tournament.getConfig().getMainDrawSize();
-    Integer nbSeeds      = tournament.getConfig().getNbSeeds();
-
-    if (!isValidDrawConfiguration(mainDrawSize, nbSeeds)) {
-      return tournament.getPlayerPairs(); // Return all pairs if config invalid
-    }
-
-    List<PlayerPair> realPairs = allPairs.stream().filter(pp -> !pp.isBye()).toList();
-    List<PlayerPair> byePairs  = allPairs.stream().filter(PlayerPair::isBye).toList();
-
-    List<PlayerPair> reorderedMainDraw;
-    if (byePairs.isEmpty()) {
-      reorderedMainDraw = realPairs;
-    } else {
-      reorderedMainDraw = buildReorderedPairsList(mainDrawSize, nbSeeds, realPairs, byePairs);
-    }
-
-    // For QUALIF_KO, prepend preQual pairs
-    if (!preQualPairs.isEmpty()) {
-      List<PlayerPair> fullList = new ArrayList<>(preQualPairs);
-      fullList.addAll(reorderedMainDraw);
-      return fullList;
-    } else {
-      return reorderedMainDraw;
-    }
-  }
-
-  /**
-   * Validates that the draw configuration has valid mainDrawSize and nbSeeds values.
-   */
-  private boolean isValidDrawConfiguration(Integer mainDrawSize, Integer nbSeeds) {
-    return mainDrawSize != null && mainDrawSize > 0 && nbSeeds != null && nbSeeds > 0;
-  }
-
-  /**
-   * Builds the reordered list of pairs with BYEs at correct positions.
-   */
-  private List<PlayerPair> buildReorderedPairsList(int mainDrawSize, int nbSeeds, List<PlayerPair> realPairs, List<PlayerPair> byePairs) {
-    List<Integer>          byePositions   = loadByePositionsFromJson(mainDrawSize, nbSeeds, byePairs.size());
-    java.util.Set<Integer> byePositionSet = new java.util.HashSet<>(byePositions);
-    PlayerPair[]           resultArray    = new PlayerPair[mainDrawSize];
-
-    fillResultArrayWithPairs(resultArray, byePositionSet, realPairs, byePairs);
-
-    return convertArrayToList(resultArray);
-  }
-
-  /**
-   * Fills the result array with BYEs and real pairs at their correct positions.
-   */
-  private void fillResultArrayWithPairs(PlayerPair[] resultArray, java.util.Set<Integer> byePositionSet,
-                                        List<PlayerPair> realPairs, List<PlayerPair> byePairs) {
-    int byeIndex  = 0;
-    int realIndex = 0;
-
-    for (int position = 0; position < resultArray.length; position++) {
-      if (byePositionSet.contains(position)) {
-        byeIndex = placePairAtPosition(resultArray, position, byePairs, byeIndex);
-      } else {
-        realIndex = placePairAtPosition(resultArray, position, realPairs, realIndex);
-      }
-    }
-  }
-
-  /**
-   * Places a pair at a specific position in the result array if available. Returns the updated index.
-   */
-  private int placePairAtPosition(PlayerPair[] resultArray, int position, List<PlayerPair> pairs, int currentIndex) {
-    if (currentIndex < pairs.size()) {
-      resultArray[position] = pairs.get(currentIndex);
-      return currentIndex + 1;
-    }
-    return currentIndex;
-  }
-
-  /**
-   * Converts the result array to a list, filtering out null values.
-   */
-  private List<PlayerPair> convertArrayToList(PlayerPair[] resultArray) {
-    List<PlayerPair> result = new ArrayList<>(resultArray.length);
-    for (PlayerPair pair : resultArray) {
-      if (pair != null) {
-        result.add(pair);
-      }
-    }
-    return result;
-  }
-
-  /**
-   * Loads BYE positions from bye_positions.json file. Similar to SeedPlacementUtil.getSeedsPositions() but for BYEs.
-   */
-  private List<Integer> loadByePositionsFromJson(int drawSize, int nbSeeds, int nbByes) {
-    try {
-      ObjectMapper        mapper = new ObjectMapper();
-      java.io.InputStream is     = getClass().getClassLoader().getResourceAsStream("bye_positions.json");
-
-      if (is == null) {
-        log.warn("bye_positions.json not found, returning empty list");
-        return new ArrayList<>();
-      }
-
-      JsonNode root = mapper.readTree(is);
-      JsonNode byePositionsNode = root.path(String.valueOf(drawSize))
-                                      .path(String.valueOf(nbSeeds))
-                                      .path(String.valueOf(nbByes));
-
-      if (byePositionsNode.isMissingNode()) {
-        log.warn("No BYE positions found for drawSize={}, nbSeeds={}, nbByes={}", drawSize, nbSeeds, nbByes);
-        return new ArrayList<>();
-      }
-
-      List<Integer> positions = new ArrayList<>();
-      for (JsonNode position : byePositionsNode) {
-        positions.add(position.asInt());
-      }
-
-      return positions;
-
-    } catch (Exception e) {
-      log.error("Failed to load BYE positions from JSON", e);
-      return new ArrayList<>();
     }
   }
 

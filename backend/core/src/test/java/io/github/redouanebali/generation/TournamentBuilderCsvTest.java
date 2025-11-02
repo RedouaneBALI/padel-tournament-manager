@@ -36,7 +36,7 @@ class TournamentBuilderCsvTest {
 
   // --- Provider that groups CSV rows by TournamentId ---
   static Stream<Arguments> tournamentsFromCsv() throws Exception {
-    URL url = TournamentBuilderTest.class.getResource("/io.github.redouanebali/tournament_scenarios.csv");
+    URL url = TournamentBuilderCsvTest.class.getResource("/io.github.redouanebali/tournament_scenarios.csv");
     if (url == null) {
       throw new IllegalStateException("tournament_scenarios.csv not found in test resources");
     }
@@ -61,7 +61,7 @@ class TournamentBuilderCsvTest {
 
   // --- Provider for group KO CSV ---
   static Stream<Arguments> tournamentsFromGroupsCsv() throws Exception {
-    URL url = TournamentBuilderTest.class.getResource("/io.github.redouanebali/tournament_scenarios_groups.csv");
+    URL url = TournamentBuilderCsvTest.class.getResource("/io.github.redouanebali/tournament_scenarios_groups.csv");
     if (url == null) {
       throw new IllegalStateException("tournament_scenarios_groups.csv not found in test resources");
     }
