@@ -6,5 +6,5 @@ export interface PlayerPair {
   player1Name: string;
   player2Name: string;
   type: PairType;
-  displaySeed: string;
+  displaySeed?: string;
 }

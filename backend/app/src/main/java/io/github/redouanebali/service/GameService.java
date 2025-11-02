@@ -29,6 +29,7 @@ public class GameService {
    * @return update result containing finish status and winner information
    * @throws IllegalArgumentException if tournament or game is not found
    */
+  @Transactional
   public UpdateScoreDTO updateGameScore(Long tournamentId, Long gameId, Score score) {
     Tournament tournament = tournamentService.getTournamentById(tournamentId);
     Game       game       = findGameInTournament(tournament, gameId);

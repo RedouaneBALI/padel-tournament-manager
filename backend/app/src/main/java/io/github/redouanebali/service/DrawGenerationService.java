@@ -8,6 +8,7 @@ import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
+import jakarta.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +26,7 @@ public class DrawGenerationService {
 
   private final TournamentRepository tournamentRepository;
   private final SecurityProps        securityProps;
+  private final EntityManager        entityManager;
 
   public static List<PlayerPair> capPairsToMax(Tournament tournament) {
     List<PlayerPair> pairs    = tournament.getPlayerPairs();
@@ -45,6 +48,7 @@ public class DrawGenerationService {
     return new ArrayList<>(pairs.subList(0, maxPairs));
   }
 
+  @Transactional
   public Tournament generateDrawManual(Tournament tournament, List<RoundRequest> initialRounds) {
     assertCanInitialize(tournament);
 
@@ -62,11 +66,23 @@ public class DrawGenerationService {
     collectAndPersistQualifiers(tournament);
 
     log.info("Generated draw (manual) for tournament id {}", tournament.getId());
-    return tournamentRepository.save(tournament);
+    Tournament saved = tournamentRepository.save(tournament);
+
+    // CRITICAL: Force flush to database before returning
+    // This ensures data is persisted immediately, especially important for remote databases (Cloud SQL)
+    // Without this, H2 works fine but Cloud SQL may have latency issues
+    entityManager.flush();
+
+    log.debug("Flushed tournament {} to database", saved.getId());
+    return saved;
   }
 
+  @Transactional
   public void propagateWinners(Tournament tournament) {
     TournamentBuilder.propagateWinners(tournament);
+    // Ensure changes are flushed to database
+    entityManager.flush();
+    log.debug("Propagated and flushed winners for tournament {}", tournament.getId());
   }
 
   private void collectAndPersistQualifiers(Tournament tournament) {

@@ -22,7 +22,7 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
     setIsLoading(true);
     try {
       const data = await fetchPairs(tournamentId, false, false);
-      setText(data.map(pair => `${pair.player1Name},${pair.player2Name},${pair.displaySeed}`).join('\n'));
+      setText(data.map(pair => `${pair.player1Name},${pair.player2Name}${pair.displaySeed ? ',' + pair.displaySeed : ''}`).join('\n'));
       if (onPairsChange) onPairsChange(data);
     } catch (e: any) {
       toast.error(e?.message ?? 'Impossible de charger les paires.');
@@ -52,17 +52,23 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
         const p2 = tokens[1] ?? '';
         const seedRaw = tokens[2];
 
-        // If a 3rd token exists and is a valid number, use it as seed; otherwise fallback to index+1
+        // Only use seed if a 3rd token exists and is a valid number
         const parsedSeed = seedRaw !== undefined && seedRaw !== '' ? Number(seedRaw) : NaN;
-        const seed = Number.isFinite(parsedSeed) ? (parsedSeed as number) : (index + 1);
+        const hasSeed = Number.isFinite(parsedSeed);
 
-        return {
+        const pair: PlayerPair = {
           player1Name: p1,
           player2Name: p2,
-          seed,
           type: 'NORMAL' as const,
-          displaySeed: seed.toString(),
         };
+
+        // Only include seed and displaySeed if explicitly specified
+        if (hasSeed) {
+          pair.seed = parsedSeed as number;
+          pair.displaySeed = parsedSeed.toString();
+        }
+
+        return pair;
       });
       console.log("save from PlayerPairsTextarea.tsx");
       await savePlayerPairs(tournamentId, pairs);
