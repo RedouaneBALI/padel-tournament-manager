@@ -688,4 +688,134 @@ class TournamentBuilderTest {
       }
     }
   }
+
+  /**
+   * BUG REPRODUCTION TEST: Main draw incorrectly includes all qualification teams instead of placeholders.
+   *
+   * Scenario: QUALIF_KO tournament with: - 16 teams in qualification for 4 qualifying spots - 32 teams in main draw (28 direct entries + 4
+   * qualifiers) - Total: 48 teams
+   *
+   * Expected behavior: - Q1 round: 16 teams (all qualif teams) - R32 round: 32 slots with: - 20 direct entry teams (seeds + non-seeds) - 4 QUALIFIED
+   * placeholders (for winners from qualif) - 8 BYE placeholders
+   *
+   * Current bug: All 16 qualif teams are incorrectly placed in the main draw R32.
+   */
+  @Test
+  void testBugMainDrawIncludesAllQualifTeamsInsteadOfPlaceholders() {
+    // Given: QUALIF_KO tournament with 16 qualif -> 4 places, 32 main draw
+    int preQualDrawSize = 16;
+    int nbQualifiers    = 4;
+    int mainDrawSize    = 32;
+    int nbSeedsMain     = 8;
+    int nbSeedsQualify  = 4;
+
+    Tournament tournament = TestFixtures.makeTournament(
+        preQualDrawSize,
+        nbQualifiers,
+        mainDrawSize,
+        nbSeedsMain,
+        nbSeedsQualify,
+        DrawMode.MANUAL
+    );
+
+    // Create 36 player pairs: 16 for qualif + 20 direct entries for main draw
+    // Main draw calculation: 32 slots - 4 qualifiers - 8 BYEs = 20 direct entries
+    // Total: 16 (qualif) + 20 (direct) = 36 teams
+    int              totalTeams  = 36;
+    List<PlayerPair> playerPairs = TestFixtures.createPlayerPairs(totalTeams);
+
+    // When: Setup and populate tournament
+    TournamentBuilder.setupAndPopulateTournament(tournament, playerPairs);
+
+    System.out.println("=== SETUP COMPLETE - ANALYZING RESULTS ===");
+    System.out.println("Total player pairs provided: " + totalTeams);
+    System.out.println("Config - preQualDrawSize: " + preQualDrawSize);
+    System.out.println("Config - nbQualifiers: " + nbQualifiers);
+    System.out.println("Config - mainDrawSize: " + mainDrawSize);
+    System.out.println("Expected: 16 in Q1, 20 direct + 4 QUALIFIED + 8 BYE in R32");
+
+    // Then: Verify qualification round Q1
+    Round q1Round = tournament.getRoundByStage(Stage.Q1);
+    long teamsInQ1 = q1Round.getGames().stream()
+                            .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                            .filter(Objects::nonNull)
+                            .filter(p -> !p.isBye())
+                            .count();
+    System.out.println("Q1 - Real teams: " + teamsInQ1);
+    assertEquals(16, teamsInQ1, "Q1 should have exactly 16 teams from qualification");
+
+    // Then: Verify main draw R32
+    Round r32Round = tournament.getRoundByStage(Stage.R32);
+
+    // Count QUALIFIED placeholders (should be exactly nbQualifiers = 4)
+    long qualifiedPlaceholdersInR32 = r32Round.getGames().stream()
+                                              .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                              .filter(Objects::nonNull)
+                                              .filter(PlayerPair::isQualifier)
+                                              .count();
+    System.out.println("R32 - QUALIFIED placeholders: " + qualifiedPlaceholdersInR32);
+
+    // Count BYE placeholders (should be exactly 8 for a 32-team draw with 20 direct entries + 4 qualifiers)
+    long byesInR32 = r32Round.getGames().stream()
+                             .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                             .filter(Objects::nonNull)
+                             .filter(PlayerPair::isBye)
+                             .count();
+    System.out.println("R32 - BYE placeholders: " + byesInR32);
+
+    long realTeamsInR32 = r32Round.getGames().stream()
+                                  .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                  .filter(Objects::nonNull)
+                                  .filter(p -> !p.isBye() && !p.isQualifier())
+                                  .count();
+    System.out.println("R32 - Real teams (direct entries): " + realTeamsInR32);
+    System.out.println("R32 - Total: " + (qualifiedPlaceholdersInR32 + byesInR32 + realTeamsInR32));
+
+    assertEquals(nbQualifiers, qualifiedPlaceholdersInR32,
+                 "R32 must have exactly " + nbQualifiers + " QUALIFIED placeholders, not all qualification teams");
+    assertEquals(8, byesInR32, "R32 should have exactly 8 BYE placeholders");
+
+    // Count real direct entry teams (non-BYE, non-QUALIFIED)
+    long directEntryTeamsInR32 = r32Round.getGames().stream()
+                                         .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                         .filter(Objects::nonNull)
+                                         .filter(p -> !p.isBye() && !p.isQualifier())
+                                         .count();
+    int expectedDirectEntries = mainDrawSize - nbQualifiers - 8; // 32 - 4 - 8 = 20
+    assertEquals(expectedDirectEntries, directEntryTeamsInR32,
+                 "R32 should have exactly " + expectedDirectEntries + " direct entry teams");
+
+    // Verify total slots in R32 = 32
+    long totalSlotsInR32 = r32Round.getGames().stream()
+                                   .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                   .filter(Objects::nonNull)
+                                   .count();
+    assertEquals(mainDrawSize, totalSlotsInR32, "R32 should have exactly " + mainDrawSize + " total slots");
+
+    // CRITICAL: Verify that qualification teams do NOT appear in main draw R32
+    // Get all team IDs from Q1
+    List<Long> qualTeamIds = q1Round.getGames().stream()
+                                    .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                    .filter(Objects::nonNull)
+                                    .filter(p -> !p.isBye())
+                                    .map(PlayerPair::getId)
+                                    .toList();
+
+    // Get all direct entry team IDs from R32 (excluding BYE and QUALIFIED placeholders)
+    List<Long> r32DirectEntryIds = r32Round.getGames().stream()
+                                           .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                           .filter(Objects::nonNull)
+                                           .filter(p -> !p.isBye() && !p.isQualifier())
+                                           .map(PlayerPair::getId)
+                                           .toList();
+
+    // Check for overlap (this is the BUG - qualification teams should NOT be in main draw)
+    List<Long> overlap = qualTeamIds.stream()
+                                    .filter(r32DirectEntryIds::contains)
+                                    .toList();
+
+    assertTrue(overlap.isEmpty(),
+               "BUG DETECTED: " + overlap.size() + " qualification teams are incorrectly placed in main draw R32. " +
+               "Qualification teams should only appear as QUALIFIED placeholders after they win, not as direct entries.");
+  }
 }

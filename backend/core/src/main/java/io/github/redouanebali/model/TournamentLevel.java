@@ -11,6 +11,7 @@ public enum TournamentLevel {
   P250("P250"),
   P500("P500"),
   P1000("P1000"),
+  P1500("P1500"),
   P2000("P2000"),
   AMATEUR("Amateur");
 

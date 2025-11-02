@@ -82,7 +82,7 @@ public class Tournament {
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
   private LocalDate        endDate;
-  // Stockage simple pour H2, JSON pour PostgreSQL
+  // Stockage TEXT pour H2, JSONB pour PostgreSQL (via Flyway migrations)
   @Column(length = 10000)
   @Convert(converter = TournamentConfigConverter.class)
   private TournamentConfig config;

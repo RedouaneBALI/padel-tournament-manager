@@ -17,6 +17,18 @@
       <artifactId>jackson-databind</artifactId>
       <groupId>com.fasterxml.jackson.core</groupId>
     </dependency>
+    <!-- PostgreSQL driver pour PGobject dans le module core (utilisé par le converter) -->
+    <dependency>
+      <artifactId>postgresql</artifactId>
+      <groupId>org.postgresql</groupId>
+      <version>42.7.3</version>
+    </dependency>
+    <!-- Hibernate Core (pour @JdbcTypeCode) -->
+    <dependency>
+      <artifactId>hibernate-core</artifactId>
+      <groupId>org.hibernate.orm</groupId>
+      <scope>provided</scope>
+    </dependency>
     <!-- Validation -->
     <dependency>
       <artifactId>jakarta.validation-api</artifactId>

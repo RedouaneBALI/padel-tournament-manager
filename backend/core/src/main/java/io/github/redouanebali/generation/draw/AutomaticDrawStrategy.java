@@ -468,6 +468,82 @@ public class AutomaticDrawStrategy implements DrawStrategy {
   }
 
   /**
+   * Places BYEs opposite seeds while avoiding slots that already contain qualifiers. This is specifically for QUALIF_KO format where qualifiers are
+   * placed before BYEs.
+   */
+  private void placeByesOppositeSeedsAvoidingQualifiers(Round initialRound, int nbByes, int nbSeeds, int drawSize) {
+    List<Game> games      = initialRound.getGames();
+    int        byesPlaced = 0;
+
+    // Phase 1: Try to place BYEs opposite seeds
+    List<Integer> seedPositions = SeedPlacementUtil.getSeedsPositions(drawSize, nbSeeds);
+    for (int i = 0; i < seedPositions.size() && byesPlaced < nbByes; i++) {
+      int seedSlot     = seedPositions.get(i);
+      int oppositeSlot = GameSlotUtil.getOppositeSlot(seedSlot);
+
+      int     gameIndex = oppositeSlot / 2;
+      boolean isTeamA   = (oppositeSlot % 2 == 0);
+
+      Game       game        = games.get(gameIndex);
+      PlayerPair currentTeam = isTeamA ? game.getTeamA() : game.getTeamB();
+
+      // Only place BYE if slot is empty (not qualifier, not another team)
+      if (currentTeam == null) {
+        if (isTeamA) {
+          game.setTeamA(PlayerPair.bye());
+        } else {
+          game.setTeamB(PlayerPair.bye());
+        }
+        byesPlaced++;
+      }
+    }
+
+    // Phase 2: Place remaining BYEs in any empty slot (avoiding qualifiers and BYE vs BYE)
+    for (Game game : games) {
+      if (byesPlaced >= nbByes) {
+        break;
+      }
+
+      // Try teamA slot
+      if (byesPlaced < nbByes && game.getTeamA() == null) {
+        PlayerPair opponent = game.getTeamB();
+        // Only place if opponent is not a BYE and not null
+        if (opponent != null && !opponent.isBye() && !opponent.isQualifier()) {
+          game.setTeamA(PlayerPair.bye());
+          byesPlaced++;
+        }
+      }
+
+      // Try teamB slot
+      if (byesPlaced < nbByes && game.getTeamB() == null) {
+        PlayerPair opponent = game.getTeamA();
+        // Only place if opponent is not a BYE and not null
+        if (opponent != null && !opponent.isBye() && !opponent.isQualifier()) {
+          game.setTeamB(PlayerPair.bye());
+          byesPlaced++;
+        }
+      }
+    }
+
+    // Phase 3: Last resort - place BYEs even if it creates BYE vs BYE, but still avoid qualifiers
+    for (Game game : games) {
+      if (byesPlaced >= nbByes) {
+        break;
+      }
+
+      if (byesPlaced < nbByes && game.getTeamA() == null) {
+        game.setTeamA(PlayerPair.bye());
+        byesPlaced++;
+      }
+
+      if (byesPlaced < nbByes && game.getTeamB() == null) {
+        game.setTeamB(PlayerPair.bye());
+        byesPlaced++;
+      }
+    }
+  }
+
+  /**
    * Places BYEs opposite seeds following standard tennis/padel logic. Seed 1 plays BYE, Seed 2 plays BYE, etc. until all BYEs are placed.
    */
   private void placeByesOppositeSeedsStandard(Round initialRound, int nbByes, int nbSeeds, int drawSize) {
@@ -608,24 +684,29 @@ public class AutomaticDrawStrategy implements DrawStrategy {
                                              List<PlayerPair> allPairs,
                                              int roundDrawSize,
                                              int configuredSeeds) {
-    int nbQualifiers  = tournament.getConfig().getNbQualifiers();
-    int totalSlots    = tournament.getConfig().getMainDrawSize();
-    int directEntries = Math.min(totalSlots - nbQualifiers, allPairs.size());
+    int nbQualifiers = tournament.getConfig().getNbQualifiers();
+    int totalSlots   = tournament.getConfig().getMainDrawSize();
 
-    // Step 1: Place only the actual seeds
+    // allPairs already contains ONLY direct entries (qualif teams were excluded before calling this method)
+    int directEntries = allPairs.size();
+
+    // Step 1: Place only the actual seeds (limited by number of direct entries available)
     int actualSeeds = Math.min(configuredSeeds, directEntries);
     if (actualSeeds > 0) {
       List<PlayerPair> seeds = allPairs.subList(0, actualSeeds);
       placeSeedsAtStandardPositions(initialRound, seeds, actualSeeds, roundDrawSize);
     }
 
-    // Step 2: Place qualifiers
+    // Step 2: Place qualifiers placeholders first in empty slots
     RandomPlacementUtil.placeQualifiers(initialRound, nbQualifiers);
 
-    // Step 3: Place BYEs (accounting for direct entries and qualifiers)
-    int nbByes = roundDrawSize - directEntries - nbQualifiers;
+    // Step 3: Calculate and place BYEs
+    // Total slots = direct entries + qualifiers + BYEs
+    // BYEs = totalSlots - directEntries - nbQualifiers
+    int nbByes = totalSlots - directEntries - nbQualifiers;
     if (nbByes > 0) {
-      placeByesOppositeSeedsStandard(initialRound, nbByes, actualSeeds, roundDrawSize);
+      // Place BYEs manually opposite seeds, avoiding qualifier slots
+      placeByesOppositeSeedsAvoidingQualifiers(initialRound, nbByes, actualSeeds, roundDrawSize);
     }
 
     // Step 4: Place remaining teams
