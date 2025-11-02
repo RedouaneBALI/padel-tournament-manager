@@ -7,8 +7,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import io.github.redouanebali.PadelTournamentManagerApplication;
 import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
-import io.github.redouanebali.model.Round;
-import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.TournamentConfig;
 import io.github.redouanebali.model.format.TournamentFormat;
@@ -50,83 +48,6 @@ class TournamentIntegrationTest {
     SecurityContextHolder.getContext().setAuthentication(auth);
   }
 
-  @Test
-  void testFullTournamentLifecycle() {
-    // Création d'un tournoi
-    Tournament t = new Tournament();
-    t.setOwnerId("io.github.redouanebali.api.integration@test.com");
-    t.setName("Integration Cup");
-    t.setConfig(TournamentConfig.builder().mainDrawSize(4).nbSeeds(0).format(TournamentFormat.KNOCKOUT).build());
-    Tournament saved = tournamentRepository.save(t);
-    assertNotNull(saved.getId());
-
-    // Ajout de paires
-    List<CreatePlayerPairRequest> pairs = List.of(
-        new CreatePlayerPairRequest("Alice", "Bob", 1),
-        new CreatePlayerPairRequest("Charlie", "Dave", 2),
-        new CreatePlayerPairRequest("Eve", "Frank", 3),
-        new CreatePlayerPairRequest("Grace", "Heidi", 4)
-    );
-    Tournament updated = playerPairService.addPairs(saved.getId(), pairs);
-    assertEquals(4, updated.getPlayerPairs().size());
-
-    // Génération du tableau
-    Tournament withDraw = tournamentService.generateDrawAuto(saved.getId());
-    assertNotNull(withDraw.getRounds());
-    assertTrue(withDraw.getRounds().stream().anyMatch(r -> r.getStage() == Stage.SEMIS));
-    // Vérification des matchs générés
-    Round semis = withDraw.getRounds().stream().filter(r -> r.getStage() == Stage.SEMIS).findFirst().orElse(null);
-    assertNotNull(semis);
-    assertEquals(2, semis.getGames().size());
-  }
-
-  @Test
-  void testTournamentWithoutPlayers() {
-    // Création d'un tournoi sans joueurs
-    Tournament t = new Tournament();
-    t.setOwnerId("io.github.redouanebali.api.integration@test.com");
-    t.setName("No Players Cup");
-    t.setConfig(TournamentConfig.builder().mainDrawSize(4).nbSeeds(0).format(TournamentFormat.KNOCKOUT).build());
-    Tournament saved = tournamentRepository.save(t);
-    assertNotNull(saved.getId());
-
-    // Tentative de génération du tableau
-    Tournament withDraw = tournamentService.generateDrawAuto(saved.getId());
-    assertNotNull(withDraw.getRounds());
-    boolean allGamesEmpty = withDraw.getRounds().stream()
-                                    .flatMap(r -> r.getGames().stream())
-                                    .allMatch(g -> g.getTeamA() == null && g.getTeamB() == null);
-    assertTrue(allGamesEmpty, "Tous les matchs doivent être vides si aucun joueur n'est inscrit");
-  }
-
-  @Test
-  void testTournamentWithInsufficientPlayers() {
-    // Création d'un tournoi avec un nombre insuffisant de joueurs
-    Tournament t = new Tournament();
-    t.setOwnerId("io.github.redouanebali.api.integration@test.com");
-    t.setName("Insufficient Players Cup");
-    t.setConfig(TournamentConfig.builder().mainDrawSize(4).nbSeeds(0).format(TournamentFormat.KNOCKOUT).build());
-    Tournament saved = tournamentRepository.save(t);
-    assertNotNull(saved.getId());
-
-    // Ajout de quelques paires seulement
-    List<CreatePlayerPairRequest> pairs = List.of(
-        new CreatePlayerPairRequest("Alice", "Bob", 1),
-        new CreatePlayerPairRequest("Charlie", "Dave", 2)
-    );
-    Tournament updated   = playerPairService.addPairs(saved.getId(), pairs);
-    long       realPairs = updated.getPlayerPairs().stream().filter(p -> !p.isBye()).count();
-    assertEquals(2, realPairs);
-
-    // Tentative de génération du tableau
-    Tournament withDraw = tournamentService.generateDrawAuto(saved.getId());
-    assertNotNull(withDraw.getRounds());
-    // Vérifier que les matchs comportent bien les paires réelles et des BYE
-    boolean hasByeGames = withDraw.getRounds().stream()
-                                  .flatMap(r -> r.getGames().stream())
-                                  .anyMatch(g -> (g.getTeamA() != null && g.getTeamA().isBye()) || (g.getTeamB() != null && g.getTeamB().isBye()));
-    assertTrue(hasByeGames, "Le tableau doit contenir des matchs avec des BYE si le nombre de joueurs est insuffisant");
-  }
 
   @Test
   void testDeleteTournament() {

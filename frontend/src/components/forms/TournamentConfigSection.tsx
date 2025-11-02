@@ -1,4 +1,4 @@
-import { Settings, Users, Trophy, Zap, Cog } from 'lucide-react';
+import { Settings, Users, Trophy, Zap } from 'lucide-react';
 import type { TournamentFormData } from '@/src/validation/tournament';
 import KnockoutConfigSection from '@/src/components/forms/config/KnockoutConfigSection';
 import GroupsKoConfigSection from '@/src/components/forms/config/GroupsKoConfigSection';
@@ -99,23 +99,6 @@ export default function TournamentConfigSection({
           )}
         </div>
 
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-foreground flex items-center gap-2">
-            <Cog className="h-4 w-4" />
-            Mode de tirage
-          </label>
-          <select
-            name="config.drawMode"
-            value={toStr(formData.config?.drawMode ?? 'SEEDED')}
-            onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
-          >
-            <option value="SEEDED">
-              {(typeof formData.config?.nbSeeds === 'number' && formData.config.nbSeeds > 0) ? 'Automatique (par TS)' : 'Aléatoire'}
-            </option>
-            <option value="MANUAL" /*disabled={formData.config?.format !== 'KNOCKOUT'}*/>Manuel</option>
-          </select>
-        </div>
 
       </div>
     </div>

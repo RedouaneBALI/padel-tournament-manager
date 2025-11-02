@@ -45,24 +45,12 @@ public class DrawGenerationService {
     return new ArrayList<>(pairs.subList(0, maxPairs));
   }
 
-  public Tournament generateDrawAuto(Tournament tournament) {
-    assertCanInitialize(tournament);
-
-    TournamentBuilder.setupAndPopulateTournament(tournament, capPairsToMax(tournament));
-
-    // IMPORTANT: Persist qualifiers by adding them to the PlayerPairs list
-    collectAndPersistQualifiers(tournament);
-
-    log.info("Generated draw (auto) for tournament id {}", tournament.getId());
-    return tournamentRepository.save(tournament);
-  }
-
   public Tournament generateDrawManual(Tournament tournament, List<RoundRequest> initialRounds) {
     assertCanInitialize(tournament);
 
     if (initialRounds == null || initialRounds.isEmpty()) {
       throw new IllegalArgumentException(
-          "Manual draw generation requires initial rounds to be provided. Use generateDrawAuto() for automatic generation instead.");
+          "Manual draw generation requires initial rounds to be provided.");
     }
 
     List<Round> convertedRounds = initialRounds.stream()

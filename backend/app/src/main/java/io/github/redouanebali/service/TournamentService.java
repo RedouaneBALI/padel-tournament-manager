@@ -118,19 +118,6 @@ public class TournamentService {
   }
 
   /**
-   * Generates an automatic draw using seeding algorithm. Only the owner or super admins can generate draws.
-   */
-  public Tournament generateDrawAuto(Long tournamentId) {
-    Tournament tournament = getTournamentById(tournamentId);
-
-    if (!canEditTournament(tournament)) {
-      throw new AccessDeniedException("You are not allowed to generate the draw for this tournament");
-    }
-
-    return drawGenerationService.generateDrawAuto(tournament);
-  }
-
-  /**
    * Generates a manual draw using user-provided initial rounds configuration. Only the owner or super admins can generate draws.
    */
   @Transactional

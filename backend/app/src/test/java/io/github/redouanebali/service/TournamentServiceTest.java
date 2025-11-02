@@ -58,20 +58,6 @@ class TournamentServiceTest {
     );
   }
 
-  @Test
-  void testGenerateDraw_shouldDelegateToDrawManualGenerationService() {
-    Tournament tournament = new Tournament();
-    tournament.setId(1L);
-    tournament.setOwnerId("bali.redouane@gmail.com");
-
-    when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
-    when(drawGenerationService.generateDrawAuto(tournament)).thenReturn(tournament);
-
-    Tournament result = tournamentService.generateDrawAuto(1L);
-
-    verify(drawGenerationService, times(1)).generateDrawAuto(tournament);
-    assertEquals(tournament, result);
-  }
 
   @Test
   void testGetTournamentById_shouldReturnTournament() {

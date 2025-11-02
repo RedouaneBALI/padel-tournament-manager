@@ -23,9 +23,9 @@ public class TournamentConfig {
   // Number of seeded pairs in the tournament
   @Builder.Default
   private Integer          nbSeeds           = 0;
-  // Draw generation mode (seeded vs manual placement)
+  // Draw generation mode (only MANUAL is supported)
   @Builder.Default
-  private DrawMode         drawMode          = DrawMode.SEEDED;
+  private DrawMode         drawMode          = DrawMode.MANUAL;
   // Whether higher seeds enter the tournament in later rounds
   @Builder.Default
   private Boolean          staggeredEntry    = false;

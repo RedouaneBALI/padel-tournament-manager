@@ -218,20 +218,7 @@ public class AdminTournamentController {
         "details", a != null ? a.getDetails() : "none"
     ));
   }
-
-  /**
-   * Generates an automatic draw using seeding algorithm. Places teams based on their seeds and fills remaining positions randomly.
-   *
-   * @param id the tournament ID
-   * @return ResponseEntity containing the tournament DTO with generated draw
-   */
-  @PostMapping(path = "/{id}/draw/auto")
-  public ResponseEntity<TournamentDTO> generateDrawAuto(@PathVariable Long id) {
-    log.info("Generating automatic draw for tournament {} by user {}", id, SecurityUtil.currentUserId());
-    checkOwnership(id);
-    return ResponseEntity.ok(tournamentMapper.toDTO(tournamentService.generateDrawAuto(id)));
-  }
-
+  
   /**
    * Generates a manual draw using user-provided initial rounds. Replaces the tournament structure with the provided rounds configuration.
    *

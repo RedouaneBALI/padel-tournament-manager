@@ -1,13 +1,9 @@
 package io.github.redouanebali.generation;
 
-import io.github.redouanebali.generation.draw.DrawStrategy;
-import io.github.redouanebali.generation.draw.DrawStrategyFactory;
 import io.github.redouanebali.model.Game;
-import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.model.format.DrawMode;
 import io.github.redouanebali.model.format.TournamentConfig;
 import io.github.redouanebali.model.format.TournamentFormat;
 import java.util.ArrayList;
@@ -164,33 +160,7 @@ public final class TournamentBuilder {
   }
 
   /**
-   * Convenience method for automatic tournament setup. Builds initial rounds automatically using SEEDED strategy, then calls
-   * setupTournamentWithInitialRounds().
-   *
-   * @param tournament tournament with config set (will be modified)
-   * @param playerPairs players to automatically place in the tournament
-   */
-  public static void setupAndPopulateTournament(Tournament tournament, List<PlayerPair> playerPairs) {
-    if (tournament == null || tournament.getConfig() == null) {
-      throw new IllegalArgumentException("Tournament and config cannot be null");
-    }
-    if (playerPairs == null || playerPairs.isEmpty()) {
-      setupTournamentWithInitialRounds(tournament, List.of());
-      return;
-    }
-
-    // Directly place players in the tournament's rounds
-    if (tournament.getRounds().isEmpty()) {
-      initializeEmptyRounds(tournament);
-    }
-
-    DrawStrategy drawStrategy = DrawStrategyFactory.createStrategy(DrawMode.SEEDED);
-    drawStrategy.placePlayers(tournament, playerPairs);
-  }
-
-  /**
-   * Sets up the tournament structure by replacing existing rounds with empty ones. No players are placed - use setupAndPopulateTournament() for
-   * complete setup.
+   * Sets up the tournament structure by replacing existing rounds with empty ones. No players are placed - use manual placement for MANUAL mode.
    *
    * @param tournament tournament with config set (will be modified)
    */

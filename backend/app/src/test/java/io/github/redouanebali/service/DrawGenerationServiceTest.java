@@ -104,21 +104,6 @@ class DrawGenerationServiceTest {
     assertSame(pairs.get(3), g2.getTeamB());
   }
 
-  @Test
-  void generateDraw_algorithmic_knockout_populatesSemis_andSaves() {
-    Tournament tournament = baseTournamentKO(4, 0);
-    Tournament updated    = drawGenerationService.generateDrawAuto(tournament); // algorithmic
-    assertSame(tournament, updated);
-    Round semis = updated.getRoundByStage(Stage.SEMIS);
-    assertNotNull(semis);
-    Assertions.assertEquals(2, semis.getGames().size());
-    // We only check that both teams are assigned (placement may shuffle)
-    for (Game g : semis.getGames()) {
-      assertNotNull(g.getTeamA());
-      assertNotNull(g.getTeamB());
-    }
-  }
-
 
   @Test
   void generateDraw_denied_whenNotOwnerOrSuperAdmin() {
@@ -155,7 +140,7 @@ class DrawGenerationServiceTest {
     Tournament tournament = baseTournamentKO(4, 0);
     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                                                       () -> generateDrawManualWithEmptyRounds(tournament));
-    assertEquals("Manual draw generation requires initial rounds to be provided. Use generateDrawAuto() for automatic generation instead.",
+    assertEquals("Manual draw generation requires initial rounds to be provided.",
                  exception.getMessage());
   }
 

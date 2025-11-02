@@ -2,6 +2,9 @@ package io.github.redouanebali.generation.draw;
 
 import io.github.redouanebali.model.format.DrawMode;
 
+/**
+ * Factory pour créer les stratégies de tirage. Seul le mode MANUAL est supporté.
+ */
 public class DrawStrategyFactory {
 
   private DrawStrategyFactory() {
@@ -9,9 +12,7 @@ public class DrawStrategyFactory {
   }
 
   public static DrawStrategy createStrategy(DrawMode mode) {
-    return switch (mode) {
-      case SEEDED -> new AutomaticDrawStrategy();
-      case MANUAL -> new ManualDrawStrategy();
-    };
+    // Seul le mode MANUAL est supporté
+    return new ManualDrawStrategy();
   }
 }

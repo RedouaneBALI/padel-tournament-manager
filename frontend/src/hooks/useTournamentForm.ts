@@ -25,7 +25,7 @@ export function getInitialFormData(initialData?: Partial<TournamentFormData>): T
       nbQualifiedByPool: 2,
       preQualDrawSize: 16,
       nbQualifiers: 4,
-      drawMode: "SEEDED",
+      drawMode: "MANUAL",
     },
   };
 
