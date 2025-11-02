@@ -818,4 +818,245 @@ class TournamentBuilderTest {
                "BUG DETECTED: " + overlap.size() + " qualification teams are incorrectly placed in main draw R32. " +
                "Qualification teams should only appear as QUALIFIED placeholders after they win, not as direct entries.");
   }
+
+  /**
+   * CRITICAL TEST: 32 teams in qualification for 8 qualifying spots.
+   *
+   * Scenario: QUALIF_KO tournament with:
+   * - 32 teams in qualification for 8 qualifying spots
+   * - 32 teams in main draw
+   * - Total: 32 teams (all participate in qualification, none directly in main draw)
+   *
+   * Expected main draw composition for a 32-slot draw:
+   * - 8 QUALIFIED placeholders (for winners from qualification)
+   * - 8 BYE placeholders
+   * - 16 direct entry teams (strongest teams go directly to main draw)
+   *
+   * IMPORTANT: With 32 teams total competing for a 32-slot main draw with 8 qualifiers:
+   * - Teams placed in Q1: 32 (all teams compete in qualification)
+   * - Main draw R32: 8 qualifiers + 8 BYEs + 16 direct = 32 slots
+   * - If user wants 24 direct entries, main draw must be 40 slots (8+8+24=40)
+   */
+  @Test
+  void testCriticalQualifKO_32TeamsFor8QualifyingSpots() {
+    // Given: QUALIF_KO tournament with 32 qualif -> 8 places, 32 main draw
+    int preQualDrawSize = 32;   // 32 places in qualification
+    int nbQualifiers    = 8;    // 8 qualifiers advance to main draw
+    int mainDrawSize    = 32;   // 32 places in main draw (standard power of 2)
+    int nbSeedsMain     = 8;    // 8 seeds in main draw
+    int nbSeedsQualify  = 8;    // 8 seeds in qualif
+
+    Tournament tournament = TestFixtures.makeTournament(
+        preQualDrawSize,
+        nbQualifiers,
+        mainDrawSize,
+        nbSeedsMain,
+        nbSeedsQualify,
+        DrawMode.MANUAL
+    );
+
+    // Calculate correct total teams:
+    // Main draw = 32 slots = nbQualifiers + nbByes + directEntries
+    // directEntries = 32 - 8 - 8 = 16
+    // Total teams = teams in Q1 + directEntries
+    // For 32 teams to compete in qualification (filling preQualDrawSize=32):
+    //   totalTeams = 32 (Q1) + 16 (direct) = 48 total
+    
+    int teamsInQualif = preQualDrawSize;  // 32 teams compete in qualification
+    int directEntries = 16;               // 16 teams go directly to main draw
+    int totalTeams = teamsInQualif + directEntries;  // 48 total
+
+    List<PlayerPair> playerPairs = TestFixtures.createPlayerPairs(totalTeams);
+
+    System.out.println("\n=== CRITICAL TEST: 32 QUALIF PARTICIPANTS FOR 8 QUALIFYING SPOTS ===");
+    System.out.println("Configuration:");
+    System.out.println("  - Qualification draw size: " + preQualDrawSize);
+    System.out.println("  - Number of qualifiers: " + nbQualifiers);
+    System.out.println("  - Main draw size: " + mainDrawSize);
+    System.out.println("  - Total teams provided: " + totalTeams);
+    System.out.println("\nExpected distribution:");
+    System.out.println("  - Q1: " + teamsInQualif + " real teams (filling all " + preQualDrawSize + " slots)");
+    System.out.println("  - R32: " + nbQualifiers + " QUALIFIED placeholders");
+    System.out.println("  - R32: 8 BYE placeholders");
+    System.out.println("  - R32: " + directEntries + " direct entry teams");
+    System.out.println("  - R32 Total: " + (nbQualifiers + 8 + directEntries) + " slots");
+
+    // When: Setup and populate tournament
+    TournamentBuilder.setupAndPopulateTournament(tournament, playerPairs);
+
+    System.out.println("\n=== ACTUAL RESULTS ===");
+
+    // Then: Verify qualification round Q1
+    Round q1Round = tournament.getRoundByStage(Stage.Q1);
+    long teamsInQ1 = q1Round.getGames().stream()
+                            .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                            .filter(Objects::nonNull)
+                            .filter(p -> !p.isBye())
+                            .count();
+    System.out.println("Q1 - Real teams: " + teamsInQ1);
+
+    // Then: Verify main draw R32
+    Round r32Round = tournament.getRoundByStage(Stage.R32);
+
+    // Count QUALIFIED placeholders
+    long qualifiedPlaceholdersInR32 = r32Round.getGames().stream()
+                                              .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                              .filter(Objects::nonNull)
+                                              .filter(PlayerPair::isQualifier)
+                                              .count();
+    System.out.println("R32 - QUALIFIED placeholders: " + qualifiedPlaceholdersInR32);
+
+    // Count BYE placeholders
+    long byesInR32 = r32Round.getGames().stream()
+                             .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                             .filter(Objects::nonNull)
+                             .filter(PlayerPair::isBye)
+                             .count();
+    System.out.println("R32 - BYE placeholders: " + byesInR32);
+
+    // Count real direct entry teams
+    long realTeamsInR32 = r32Round.getGames().stream()
+                                  .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                  .filter(Objects::nonNull)
+                                  .filter(p -> !p.isBye() && !p.isQualifier())
+                                  .count();
+    System.out.println("R32 - Real teams (direct entries): " + realTeamsInR32);
+    System.out.println("R32 - Total: " + (qualifiedPlaceholdersInR32 + byesInR32 + realTeamsInR32));
+
+    // Verify counts match expectations
+    assertEquals(nbQualifiers, qualifiedPlaceholdersInR32,
+                 "R32 must have exactly " + nbQualifiers + " QUALIFIED placeholders");
+    assertEquals(8, byesInR32, "R32 should have exactly 8 BYE placeholders");
+
+    // Direct entries should be: mainDrawSize - nbQualifiers - 8 BYEs
+    int expectedDirectEntries = mainDrawSize - nbQualifiers - 8; // 32 - 8 - 8 = 16
+    assertEquals(expectedDirectEntries, realTeamsInR32,
+                 "R32 should have exactly " + expectedDirectEntries + " direct entry teams");
+
+    // Verify total slots in R32 = 32
+    long totalSlotsInR32 = r32Round.getGames().stream()
+                                   .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                   .filter(Objects::nonNull)
+                                   .count();
+    assertEquals(mainDrawSize, totalSlotsInR32, "R32 should have exactly " + mainDrawSize + " total slots");
+
+    System.out.println("\n=== ARITHMETIC EXPLANATION ===");
+    System.out.println("For a 32-slot main draw with 8 qualifiers:");
+    System.out.println("  32 slots = 8 qualifiers + 8 BYEs + 16 direct entries");
+    System.out.println("\nIf you want 24 direct entries instead of 16:");
+    System.out.println("  24 + 8 qualifiers + 8 BYEs = 40 slots");
+    System.out.println("  This would require a 40-slot main draw (non-standard, not power of 2)");
+    System.out.println("\nNote: Standard draw sizes are powers of 2: 16, 32, 64, 128, etc.");
+    System.out.println("\nFor 24 direct entries with standard draw size (64 slots):");
+    System.out.println("  64 slots = 8 qualifiers + 32 BYEs + 24 direct entries");
+  }
+
+  /**
+   * ALTERNATIVE SCENARIO: 32 teams in qualification for 8 spots with 64-slot main draw.
+   *
+   * This test demonstrates what happens when you want more direct entries
+   * while keeping 32 teams in qualification competing for 8 spots.
+   *
+   * With a 64-slot main draw:
+   * - 8 QUALIFIED placeholders
+   * - 32 BYE placeholders
+   * - 24 direct entry teams
+   * Total: 8 + 32 + 24 = 64 slots
+   */
+  @Test
+  void testCriticalQualifKO_32TeamsFor8Spots_With64SlotMainDraw() {
+    // Given: QUALIF_KO tournament with 32 qualif -> 8 places, 64 main draw
+    int preQualDrawSize = 32;   // 32 places in qualification
+    int nbQualifiers    = 8;    // 8 qualifiers advance to main draw
+    int mainDrawSize    = 64;   // 64 places in main draw (standard power of 2)
+    int nbSeedsMain     = 16;   // 16 seeds in main draw
+    int nbSeedsQualify  = 8;    // 8 seeds in qualif
+
+    Tournament tournament = TestFixtures.makeTournament(
+        preQualDrawSize,
+        nbQualifiers,
+        mainDrawSize,
+        nbSeedsMain,
+        nbSeedsQualify,
+        DrawMode.MANUAL
+    );
+
+    // With 64-slot main draw and 8 qualifiers:
+    // BYEs needed to balance = 64 - 8 - directEntries
+    // If we want 24 direct entries: BYEs = 64 - 8 - 24 = 32
+    int teamsInQualif = preQualDrawSize;  // 32 teams compete in qualification
+    int directEntries = 24;               // 24 teams go directly to main draw
+    int totalTeams = teamsInQualif + directEntries;  // 56 total
+
+    List<PlayerPair> playerPairs = TestFixtures.createPlayerPairs(totalTeams);
+
+    System.out.println("\n=== ALTERNATIVE: 32 QUALIF FOR 8 SPOTS WITH 64-SLOT MAIN DRAW ===");
+    System.out.println("Configuration:");
+    System.out.println("  - Qualification draw size: " + preQualDrawSize);
+    System.out.println("  - Number of qualifiers: " + nbQualifiers);
+    System.out.println("  - Main draw size: " + mainDrawSize);
+    System.out.println("  - Total teams provided: " + totalTeams);
+
+    // When: Setup and populate tournament
+    TournamentBuilder.setupAndPopulateTournament(tournament, playerPairs);
+
+    System.out.println("\n=== RESULTS ===");
+
+    // Verify qualification round Q1
+    Round q1Round = tournament.getRoundByStage(Stage.Q1);
+    long teamsInQ1 = q1Round.getGames().stream()
+                            .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                            .filter(Objects::nonNull)
+                            .filter(p -> !p.isBye())
+                            .count();
+    System.out.println("Q1 - Real teams: " + teamsInQ1);
+
+    // Verify main draw R64
+    Round r64Round = tournament.getRoundByStage(Stage.R64);
+
+    long qualifiedPlaceholdersInR64 = r64Round.getGames().stream()
+                                              .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                              .filter(Objects::nonNull)
+                                              .filter(PlayerPair::isQualifier)
+                                              .count();
+    System.out.println("R64 - QUALIFIED placeholders: " + qualifiedPlaceholdersInR64);
+
+    long byesInR64 = r64Round.getGames().stream()
+                             .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                             .filter(Objects::nonNull)
+                             .filter(PlayerPair::isBye)
+                             .count();
+    System.out.println("R64 - BYE placeholders: " + byesInR64);
+
+    long realTeamsInR64 = r64Round.getGames().stream()
+                                  .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                  .filter(Objects::nonNull)
+                                  .filter(p -> !p.isBye() && !p.isQualifier())
+                                  .count();
+    System.out.println("R64 - Real teams (direct entries): " + realTeamsInR64);
+    System.out.println("R64 - Total: " + (qualifiedPlaceholdersInR64 + byesInR64 + realTeamsInR64));
+
+    // Verify counts match expectations
+    assertEquals(teamsInQualif, teamsInQ1, "Q1 should have " + teamsInQualif + " teams");
+    assertEquals(nbQualifiers, qualifiedPlaceholdersInR64,
+                 "R64 must have exactly " + nbQualifiers + " QUALIFIED placeholders");
+    assertEquals(directEntries, realTeamsInR64,
+                 "R64 should have exactly " + directEntries + " direct entry teams");
+    
+    // BYEs = mainDrawSize - nbQualifiers - directEntries
+    int expectedByes = mainDrawSize - nbQualifiers - directEntries; // 64 - 8 - 24 = 32
+    assertEquals(expectedByes, byesInR64, "R64 should have exactly " + expectedByes + " BYE placeholders");
+
+    // Verify total slots
+    long totalSlotsInR64 = r64Round.getGames().stream()
+                                   .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                   .filter(Objects::nonNull)
+                                   .count();
+    assertEquals(mainDrawSize, totalSlotsInR64, "R64 should have exactly " + mainDrawSize + " total slots");
+
+    System.out.println("\n=== SUMMARY ===");
+    System.out.println("This configuration achieves the user's requested 24 direct entries");
+    System.out.println("by using a 64-slot main draw instead of 32 slots:");
+    System.out.println("  64 slots = 8 qualifiers + 32 BYEs + 24 direct entries ✓");
+  }
 }
