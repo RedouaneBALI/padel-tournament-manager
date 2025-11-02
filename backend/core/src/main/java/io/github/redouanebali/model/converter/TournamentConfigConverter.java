@@ -5,34 +5,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.redouanebali.model.format.TournamentConfig;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
-import java.sql.SQLException;
 import lombok.extern.slf4j.Slf4j;
-import org.postgresql.util.PGobject;
 
 @Converter(autoApply = true)
 @Slf4j
-public class TournamentConfigConverter implements AttributeConverter<TournamentConfig, Object> {
+public class TournamentConfigConverter implements AttributeConverter<TournamentConfig, String> {
 
   private static final ObjectMapper objectMapper = new ObjectMapper();
 
   @Override
-  public Object convertToDatabaseColumn(TournamentConfig config) {
+  public String convertToDatabaseColumn(TournamentConfig config) {
     if (config == null) {
       return null;
     }
     try {
-      String json = objectMapper.writeValueAsString(config);
-
-      // Try to create PGobject for PostgreSQL
-      try {
-        PGobject jsonObject = new PGobject();
-        jsonObject.setType("jsonb");
-        jsonObject.setValue(json);
-        return jsonObject;
-      } catch (SQLException | NoClassDefFoundError e) {
-        // If PostgreSQL driver not available (H2), return plain String
-        return json;
-      }
+      // Return plain JSON string - Hibernate will handle the JSONB type conversion
+      return objectMapper.writeValueAsString(config);
     } catch (JsonProcessingException e) {
       log.error("Error converting TournamentConfig to JSON", e);
       return null;
@@ -40,29 +28,16 @@ public class TournamentConfigConverter implements AttributeConverter<TournamentC
   }
 
   @Override
-  public TournamentConfig convertToEntityAttribute(Object dbData) {
-    if (dbData == null) {
+  public TournamentConfig convertToEntityAttribute(String json) {
+    if (json == null || json.trim().isEmpty()) {
       return null;
     }
-
     try {
-      String json;
-      if (dbData instanceof PGobject pgObject) {
-        json = pgObject.getValue();
-      } else if (dbData instanceof String) {
-        json = (String) dbData;
-      } else {
-        json = dbData.toString();
-      }
-
-      if (json == null || json.trim().isEmpty()) {
-        return null;
-      }
-
       return objectMapper.readValue(json, TournamentConfig.class);
     } catch (JsonProcessingException e) {
-      log.error("Error converting JSON to TournamentConfig: {}", dbData, e);
+      log.error("Error converting JSON to TournamentConfig: {}", json, e);
       return null;
     }
   }
 }
+

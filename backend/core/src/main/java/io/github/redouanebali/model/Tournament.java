@@ -1,11 +1,9 @@
 package io.github.redouanebali.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.github.redouanebali.model.converter.TournamentConfigConverter;
 import io.github.redouanebali.model.format.TournamentConfig;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -83,8 +81,8 @@ public class Tournament {
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
   private LocalDate        endDate;
   // Stockage TEXT pour H2, JSONB pour PostgreSQL (via Flyway migrations)
-  @Column(length = 10000)
-  @Convert(converter = TournamentConfigConverter.class)
+  @Column(name = "config")
+  @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
   private TournamentConfig config;
 
   @PreUpdate
