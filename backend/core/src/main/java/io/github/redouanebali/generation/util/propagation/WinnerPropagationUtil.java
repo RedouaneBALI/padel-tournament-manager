@@ -74,8 +74,6 @@ public class WinnerPropagationUtil {
   private void resetNextRoundSlots(PropagationStrategy strategy, List<Game> curGames, List<Game> nextGames) {
     if (strategy instanceof KnockoutPropagationStrategy) {
       resetKnockoutSlots(curGames, nextGames);
-    } else if (strategy instanceof QualifierSlotPropagationStrategy) {
-      resetQualifierSlots(nextGames);
     }
   }
 
@@ -94,16 +92,6 @@ public class WinnerPropagationUtil {
         }
       }
     }
-  }
-
-  /**
-   * Reset qualifier slots - DO NOT recreate them, just leave them as is The QualifierSlotPropagationStrategy will place winners in the correct slots
-   * based on the initial qualifier positions
-   */
-  private void resetQualifierSlots(List<Game> nextGames) {
-    // DO NOTHING - qualifiers should stay in place
-    // The propagation strategy tracks which qualifiers have been replaced
-    // and only replaces the correct ones based on currentGameIndex
   }
 
   /**

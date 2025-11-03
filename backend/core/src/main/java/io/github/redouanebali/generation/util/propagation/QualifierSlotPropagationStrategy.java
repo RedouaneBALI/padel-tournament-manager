@@ -1,9 +1,7 @@
 package io.github.redouanebali.generation.util.propagation;
 
 import io.github.redouanebali.model.Game;
-import io.github.redouanebali.model.PairType;
 import io.github.redouanebali.model.PlayerPair;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -84,23 +82,6 @@ public class QualifierSlotPropagationStrategy implements PropagationStrategy {
     return null; // Qualifier not found
   }
 
-  /**
-   * Collects all initial QUALIFIER slots in order
-   */
-  private List<QualifierSlot> collectInitialQualifierSlots(List<Game> nextGames) {
-    List<QualifierSlot> qualifierSlots = new ArrayList<>();
-    for (int i = 0; i < nextGames.size(); i++) {
-      Game game = nextGames.get(i);
-
-      if (game.getTeamA() != null && game.getTeamA().getType() == PairType.QUALIFIER) {
-        qualifierSlots.add(new QualifierSlot(i, true)); // gameIndex, isTeamA
-      }
-      if (game.getTeamB() != null && game.getTeamB().getType() == PairType.QUALIFIER) {
-        qualifierSlots.add(new QualifierSlot(i, false)); // gameIndex, isTeamB
-      }
-    }
-    return qualifierSlots;
-  }
 
   /**
    * Represents a QUALIFIER slot in a game of the next round
