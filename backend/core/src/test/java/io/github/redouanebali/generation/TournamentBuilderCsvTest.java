@@ -373,17 +373,17 @@ class TournamentBuilderCsvTest {
     assertEquals(expectedPairsPlaying, computedPairsPlaying,
                  "PairsPlaying mismatch in " + stage + " for " + tournamentId);
 
-    // Vérification : chaque équipe réelle apparaît exactement une fois dans le round (pas de doublon, pas d’oubli)
+    // Verification: each real team appears exactly once in the round (no duplicates, no missing teams)
     List<String> teamSignatures = currentRound.getGames().stream()
                                               .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
                                               .filter(Objects::nonNull)
-                                              // On ignore les paires BYE/BYE (type BYE ou les deux joueurs nommés "BYE")
+                                              // Ignore BYE/BYE pairs (type BYE or both players named "BYE")
                                               .filter(p -> !(p.isBye() ||
                                                              (p.getPlayer1() != null && "BYE".equals(p.getPlayer1().getName()) &&
                                                               p.getPlayer2() != null && "BYE".equals(p.getPlayer2().getName()))))
-                                              // On ignore aussi les QUALIFIER (placeholders pour les qualifications)
+                                              // Also ignore QUALIFIER (placeholders for qualifications)
                                               .filter(p -> !p.isQualifier())
-                                              // On ignore les équipes avec des noms null (qualifiers mal initialisés)
+                                              // Ignore teams with null names (badly initialized qualifiers)
                                               .filter(p -> p.getPlayer1() != null && p.getPlayer1().getName() != null &&
                                                            p.getPlayer2() != null && p.getPlayer2().getName() != null)
                                               .map(p -> {
@@ -396,7 +396,7 @@ class TournamentBuilderCsvTest {
 
     long uniqueTeams = teamSignatures.stream().distinct().count();
     assertEquals(teamSignatures.size(), uniqueTeams,
-                 "Doublon ou oubli d'équipe réelle dans le round " + stage + " du tournoi " + tournamentId);
+                 "Duplicate or missing real team in round " + stage + " of tournament " + tournamentId);
 
     // Cross-check composition
     assertEquals(expectedTotalPairs, fromPrev + newTeams + expectedByePairs + expectedNbDirectlyQualifiedPairs,

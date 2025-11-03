@@ -39,6 +39,12 @@ public class PlayerPair {
   @Enumerated(EnumType.STRING)
   private PairType type = PairType.NORMAL;
 
+  /**
+   * Index of the qualifier (1 for Q1, 2 for Q2, etc.). Only used when type = QUALIFIER, null for all other types. This allows us to persist and
+   * display the correct qualifier number (Q1, Q2, Q3...).
+   */
+  private Integer qualifierIndex;
+
   public PlayerPair(Player player1, Player player2, int seed) {
     this.player1 = player1;
     this.player2 = player2;
@@ -64,8 +70,8 @@ public class PlayerPair {
   }
 
   /**
-   * Creates a QUALIFIER placeholder with a specific number (Q1, Q2, Q3, etc.) This number is stored in the Player name and persisted to the
-   * database.
+   * Creates a QUALIFIER placeholder with a specific number (Q1, Q2, Q3, etc.) The qualifier index is stored in the qualifierIndex field for clean
+   * persistence.
    *
    * @param index the qualifier number (1-based)
    * @return a PlayerPair representing a qualifier slot
@@ -78,6 +84,7 @@ public class PlayerPair {
     qPair.setPlayer2(q2);
     qPair.setSeed(Integer.MAX_VALUE);
     qPair.setType(PairType.QUALIFIER);
+    qPair.setQualifierIndex(index); // Store the qualifier number in dedicated field
     return qPair;
   }
 

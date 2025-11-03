@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Tournament } from '@/src/types/tournament';
 import { PlayerPair } from '@/src/types/playerPair';
+import { reorderPlayerPairs } from '@/src/api/tournamentApi';
 
 // Constants for auto-scroll behavior
 const SCROLL_CONFIG = {
@@ -111,9 +112,17 @@ export function usePlayerAssignment(tournament: Tournament, playerPairs: PlayerP
       const temp = next[toIndex] ?? null;
       next[toIndex] = next[fromIndex] ?? null;
       next[fromIndex] = temp;
+
+      // Sauvegarder l'ordre mis à jour
+      const orderedPairs = next.filter(Boolean) as PlayerPair[];
+      const pairIds = orderedPairs.map(pair => pair.id).filter((id): id is number => id !== undefined);
+      reorderPlayerPairs((tournament as any)?.id, pairIds).catch((e) => {
+        // Optionnel : gérer l'erreur silencieusement ou logger
+      });
+
       return next;
     });
-  }, []);
+  }, [tournament]);
 
   // Drag and drop handlers
   const onDragStart = useCallback((index: number) => (e: React.DragEvent<HTMLLIElement>) => {
@@ -256,4 +265,3 @@ export function usePlayerAssignment(tournament: Tournament, playerPairs: PlayerP
     onRootDragEnd,
   };
 }
-

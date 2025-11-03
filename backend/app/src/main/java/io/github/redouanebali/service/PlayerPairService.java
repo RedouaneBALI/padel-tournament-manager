@@ -142,6 +142,70 @@ public class PlayerPairService {
   }
 
   /**
+   * Reorders the complete list of player pairs for a tournament. Preserves the exact order sent from the frontend, including BYE and QUALIFIER
+   * positions. Example: [pair1, pair2, BYE, pair3, QUALIFIER, pair4] stays in this exact order. Only the owner or super admins can reorder pairs.
+   *
+   * @param tournamentId the tournament ID
+   * @param orderedPairIds list of ALL pair IDs in the desired order (including BYE and QUALIFIER)
+   * @throws IllegalArgumentException if tournament not found, or if orderedPairIds doesn't match existing pairs
+   * @throws AccessDeniedException if user lacks modification rights
+   */
+  @Transactional
+  public void reorderPlayerPairs(Long tournamentId, List<Long> orderedPairIds) {
+    Tournament tournament = tournamentRepository.findByIdWithLock(tournamentId)
+                                                .orElseThrow(() -> new IllegalArgumentException(TOURNAMENT_NOT_FOUND));
+
+    String      me          = SecurityUtil.currentUserId();
+    Set<String> superAdmins = securityProps.getSuperAdmins();
+    if (!superAdmins.contains(me) && !me.equals(tournament.getOwnerId())) {
+      throw new AccessDeniedException("You are not allowed to modify pairs for this tournament");
+    }
+
+    List<PlayerPair> currentPairs = tournament.getPlayerPairs();
+
+    // Validate that orderedPairIds contains exactly the same IDs as currentPairs
+    Set<Long> currentIds = currentPairs.stream()
+                                       .map(PlayerPair::getId)
+                                       .filter(java.util.Objects::nonNull)
+                                       .collect(java.util.stream.Collectors.toSet());
+
+    Set<Long> providedIds = new java.util.HashSet<>(orderedPairIds);
+
+    if (!currentIds.equals(providedIds)) {
+      throw new IllegalArgumentException(
+          String.format("Provided pair IDs don't match existing pairs. Expected %d IDs, got %d. " +
+                        "All pairs (including BYE and QUALIFIER) must be included.",
+                        currentIds.size(), providedIds.size()));
+    }
+
+    // Create a map for quick lookup of ALL pairs (normal, BYE, and QUALIFIER)
+    java.util.Map<Long, PlayerPair> pairMap = currentPairs.stream()
+                                                          .filter(p -> p.getId() != null)
+                                                          .collect(java.util.stream.Collectors.toMap(
+                                                              PlayerPair::getId,
+                                                              java.util.function.Function.identity()
+                                                          ));
+
+    // Build the new ordered list preserving the exact order from frontend
+    List<PlayerPair> reorderedPairs = new java.util.ArrayList<>();
+    for (Long pairId : orderedPairIds) {
+      PlayerPair pair = pairMap.get(pairId);
+      if (pair != null) {
+        reorderedPairs.add(pair);
+      }
+    }
+
+    // Replace the tournament's pair list with the reordered one
+    currentPairs.clear();
+    currentPairs.addAll(reorderedPairs);
+
+    tournamentRepository.save(tournament);
+
+    log.info("Reordered {} player pairs (including BYE and QUALIFIER) for tournament {} by user {}",
+             orderedPairIds.size(), tournamentId, me);
+  }
+
+  /**
    * Adds BYE pairs to the tournament if needed to reach the required draw sizes based on the tournament format. For KNOCKOUT: adds BYE to reach
    * mainDrawSize. For QUALIF_KO: adds BYE to reach preQualDrawSize + mainDrawSize. For GROUPS_KO: adds BYE to reach nbPools * nbPairsPerPool.
    *

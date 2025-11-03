@@ -178,7 +178,6 @@ export async function updateTournament(tournamentId: string, updatedTournament: 
 }
 
 export async function savePlayerPairs(tournamentId: string, pairs: PlayerPair[]) {
-  console.log("savePlayerPairs");
   const response = await fetchWithAuth(api(`/admin/tournaments/${tournamentId}/pairs`), {
     method: 'POST',
     body: JSON.stringify(pairs),
@@ -193,14 +192,34 @@ export async function savePlayerPairs(tournamentId: string, pairs: PlayerPair[])
   return await response.json();
 }
 
+/**
+ * Reorders the complete list of player pairs for a tournament.
+ * Useful for manual draw management and seeding adjustments.
+ * Only the owner or super admins can reorder pairs.
+ *
+ * @param tournamentId the tournament ID
+ * @param pairIds ordered list of pair IDs (must contain all existing pair IDs)
+ */
+export async function reorderPlayerPairs(tournamentId: string, pairIds: number[]) {
+  const response = await fetchWithAuth(api(`/admin/tournaments/${tournamentId}/pairs/reorder`), {
+    method: 'PUT',
+    body: JSON.stringify(pairIds),
+  });
+
+  if (!response.ok) {
+    toast.error("Erreur lors de la réorganisation de l'ordre des joueurs.");
+    throw new Error("Erreur lors de la réorganisation de l'ordre des joueurs.");
+  }
+
+  // Pas de toast de succès pour ne pas polluer l'interface lors des drag & drop
+}
+
 export async function generateDraw(
   tournamentId: string,
   options: { mode: 'auto' } | { mode: 'manual'; rounds?: InitializeDrawRequest['rounds'] }
 ) {
   const { mode } = options;
   const drawType = mode === 'manual' ? 'manual' : 'auto';
-
-  console.log("generateDraw", drawType);
 
   const requestOptions: RequestInit = {
     method: 'POST',
@@ -263,7 +282,6 @@ export async function updatePlayerPair(
 }
 
 export async function fetchGamesByStage(tournamentId: string, stage: string) {
-  console.log(`Fetching games for tournament ${tournamentId}, stage ${stage}`);
   const response = await fetch(api(`/tournaments/${tournamentId}/rounds/${stage}/games`));
   if (!response.ok) {
     toast.error('Erreur lors du chargement des matchs.');

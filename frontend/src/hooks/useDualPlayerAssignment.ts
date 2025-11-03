@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Tournament } from '@/src/types/tournament';
 import { PlayerPair } from '@/src/types/playerPair';
-import { savePlayerPairs } from '@/src/api/tournamentApi';
+import { reorderPlayerPairs } from '@/src/api/tournamentApi';
 
 // Constants for auto-scroll behavior
 const SCROLL_CONFIG = {
@@ -92,8 +92,10 @@ export function useDualPlayerAssignment(
     const persistOrder = async (newQualif: Array<PlayerPair | null>, newMain: Array<PlayerPair | null>) => {
       // Concaténer les paires non nulles dans l'ordre qualif puis main
       const orderedPairs = [...newQualif, ...newMain].filter(Boolean) as PlayerPair[];
+      // Extraire uniquement les IDs des paires
+      const pairIds = orderedPairs.map(pair => pair.id).filter((id): id is number => id !== undefined);
       try {
-        await savePlayerPairs((tournament as any)?.id, orderedPairs);
+        await reorderPlayerPairs((tournament as any)?.id, pairIds);
       } catch (e) {
         // Optionnel : afficher une erreur ou logger
         // toast.error("Erreur lors de la sauvegarde de l'ordre des paires");

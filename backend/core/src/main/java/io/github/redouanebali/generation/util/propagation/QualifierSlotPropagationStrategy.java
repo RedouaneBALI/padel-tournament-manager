@@ -57,30 +57,25 @@ public class QualifierSlotPropagationStrategy implements PropagationStrategy {
   }
 
   /**
-   * Find a qualifier by its specific number (e.g., Q1, Q2, Q3) Returns null if the qualifier is not found (already replaced)
+   * Find a qualifier by its specific number (e.g., Q1, Q2, Q3) Returns null if the qualifier is not found (already replaced) Uses qualifierIndex
+   * field instead of Player name for robustness
    */
   private QualifierSlot findQualifierByNumber(List<Game> nextGames, int qualifierNumber) {
-    String targetName = "Q" + qualifierNumber;
-
     for (int i = 0; i < nextGames.size(); i++) {
       Game game = nextGames.get(i);
 
-      // Check teamA
+      // Check teamA - use qualifierIndex field instead of Player name
       if (game.getTeamA() != null && game.getTeamA().isQualifier()) {
-        String qualifierName = game.getTeamA().getPlayer1() != null
-                               ? game.getTeamA().getPlayer1().getName()
-                               : "Q";
-        if (targetName.equals(qualifierName)) {
+        Integer index = game.getTeamA().getQualifierIndex();
+        if (index != null && index == qualifierNumber) {
           return new QualifierSlot(i, true);
         }
       }
 
-      // Check teamB
+      // Check teamB - use qualifierIndex field instead of Player name
       if (game.getTeamB() != null && game.getTeamB().isQualifier()) {
-        String qualifierName = game.getTeamB().getPlayer1() != null
-                               ? game.getTeamB().getPlayer1().getName()
-                               : "Q";
-        if (targetName.equals(qualifierName)) {
+        Integer index = game.getTeamB().getQualifierIndex();
+        if (index != null && index == qualifierNumber) {
           return new QualifierSlot(i, false);
         }
       }

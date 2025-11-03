@@ -154,6 +154,23 @@ public class AdminTournamentController {
   }
 
   /**
+   * Reorders the complete list of player pairs for a tournament. Useful for manual draw management and seeding adjustments. Only the owner or super
+   * admins can reorder pairs.
+   *
+   * @param id the tournament ID
+   * @param pairIds ordered list of pair IDs (must contain all existing pair IDs)
+   * @return ResponseEntity with no content on success
+   */
+  @PutMapping(path = "/{id}/pairs/reorder", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Void> reorderPlayerPairs(@PathVariable Long id,
+                                                 @RequestBody @Valid List<Long> pairIds) {
+    checkOwnership(id);
+
+    playerPairService.reorderPlayerPairs(id, pairIds);
+    return ResponseEntity.noContent().build();
+  }
+
+  /**
    * Updates the match format for a specific tournament round/stage. Only the owner or super admins can modify match formats.
    *
    * @param id the tournament ID
@@ -218,7 +235,7 @@ public class AdminTournamentController {
         "details", a != null ? a.getDetails() : "none"
     ));
   }
-  
+
   /**
    * Generates a manual draw using user-provided initial rounds. Replaces the tournament structure with the provided rounds configuration.
    *

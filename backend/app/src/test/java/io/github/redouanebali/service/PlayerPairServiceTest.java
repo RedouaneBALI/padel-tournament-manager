@@ -2,6 +2,7 @@ package io.github.redouanebali.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
@@ -259,5 +260,153 @@ class PlayerPairServiceTest {
     long byeCount = updated.getPlayerPairs().stream().filter(PlayerPair::isBye).count();
     assertEquals(expectedByes, byeCount);
     assertEquals(initialPairs + expectedByes, updated.getPlayerPairs().size());
+  }
+
+  @Test
+  void testReorderPlayerPairs_shouldPreserveExactOrderIncludingByeAndQualifier() {
+    // Given: A tournament with 5 pairs including normal pairs, BYE, and QUALIFIER
+    Tournament tournament = new Tournament();
+    tournament.setId(1L);
+    tournament.setOwnerId("bali.redouane@gmail.com");
+
+    PlayerPair pair1 = new PlayerPair("Alice", "Bob", 1);
+    pair1.setId(10L);
+
+    PlayerPair pair2 = new PlayerPair("Charlie", "Dave", 2);
+    pair2.setId(20L);
+
+    PlayerPair byePair = PlayerPair.bye();
+    byePair.setId(30L);
+
+    PlayerPair pair3 = new PlayerPair("Eve", "Frank", 3);
+    pair3.setId(40L);
+
+    PlayerPair qualifierPair = PlayerPair.qualifier(1);
+    qualifierPair.setId(50L);
+
+    // Original order: pair1, pair2, BYE, pair3, QUALIFIER
+    tournament.getPlayerPairs().add(pair1);
+    tournament.getPlayerPairs().add(pair2);
+    tournament.getPlayerPairs().add(byePair);
+    tournament.getPlayerPairs().add(pair3);
+    tournament.getPlayerPairs().add(qualifierPair);
+
+    when(tournamentRepository.findByIdWithLock(1L)).thenReturn(Optional.of(tournament));
+    when(tournamentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+    // When: Reorder to: pair3, BYE, pair1, QUALIFIER, pair2
+    List<Long> newOrder = List.of(40L, 30L, 10L, 50L, 20L);
+    playerPairService.reorderPlayerPairs(1L, newOrder);
+
+    // Then: Verify the exact new order is preserved
+    List<PlayerPair> reordered = tournament.getPlayerPairs();
+    assertEquals(5, reordered.size());
+
+    assertEquals(40L, reordered.get(0).getId()); // pair3 (Eve/Frank)
+    assertEquals("Eve", reordered.get(0).getPlayer1().getName());
+
+    assertEquals(30L, reordered.get(1).getId()); // BYE
+    assertTrue(reordered.get(1).isBye());
+
+    assertEquals(10L, reordered.get(2).getId()); // pair1 (Alice/Bob)
+    assertEquals("Alice", reordered.get(2).getPlayer1().getName());
+
+    assertEquals(50L, reordered.get(3).getId()); // QUALIFIER
+    assertTrue(reordered.get(3).isQualifier());
+
+    assertEquals(20L, reordered.get(4).getId()); // pair2 (Charlie/Dave)
+    assertEquals("Charlie", reordered.get(4).getPlayer1().getName());
+  }
+
+  @Test
+  void testReorderPlayerPairs_shouldThrowIfMissingPairIds() {
+    // Given: A tournament with 3 pairs
+    Tournament tournament = new Tournament();
+    tournament.setId(1L);
+    tournament.setOwnerId("bali.redouane@gmail.com");
+
+    PlayerPair pair1 = new PlayerPair("Alice", "Bob", 1);
+    pair1.setId(10L);
+
+    PlayerPair pair2 = new PlayerPair("Charlie", "Dave", 2);
+    pair2.setId(20L);
+
+    PlayerPair pair3 = new PlayerPair("Eve", "Frank", 3);
+    pair3.setId(30L);
+
+    tournament.getPlayerPairs().add(pair1);
+    tournament.getPlayerPairs().add(pair2);
+    tournament.getPlayerPairs().add(pair3);
+
+    when(tournamentRepository.findByIdWithLock(1L)).thenReturn(Optional.of(tournament));
+
+    // When: Try to reorder with only 2 IDs (missing one)
+    List<Long> incompleteOrder = List.of(10L, 20L);
+
+    // Then: Should throw IllegalArgumentException
+    assertThrows(IllegalArgumentException.class,
+                 () -> playerPairService.reorderPlayerPairs(1L, incompleteOrder));
+  }
+
+  @Test
+  void testReorderPlayerPairs_shouldThrowIfExtraPairIds() {
+    // Given: A tournament with 2 pairs
+    Tournament tournament = new Tournament();
+    tournament.setId(1L);
+    tournament.setOwnerId("bali.redouane@gmail.com");
+
+    PlayerPair pair1 = new PlayerPair("Alice", "Bob", 1);
+    pair1.setId(10L);
+
+    PlayerPair pair2 = new PlayerPair("Charlie", "Dave", 2);
+    pair2.setId(20L);
+
+    tournament.getPlayerPairs().add(pair1);
+    tournament.getPlayerPairs().add(pair2);
+
+    when(tournamentRepository.findByIdWithLock(1L)).thenReturn(Optional.of(tournament));
+
+    // When: Try to reorder with 3 IDs (extra one)
+    List<Long> orderWithExtra = List.of(10L, 20L, 99L);
+
+    // Then: Should throw IllegalArgumentException
+    assertThrows(IllegalArgumentException.class,
+                 () -> playerPairService.reorderPlayerPairs(1L, orderWithExtra));
+  }
+
+  @Test
+  void testReorderPlayerPairs_shouldWorkWithOnlyNormalPairs() {
+    // Given: A tournament with only normal pairs (no BYE, no QUALIFIER)
+    Tournament tournament = new Tournament();
+    tournament.setId(1L);
+    tournament.setOwnerId("bali.redouane@gmail.com");
+
+    PlayerPair pair1 = new PlayerPair("Alice", "Bob", 1);
+    pair1.setId(10L);
+
+    PlayerPair pair2 = new PlayerPair("Charlie", "Dave", 2);
+    pair2.setId(20L);
+
+    PlayerPair pair3 = new PlayerPair("Eve", "Frank", 3);
+    pair3.setId(30L);
+
+    // Original order: pair1, pair2, pair3
+    tournament.getPlayerPairs().add(pair1);
+    tournament.getPlayerPairs().add(pair2);
+    tournament.getPlayerPairs().add(pair3);
+
+    when(tournamentRepository.findByIdWithLock(1L)).thenReturn(Optional.of(tournament));
+    when(tournamentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+    // When: Reorder to: pair3, pair1, pair2
+    List<Long> newOrder = List.of(30L, 10L, 20L);
+    playerPairService.reorderPlayerPairs(1L, newOrder);
+
+    // Then: Verify the new order
+    List<PlayerPair> reordered = tournament.getPlayerPairs();
+    assertEquals(3, reordered.size());
+    assertEquals(30L, reordered.get(0).getId());
+    assertEquals(10L, reordered.get(1).getId());
+    assertEquals(20L, reordered.get(2).getId());
   }
 }

@@ -49,35 +49,36 @@ public interface TournamentMapper {
     dto.setId(playerPair.getId());
     dto.setType(playerPair.getType());
 
-    // Cas 1 : C'est un QUALIFIER (placeholder pour une paire qui viendra des qualifications)
+    // Case 1: QUALIFIER (placeholder for a pair that will come from qualifications)
     if (playerPair.isQualifier()) {
       dto.setQualifierSlot(true);
-      // Important : PAS de noms de joueurs pour les qualifiers
-      // Le front affichera juste "(Q1)", "(Q2)", etc. via displaySeed
+      // Important: NO player names for qualifiers
+      // The frontend will display just "(Q1)", "(Q2)", etc. via displaySeed
       dto.setPlayer1Name(null);
       dto.setPlayer2Name(null);
-      // Get the qualifier number from Player name (e.g., "Q1", "Q2", etc.)
-      String qualifierName = playerPair.getPlayer1() != null ? playerPair.getPlayer1().getName() : "Q";
+      // Get the qualifier number from the dedicated qualifierIndex field
+      Integer qualifierIndex = playerPair.getQualifierIndex();
+      String  qualifierName  = qualifierIndex != null ? "Q" + qualifierIndex : "Q";
       dto.setDisplaySeed(qualifierName); // Display "Q1", "Q2", etc. for frontend to show "(Q1)", "(Q2)"
       return dto;
     }
 
-    // Cas 2 : C'est un BYE (bye automatique)
+    // Case 2: BYE (automatic bye)
     if (playerPair.isBye()) {
       dto.setBye(true);
       dto.setDisplaySeed(null);
-      // Les BYE peuvent garder leurs noms "BYE" / "BYE" si nécessaire
+      // BYEs can keep their names "BYE" / "BYE" if necessary
       dto.setPlayer1Name(playerPair.getPlayer1() != null ? playerPair.getPlayer1().getName() : null);
       dto.setPlayer2Name(playerPair.getPlayer2() != null ? playerPair.getPlayer2().getName() : null);
       return dto;
     }
 
-    // Cas 3 : Paire NORMALE (avec de vrais joueurs)
+    // Case 3: NORMAL pair (with real players)
     dto.setPlayer1Name(playerPair.getPlayer1() != null ? playerPair.getPlayer1().getName() : null);
     dto.setPlayer2Name(playerPair.getPlayer2() != null ? playerPair.getPlayer2().getName() : null);
     dto.setSeed(playerPair.getSeed());
 
-    // Display seed pour l'UI
+    // Display seed for UI
     if (playerPair.getSeed() > 0 && playerPair.getSeed() < Integer.MAX_VALUE) {
       dto.setDisplaySeed(String.valueOf(playerPair.getSeed()));
     } else {
