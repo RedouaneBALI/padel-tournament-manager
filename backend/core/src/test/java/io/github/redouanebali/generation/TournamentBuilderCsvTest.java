@@ -381,9 +381,14 @@ class TournamentBuilderCsvTest {
                                               .filter(p -> !(p.isBye() ||
                                                              (p.getPlayer1() != null && "BYE".equals(p.getPlayer1().getName()) &&
                                                               p.getPlayer2() != null && "BYE".equals(p.getPlayer2().getName()))))
+                                              // On ignore aussi les QUALIFIER (placeholders pour les qualifications)
+                                              .filter(p -> !p.isQualifier())
+                                              // On ignore les équipes avec des noms null (qualifiers mal initialisés)
+                                              .filter(p -> p.getPlayer1() != null && p.getPlayer1().getName() != null &&
+                                                           p.getPlayer2() != null && p.getPlayer2().getName() != null)
                                               .map(p -> {
-                                                String p1   = p.getPlayer1() != null ? p.getPlayer1().getName() : "?";
-                                                String p2   = p.getPlayer2() != null ? p.getPlayer2().getName() : "?";
+                                                String p1   = p.getPlayer1().getName();
+                                                String p2   = p.getPlayer2().getName();
                                                 int    seed = p.getSeed();
                                                 return p1 + "/" + p2 + "#seed=" + seed;
                                               })

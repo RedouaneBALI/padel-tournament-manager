@@ -42,9 +42,11 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 class DrawGenerationServiceTest {
 
   @Mock
-  private TournamentRepository tournamentRepository;
+  private TournamentRepository              tournamentRepository;
   @Mock
-  private SecurityProps        securityProps;
+  private SecurityProps                     securityProps;
+  @Mock
+  private jakarta.persistence.EntityManager entityManager;
 
   @InjectMocks
   private DrawGenerationService drawGenerationService;

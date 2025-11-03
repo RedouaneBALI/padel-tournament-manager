@@ -11,7 +11,8 @@ import lombok.NoArgsConstructor;
 public class PlayerPairRequest {
 
   private PairType type;
-  private Long     pairId; // requis si type == "PAIR"
+  private Long     pairId; // required if type == "PAIR"
+  private Integer  seed;   // used for qualifier number (Q1, Q2, etc.)
 
   public static PlayerPair toModel(PlayerPairRequest req, Tournament tournament) {
     if (req == null) {
@@ -21,7 +22,9 @@ public class PlayerPairRequest {
       return PlayerPair.bye();
     }
     if (req.isQualifier()) {
-      return PlayerPair.qualifier();
+      // Use qualifier index if provided, otherwise default to 1
+      int qualifierIndex = (req.getSeed() != null && req.getSeed() > 0) ? req.getSeed() : 1;
+      return PlayerPair.qualifier(qualifierIndex);
     }
     if (req.getType() == PairType.NORMAL && req.getPairId() != null) {
       return tournament.getPlayerPairs().stream()

@@ -271,20 +271,20 @@ class TournamentMapperTest {
   @Test
   void testPlayerPairToDTO_withQualifierType() {
     // Given: A QUALIFIER pair
-    PlayerPair pair = PlayerPair.qualifier();
+    PlayerPair pair = PlayerPair.qualifier(1);
     pair.setId(3L);
 
     // When: Mapping to DTO
     PlayerPairDTO dto = mapper.toDTO(pair);
 
-    // Then: Type should be QUALIFIER with NO player names
+    // Then: Type should be QUALIFIER with NO player names, only displaySeed
     assertNotNull(dto);
     assertEquals(PairType.QUALIFIER, dto.getType());
     assertNull(dto.getPlayer1Name()); // Important: no names for qualifiers
     assertNull(dto.getPlayer2Name()); // Important: no names for qualifiers
     assertTrue(dto.isQualifierSlot());
     assertNull(dto.getSeed()); // Qualifiers don't have a visible seed
-    assertEquals("Q", dto.getDisplaySeed());
+    assertEquals("Q1", dto.getDisplaySeed()); // Display "Q1" so frontend shows "(Q1)"
   }
 
   @Test
@@ -329,14 +329,14 @@ class TournamentMapperTest {
 
   @Test
   void testPlayerPairDTO_jsonSerialization_qualifierType() throws JsonProcessingException {
-    // Given: A DTO with QUALIFIER type
+    // Given: A DTO with QUALIFIER type (no player names, only displaySeed)
     PlayerPairDTO dto = new PlayerPairDTO();
     dto.setId(3L);
-    dto.setPlayer1Name("Q");
-    dto.setPlayer2Name("Q");
+    dto.setPlayer1Name(null); // No player names for qualifiers
+    dto.setPlayer2Name(null); // No player names for qualifiers
     dto.setQualifierSlot(true);
     dto.setType(PairType.QUALIFIER);
-    dto.setDisplaySeed("Q");
+    dto.setDisplaySeed("Q1");
 
     // When: Serialization to JSON
     String json = objectMapper.writeValueAsString(dto);
@@ -345,7 +345,7 @@ class TournamentMapperTest {
     assertTrue(json.contains("\"type\":\"QUALIFIER\""),
                "Le champ 'type' devrait apparaître avec la valeur 'QUALIFIER'");
     assertTrue(json.contains("\"qualifierSlot\":true"));
-    assertTrue(json.contains("\"displaySeed\":\"Q\""));
+    assertTrue(json.contains("\"displaySeed\":\"Q1\""));
   }
 
   @Test
@@ -358,7 +358,7 @@ class TournamentMapperTest {
     normalTeam.setSeed(1);
     normalTeam.setType(PairType.NORMAL);
 
-    PlayerPair qualifierTeam = PlayerPair.qualifier();
+    PlayerPair qualifierTeam = PlayerPair.qualifier(1);
     qualifierTeam.setId(2L);
 
     Game game = new Game();
@@ -384,7 +384,7 @@ class TournamentMapperTest {
     assertNull(teamBDto.getPlayer1Name()); // Important: no names for qualifiers
     assertNull(teamBDto.getPlayer2Name()); // Important: no names for qualifiers
     assertTrue(teamBDto.isQualifierSlot());
-    assertEquals("Q", teamBDto.getDisplaySeed());
+    assertEquals("Q1", teamBDto.getDisplaySeed()); // Display "Q1" so frontend shows "(Q1)"
   }
 
   @Test

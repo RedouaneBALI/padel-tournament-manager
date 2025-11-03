@@ -70,14 +70,16 @@ public class StaggeredSeedPlacementUtil {
     // All seeds enter later, so we place QUALIFIERs at their positions
     final List<Integer> allSeedSlots = SeedPlacementUtil.getSeedsPositions(round.getGames().size() * 2, totalSeeds);
 
+    int qualifierIndex = 1;
     for (int slot : allSeedSlots) {
       TeamSlot   teamSlot  = GameSlotUtil.getTeamSlot(slot);
       Game       game      = round.getGames().get(teamSlot.gameIndex());
-      PlayerPair qualifier = PlayerPair.qualifier();
+      PlayerPair qualifier = PlayerPair.qualifier(qualifierIndex);
 
       // Only place if slot is empty
       if (GameSlotUtil.isSlotEmpty(game, teamSlot.side())) {
         GameSlotUtil.setTeam(game, teamSlot.side(), qualifier);
+        qualifierIndex++;
       }
     }
   }

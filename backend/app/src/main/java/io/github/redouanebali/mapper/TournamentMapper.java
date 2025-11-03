@@ -52,9 +52,13 @@ public interface TournamentMapper {
     // Cas 1 : C'est un QUALIFIER (placeholder pour une paire qui viendra des qualifications)
     if (playerPair.isQualifier()) {
       dto.setQualifierSlot(true);
-      dto.setDisplaySeed(playerPair.toString());
       // Important : PAS de noms de joueurs pour les qualifiers
-      // Le front affichera juste "Q"
+      // Le front affichera juste "(Q1)", "(Q2)", etc. via displaySeed
+      dto.setPlayer1Name(null);
+      dto.setPlayer2Name(null);
+      // Get the qualifier number from Player name (e.g., "Q1", "Q2", etc.)
+      String qualifierName = playerPair.getPlayer1() != null ? playerPair.getPlayer1().getName() : "Q";
+      dto.setDisplaySeed(qualifierName); // Display "Q1", "Q2", etc. for frontend to show "(Q1)", "(Q2)"
       return dto;
     }
 

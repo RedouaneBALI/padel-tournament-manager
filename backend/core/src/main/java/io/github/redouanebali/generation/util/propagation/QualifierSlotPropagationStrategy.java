@@ -18,59 +18,75 @@ public class QualifierSlotPropagationStrategy implements PropagationStrategy {
 
   private final WinnerPropagationUtil util;
 
-  // Cache to store initial QUALIFIER slots per games list
-  private List<QualifierSlot> cachedQualifierSlots = null;
-  private List<Game>          cachedNextGames      = null;
 
   @Override
   public boolean placeWinner(List<Game> nextGames, int currentGameIndex, PlayerPair winner) {
-    // CORRECTION: Collect QUALIFIER slots ONLY ONCE at the beginning
-    // so that the match index always corresponds to the same slot
+    // Find the SPECIFIC qualifier with number = currentGameIndex + 1
+    // For example: match 0 -> find Q1, match 1 -> find Q2, etc.
+    // This ensures each match always targets its corresponding qualifier number
 
-    // If it's a new round, recalculate the slots
-    if (cachedNextGames != nextGames) {
-      cachedNextGames      = nextGames;
-      cachedQualifierSlots = collectInitialQualifierSlots(nextGames);
+    int           targetQualifierNumber = currentGameIndex + 1;
+    QualifierSlot targetSlot            = findQualifierByNumber(nextGames, targetQualifierNumber);
 
-      log.debug("[QualifierSlotPropagationStrategy] Initialized with {} qualifier slots for round",
-                cachedQualifierSlots.size());
-    }
-
-    // Check that the match index is valid
-    if (currentGameIndex < 0 || currentGameIndex >= cachedQualifierSlots.size()) {
-      return util.placeWinnerInQualifierOrAvailableSlot(nextGames, winner);
-    }
-
-    // Place the winner in the corresponding Nth QUALIFIER slot
-    QualifierSlot targetSlot = cachedQualifierSlots.get(currentGameIndex);
-    Game          targetGame = nextGames.get(targetSlot.gameIndex);
-
-    // Check that the slot is still a QUALIFIER (in case it was modified)
-    PlayerPair currentTeam = targetSlot.isTeamA ? targetGame.getTeamA() : targetGame.getTeamB();
-    if (currentTeam == null || currentTeam.getType() != PairType.QUALIFIER) {
-      log.debug("[QualifierSlotPropagationStrategy] WARNING: Slot Q{} (Game[{}].{}) is no longer a QUALIFIER, using fallback",
-                currentGameIndex + 1, targetSlot.gameIndex, targetSlot.isTeamA ? "TeamA" : "TeamB");
-      return util.placeWinnerInQualifierOrAvailableSlot(nextGames, winner);
-    }
-
-    // Si winner est null, on réinitialise le slot QUALIFIER
-    if (winner == null) {
-      if (targetSlot.isTeamA) {
-        targetGame.setTeamA(null);
-      } else {
-        targetGame.setTeamB(null);
+    if (targetSlot == null) {
+      // Qualifier not found (already replaced or doesn't exist)
+      if (winner != null) {
+        log.debug("[QualifierSlotPropagationStrategy] Q{} not found (already replaced), skipping", targetQualifierNumber);
       }
       return true;
     }
 
-    log.debug("[QualifierSlotPropagationStrategy] Placing winner (seed {}) in slot Q{} -> Game[{}].{}",
-              winner.getSeed(), currentGameIndex + 1, targetSlot.gameIndex, targetSlot.isTeamA ? "TeamA" : "TeamB");
+    Game targetGame = nextGames.get(targetSlot.gameIndex);
+
+    // Si winner est null, garder le QUALIFIER tel quel (ne rien faire)
+    if (winner == null) {
+      log.debug("[QualifierSlotPropagationStrategy] No winner for match {}, keeping Q{} as is",
+                currentGameIndex, targetQualifierNumber);
+      return true;
+    }
+
+    // Place the winner
+    log.debug("[QualifierSlotPropagationStrategy] Placing winner (seed {}) in Q{} -> Game[{}].{}",
+              winner.getSeed(), targetQualifierNumber, targetSlot.gameIndex, targetSlot.isTeamA ? "TeamA" : "TeamB");
     if (targetSlot.isTeamA) {
       targetGame.setTeamA(winner);
     } else {
       targetGame.setTeamB(winner);
     }
     return true;
+  }
+
+  /**
+   * Find a qualifier by its specific number (e.g., Q1, Q2, Q3) Returns null if the qualifier is not found (already replaced)
+   */
+  private QualifierSlot findQualifierByNumber(List<Game> nextGames, int qualifierNumber) {
+    String targetName = "Q" + qualifierNumber;
+
+    for (int i = 0; i < nextGames.size(); i++) {
+      Game game = nextGames.get(i);
+
+      // Check teamA
+      if (game.getTeamA() != null && game.getTeamA().isQualifier()) {
+        String qualifierName = game.getTeamA().getPlayer1() != null
+                               ? game.getTeamA().getPlayer1().getName()
+                               : "Q";
+        if (targetName.equals(qualifierName)) {
+          return new QualifierSlot(i, true);
+        }
+      }
+
+      // Check teamB
+      if (game.getTeamB() != null && game.getTeamB().isQualifier()) {
+        String qualifierName = game.getTeamB().getPlayer1() != null
+                               ? game.getTeamB().getPlayer1().getName()
+                               : "Q";
+        if (targetName.equals(qualifierName)) {
+          return new QualifierSlot(i, false);
+        }
+      }
+    }
+
+    return null; // Qualifier not found
   }
 
   /**

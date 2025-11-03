@@ -97,17 +97,13 @@ public class WinnerPropagationUtil {
   }
 
   /**
-   * Reset qualifier slots
+   * Reset qualifier slots - DO NOT recreate them, just leave them as is The QualifierSlotPropagationStrategy will place winners in the correct slots
+   * based on the initial qualifier positions
    */
   private void resetQualifierSlots(List<Game> nextGames) {
-    for (Game ng : nextGames) {
-      if (ng.getTeamA() != null && ng.getTeamA().getType() == PairType.QUALIFIER) {
-        ng.setTeamA(null);
-      }
-      if (ng.getTeamB() != null && ng.getTeamB().getType() == PairType.QUALIFIER) {
-        ng.setTeamB(null);
-      }
-    }
+    // DO NOTHING - qualifiers should stay in place
+    // The propagation strategy tracks which qualifiers have been replaced
+    // and only replaces the correct ones based on currentGameIndex
   }
 
   /**

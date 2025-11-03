@@ -1,6 +1,7 @@
 package io.github.redouanebali.generation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.redouanebali.model.Game;
@@ -538,6 +539,189 @@ class KnockoutPhaseTests {
                  + "while the remaining 8 non-seeds get BYES");
   }
 
+
+  /**
+   * CRITICAL TEST: Verify that qualifiers are correctly propagated with their numbers (Q1, Q2, etc.) This test reproduces the production bug where: -
+   * First qualifier replaces Q1 correctly - But other qualifiers get erased or duplicated
+   */
+  @Test
+  void testQualifierPropagation_maintainsCorrectQualifierNumbers() {
+    // Given: Tournament with 4 qualif matches -> 4 qualifiers to main draw of 8
+    Tournament tournament = TestFixtures.makeTournament(
+        8,  // preQualDrawSize: 8 teams in qualification
+        4,  // nbQualifiers: 4 teams qualify to main draw
+        8,  // mainDrawSize: 8 slots in main draw
+        4,  // nbSeedsMain: 4 top seeds go direct to main draw
+        2,  // nbSeedsQualify: 2 seeds in qualifications
+        DrawMode.MANUAL
+    );
+
+    // Create 12 teams total: 8 for qualifications + 4 for direct main draw
+    List<PlayerPair> allTeams = TestFixtures.createPlayerPairs(12);
+
+    // First 4 teams (seeds 1-4) go directly to main draw
+    List<PlayerPair> directTeams = allTeams.subList(0, 4);
+    for (int i = 0; i < directTeams.size(); i++) {
+      directTeams.get(i).setSeed(i + 1); // Seeds 1-4 for direct entries
+    }
+
+    // Last 8 teams (seeds 100-107) go to qualifications
+    List<PlayerPair> qualifTeams = allTeams.subList(4, 12);
+    for (int i = 0; i < qualifTeams.size(); i++) {
+      qualifTeams.get(i).setSeed(100 + i); // Seeds 100-107 for qualif teams
+    }
+
+    // Initialize tournament structure
+    TournamentBuilder.initializeEmptyRounds(tournament);
+
+    // Manually place teams in Q1 (4 matches = 8 teams)
+    Round q1Round = tournament.getRoundByStage(Stage.Q1);
+    assertEquals(4, q1Round.getGames().size(), "Q1 should have 4 games");
+
+    for (int i = 0; i < 4; i++) {
+      Game game = q1Round.getGames().get(i);
+      game.setTeamA(qualifTeams.get(i * 2));
+      game.setTeamB(qualifTeams.get(i * 2 + 1));
+    }
+
+    // Manually place 4 direct teams + 4 QUALIFIER placeholders in main draw
+    Round mainRound = tournament.getRoundByStage(Stage.QUARTERS);
+    assertNotNull(mainRound, "Main draw round must exist");
+    assertEquals(4, mainRound.getGames().size(), "Main draw should have 4 games");
+
+    // Place direct teams and qualifiers manually
+    mainRound.getGames().get(0).setTeamA(directTeams.get(0)); // Seed 1
+    mainRound.getGames().get(0).setTeamB(PlayerPair.qualifier(1)); // Q1
+
+    mainRound.getGames().get(1).setTeamA(directTeams.get(1)); // Seed 2
+    mainRound.getGames().get(1).setTeamB(PlayerPair.qualifier(2)); // Q2
+
+    mainRound.getGames().get(2).setTeamA(directTeams.get(2)); // Seed 3
+    mainRound.getGames().get(2).setTeamB(PlayerPair.qualifier(3)); // Q3
+
+    mainRound.getGames().get(3).setTeamA(directTeams.get(3)); // Seed 4
+    mainRound.getGames().get(3).setTeamB(PlayerPair.qualifier(4)); // Q4
+
+    // Verify main draw has 4 QUALIFIER placeholders initially
+    assertNotNull(mainRound, "Main draw round must exist");
+
+    long initialQualifiers = mainRound.getGames().stream()
+                                      .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                      .filter(t -> t != null && t.isQualifier())
+                                      .count();
+    assertEquals(4, initialQualifiers, "Main draw should have 4 QUALIFIER placeholders");
+
+    // Verify that qualifiers have correct numbers (Q1, Q2, Q3, Q4)
+    List<PlayerPair> initialQualifiersList = mainRound.getGames().stream()
+                                                      .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                                      .filter(t -> t != null && t.isQualifier())
+                                                      .toList();
+
+    System.out.println("\n=== INITIAL QUALIFIERS ===");
+    for (int i = 0; i < initialQualifiersList.size(); i++) {
+      PlayerPair q    = initialQualifiersList.get(i);
+      String     name = q.getPlayer1() != null ? q.getPlayer1().getName() : "null";
+      System.out.println("Qualifier " + (i + 1) + ": " + name);
+      assertEquals("Q" + (i + 1), name, "Qualifier should be Q" + (i + 1));
+    }
+
+    // Step 1: First team wins in Q1 Game 0
+    Game       firstQualifMatch = q1Round.getGames().get(0);
+    PlayerPair firstWinner      = firstQualifMatch.getTeamA(); // Team seed 100 wins
+    setGameWinner(firstQualifMatch, firstWinner);
+
+    // Propagate winners
+    TournamentBuilder.propagateWinners(tournament);
+
+    // Verify: Q1 should be replaced by firstWinner, Q2-Q4 should still be QUALIFIERS
+    System.out.println("\n=== AFTER FIRST WINNER ===");
+    List<PlayerPair> afterFirst = mainRound.getGames().stream()
+                                           .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                           .filter(Objects::nonNull)
+                                           .toList();
+
+    // Count only qualification winners (seeds 100+), NOT the direct entries (seeds 1-4)
+    long qualifWinnersCount = afterFirst.stream()
+                                        .filter(t -> !t.isQualifier() && !t.isBye())
+                                        .filter(t -> t.getSeed() >= 100) // Only qualification teams
+                                        .count();
+    long qualifiersCount = afterFirst.stream().filter(PlayerPair::isQualifier).count();
+
+    System.out.println("Qualification winners: " + qualifWinnersCount);
+    System.out.println("Qualifiers remaining: " + qualifiersCount);
+
+    assertEquals(1, qualifWinnersCount, "Should have 1 qualification winner (first winner)");
+    assertEquals(3, qualifiersCount, "Should still have 3 QUALIFIER placeholders");
+
+    // Verify remaining qualifiers are Q2, Q3, Q4 (not duplicates of Q1)
+    List<String> remainingQualifierNames = afterFirst.stream()
+                                                     .filter(PlayerPair::isQualifier)
+                                                     .map(q -> q.getPlayer1() != null ? q.getPlayer1().getName() : "null")
+                                                     .toList();
+
+    System.out.println("Remaining qualifiers: " + remainingQualifierNames);
+    assertTrue(remainingQualifierNames.contains("Q2"), "Should have Q2");
+    assertTrue(remainingQualifierNames.contains("Q3"), "Should have Q3");
+    assertTrue(remainingQualifierNames.contains("Q4"), "Should have Q4");
+
+    // Step 2: Second team wins in Q1 Game 1
+    Game       secondQualifMatch = q1Round.getGames().get(1);
+    PlayerPair secondWinner      = secondQualifMatch.getTeamA(); // Team seed 102 wins
+    setGameWinner(secondQualifMatch, secondWinner);
+
+    // Propagate winners again
+    TournamentBuilder.propagateWinners(tournament);
+
+    // Verify: Q1 and Q2 should be replaced, Q3-Q4 should still be QUALIFIERS
+    System.out.println("\n=== AFTER SECOND WINNER ===");
+    List<PlayerPair> afterSecond = mainRound.getGames().stream()
+                                            .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                            .filter(Objects::nonNull)
+                                            .toList();
+
+    // Count only qualification winners (seeds 100+), NOT the direct entries (seeds 1-4)
+    qualifWinnersCount = afterSecond.stream()
+                                    .filter(t -> !t.isQualifier() && !t.isBye())
+                                    .filter(t -> t.getSeed() >= 100) // Only qualification teams
+                                    .count();
+    qualifiersCount    = afterSecond.stream().filter(PlayerPair::isQualifier).count();
+
+    System.out.println("Qualification winners: " + qualifWinnersCount);
+    System.out.println("Qualifiers remaining: " + qualifiersCount);
+
+    // Debug: print all qualification winners
+    List<Integer> allQualifWinnerSeeds = afterSecond.stream()
+                                                    .filter(t -> !t.isQualifier() && !t.isBye())
+                                                    .filter(t -> t.getSeed() >= 100)
+                                                    .map(PlayerPair::getSeed)
+                                                    .toList();
+    System.out.println("All qualification winner seeds: " + allQualifWinnerSeeds);
+
+    assertEquals(2, qualifWinnersCount, "Should have 2 qualification winners (first + second winner)");
+    assertEquals(2, qualifiersCount, "Should still have 2 QUALIFIER placeholders");
+
+    // Verify remaining qualifiers are Q3, Q4 (not erased or duplicated)
+    remainingQualifierNames = afterSecond.stream()
+                                         .filter(PlayerPair::isQualifier)
+                                         .map(q -> q.getPlayer1() != null ? q.getPlayer1().getName() : "null")
+                                         .toList();
+
+    System.out.println("Remaining qualifiers: " + remainingQualifierNames);
+    assertTrue(remainingQualifierNames.contains("Q3"), "Should have Q3");
+    assertTrue(remainingQualifierNames.contains("Q4"), "Should have Q4");
+
+    // Verify that first and second winners are correctly placed
+    List<Integer> qualifWinnerSeeds = afterSecond.stream()
+                                                 .filter(t -> !t.isQualifier() && !t.isBye())
+                                                 .filter(t -> t.getSeed() >= 100) // Only qualification teams
+                                                 .map(PlayerPair::getSeed)
+                                                 .toList();
+
+    assertTrue(qualifWinnerSeeds.contains(100), "First winner (seed 100) should be in main draw");
+    assertTrue(qualifWinnerSeeds.contains(102), "Second winner (seed 102) should be in main draw");
+
+    System.out.println("\n=== TEST PASSED ===");
+  }
 
   /**
    * Helper method to set the winner of a game and update its score.

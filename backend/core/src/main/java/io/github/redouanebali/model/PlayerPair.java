@@ -63,17 +63,13 @@ public class PlayerPair {
     return byePair;
   }
 
-  public static PlayerPair qualifier() {
-    Player     q1    = new Player("Q");
-    Player     q2    = new Player("Q");
-    PlayerPair qPair = new PlayerPair();
-    qPair.setPlayer1(q1);
-    qPair.setPlayer2(q2);
-    qPair.setSeed(Integer.MAX_VALUE);
-    qPair.setType(PairType.QUALIFIER);
-    return qPair;
-  }
-
+  /**
+   * Creates a QUALIFIER placeholder with a specific number (Q1, Q2, Q3, etc.) This number is stored in the Player name and persisted to the
+   * database.
+   *
+   * @param index the qualifier number (1-based)
+   * @return a PlayerPair representing a qualifier slot
+   */
   public static PlayerPair qualifier(int index) {
     Player     q1    = new Player("Q" + index);
     Player     q2    = new Player("Q" + index);
