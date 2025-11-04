@@ -7,6 +7,8 @@ import io.github.redouanebali.model.format.TournamentConfig;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.Data;
 
 /**
@@ -57,4 +59,10 @@ public abstract class BaseTournamentRequest {
    */
   @Valid
   private TournamentConfig config;
+
+  /**
+   * Optional set of editor ids (emails or userIds) allowed to edit the tournament in addition to the primary owner. This field is optional on
+   * create/update. If absent or empty, only the primary owner can edit.
+   */
+  private Set<String> editorIds = new HashSet<>();
 }

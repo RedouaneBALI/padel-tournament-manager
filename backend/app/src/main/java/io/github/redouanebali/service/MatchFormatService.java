@@ -52,7 +52,7 @@ public class MatchFormatService {
 
     String      me          = SecurityUtil.currentUserId();
     Set<String> superAdmins = securityProps.getSuperAdmins();
-    if (!superAdmins.contains(me) && !me.equals(tournament.getOwnerId())) {
+    if (!superAdmins.contains(me) && !tournament.isEditableBy(me)) {
       throw new AccessDeniedException("You are not allowed to edit the match format for this tournament");
     }
 

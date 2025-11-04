@@ -1,20 +1,28 @@
+'use client';
+
 import { Settings, Users, Trophy, Zap } from 'lucide-react';
 import type { TournamentFormData } from '@/src/validation/tournament';
 import KnockoutConfigSection from '@/src/components/forms/config/KnockoutConfigSection';
 import GroupsKoConfigSection from '@/src/components/forms/config/GroupsKoConfigSection';
 import QualifKnockoutConfigSection from '@/src/components/forms/config/QualifKnockoutConfigSection';
+import { ReactMultiEmail } from 'react-multi-email';
+import 'react-multi-email/dist/style.css';
 
 const toStr = (v: unknown) => (v == null ? '' : String(v));
 
 interface TournamentConfigSectionProps {
   formData: TournamentFormData;
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
+  onEmailsChange: (emails: string[]) => void;
 }
 
 export default function TournamentConfigSection({
   formData,
-  handleInputChange
+  handleInputChange,
+  onEmailsChange
 }: TournamentConfigSectionProps) {
+  const emails = Array.isArray(formData.editorIds) ? formData.editorIds : [];
+
   return (
     <div className="bg-card">
       <div className="p-4 border-b border-border">
@@ -99,6 +107,34 @@ export default function TournamentConfigSection({
           )}
         </div>
 
+        {/* Editors emails */}
+        <div className="pt-4 border-t border-border">
+          <label className="block text-sm font-medium text-foreground mb-2">Éditeurs (emails)</label>
+          <div className="[&_.react-multi-email]:min-h-[80px] [&_.react-multi-email]:border [&_.react-multi-email]:border-input [&_.react-multi-email]:rounded-md [&_.react-multi-email]:p-2 [&_.react-multi-email]:bg-background [&_.react-multi-email]:text-foreground">
+            <ReactMultiEmail
+              emails={emails}
+              onChange={onEmailsChange}
+              placeholder="Entrez les adresses email des éditeurs"
+              getLabel={(email, index, removeEmail) => {
+                return (
+                  <div data-tag key={index} className="inline-flex items-center gap-1 px-2 py-1 mr-1 mb-1 rounded bg-primary/10 text-primary text-sm">
+                    <span>{email}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeEmail(index)}
+                      className="ml-1 text-lg leading-none hover:opacity-70"
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              }}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            Appuyez sur Entrée, Tab ou Espace pour ajouter une adresse.
+          </p>
+        </div>
 
       </div>
     </div>

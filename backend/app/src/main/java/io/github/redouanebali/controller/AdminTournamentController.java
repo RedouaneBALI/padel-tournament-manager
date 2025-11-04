@@ -23,7 +23,6 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -252,17 +251,18 @@ public class AdminTournamentController {
   }
 
   /**
-   * Verifies that the current user has ownership rights over a tournament. Throws AccessDeniedException if the user is not the owner or a super
-   * admin.
+   * Verifies that the current user has edit rights over a tournament. Allows access to: super admins, primary owner, and editors. Throws
+   * AccessDeniedException if the user lacks edit rights.
    *
-   * @param tournamentId the tournament ID to check ownership for
-   * @throws AccessDeniedException if the user lacks ownership rights
+   * @param tournamentId the tournament ID to check edit rights for
+   * @throws AccessDeniedException if the user lacks edit rights
    */
   private void checkOwnership(Long tournamentId) {
     String      me          = SecurityUtil.currentUserId();
     Tournament  tournament  = tournamentService.getTournamentById(tournamentId);
     Set<String> superAdmins = securityProps.getSuperAdmins();
-    if (!superAdmins.contains(me) && !Objects.equals(me, tournament.getOwnerId())) {
+    // Check if user is super-admin, owner, or editor
+    if (!superAdmins.contains(me) && !tournament.isEditableBy(me)) {
       throw new AccessDeniedException("You are not allowed to modify this tournament");
     }
   }

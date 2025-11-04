@@ -3,10 +3,13 @@ package io.github.redouanebali.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.github.redouanebali.model.format.TournamentConfig;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,7 +25,10 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -42,10 +48,17 @@ public class Tournament {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long             id;
-  // Who can edit this tournament (user email)
+  private Long   id;
+  // Primary owner (single main owner id, kept for backward compatibility)
   @Column(nullable = false, length = 191)
-  private String           ownerId;
+  private String ownerId;
+
+  // set of editor ids who are allowed to edit tournament (emails or userIds)
+  @ElementCollection(fetch = FetchType.EAGER)
+  @CollectionTable(name = "tournament_editors", joinColumns = @JoinColumn(name = "tournament_id"))
+  @Column(name = "editor_id", length = 191)
+  private Set<String> editorIds = new HashSet<>();
+
   @Column(nullable = false, updatable = false)
   private Instant          createdAt   = Instant.now();
   @Column(nullable = false)
@@ -80,7 +93,7 @@ public class Tournament {
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
   private LocalDate        endDate;
-  // Stockage TEXT pour H2, JSONB pour PostgreSQL (via Flyway migrations)
+  // Storage: JSON for config
   @Column(name = "config")
   @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
   private TournamentConfig config;
@@ -101,6 +114,49 @@ public class Tournament {
                .filter(round -> round.getStage() == stage)
                .findFirst()
                .orElseThrow(() -> new IllegalStateException("No round found for " + stage));
+  }
+
+  /**
+   * Convenience: return the editor ids set (never null)
+   */
+  public Set<String> getEditorIds() {
+    if (editorIds == null) {
+      editorIds = new HashSet<>();
+    }
+    return editorIds;
+  }
+
+  /**
+   * Add an editor (no-op if null/empty). Editors are additional users allowed to edit the tournament.
+   */
+  public void addEditor(String editorId) {
+    if (editorId == null || editorId.trim().isEmpty()) {
+      return;
+    }
+    getEditorIds().add(editorId.trim());
+  }
+
+  /**
+   * Remove an editor (no-op if null)
+   */
+  public void removeEditor(String editorId) {
+    if (editorId == null) {
+      return;
+    }
+    getEditorIds().remove(editorId);
+  }
+
+  /**
+   * Return true if userId is the primary owner or included in editorIds. Note: super-admin checks should be performed at service layer.
+   */
+  public boolean isEditableBy(String userId) {
+    if (userId == null) {
+      return false;
+    }
+    if (Objects.equals(this.ownerId, userId)) {
+      return true;
+    }
+    return getEditorIds().contains(userId);
   }
 
 }

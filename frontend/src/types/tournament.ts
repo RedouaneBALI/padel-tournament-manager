@@ -20,4 +20,5 @@ export interface Tournament {
   isEditable: boolean;
   currentRoundStage: Stage;
   config: TournamentFormatConfig;
+  editorIds: string[];
 }

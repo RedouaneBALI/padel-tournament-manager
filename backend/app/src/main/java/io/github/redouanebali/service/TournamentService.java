@@ -41,12 +41,12 @@ public class TournamentService {
   }
 
   /**
-   * Checks if the current user can edit the given tournament.
+   * Checks if the current user can edit the given tournament. Returns true if user is super-admin, owner, or editor.
    */
   private boolean canEditTournament(Tournament tournament) {
     String      me          = SecurityUtil.currentUserId();
     Set<String> superAdmins = securityProps.getSuperAdmins();
-    return superAdmins.contains(me) || me.equals(tournament.getOwnerId());
+    return superAdmins.contains(me) || tournament.isEditableBy(me);
   }
 
   /**
@@ -113,6 +113,12 @@ public class TournamentService {
     existing.setGender(updatedTournament.getGender());
     existing.setLevel(updatedTournament.getLevel());
     existing.setConfig(updatedTournament.getConfig());
+
+    // Update editorIds if provided (replace existing set with new one)
+    if (updatedTournament.getEditorIds() != null) {
+      existing.getEditorIds().clear();
+      existing.getEditorIds().addAll(updatedTournament.getEditorIds());
+    }
 
     return tournamentRepository.save(existing);
   }

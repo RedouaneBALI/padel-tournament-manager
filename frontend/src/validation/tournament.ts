@@ -80,6 +80,18 @@ export const TournamentFormSchema = z.object({
   startDate: z.preprocess(emptyToNull, z.string().nullable()).default(null),
   endDate: z.preprocess(emptyToNull, z.string().nullable()).default(null),
   config: TournamentFormatConfigSchema,
+  // liste d'adresses mails / identifiants des éditeurs autorisés
+  editorIds: z.preprocess((v) => {
+    // Accepte soit un tableau de chaînes, soit une chaîne (séparée par newline/comma)
+    if (Array.isArray(v)) return v.map(String);
+    if (typeof v === 'string') {
+      return v
+        .split(/[\n,;]+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
+    return [];
+  }, z.array(z.string()).default([])).default([]),
 })
 .superRefine((data, ctx) => {
   const { config } = data;

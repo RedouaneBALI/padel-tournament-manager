@@ -41,7 +41,7 @@ public class PlayerPairService {
                                                 .orElseThrow(() -> new IllegalArgumentException(TOURNAMENT_NOT_FOUND));
     String      me          = SecurityUtil.currentUserId();
     Set<String> superAdmins = securityProps.getSuperAdmins();
-    if (!superAdmins.contains(me) && !me.equals(tournament.getOwnerId())) {
+    if (!superAdmins.contains(me) && !tournament.isEditableBy(me)) {
       throw new AccessDeniedException("You are not allowed to modify pairs for this tournament");
     }
 
@@ -107,7 +107,7 @@ public class PlayerPairService {
 
     String      me          = SecurityUtil.currentUserId();
     Set<String> superAdmins = securityProps.getSuperAdmins();
-    if (!superAdmins.contains(me) && !me.equals(tournament.getOwnerId())) {
+    if (!superAdmins.contains(me) && !tournament.isEditableBy(me)) {
       throw new AccessDeniedException("You are not allowed to modify pairs for this tournament");
     }
 
@@ -157,7 +157,7 @@ public class PlayerPairService {
 
     String      me          = SecurityUtil.currentUserId();
     Set<String> superAdmins = securityProps.getSuperAdmins();
-    if (!superAdmins.contains(me) && !me.equals(tournament.getOwnerId())) {
+    if (!superAdmins.contains(me) && !tournament.isEditableBy(me)) {
       throw new AccessDeniedException("You are not allowed to modify pairs for this tournament");
     }
 

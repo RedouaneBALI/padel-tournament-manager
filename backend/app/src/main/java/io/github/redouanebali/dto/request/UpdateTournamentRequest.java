@@ -27,6 +27,4 @@ public class UpdateTournamentRequest extends BaseTournamentRequest {
     return super.getName();
   }
 
-  // Note: Pas de @FutureOrPresent sur startDate pour les mises à jour
-  // car on peut modifier des tournois existants même s'ils ont commencé
 }

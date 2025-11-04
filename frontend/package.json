@@ -10,9 +10,11 @@
     "dev": "next dev",
     "build": "next build",
     "clean:functions": "rm -rf .firebase/functions",
-    "build:functions": "npm run clean:functions && next build && npm run prepare:functions && npm run copy:files && npm run install:deps",    "prepare:functions": "rm -rf .firebase/functions && mkdir -p .firebase/functions",
+    "build:functions": "npm run clean:functions && next build && npm run prepare:functions && npm run copy:files && npm run install:deps",
+    "prepare:functions": "rm -rf .firebase/functions && mkdir -p .firebase/functions",
     "copy:files": "mkdir -p .firebase/functions/.next && cp -r .next/standalone/* .firebase/functions && cp -r .next/static .firebase/functions/.next/static && cp .next/BUILD_ID .firebase/functions/.next/BUILD_ID && cp .next/*.json .firebase/functions/.next/ && cp -r .next/server .firebase/functions/.next/server && cp -r .next/types .firebase/functions/.next/types && cp -r public .firebase/functions/public && cp functions.package.json .firebase/functions/package.json && cp functions/index.js .firebase/functions/index.js",
-    "install:deps": "npm --prefix .firebase/functions install --omit=dev",    "deploy:functions": "npm run build:functions && firebase deploy --only functions"
+    "install:deps": "npm --prefix .firebase/functions install --omit=dev",
+    "deploy:functions": "npm run build:functions && firebase deploy --only functions"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -33,6 +35,7 @@
     "react-datepicker": "^8.4.0",
     "react-dom": "^18.3.1",
     "react-icons": "^5.5.0",
+    "react-multi-email": "^1.0.25",
     "react-time-picker": "^8.0.2",
     "react-toastify": "^11.0.5",
     "tailwind-merge": "^3.3.1",

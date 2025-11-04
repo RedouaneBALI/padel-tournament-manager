@@ -16,6 +16,7 @@ export function getInitialFormData(initialData?: Partial<TournamentFormData>): T
     level: null,
     startDate: null,
     endDate: null,
+    editorIds: [],
     config: {
       format: 'KNOCKOUT',
       mainDrawSize: 32,
@@ -86,6 +87,13 @@ export function useTournamentForm(initialData?: Partial<TournamentFormData>) {
     });
   };
 
+  const handleEmailsChange = (emails: string[]) => {
+    setFormData((prev) => ({
+      ...prev,
+      editorIds: emails,
+    }));
+  };
+
   const validate = () => TournamentFormSchema.safeParse(formData);
 
   return {
@@ -94,6 +102,7 @@ export function useTournamentForm(initialData?: Partial<TournamentFormData>) {
     isSubmitting,
     setIsSubmitting,
     handleInputChange,
+    handleEmailsChange,
     validate,
   };
 }

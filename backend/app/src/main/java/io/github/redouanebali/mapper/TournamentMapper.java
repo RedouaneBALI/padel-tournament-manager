@@ -150,10 +150,11 @@ public interface TournamentMapper {
   default boolean isEditable(Tournament tournament) {
     String me = SecurityUtil.currentUserId();
     if (me == null) {
-      return false; // utilisateur non connecté
+      return false; // user not authenticated
     }
-    return SecurityUtil.isSuperAdmin(Set.of(me))
-           || (tournament.getOwnerId() != null && tournament.getOwnerId().equals(me));
+    // Rely on Tournament.isEditableBy which checks ownerId and editorIds
+    // Super-admin checks are performed at service/controller layer where SecurityProps is available
+    return tournament != null && tournament.isEditableBy(me);
   }
 
   /**
@@ -169,5 +170,6 @@ public interface TournamentMapper {
   @Mapping(target = "playerPairs", ignore = true)
   @Mapping(target = "createdAt", ignore = true)
   @Mapping(target = "updatedAt", ignore = true)
+  @Mapping(target = "editorIds", source = "editorIds")
   Tournament toEntity(CreateTournamentRequest request);
 }

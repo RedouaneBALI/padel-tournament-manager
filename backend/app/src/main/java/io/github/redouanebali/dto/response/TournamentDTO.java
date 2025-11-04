@@ -6,6 +6,7 @@ import io.github.redouanebali.model.TournamentLevel;
 import io.github.redouanebali.model.format.TournamentConfig;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,6 +27,7 @@ public class TournamentDTO {
   private TournamentConfig    config;
   private LocalDate           startDate;
   private LocalDate           endDate;
+  private Set<String>         editorIds;
 
   public Stage getCurrentRoundStage() {
     if (rounds == null || rounds.isEmpty()) {

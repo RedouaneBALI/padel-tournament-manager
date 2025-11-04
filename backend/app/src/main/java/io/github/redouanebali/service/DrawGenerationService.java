@@ -85,7 +85,7 @@ public class DrawGenerationService {
   private void assertCanInitialize(Tournament tournament) {
     String      me          = SecurityUtil.currentUserId();
     Set<String> superAdmins = securityProps.getSuperAdmins();
-    if (!superAdmins.contains(me) && !me.equals(tournament.getOwnerId())) {
+    if (!superAdmins.contains(me) && !tournament.isEditableBy(me)) {
       throw new AccessDeniedException("You are not allowed to initialize draw for this tournament");
     }
   }

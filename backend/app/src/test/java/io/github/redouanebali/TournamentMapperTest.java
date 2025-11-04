@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
+import io.github.redouanebali.dto.request.CreateTournamentRequest;
 import io.github.redouanebali.dto.response.GameDTO;
 import io.github.redouanebali.dto.response.MatchFormatDTO;
 import io.github.redouanebali.dto.response.PlayerPairDTO;
@@ -32,10 +33,15 @@ import io.github.redouanebali.model.format.TournamentConfig;
 import io.github.redouanebali.model.format.TournamentFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collections;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 class TournamentMapperTest {
 
@@ -71,6 +77,8 @@ class TournamentMapperTest {
     t.getPlayerPairs().add(pair);
     Round round = new Round(Stage.FINAL);
     t.getRounds().add(round);
+    t.getEditorIds().add("editor1@test.com");
+    t.getEditorIds().add("editor2@test.com");
 
     TournamentDTO dto = mapper.toDTO(t);
     assertNotNull(dto);
@@ -95,6 +103,10 @@ class TournamentMapperTest {
     assertNotNull(dto.getRounds());
     assertEquals(1, dto.getRounds().size());
     assertEquals(Stage.FINAL, dto.getRounds().getFirst().getStage());
+    assertNotNull(dto.getEditorIds());
+    assertEquals(2, dto.getEditorIds().size());
+    assertTrue(dto.getEditorIds().contains("editor1@test.com"));
+    assertTrue(dto.getEditorIds().contains("editor2@test.com"));
   }
 
   @Test
@@ -424,5 +436,54 @@ class TournamentMapperTest {
     PlayerPair    qualifierPair = PlayerPair.qualifier(1);
     PlayerPairDTO qualifierDto  = mapper.toDTO(qualifierPair);
     assertEquals("Q1", qualifierDto.getDisplaySeed());
+  }
+
+  @AfterEach
+  void tearDownAuth() {
+    SecurityContextHolder.clearContext();
+  }
+
+  private void setAuth(String email) {
+    Jwt jwt = Jwt.withTokenValue("fake")
+                 .header("alg", "none")
+                 .claim("email", email)
+                 .build();
+    JwtAuthenticationToken auth = new JwtAuthenticationToken(jwt, Collections.emptyList(), email);
+    SecurityContextHolder.getContext().setAuthentication(auth);
+  }
+
+  @Test
+  void testIsEditable_ownerAndEditors() {
+    Tournament t = new Tournament();
+    t.setId(100L);
+    t.setOwnerId("owner@test.com");
+    // add an editor
+    t.addEditor("editor@test.com");
+
+    // owner should be editable
+    setAuth("owner@test.com");
+    assertTrue(mapper.isEditable(t), "Owner must be editable");
+
+    // editor should be editable
+    setAuth("editor@test.com");
+    assertTrue(mapper.isEditable(t), "Editor must be editable");
+
+    // other user should NOT be editable
+    setAuth("random@test.com");
+    assertFalse(mapper.isEditable(t), "Random user should not be editable");
+  }
+
+  @Test
+  void testCreateTournamentRequest_mapsEditorIdsToEntity() {
+    CreateTournamentRequest req = new CreateTournamentRequest();
+    req.setName("Test Tour");
+    req.setEditorIds(java.util.Set.of("e1@test.com", "e2@test.com"));
+
+    Tournament t = mapper.toEntity(req);
+    // ownerId is ignored by mapper (set elsewhere), but editors should be mapped
+    assertNotNull(t);
+    assertEquals(2, t.getEditorIds().size());
+    assertTrue(t.getEditorIds().contains("e1@test.com"));
+    assertTrue(t.getEditorIds().contains("e2@test.com"));
   }
 }

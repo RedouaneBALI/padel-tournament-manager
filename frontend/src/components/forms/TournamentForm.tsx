@@ -27,7 +27,7 @@ export default function TournamentForm({
   isEditing = false,
   title,
 }: TournamentFormProps) {
-  const { formData, isSubmitting, setIsSubmitting, handleInputChange, validate } =
+  const { formData, isSubmitting, setIsSubmitting, handleInputChange, handleEmailsChange, validate } =
     useTournamentForm(initialData as Partial<TournamentFormData>);
   const router = useRouter();
 
@@ -86,7 +86,7 @@ export default function TournamentForm({
 
               <hr className="border-border" />
 
-              <TournamentConfigSection formData={formData} handleInputChange={handleInputChange} />
+              <TournamentConfigSection formData={formData} handleInputChange={handleInputChange} onEmailsChange={handleEmailsChange} />
 
               <hr className="border-border" />
             </form>
