@@ -20,6 +20,10 @@ export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, 
     Array.from({ length: 3 }, (_, i) => score?.sets[i]?.teamBScore?.toString() || ''),
   ]);
 
+  // Informations d'abandon (forfeit) si présentes
+  const isForfeit = !!score?.forfeit;
+  const forfeitedBy = score?.forfeitedBy || null;
+
   // Déterminer combien de sets afficher : nombre maximal de sets non vides entre les deux équipes
   const countNonEmpty = (arr: string[]) => arr.filter((s) => s !== '' && s !== undefined && s !== null).length;
   const visibleSets = Math.max(2, countNonEmpty(scores[0]), countNonEmpty(scores[1]));
@@ -44,6 +48,8 @@ export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, 
             editing={false}
             winnerSide={winnerSide}
             visibleSets={visibleSets}
+            forfeited={isForfeit && forfeitedBy === 'TEAM_A'}
+            showAbSlot={isForfeit}
           />
           <TeamScoreRow
             team={teamB}
@@ -52,6 +58,8 @@ export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, 
             editing={false}
             winnerSide={winnerSide}
             visibleSets={visibleSets}
+            forfeited={isForfeit && forfeitedBy === 'TEAM_B'}
+            showAbSlot={isForfeit}
           />
         </div>
       </div>

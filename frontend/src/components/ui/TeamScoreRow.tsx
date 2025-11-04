@@ -25,6 +25,7 @@ interface Props {
   visibleSets?: number;
   computeTabIndex?: (teamIndex: number, setIndex: number) => number;
   forfeited?: boolean;
+  showAbSlot?: boolean;
   onToggleForfeit?: () => void;
 }
 
@@ -40,6 +41,7 @@ export default function TeamScoreRow({
   visibleSets,
   computeTabIndex,
   forfeited,
+  showAbSlot,
   onToggleForfeit,
 }: Props) {
   const handleChange = (setIndex: number, value: string) => {
@@ -62,10 +64,14 @@ export default function TeamScoreRow({
   const CELL_GAP_REM = 0.125; // correspond à gap-0.5
   // On fixe la grille à 3 colonnes visibles maximum pour garder l'alignement à droite
   const MAX_DISPLAY_SETS = 3;
-  const containerWidthRem = MAX_DISPLAY_SETS * CELL_WIDTH_REM + (MAX_DISPLAY_SETS - 1) * CELL_GAP_REM;
+  // largeur de la zone AB en rem (choisie pour contenir la boîte du badge AB)
+  const AB_SLOT_WIDTH_REM = 1.15; // taille plus compacte pour éviter trop d'espace à droite
+  // container width includes AB slot and a small gap before it
+  const containerWidthRem = MAX_DISPLAY_SETS * CELL_WIDTH_REM + (MAX_DISPLAY_SETS - 1) * CELL_GAP_REM + AB_SLOT_WIDTH_REM + 0.25;
 
   return (
-    <div className="flex items-center pl-4 pr-2 h-[60px]">
+    // rendre relatif pour positionner le badge AB en absolute sans impacter le flux
+    <div className="relative flex items-center pl-4 pr-2 h-[60px]">
       {/* Bloc des noms qui prend tout l'espace disponible */}
       <div className="flex-1 min-w-0">
         <TeamRow team={team} winnerSide={winnerSide} teamIndex={teamIndex} />
@@ -107,30 +113,45 @@ export default function TeamScoreRow({
           </div>
         </div>
       ) : (
-        // Affichage normal : conteneur de largeur fixe (3 colonnes) aligné à droite
-        <div className="ml-auto" style={{ width: `${containerWidthRem}rem` }}>
-          <div className="flex items-center justify-end gap-0.5">
-            {(() => {
-              // On affiche MAX_DISPLAY_SETS cellules ; si moins de sets présents, on laisse des cellules vides à gauche
-              const offset = Math.max(0, MAX_DISPLAY_SETS - setsCount);
-              return Array.from({ length: MAX_DISPLAY_SETS }).map((_, i) => {
-                if (i < offset) {
-                  return <span key={i} className="w-4 text-center text-transparent">\u00A0</span>;
-                }
-                const scoreIndex = i - offset;
+        // Affichage normal : scores alignés à droite, AB (colonne) dans le flux uniquement si showAbSlot
+        (() => {
+          const baseWidthRem = setsCount * CELL_WIDTH_REM + Math.max(0, setsCount - 1) * CELL_GAP_REM;
+          // symmetric gap around AB: on utilise GAP_AROUND_AB (rem)
+          const GAP_AROUND_AB = CELL_GAP_REM; // 0.125rem
+          const abReservedRem = showAbSlot ? (2 * GAP_AROUND_AB + AB_SLOT_WIDTH_REM) : 0;
+          const containerWidthRem = baseWidthRem + abReservedRem;
+
+          // construire grid columns string: scores columns + (gap + AB + gap) si showAbSlot
+          const scoresCols = Array.from({ length: setsCount }).map(() => `${CELL_WIDTH_REM}rem`).join(' ');
+
+          const gridTemplate = showAbSlot
+            ? `${scoresCols} ${GAP_AROUND_AB}rem ${AB_SLOT_WIDTH_REM}rem ${GAP_AROUND_AB}rem`
+            : `${scoresCols}`;
+
+          return (
+            <div className="ml-auto" style={{ width: `${containerWidthRem}rem`, display: 'grid', gridTemplateColumns: gridTemplate, columnGap: `${CELL_GAP_REM}rem`, alignItems: 'center' }}>
+              {Array.from({ length: setsCount }).map((_, i) => {
                 const isWinner = winnerSide !== undefined && winnerSide === teamIndex;
                 return (
-                  <span key={i} className={`w-4 text-center tabular-nums ${isWinner ? 'font-bold' : ''}`}>{scores[scoreIndex] || ''}</span>
+                  <div key={`score-${i}`} className={`text-center tabular-nums text-base leading-none ${isWinner ? 'font-bold' : 'font-semibold'}`} style={{ justifySelf: 'center' }}>{scores[i] || ''}</div>
                 );
-              });
-            })()}
-            {forfeited && (
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border border-yellow-500/30 ml-1">
-                AB
-              </span>
-            )}
-          </div>
-        </div>
+              })}
+
+              {showAbSlot && (
+                // gap left cell (empty) will be created by grid template; now AB cell
+                <div key="ab-slot" style={{ width: `${AB_SLOT_WIDTH_REM}rem`, justifySelf: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {forfeited ? (
+                    <span className="inline-flex items-center justify-center h-5 text-[10px] font-bold px-1 py-0.5 rounded bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border border-yellow-500/30 leading-none">
+                      AB
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center justify-center h-5 px-1 py-0.5 rounded border border-transparent bg-transparent text-transparent leading-none">&nbsp;</span>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })()
       )}
     </div>
   );

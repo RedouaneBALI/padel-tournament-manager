@@ -97,7 +97,7 @@ export default function Home() {
                   <ImageSlider />
                   <div className="flex flex-col items-center w-full max-w-md mx-auto gap-3">
                     <Link
-                      href="/tournament/1"
+                      href="/tournament/12"
                       className="w-full text-center px-5 py-3 rounded-lg bg-gradient-to-r from-primary to-primary-hover text-on-primary font-semibold text-lg shadow-md hover:shadow-lg hover:scale-105 transform transition"
                     >
                       Voir l'exemple 🔎

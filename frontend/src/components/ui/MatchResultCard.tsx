@@ -255,6 +255,7 @@ export default function MatchResultCard({
           visibleSets={visibleSets}
           computeTabIndex={(tIdx, sIdx) => sIdx * 2 + (tIdx + 1)}
           forfeited={isForfeit && forfeitedBy === 'TEAM_A'}
+          showAbSlot={isForfeit}
           onToggleForfeit={() => {
             if (isForfeit && forfeitedBy === 'TEAM_A') {
               setIsForfeit(false);
@@ -277,6 +278,7 @@ export default function MatchResultCard({
           visibleSets={visibleSets}
           computeTabIndex={(tIdx, sIdx) => sIdx * 2 + (tIdx + 1)}
           forfeited={isForfeit && forfeitedBy === 'TEAM_B'}
+          showAbSlot={isForfeit}
           onToggleForfeit={() => {
             if (isForfeit && forfeitedBy === 'TEAM_B') {
               setIsForfeit(false);
