@@ -20,10 +20,14 @@ export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, 
     Array.from({ length: 3 }, (_, i) => score?.sets[i]?.teamBScore?.toString() || ''),
   ]);
 
+  // Déterminer combien de sets afficher : nombre maximal de sets non vides entre les deux équipes
+  const countNonEmpty = (arr: string[]) => arr.filter((s) => s !== '' && s !== undefined && s !== null).length;
+  const visibleSets = Math.max(2, countNonEmpty(scores[0]), countNonEmpty(scores[1]));
+
   const group = normalizeGroup(pool?.name);
 
   return (
-    <div className={`relative bg-card border border-border rounded-lg shadow-sm overflow-hidden min-w-[280px] max-w-[400px] transition-all duration-200`}>
+    <div className={`relative w-full bg-card border border-border rounded-lg shadow-sm overflow-hidden min-w-[280px] max-w-[400px] transition-all duration-200`}>
       {pool?.name && (
         <div className="px-2 pt-2">
           <div className={['inline-block text-xs font-medium rounded px-3 py-0.5', groupBadgeClasses(group)].join(' ')}>
@@ -39,6 +43,7 @@ export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, 
             scores={scores[0]}
             editing={false}
             winnerSide={winnerSide}
+            visibleSets={visibleSets}
           />
           <TeamScoreRow
             team={teamB}
@@ -46,6 +51,7 @@ export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, 
             scores={scores[1]}
             editing={false}
             winnerSide={winnerSide}
+            visibleSets={visibleSets}
           />
         </div>
       </div>
