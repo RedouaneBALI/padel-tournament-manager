@@ -61,7 +61,7 @@ export default function Home() {
             <p className="text-muted-foreground">Tirages automatiques · Tableaux knockout · Suivi des scores en direct</p>
             <div className="flex justify-center">
               <Image
-                src="/ptm-logo-cropped.png"
+                src="/pr-logo.png"
                 alt="Padel Tournament Manager"
                 className="h-40 w-auto"
                 width={1300}

@@ -263,7 +263,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
           ) : !manual ? (
             // --- MODE AUTO: on garde l'affichage actuel ---
             tournamentStarted ? (
-              <PlayerPairsList tournamentId={tournamentId} pairs={pairs} loading={loadingPairs} editable={true} />
+              <PlayerPairsList tournamentId={tournamentId} pairs={pairs} loading={loadingPairs} editable={true} tournamentStarted={tournamentStarted} />
             ) : (
               <>
                 <h2 className="text-base text-foreground px-2">
@@ -306,7 +306,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
 
               {activeTab === 'players' || tournamentStarted ? (
                 tournamentStarted ? (
-                  <PlayerPairsList tournamentId={tournamentId} pairs={pairs} loading={loadingPairs} editable={true} />
+                  <PlayerPairsList tournamentId={tournamentId} pairs={pairs} loading={loadingPairs} editable={true} tournamentStarted={tournamentStarted} />
                 ) : (
                   <>
                     <h2 className="text-base text-foreground px-2">

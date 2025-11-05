@@ -10,16 +10,28 @@ interface PlayerPairListProps {
   tournamentId: string | number;
   loading?: boolean;
   editable?: boolean;
+  tournamentStarted?: boolean;
 }
 
-export default function PlayerPairList({ pairs, tournamentId, loading = false, editable = false }: PlayerPairListProps) {
+export default function PlayerPairList({ pairs, tournamentId, loading = false, editable = false, tournamentStarted = false }: PlayerPairListProps) {
   const [editingPairId, setEditingPairId] = useState<number | null>(null);
   const [localPairs, setLocalPairs] = useState<PlayerPair[]>(pairs ?? []);
 
   // Keep local snapshot in sync when parent updates its list
   useEffect(() => {
-    setLocalPairs(pairs ?? []);
-  }, [pairs]);
+    let sortedPairs = pairs ?? [];
+
+    // Si le tournoi a démarré, trier par seed croissant
+    if (tournamentStarted) {
+      sortedPairs = [...sortedPairs].sort((a, b) => {
+        const seedA = parseInt(a.displaySeed || '999999', 10);
+        const seedB = parseInt(b.displaySeed || '999999', 10);
+        return seedA - seedB;
+      });
+    }
+
+    setLocalPairs(sortedPairs);
+  }, [pairs, tournamentStarted]);
 
   const hasPairs = (localPairs?.length ?? 0) > 0;
   if (!hasPairs) {

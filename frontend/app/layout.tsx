@@ -103,7 +103,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 {/* Center: logo */}
                 <Link href="/" className="flex items-center gap-2" aria-label="Accueil" title="Accueil">
                   <Image
-                    src="/ptm-logo-cropped.png"
+                    src="/pr-logo.png"
                     alt="Padel Tournament Manager"
                     width={32}
                     height={32}
