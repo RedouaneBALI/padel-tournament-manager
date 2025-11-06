@@ -62,7 +62,7 @@ export default function Home() {
             <div className="flex justify-center">
               <Image
                 src="/pr-logo.png"
-                alt="Padel Tournament Manager"
+                alt="Padel Rounds"
                 className="h-40 w-auto"
                 width={1300}
                 height={1300}

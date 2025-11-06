@@ -21,8 +21,8 @@ export default function PlayerPairList({ pairs, tournamentId, loading = false, e
   useEffect(() => {
     let sortedPairs = pairs ?? [];
 
-    // Si le tournoi a démarré, trier par seed croissant
-    if (tournamentStarted) {
+    // En mode public (non éditable) ou si le tournoi a démarré, trier par seed croissant
+    if (!editable || tournamentStarted) {
       sortedPairs = [...sortedPairs].sort((a, b) => {
         const seedA = parseInt(a.displaySeed || '999999', 10);
         const seedB = parseInt(b.displaySeed || '999999', 10);
@@ -31,7 +31,7 @@ export default function PlayerPairList({ pairs, tournamentId, loading = false, e
     }
 
     setLocalPairs(sortedPairs);
-  }, [pairs, tournamentStarted]);
+  }, [pairs, tournamentStarted, editable]);
 
   const hasPairs = (localPairs?.length ?? 0) > 0;
   if (!hasPairs) {

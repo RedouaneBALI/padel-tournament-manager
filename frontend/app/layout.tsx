@@ -104,7 +104,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <Link href="/" className="flex items-center gap-2" aria-label="Accueil" title="Accueil">
                   <Image
                     src="/pr-logo.png"
-                    alt="Padel Tournament Manager"
+                    alt="Padel Rounds"
                     width={32}
                     height={32}
                     priority
