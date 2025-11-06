@@ -49,6 +49,7 @@ export default function KnockoutBracket({ rounds, tournamentId }: KnockoutBracke
                         : undefined
                     : undefined
                 }
+                finished={game.finished}
               />
             </div>
           ))}

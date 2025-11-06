@@ -54,6 +54,7 @@ export default function GamesList({
               stage={stage}
               pool={(game as any).pool}
               setsToWin={setsToWin}
+              finished={game.finished}
             />
           </div>
         );

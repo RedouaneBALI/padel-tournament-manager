@@ -11,6 +11,7 @@ import SaveAndCancelButtons from '@/src/components/ui/SaveAndCancelButtons';
 import { updateGameDetails } from '@/src/api/tournamentApi';
 import { normalizeGroup, groupBadgeClasses, formatGroupLabel } from '@/src/utils/groupBadge';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
+import LiveMatchIndicator from '@/src/components/ui/LiveMatchIndicator';
 
 interface Props {
   teamA: PlayerPair | null;
@@ -20,13 +21,14 @@ interface Props {
   tournamentId: string;
   score?: Score;
   onInfoSaved?: (result: { tournamentUpdated: boolean; winner: string | null }) => void;
-  onTimeChanged?: (gameId: string, newTime: string) => void; // Nouvelle prop
+  onTimeChanged?: (gameId: string, newTime: string) => void;
   winnerSide?: number;
   stage?: string;
   court?: string;
   scheduledTime?: string;
   pool?: { name?: string };
   setsToWin?: number;
+  finished?: boolean;
 }
 
 export default function MatchResultCard({
@@ -43,7 +45,8 @@ export default function MatchResultCard({
   court,
   scheduledTime,
   pool,
-  setsToWin
+  setsToWin,
+  finished = true
 }: Props) {
   const group = normalizeGroup(pool?.name);
 
@@ -188,6 +191,10 @@ export default function MatchResultCard({
     }
   };
 
+  // Calculer si le match est en cours
+  const isInProgress = !finished && (score?.sets?.some(set => set.teamAScore || set.teamBScore) || false);
+
+
   return (
     <div
       aria-busy={isSaving}
@@ -197,6 +204,13 @@ export default function MatchResultCard({
           : 'shadow-sm bg-card'
         }`}
     >
+      {/* Indicateur match en cours */}
+      {isInProgress && (
+        <div className="absolute top-2 right-2 z-30">
+          <LiveMatchIndicator />
+        </div>
+      )}
+
       {isSaving && (
         <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px] z-20 flex items-center justify-center" aria-hidden>
           <CenteredLoader />

@@ -5,6 +5,7 @@ import { PlayerPair } from '@/src/types/playerPair';
 import { Score } from '@/src/types/score';
 import TeamScoreRow from '@/src/components/ui/TeamScoreRow';
 import { normalizeGroup, groupBadgeClasses, formatGroupLabel } from '@/src/utils/groupBadge';
+import LiveMatchIndicator from '@/src/components/ui/LiveMatchIndicator';
 
 interface Props {
   teamA: PlayerPair | null;
@@ -12,9 +13,10 @@ interface Props {
   score?: Score;
   winnerSide?: number;
   pool?: { name?: string };
+  finished?: boolean;
 }
 
-export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, pool }: Props) {
+export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, pool, finished = true }: Props) {
   const [scores] = useState<string[][]>(() => [
     Array.from({ length: 3 }, (_, i) => score?.sets[i]?.teamAScore?.toString() || ''),
     Array.from({ length: 3 }, (_, i) => score?.sets[i]?.teamBScore?.toString() || ''),
@@ -29,9 +31,18 @@ export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, 
   const visibleSets = Math.max(2, countNonEmpty(scores[0]), countNonEmpty(scores[1]));
 
   const group = normalizeGroup(pool?.name);
+  const isInProgress = !finished && (score?.sets?.some(set => set.teamAScore || set.teamBScore) || false);
+
 
   return (
     <div className={`relative w-full bg-card border border-border rounded-lg shadow-sm overflow-hidden min-w-[280px] max-w-[400px] transition-all duration-200`}>
+      {/* Indicateur match en cours */}
+      {isInProgress && (
+        <div className="absolute top-2 right-2 z-10">
+          <LiveMatchIndicator />
+        </div>
+      )}
+
       {pool?.name && (
         <div className="px-2 pt-2">
           <div className={['inline-block text-xs font-medium rounded px-3 py-0.5', groupBadgeClasses(group)].join(' ')}>

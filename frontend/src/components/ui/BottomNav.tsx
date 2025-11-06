@@ -121,7 +121,7 @@ export default function BottomNav({ items, pathname, className, fixed = true, on
                 <MyTournamentsButton href={hrefMy} onClick={onMoreClick ?? closeMore} />
                 <PricingButton onClick={onMoreClick ?? closeMore} />
                 <ContactButton onClick={onMoreClick ?? closeMore} />
-                <div className="mt-2" role="none">
+                <div role="none">
                   {status === 'authenticated' ? (
                     <div onClick={onMoreClick ?? closeMore}>
                       <LogoutButton>
