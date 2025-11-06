@@ -25,8 +25,8 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   title: {
-    default: 'Padel Tournament Manager',
-    template: '%s · Padel Tournament Manager',
+    default: 'Padel Rounds',
+    template: '%s · Padel Rounds',
   },
   description: 'Crée, organise et gère des tournois de padel : tirages automatiques, tableaux knockout, suivi des scores en direct.',
   keywords: [
@@ -56,23 +56,23 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     url: '/',
-    title: 'Padel Tournament Manager',
+    title: 'Padel Rounds',
     description:
       'Crée, organise et gère des tournois de padel : tirages automatiques, tableaux knockout, suivi des scores en direct.',
-    siteName: 'Padel Tournament Manager',
+    siteName: 'Padel Rounds',
     images: [
       {
         url: '/og-cover.png',
         width: 1200,
         height: 630,
-        alt: 'Padel Tournament Manager – Crée et gère tes tournois',
+        alt: 'Padel Rounds – Crée et gère tes tournois',
       },
     ],
     locale: 'fr_FR',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Padel Tournament Manager',
+    title: 'Padel Rounds',
     description:
       'Crée, organise et gère des tournois de padel : tirages automatiques, tableaux knockout, suivi des scores en direct.',
     images: ['/og-cover.png'],

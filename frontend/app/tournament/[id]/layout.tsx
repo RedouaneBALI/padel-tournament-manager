@@ -99,20 +99,28 @@ export default function TournamentLayout({
         {isMoreOpen && (
           <>
             <div
-              className="fixed inset-0 bg-black/50 z-[60]"
+              className="fixed inset-0 bg-black/50 z-[60] touch-none"
               onClick={handleCloseMore}
               aria-hidden
             />
-            <div className="fixed inset-x-0 bottom-0 z-[70] bg-background rounded-t-2xl border-t border-border shadow-2xl">
+            <div className="fixed inset-x-0 bottom-0 z-[70] bg-background rounded-t-2xl border-t border-border shadow-2xl animate-slide-up">
               <div className="max-w-screen-sm mx-auto p-4">
-                <div className="h-1.5 w-10 bg-muted-foreground/40 rounded-full mx-auto mb-4" />
+                {/* Barre de glissement interactive */}
+                <button
+                  onClick={handleCloseMore}
+                  className="w-full flex flex-col items-center py-2 -mt-2 mb-2 active:bg-accent/50 rounded-t-2xl transition-colors touch-manipulation"
+                  aria-label="Fermer le menu"
+                >
+                  <div className="h-1.5 w-10 bg-muted-foreground/40 rounded-full" />
+                </button>
+
                 <nav className="flex flex-col divide-y divide-border">
                   {moreItems.map(({ href, label, Icon }) => (
                     <Link
                       key={href}
                       href={href}
                       onClick={handleCloseMore}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-accent/80"
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-accent/80 active:bg-accent touch-manipulation transition-colors"
                     >
                       <Icon size={20} className="text-foreground" aria-hidden />
                       <span>{label}</span>

@@ -19,7 +19,7 @@ export default function Home() {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'Padel Tournament Manager',
+    name: 'Padel Rounds',
     url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000/',
     potentialAction: {
       '@type': 'SearchAction',

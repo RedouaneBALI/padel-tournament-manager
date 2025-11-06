@@ -27,6 +27,10 @@ export function getAuthOptions(): NextAuthOptions {
         },
       })
     ],
+    pages: {
+      signIn: '/connexion',
+      error: '/connexion', // Redirect errors to sign-in page
+    },
     callbacks: {
       async jwt({ token, account }) {
         // 1er login : Google renvoie id_token (JWT) -> on le range dans le token NextAuth
@@ -57,6 +61,13 @@ export function getAuthOptions(): NextAuthOptions {
         (session as any).accessTokenExpires = (token as any).accessTokenExpires;
         (session as any).error = (token as any).error;
         return session;
+      },
+      async redirect({ url, baseUrl }) {
+        // Permet les redirections vers le même domaine ou vers des URLs relatives
+        if (url.startsWith("/")) return `${baseUrl}${url}`;
+        // Permet les redirections vers le domaine de base
+        else if (new URL(url).origin === baseUrl) return url;
+        return baseUrl;
       },
     },
   };

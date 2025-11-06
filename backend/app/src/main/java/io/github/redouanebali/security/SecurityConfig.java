@@ -50,6 +50,11 @@ public class SecurityConfig {
         "http://192.168.1.12:3000",
         // (Optionnel) toute IP privée en 192.168.x.x
         "http://192.168.*.*:3000",
+        // Production custom domain
+        "https://padelrounds.com",
+        "https://www.padelrounds.com",
+        // Fallback - old frontend URL
+        "https://nextapp-tcepdy5iwa-uc.a.run.app",
         // Hosting prod/staging
         "https://*.web.app",
         "https://*.firebaseapp.com",
