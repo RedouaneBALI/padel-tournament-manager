@@ -104,20 +104,17 @@ export default function BottomNav({ items, pathname, className, fixed = true, on
         <>
           <div className="fixed inset-0 bg-black/50 z-[60]" onClick={onMoreClick ?? closeMore} />
           <div className="fixed inset-x-0 bottom-0 z-[70] bg-background rounded-t-2xl border-t border-border shadow-2xl max-h-[70vh] overflow-y-auto">
-            <div className="max-w-screen-sm mx-auto p-4">
-              {/* En-tête avec barre de glissement et croix */}
-              <div className="flex items-center justify-between mb-4 -mt-2">
-                <div className="h-1.5 w-10 bg-muted-foreground/40 rounded-full" />
-                <button
-                  onClick={onMoreClick ?? closeMore}
-                  className="p-2 hover:bg-accent/50 active:bg-accent rounded-full transition-colors touch-manipulation"
-                  aria-label="Fermer le menu"
-                >
-                  <svg className="w-6 h-6 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
+            <div className="max-w-screen-sm mx-auto p-4 pt-3 relative">
+              {/* Croix flottante dans le coin supérieur droit */}
+              <button
+                onClick={onMoreClick ?? closeMore}
+                className="absolute top-2 right-2 p-2 hover:bg-accent/50 active:bg-accent rounded-full transition-colors touch-manipulation z-10"
+                aria-label="Fermer le menu"
+              >
+                <svg className="w-6 h-6 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
 
               <div className="flex flex-col gap-2">
                 <CreateTournamentButton href={hrefCreate} onClick={onMoreClick ?? closeMore} />
@@ -128,7 +125,7 @@ export default function BottomNav({ items, pathname, className, fixed = true, on
                   {status === 'authenticated' ? (
                     <div onClick={onMoreClick ?? closeMore}>
                       <LogoutButton>
-                        Déconnexion
+                        <span className="text-sm">Déconnexion</span>
                       </LogoutButton>
                     </div>
                   ) : (
