@@ -23,9 +23,11 @@ interface BottomNavProps {
   pathname: string;
   className?: string;
   fixed?: boolean; // default true
+  onMoreClick?: () => void;
+  isMoreOpen?: boolean;
 }
 
-export default function BottomNav({ items, pathname, className, fixed = true }: BottomNavProps) {
+export default function BottomNav({ items, pathname, className, fixed = true, onMoreClick, isMoreOpen }: BottomNavProps) {
   const colsClass = useMemo(() => {
     const n = Math.max(1, Math.min(items.length, 6));
     return `grid-cols-${n}` as const;
@@ -66,12 +68,15 @@ export default function BottomNav({ items, pathname, className, fixed = true }: 
       >
         {items.map(({ href, label, Icon, isActive }, idx) => {
           if (href === '#more') {
+            const active = isMoreOpen ?? moreOpen;
             return (
               <button
                 key={idx}
                 type="button"
-                className={`relative flex flex-col items-center justify-center py-2 text-xs text-muted-foreground hover:text-primary`}
-                onClick={() => setMoreOpen(true)}
+                className={`relative flex flex-col items-center justify-center py-2 text-xs ${
+                  active ? 'text-primary' : 'text-muted-foreground'
+                } hover:text-primary`}
+                onClick={onMoreClick ?? (() => setMoreOpen(true))}
               >
                 <Icon className="h-5 w-5" />
                 <span className="leading-none mt-2">{label}</span>
@@ -95,30 +100,42 @@ export default function BottomNav({ items, pathname, className, fixed = true }: 
           );
         })}
       </nav>
-      {moreOpen && (
+      {(isMoreOpen ?? moreOpen) && (
         <>
-          <div className="fixed inset-0 bg-black/50 z-[60]" onClick={closeMore} />
-          <div className="fixed inset-x-0 bottom-0 z-[70] bg-background rounded-t-2xl border-t border-border shadow-2xl">
+          <div className="fixed inset-0 bg-black/50 z-[60]" onClick={onMoreClick ?? closeMore} />
+          <div className="fixed inset-x-0 bottom-0 z-[70] bg-background rounded-t-2xl border-t border-border shadow-2xl max-h-[70vh] overflow-y-auto">
             <div className="max-w-screen-sm mx-auto p-4">
-              <div className="h-1.5 w-10 bg-muted-foreground/40 rounded-full mx-auto mb-4" />
+              {/* En-tête avec barre de glissement et croix */}
+              <div className="flex items-center justify-between mb-4 -mt-2">
+                <div className="h-1.5 w-10 bg-muted-foreground/40 rounded-full" />
+                <button
+                  onClick={onMoreClick ?? closeMore}
+                  className="p-2 hover:bg-accent/50 active:bg-accent rounded-full transition-colors touch-manipulation"
+                  aria-label="Fermer le menu"
+                >
+                  <svg className="w-6 h-6 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
               <div className="flex flex-col gap-2">
-                <CreateTournamentButton href={hrefCreate} onClick={closeMore} />
-                <MyTournamentsButton href={hrefMy} onClick={closeMore} />
-                <PricingButton onClick={closeMore} />
-                <ContactButton onClick={closeMore} />
+                <CreateTournamentButton href={hrefCreate} onClick={onMoreClick ?? closeMore} />
+                <MyTournamentsButton href={hrefMy} onClick={onMoreClick ?? closeMore} />
+                <PricingButton onClick={onMoreClick ?? closeMore} />
+                <ContactButton onClick={onMoreClick ?? closeMore} />
                 <div className="mt-2" role="none">
                   {status === 'authenticated' ? (
-                    <div onClick={closeMore}>
+                    <div onClick={onMoreClick ?? closeMore}>
                       <LogoutButton>
                         Déconnexion
                       </LogoutButton>
                     </div>
                   ) : (
-                    <GoogleLoginButton onBeforeSignIn={closeMore} />
+                    <GoogleLoginButton onBeforeSignIn={onMoreClick ?? closeMore} />
                   )}
                 </div>
               </div>
-              <div className="pb-6" />
             </div>
           </div>
         </>

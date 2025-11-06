@@ -24,13 +24,13 @@ export default function GoogleLoginButton({
         }
       }}
       className={[
-        'flex items-center justify-center gap-2 px-5 py-2 text-base bg-card border border-border rounded hover:bg-background transition',
+        'flex items-center justify-center gap-2 px-5 py-2 text-sm bg-card border border-border rounded hover:bg-background transition',
         className,
       ].join(' ')}
       aria-label="Se connecter avec Google"
     >
       <img src="/google-logo.svg" alt="Google" className="w-5 h-5" />
-      <span className="text-foreground">Se connecter avec Google</span>
+      <span className="text-sm text-foreground">Se connecter avec Google</span>
     </button>
  );
 }
