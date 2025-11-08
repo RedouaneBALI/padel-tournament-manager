@@ -12,6 +12,7 @@ import { updateGameDetails } from '@/src/api/tournamentApi';
 import { normalizeGroup, groupBadgeClasses, formatGroupLabel } from '@/src/utils/groupBadge';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
 import LiveMatchIndicator from '@/src/components/ui/LiveMatchIndicator';
+import { confirmAlert } from 'react-confirm-alert';
 
 interface Props {
   teamA: PlayerPair | null;
@@ -185,19 +186,73 @@ export default function MatchResultCard({
 
   const handleSave = async () => {
     if (isSaving) return;
-    setIsSaving(true);
+
+    const doSave = async () => {
+      setIsSaving(true);
+      try {
+        await saveGameDetails();
+        setInitialScores([...scores]);
+        setEditing(false);
+        // mark that the first-match confirmation has been shown (if applicable)
+        try {
+          if (matchIndex === 0 && tournamentId && typeof window !== 'undefined') {
+            const key = `ptm_first_match_confirmed_${tournamentId}`;
+            try { sessionStorage.setItem(key, '1'); } catch (e) { /* ignore */ }
+          }
+        } catch (e) {
+          // ignore storage errors
+        }
+      } finally {
+        setIsSaving(false);
+      }
+    };
+
+    // If this is the first match and the user hasn't previously confirmed for this tournament,
+    // show a modal confirm like in the draw generation flow. If confirmed, save; otherwise do nothing.
     try {
-      await saveGameDetails();
-      setInitialScores([...scores]);
-      setEditing(false);
-    } finally {
-      setIsSaving(false);
+      if (matchIndex === 0 && tournamentId && typeof window !== 'undefined') {
+        const key = `ptm_first_match_confirmed_${tournamentId}`;
+        if (!sessionStorage.getItem(key)) {
+          confirmAlert({
+            title: 'Confirmer le démarrage du tournoi',
+            message:
+              "En modifiant le score du premier match vous démarrez le tournoi. Cette action empêchera la modification du format du tournoi. Voulez-vous continuer ?",
+            buttons: [
+              {
+                label: 'Oui',
+                onClick: async () => {
+                  await doSave();
+                },
+              },
+              {
+                label: 'Annuler',
+                onClick: () => {
+                  // nothing to do, user cancelled
+                },
+              },
+            ],
+          });
+          return;
+        }
+      }
+    } catch (e) {
+      // If confirm fails for whatever reason, fall back to direct save
+      console.error('Erreur confirm dialog:', e);
     }
+
+    // Default: just save
+    await doSave();
   };
 
   // Calculer si le match est en cours
   const isInProgress = !finished && (score?.sets?.some(set => set.teamAScore || set.teamBScore) || false);
 
+  // Calculer le contenu du badge (garder la logique en dehors du JSX pour satisfaire TypeScript)
+  const badgeLabel = pool?.name
+    ? formatGroupLabel(pool.name)
+    : (matchIndex !== undefined && totalMatches !== undefined)
+      ? `${matchIndex + 1}/${totalMatches}`
+      : '';
 
   return (
     <div
@@ -221,14 +276,14 @@ export default function MatchResultCard({
         </div>
       )}
       <div className="flex justify-between items-start px-2 pt-2">
-        {(pool?.name || (matchIndex !== undefined && totalMatches !== undefined)) && (
+        {(badgeLabel !== '') && (
           <div
             className={[
               'inline-block text-xs font-medium rounded mt-1 mx-1 px-3 py-0.5',
               pool?.name ? groupBadgeClasses(group) : 'bg-border text-foreground'
             ].join(' ')}
           >
-            {pool?.name ? formatGroupLabel(pool.name) : `${matchIndex + 1}/${totalMatches}`}
+            {badgeLabel}
           </div>
         )}
         {editable && (
