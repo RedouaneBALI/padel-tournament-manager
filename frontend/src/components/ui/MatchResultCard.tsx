@@ -315,7 +315,7 @@ export default function MatchResultCard({
         )}
       </div>
 
-      <div className={`divide-y divide-border`}>
+      <div className={`divide-y divide-gray-200`}>
         <TeamScoreRow
           team={teamA}
           teamIndex={0}
@@ -366,7 +366,7 @@ export default function MatchResultCard({
 
       <div
         className={[
-          'border-t border-border px-4 py-2 text-sm',
+          'border-t border-gray-300 px-4 py-2 text-sm',
           pool?.name
             ? groupBadgeClasses(group)
             : (editing

@@ -37,7 +37,7 @@ export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, 
 
 
   return (
-    <div className={`relative w-full bg-card border border-border rounded-lg shadow-sm overflow-hidden min-w-[280px] max-w-[400px] transition-all duration-200`}>
+    <div className={`relative w-full bg-card border border-gray-300 rounded-lg shadow-sm overflow-hidden min-w-[280px] max-w-[400px] transition-all duration-200`}>
       {/* Indicateur match en cours */}
       {isInProgress && (
         <div className="absolute top-2 right-2 z-10">
@@ -61,7 +61,7 @@ export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, 
         </div>
       )}
       <div className="relative">
-        <div className={`divide-y divide-border`}>
+        <div className={`divide-y divide-gray-200`}>
           <TeamScoreRow
             team={teamA}
             teamIndex={0}
