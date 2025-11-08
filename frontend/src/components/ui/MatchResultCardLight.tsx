@@ -14,9 +14,11 @@ interface Props {
   winnerSide?: number;
   pool?: { name?: string };
   finished?: boolean;
+  matchIndex?: number;
+  totalMatches?: number;
 }
 
-export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, pool, finished = true }: Props) {
+export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, pool, finished = true, matchIndex, totalMatches }: Props) {
   const [scores] = useState<string[][]>(() => [
     Array.from({ length: 3 }, (_, i) => score?.sets[i]?.teamAScore?.toString() || ''),
     Array.from({ length: 3 }, (_, i) => score?.sets[i]?.teamBScore?.toString() || ''),
@@ -47,6 +49,14 @@ export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, 
         <div className="px-2 pt-2">
           <div className={['inline-block text-xs font-medium rounded px-3 py-0.5', groupBadgeClasses(group)].join(' ')}>
             {formatGroupLabel(pool.name)}
+          </div>
+        </div>
+      )}
+      {/* Badge de numéro du match si pas de pool */}
+      {(!pool?.name && matchIndex !== undefined && totalMatches !== undefined) && (
+        <div className="px-2 pt-2">
+          <div className={['inline-block text-xs font-medium rounded px-3 py-0.5 bg-border text-foreground'].join(' ')}>
+            {`${matchIndex + 1}/${totalMatches}`}
           </div>
         </div>
       )}

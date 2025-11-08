@@ -34,12 +34,12 @@ export default function Home() {
   const features = [
     {
       title: "Création rapide",
-      description: "Renseigne quelques infos et démarre en moins d'une minute.",
+      description: "Renseigne quelques infos et démarre en quelques minutes.",
       emoji: "⚡"
     },
     {
       title: "Paires & tirages",
-      description: "Ajoute les équipes, configure les formats, génère le tirage automatiquement.",
+      description: "Ajoute les équipes, configure les formats, génère le tirage.",
       emoji: "👥"
     },
     {
@@ -58,7 +58,7 @@ export default function Home() {
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground mb-2">
               Gère tes tournois de padel facilement
             </h1>
-            <p className="text-muted-foreground">Tirages automatiques · Tableaux knockout · Suivi des scores en direct</p>
+            <p className="text-muted-foreground">Tableaux knockout · Suivi des scores en direct · Liste des joueurs </p>
             <div className="flex justify-center">
               <Image
                 src="/pr-logo.png"

@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     default: 'Padel Rounds',
     template: '%s · Padel Rounds',
   },
-  description: 'Crée, organise et gère des tournois de padel : tirages automatiques, tableaux knockout, suivi des scores en direct.',
+  description: 'Crée, organise et gère des tournois de padel : liste des joueurs, tableaux knockout, suivi des scores en direct.',
   keywords: [
     'tournoi padel',
     'gestion tournoi padel',
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     url: '/',
     title: 'Padel Rounds',
     description:
-      'Crée, organise et gère des tournois de padel : tirages automatiques, tableaux knockout, suivi des scores en direct.',
+      'Crée, organise et gère des tournois de padel : liste des joueurs, tableaux knockout, suivi des scores en direct.',
     siteName: 'Padel Rounds',
     images: [
       {
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Padel Rounds',
     description:
-      'Crée, organise et gère des tournois de padel : tirages automatiques, tableaux knockout, suivi des scores en direct.',
+      'Crée, organise et gère des tournois de padel : liste des joueurs, tableaux knockout, suivi des scores en direct.',
     images: ['/og-cover.png'],
   },
   robots: {

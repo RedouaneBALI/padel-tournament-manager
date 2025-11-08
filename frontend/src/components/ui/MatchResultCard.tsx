@@ -29,6 +29,8 @@ interface Props {
   pool?: { name?: string };
   setsToWin?: number;
   finished?: boolean;
+  matchIndex?: number;
+  totalMatches?: number;
 }
 
 export default function MatchResultCard({
@@ -46,7 +48,9 @@ export default function MatchResultCard({
   scheduledTime,
   pool,
   setsToWin,
-  finished = true
+  finished = true,
+  matchIndex,
+  totalMatches
 }: Props) {
   const group = normalizeGroup(pool?.name);
 
@@ -217,14 +221,14 @@ export default function MatchResultCard({
         </div>
       )}
       <div className="flex justify-between items-start px-2 pt-2">
-        {(pool?.name || stage) && (
+        {(pool?.name || (matchIndex !== undefined && totalMatches !== undefined)) && (
           <div
             className={[
-              'inline-block text-xs font-medium rounded mt-1 mx-1 px-3 py-0.5 bg-border',
-              pool?.name ? groupBadgeClasses(group) : 'bg-muted text-foreground'
+              'inline-block text-xs font-medium rounded mt-1 mx-1 px-3 py-0.5',
+              pool?.name ? groupBadgeClasses(group) : 'bg-border text-foreground'
             ].join(' ')}
           >
-            {pool?.name ? formatGroupLabel(pool.name) : stage}
+            {pool?.name ? formatGroupLabel(pool.name) : `${matchIndex + 1}/${totalMatches}`}
           </div>
         )}
         {editable && (
