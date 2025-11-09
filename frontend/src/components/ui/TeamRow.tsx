@@ -3,14 +3,16 @@
 
 import React from 'react';
 import { PlayerPair } from '@/src/types/playerPair';
+import { Trophy } from 'lucide-react';
 
 interface Props {
   team: PlayerPair | null;
   winnerSide?: number;
   teamIndex?: number;
+  showChampion?: boolean;
 }
 
-export default function TeamRow({ team, winnerSide, teamIndex }: Props) {
+export default function TeamRow({ team, winnerSide, teamIndex, showChampion }: Props) {
   return (
     <div
       className={`flex flex-1 items-center gap-2 ${
@@ -22,10 +24,20 @@ export default function TeamRow({ team, winnerSide, teamIndex }: Props) {
         <span className="text-sm">{team?.player2Name || ''}</span>
       </div>
 
-      {team?.displaySeed && (
-        <span className="text-xs text-muted-foreground font-medium">
+      {team?.displaySeed ? (
+        <span className="text-xs text-muted-foreground font-medium flex items-center gap-2">
           ({team.displaySeed})
+          {showChampion && (
+            <Trophy className="h-5 w-5 text-foreground" title="Vainqueur du tournoi" aria-label="Vainqueur du tournoi" />
+          )}
         </span>
+      ) : (
+        // no seed: still render a small trophy aligned like the seed when applicable
+        showChampion ? (
+          <span className="self-center ml-2 text-xs text-muted-foreground font-medium" title="Vainqueur du tournoi" aria-label="Vainqueur du tournoi">
+            <Trophy className="h-5 w-5 text-foreground" />
+          </span>
+        ) : null
       )}
     </div>
   );

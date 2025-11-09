@@ -6,6 +6,7 @@ import { Score } from '@/src/types/score';
 import TeamScoreRow from '@/src/components/ui/TeamScoreRow';
 import { normalizeGroup, groupBadgeClasses, formatGroupLabel } from '@/src/utils/groupBadge';
 import LiveMatchIndicator from '@/src/components/ui/LiveMatchIndicator';
+import { Stage } from '@/src/types/stage';
 
 interface Props {
   teamA: PlayerPair | null;
@@ -16,9 +17,10 @@ interface Props {
   finished?: boolean;
   matchIndex?: number;
   totalMatches?: number;
+  stage?: string | Stage;
 }
 
-export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, pool, finished = true, matchIndex, totalMatches }: Props) {
+export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, pool, finished = true, matchIndex, totalMatches, stage }: Props) {
   const [scores] = useState<string[][]>(() => [
     Array.from({ length: 3 }, (_, i) => score?.sets[i]?.teamAScore?.toString() || ''),
     Array.from({ length: 3 }, (_, i) => score?.sets[i]?.teamBScore?.toString() || ''),
@@ -34,6 +36,13 @@ export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, 
 
   const group = normalizeGroup(pool?.name);
   const isInProgress = !finished && (score?.sets?.some(set => set.teamAScore || set.teamBScore) || false);
+  // determine if this round is the final
+  const isFinalStage = (() => {
+    try {
+      const stageStr = String(stage || '').toLowerCase();
+      return stage === Stage.FINAL || stageStr === 'finale' || stageStr === 'final' || stageStr.includes('final');
+    } catch (e) { return false; }
+  })();
 
 
   return (
@@ -68,6 +77,7 @@ export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, 
             scores={scores[0]}
             editing={false}
             winnerSide={winnerSide}
+            showChampion={finished && isFinalStage && winnerSide !== undefined && winnerSide === 0}
             visibleSets={visibleSets}
             forfeited={isForfeit && forfeitedBy === 'TEAM_A'}
             showAbSlot={isForfeit}
@@ -78,6 +88,7 @@ export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, 
             scores={scores[1]}
             editing={false}
             winnerSide={winnerSide}
+            showChampion={finished && isFinalStage && winnerSide !== undefined && winnerSide === 1}
             visibleSets={visibleSets}
             forfeited={isForfeit && forfeitedBy === 'TEAM_B'}
             showAbSlot={isForfeit}

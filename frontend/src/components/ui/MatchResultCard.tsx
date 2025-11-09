@@ -13,6 +13,7 @@ import { normalizeGroup, groupBadgeClasses, formatGroupLabel } from '@/src/utils
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
 import LiveMatchIndicator from '@/src/components/ui/LiveMatchIndicator';
 import { confirmAlert } from 'react-confirm-alert';
+import { Stage } from '@/src/types/stage';
 
 interface Props {
   teamA: PlayerPair | null;
@@ -32,6 +33,7 @@ interface Props {
   finished?: boolean;
   matchIndex?: number;
   totalMatches?: number;
+  isFirstRound?: boolean;
 }
 
 export default function MatchResultCard({
@@ -52,6 +54,7 @@ export default function MatchResultCard({
   finished = true,
   matchIndex,
   totalMatches
+  , isFirstRound = false
 }: Props) {
   const group = normalizeGroup(pool?.name);
 
@@ -195,7 +198,7 @@ export default function MatchResultCard({
         setEditing(false);
         // mark that the first-match confirmation has been shown (if applicable)
         try {
-          if (matchIndex === 0 && tournamentId && typeof window !== 'undefined') {
+          if (isFirstRound && matchIndex === 0 && tournamentId && typeof window !== 'undefined') {
             const key = `ptm_first_match_confirmed_${tournamentId}`;
             try { sessionStorage.setItem(key, '1'); } catch (e) { /* ignore */ }
           }
@@ -210,7 +213,10 @@ export default function MatchResultCard({
     // If this is the first match and the user hasn't previously confirmed for this tournament,
     // show a modal confirm like in the draw generation flow. If confirmed, save; otherwise do nothing.
     try {
-      if (matchIndex === 0 && tournamentId && typeof window !== 'undefined') {
+      // Only show the 'start tournament' confirmation when editing the very first match
+      // of the tournament (not the first match of any round). `isFirstRound` is passed
+      // from the parent when the current round is the tournament's first round.
+      if (isFirstRound && matchIndex === 0 && tournamentId && typeof window !== 'undefined') {
         const key = `ptm_first_match_confirmed_${tournamentId}`;
         if (!sessionStorage.getItem(key)) {
           confirmAlert({
@@ -316,6 +322,8 @@ export default function MatchResultCard({
       </div>
 
       <div className={`divide-y divide-gray-200`}>
+        {/* Determine if this is the final stage (robust to strings and enum) */}
+        {/* showChampion will be true for the winning side if this is the final and the match is finished */}
         <TeamScoreRow
           team={teamA}
           teamIndex={0}
@@ -327,6 +335,13 @@ export default function MatchResultCard({
           winnerSide={isForfeit ? (forfeitedBy === 'TEAM_B' ? 0 : undefined) : winnerSide}
           visibleSets={visibleSets}
           computeTabIndex={(tIdx, sIdx) => sIdx * 2 + (tIdx + 1)}
+          showChampion={(() => {
+            try {
+              const stageStr = String(stage || '').toLowerCase();
+              const isFinalStage = stage === Stage.FINAL || stageStr === 'finale' || stageStr === 'final' || stageStr.includes('final');
+              return finished && isFinalStage && winnerSide !== undefined && winnerSide === 0;
+            } catch (e) { return false; }
+          })()}
           forfeited={isForfeit && forfeitedBy === 'TEAM_A'}
           showAbSlot={isForfeit}
           onToggleForfeit={() => {
@@ -350,6 +365,13 @@ export default function MatchResultCard({
           winnerSide={isForfeit ? (forfeitedBy === 'TEAM_A' ? 1 : undefined) : winnerSide}
           visibleSets={visibleSets}
           computeTabIndex={(tIdx, sIdx) => sIdx * 2 + (tIdx + 1)}
+          showChampion={(() => {
+            try {
+              const stageStr = String(stage || '').toLowerCase();
+              const isFinalStage = stage === Stage.FINAL || stageStr === 'finale' || stageStr === 'final' || stageStr.includes('final');
+              return finished && isFinalStage && winnerSide !== undefined && winnerSide === 1;
+            } catch (e) { return false; }
+          })()}
           forfeited={isForfeit && forfeitedBy === 'TEAM_B'}
           showAbSlot={isForfeit}
           onToggleForfeit={() => {

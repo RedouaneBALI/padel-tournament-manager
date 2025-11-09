@@ -216,6 +216,7 @@ export default function KnockoutBracket({ rounds, tournamentId }: KnockoutBracke
                     : undefined
                 }
                 finished={game.finished}
+                stage={round.stage}
               />
             </div>
           ))}

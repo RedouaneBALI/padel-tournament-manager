@@ -27,6 +27,7 @@ interface Props {
   forfeited?: boolean;
   showAbSlot?: boolean;
   onToggleForfeit?: () => void;
+  showChampion?: boolean;
 }
 
 export default function TeamScoreRow({
@@ -43,6 +44,7 @@ export default function TeamScoreRow({
   forfeited,
   showAbSlot,
   onToggleForfeit,
+  showChampion,
 }: Props) {
   const handleChange = (setIndex: number, value: string) => {
     const sanitized = value.replace(/[^0-9]/g, '');
@@ -74,7 +76,7 @@ export default function TeamScoreRow({
     <div className="relative flex items-center pl-4 pr-2 h-[60px]">
       {/* Bloc des noms qui prend tout l'espace disponible */}
       <div className="flex-1 min-w-0">
-        <TeamRow team={team} winnerSide={winnerSide} teamIndex={teamIndex} />
+        <TeamRow team={team} winnerSide={winnerSide} teamIndex={teamIndex} showChampion={showChampion} />
       </div>
 
       {/* Edition: conserver le rendu inline pour l'édition */}

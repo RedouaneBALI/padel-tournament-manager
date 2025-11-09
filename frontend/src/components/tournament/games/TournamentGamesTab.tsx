@@ -237,6 +237,7 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
         onInfoSaved={handleInfoSaved}
         onTimeChanged={handleTimeChanged}
         stage={currentRound.stage as unknown as string}
+        isFirstRound={currentRoundIndex === 0}
       />
     </div>
   );

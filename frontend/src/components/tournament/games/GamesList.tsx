@@ -12,6 +12,7 @@ interface GamesListProps {
   onInfoSaved: (result: { tournamentUpdated: boolean; winner: string | null }) => void;
   onTimeChanged: (gameId: string, newTime: string) => void;
   stage: string;
+  isFirstRound?: boolean;
 }
 
 export default function GamesList({
@@ -22,6 +23,7 @@ export default function GamesList({
   onInfoSaved,
   onTimeChanged,
   stage,
+  isFirstRound = false,
 }: GamesListProps) {
   // Créer une clé unique basée sur le stage et les IDs des matchs
   // key basée sur l'ensemble des IDs triés (indépendante de l'ordre)
@@ -80,6 +82,7 @@ export default function GamesList({
               finished={game.finished}
               matchIndex={originalIndex}
               totalMatches={totalMatches}
+              isFirstRound={isFirstRound}
             />
           </div>
         );
