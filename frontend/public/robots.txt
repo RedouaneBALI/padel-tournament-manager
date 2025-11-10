@@ -7,7 +7,4 @@ Disallow: /admin/
 # Sitemap
 Sitemap: https://www.padelrounds.com/sitemap.xml
 
-# Bloquer l'ancien domaine pour éviter le contenu dupliqué
-User-agent: *
-Disallow: https://nextapp-tcepdy5iwa-uc.a.run.app/
-
+# Former deployment: https://nextapp-tcepdy5iwa-uc.a.run.app/
