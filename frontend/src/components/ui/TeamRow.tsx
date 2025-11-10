@@ -28,13 +28,15 @@ export default function TeamRow({ team, winnerSide, teamIndex, showChampion }: P
         <span className="text-xs text-muted-foreground font-medium flex items-center gap-2">
           ({team.displaySeed})
           {showChampion && (
-            <Trophy className="h-5 w-5 text-foreground" title="Vainqueur du tournoi" aria-label="Vainqueur du tournoi" />
+            <span title="Vainqueur du tournoi" aria-label="Vainqueur du tournoi" role="img" className="inline-flex items-center">
+              <Trophy className="h-5 w-5 text-foreground" />
+            </span>
           )}
         </span>
       ) : (
         // no seed: still render a small trophy aligned like the seed when applicable
         showChampion ? (
-          <span className="self-center ml-2 text-xs text-muted-foreground font-medium" title="Vainqueur du tournoi" aria-label="Vainqueur du tournoi">
+          <span className="self-center ml-2 text-xs text-muted-foreground font-medium" title="Vainqueur du tournoi" aria-label="Vainqueur du tournoi" role="img">
             <Trophy className="h-5 w-5 text-foreground" />
           </span>
         ) : null

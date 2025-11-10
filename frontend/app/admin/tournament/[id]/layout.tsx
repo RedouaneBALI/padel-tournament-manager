@@ -36,13 +36,20 @@ export default function AdminTournamentLayout({
         const data = await fetchTournamentAdmin(id);
         if (!mounted) return;
         if (data && data.isEditable === false) {
-          router.replace('/403');
+          // Redirect to read-only public version instead of 403
+          // Preserve sub-path if possible (e.g., /admin/tournament/12/bracket → /tournament/12/bracket)
+          const currentPath = pathname ?? '';
+          const subPath = currentPath.replace(`/admin/tournament/${id}`, '');
+          router.replace(`/tournament/${id}${subPath}`);
           return;
         }
         setTournament(data);
       } catch (e: any) {
         if (e?.message === 'FORBIDDEN') {
-          router.replace('/403');
+          // Redirect to read-only version for forbidden access
+          const currentPath = pathname ?? '';
+          const subPath = currentPath.replace(`/admin/tournament/${id}`, '');
+          router.replace(`/tournament/${id}${subPath}`);
           return;
         }
         if (e?.message === 'UNAUTHORIZED') {
@@ -57,7 +64,7 @@ export default function AdminTournamentLayout({
     }
     loadTournament();
     return () => { mounted = false; };
-  }, [id, router]);
+  }, [id, router, pathname]);
 
   if (loading) {
     return (
