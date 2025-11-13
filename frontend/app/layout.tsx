@@ -32,22 +32,39 @@ export const metadata: Metadata = {
   keywords: [
     'tournoi padel',
     'gestion tournoi padel',
+    'organiser tournoi padel',
+    'logiciel gestion tournoi padel',
     'tirage padel',
     'tableau knockout',
-    'organisation tournoi',
+    'tableau tournoi padel',
+    'suivi scores padel',
+    'scores en direct padel',
+    'résultats match padel',
+    'inscriptions tournoi padel',
+    'joueurs padel',
+    'bracket padel',
+    'seed padel',
     'padel manager',
+    'padel tournament',
+    'tournament manager',
+    'live scoring padel',
+    'padel maroc',
+    'padel casablanca',
+    'tournoi padel maroc'
   ],
   icons: {
       icon: [
         { url: '/favicon.ico' },            // fallback
         { url: '/favicon.svg', type: 'image/svg+xml' },
+        { url: '/pr-logo.png', type: 'image/png' },
       ],
       apple: [
         { url: '/apple-touch-icon.png', sizes: '180x180' },
       ],
-      shortcut: ['/favicon.ico'],
+      shortcut: ['/favicon.ico', '/pr-logo.png'],
       other: [
         { rel: 'mask-icon', url: '/mask-icon.svg', color: '#0ea5e9' }, // couleur du pin Safari
+        { rel: 'manifest', url: '/site.webmanifest' },
       ],
     },
   alternates: {
