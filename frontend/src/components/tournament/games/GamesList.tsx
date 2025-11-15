@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import MatchResultCard from '@/src/components/ui/MatchResultCard';
 import type { Game } from '@/src/types/game';
 
@@ -11,6 +11,7 @@ interface GamesListProps {
   setsToWin: number;
   onInfoSaved: (result: { tournamentUpdated: boolean; winner: string | null }) => void;
   onTimeChanged: (gameId: string, newTime: string) => void;
+  onGameUpdated?: (gameId: string, changes: { scheduledTime?: string; court?: string }) => void;
   stage: string;
   isFirstRound?: boolean;
 }
@@ -22,9 +23,13 @@ export default function GamesList({
   setsToWin,
   onInfoSaved,
   onTimeChanged,
+  onGameUpdated,
   stage,
   isFirstRound = false,
 }: GamesListProps) {
+  // Nouveau : état local pour le mode de tri (ui seulement pour l'instant)
+  const [sortMode, setSortMode] = useState<'time' | 'court'>('time');
+
   // Créer une clé unique basée sur le stage et les IDs des matchs
   // key basée sur l'ensemble des IDs triés (indépendante de l'ordre)
   const gamesKey = `${stage}-${[...games.map(g => g.id)].sort().join('-')}`;
@@ -44,13 +49,74 @@ export default function GamesList({
 
   const totalMatches = games.length;
 
+  // Liste triée en UI selon le mode sélectionné
+  const orderedGames = useMemo(() => {
+    if (!games || games.length === 0) return [] as Game[];
+
+    // Helper pour comparer les horaires (mettre les matchs sans horaire à la fin)
+    const compareTime = (a: Game, b: Game) => {
+      if (!a.scheduledTime && !b.scheduledTime) return 0;
+      if (!a.scheduledTime) return 1;
+      if (!b.scheduledTime) return -1;
+      return a.scheduledTime.localeCompare(b.scheduledTime);
+    };
+
+    if (sortMode === 'time') {
+      return [...games].sort((a, b) => compareTime(a, b));
+    }
+
+    // sortMode === 'court' : trier par court (locale, numérique), puis par heure
+    return [...games].sort((a, b) => {
+      const ca = (a.court || '').trim();
+      const cb = (b.court || '').trim();
+
+      if (!ca && !cb) return compareTime(a, b);
+      if (!ca) return 1; // without court -> place after
+      if (!cb) return -1;
+
+      const courtCmp = ca.localeCompare(cb, 'fr', { numeric: true });
+      if (courtCmp !== 0) return courtCmp;
+      return compareTime(a, b);
+    });
+  }, [games, sortMode]);
+
   if (!games || games.length === 0) {
     return <p className="text-muted-foreground text-center">Aucun match à afficher</p>;
   }
 
   return (
     <div className="flex flex-col gap-4 w-full items-center mb-4">
-      {games.map((game) => {
+      {/* Contrôle de tri (UI only) */}
+      <div className="w-full max-w-xl flex justify-center">
+        <div className="inline-flex items-center rounded-full bg-card p-1 space-x-1" role="tablist" aria-label="Mode de tri des matchs">
+          <button
+            type="button"
+            role="tab"
+            aria-pressed={sortMode === 'time'}
+            title="Trier par heure"
+            onClick={() => setSortMode('time')}
+            className={`px-3 py-1 rounded-full text-sm transition-colors disabled:opacity-50 ${
+              sortMode === 'time' ? 'bg-primary text-on-primary' : 'bg-transparent text-foreground hover:bg-primary/10'
+            }`}
+          >
+            Par heure
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-pressed={sortMode === 'court'}
+            title="Trier par court"
+            onClick={() => setSortMode('court')}
+            className={`px-3 py-1 rounded-full text-sm transition-colors disabled:opacity-50 ${
+              sortMode === 'court' ? 'bg-primary text-on-primary' : 'bg-transparent text-foreground hover:bg-primary/10'
+            }`}
+          >
+            Par court
+          </button>
+        </div>
+      </div>
+
+      {orderedGames.map((game) => {
         const winnerIndex = game.finished
           ? game.winnerSide === 'TEAM_A'
             ? 0
@@ -75,6 +141,7 @@ export default function GamesList({
               scheduledTime={game.scheduledTime}
               onInfoSaved={onInfoSaved}
               onTimeChanged={onTimeChanged}
+              onGameUpdated={onGameUpdated}
               winnerSide={winnerIndex}
               stage={stage}
               pool={(game as any).pool}

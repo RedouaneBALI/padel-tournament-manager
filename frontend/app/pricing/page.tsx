@@ -33,7 +33,7 @@ export default function PricingPage() {
             <GiCrane className="text-6xl text-primary" />
           </div>
           <div className="text-center text-muted-foreground p-6">
-            L'application est en cours de finalisation. Plus d'informations seront disponibles prochainement.
+            L'application est en cours de finalisation. Contactez-moi pour plus d'informations.
           </div>
         </section>
       </main>

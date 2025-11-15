@@ -74,9 +74,10 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
   }, []);
 
   const handleTimeChanged = useCallback((gameId: string, newTime: string) => {
+    console.debug('[handleTimeChanged]', gameId, newTime);
     setRounds((currentRounds) => currentRounds.map((round) => ({
       ...round,
-      games: round.games.map((g) => (g.id === gameId ? { ...g, scheduledTime: newTime } : g)),
+      games: round.games.map((g) => (String(g.id) === String(gameId) ? { ...g, scheduledTime: newTime } : g)),
     })));
   }, []);
 
@@ -87,6 +88,15 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
         .catch((error) => console.error('Erreur lors du rafraîchissement du tournoi :', error));
     }
   }, [tournamentId]);
+
+  // Quand MatchResultCard notifie d'un changement de court/heure, mettre à jour l'état local
+  const handleGameUpdated = useCallback((gameId: string, changes: { scheduledTime?: string; court?: string }) => {
+    console.debug('[handleGameUpdated]', gameId, changes);
+    setRounds((currentRounds) => currentRounds.map((round) => ({
+      ...round,
+      games: round.games.map((g) => (String(g.id) === String(gameId) ? { ...g, ...(changes.scheduledTime !== undefined ? { scheduledTime: changes.scheduledTime } : {}), ...(changes.court !== undefined ? { court: changes.court } : {}) } : g)),
+    })));
+  }, []);
 
   useEffect(() => {
     async function loadRounds() {
@@ -209,7 +219,7 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
   const setsToWin = getSetsToWin(currentRound);
 
   return (
-    <div className="flex flex-col items-center space-y-6 mb-15">
+    <div className="flex flex-col items-center space-y-4 mb-15">
       <RoundSelector
         rounds={rounds}
         currentIndex={currentRoundIndex}
@@ -236,6 +246,7 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
         setsToWin={setsToWin}
         onInfoSaved={handleInfoSaved}
         onTimeChanged={handleTimeChanged}
+        onGameUpdated={handleGameUpdated}
         stage={currentRound.stage as unknown as string}
         isFirstRound={currentRoundIndex === 0}
       />

@@ -24,6 +24,7 @@ interface Props {
   score?: Score;
   onInfoSaved?: (result: { tournamentUpdated: boolean; winner: string | null }) => void;
   onTimeChanged?: (gameId: string, newTime: string) => void;
+  onGameUpdated?: (gameId: string, changes: { scheduledTime?: string; court?: string }) => void;
   winnerSide?: number;
   stage?: string;
   court?: string;
@@ -45,6 +46,7 @@ export default function MatchResultCard({
   tournamentId,
   onInfoSaved,
   onTimeChanged,
+  onGameUpdated,
   winnerSide,
   stage,
   court,
@@ -62,6 +64,15 @@ export default function MatchResultCard({
   const [localScheduledTime, setLocalScheduledTime] = useState(scheduledTime || '00:00');
   const [editing, setEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Keep local court/time in sync with props when not editing
+  React.useEffect(() => {
+    if (!editing) {
+      setLocalCourt(court || 'Court central');
+      setLocalScheduledTime(scheduledTime || '00:00');
+    }
+  }, [court, scheduledTime, editing]);
+
   const [isForfeit, setIsForfeit] = useState(score?.forfeit || false);
   const [forfeitedBy, setForfeitedBy] = useState<'TEAM_A' | 'TEAM_B' | null>(score?.forfeitedBy || null);
 
@@ -175,8 +186,20 @@ export default function MatchResultCard({
       const scorePayload = convertToScoreObject(scores, isForfeit, forfeitedBy);
       const result = await updateGameDetails(tournamentId, gameId, scorePayload, localCourt, localScheduledTime);
 
+      // Ensure local state reflects saved values immediately (prevents blank UI before parent updates)
+      setLocalCourt(localCourt);
+      setLocalScheduledTime(localScheduledTime);
+
       if (onTimeChanged && localScheduledTime !== scheduledTime) {
         onTimeChanged(gameId, localScheduledTime);
+      }
+
+      // Notify parent of any updated fields (court and/or scheduledTime)
+      if (onGameUpdated) {
+        const changes: { scheduledTime?: string; court?: string } = {};
+        if (localScheduledTime !== scheduledTime) changes.scheduledTime = localScheduledTime;
+        if (localCourt !== (court || '')) changes.court = localCourt;
+        if (Object.keys(changes).length > 0) onGameUpdated(gameId, changes);
       }
 
       if (onInfoSaved) {
@@ -429,8 +452,8 @@ export default function MatchResultCard({
           </div>
         ) : (
           <div className="flex justify-between">
-            <span>{localCourt}</span>
-            <span>{localScheduledTime}</span>
+            <span>{court ?? localCourt}</span>
+            <span>{scheduledTime ?? localScheduledTime}</span>
           </div>
         )}
       </div>
