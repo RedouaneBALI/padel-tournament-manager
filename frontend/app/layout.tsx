@@ -111,6 +111,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const session = await getServerSession(getAuthOptions());
   return (
     <html lang="fr" dir="ltr">
+      <head>
+        {/* iOS: titre utilisé pour l'écran d'accueil */}
+        <meta name="apple-mobile-web-app-title" content="PadelRounds" />
+        {/* permettant le mode standalone sur iOS */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        {/* couleur de la barre d'outils sur Android/Chrome */}
+        <meta name="theme-color" content="#ffffff" />
+        {/* lien manifest (déjà référencé via metadata mais présent ici pour robustesse) */}
+        <link rel="manifest" href="/site.webmanifest" />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <SessionProviderWrapper>
           <header className="sticky top-0 z-[80] bg-background/80 border-b border-border">
