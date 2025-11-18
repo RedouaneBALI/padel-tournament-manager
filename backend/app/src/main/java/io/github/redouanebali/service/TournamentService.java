@@ -9,6 +9,7 @@ import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
+import java.time.LocalDate;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -194,5 +195,12 @@ public class TournamentService {
    */
   public List<Tournament> getTournamentsByOwner(String ownerId) {
     return tournamentRepository.findAllByOwnerId(ownerId);
+  }
+
+  /**
+   * Returns tournaments active today and having at least one non-null game team.
+   */
+  public List<Tournament> getActiveTournaments() {
+    return tournamentRepository.findActiveWithNonNullGames(LocalDate.now());
   }
 }

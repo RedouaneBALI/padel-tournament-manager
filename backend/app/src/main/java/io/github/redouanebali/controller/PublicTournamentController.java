@@ -6,6 +6,7 @@ import io.github.redouanebali.dto.response.PlayerPairDTO;
 import io.github.redouanebali.dto.response.PoolRankingDTO;
 import io.github.redouanebali.dto.response.RoundDTO;
 import io.github.redouanebali.dto.response.TournamentDTO;
+import io.github.redouanebali.dto.response.TournamentSummaryDTO;
 import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Stage;
@@ -150,5 +151,21 @@ public class PublicTournamentController {
         Pool.getGroupRankings(tournamentService.getTournamentById(id))
     );
     return ResponseEntity.ok(rankings);
+  }
+
+  /**
+   * Retrieves active tournaments for the home page. Returns a lightweight summary list of tournaments that are currently ongoing (startDate <= today
+   * <= endDate) and having at least one non-null game.
+   *
+   * @return list of tournament summaries
+   */
+  @GetMapping("/active")
+  public ResponseEntity<List<TournamentSummaryDTO>> getActiveTournaments() {
+    log.debug("Getting active tournaments for home page");
+    List<Tournament> entities = tournamentService.getActiveTournaments();
+    List<TournamentSummaryDTO> summaries = entities.stream()
+                                                   .map(tournamentMapper::toSummaryDTO)
+                                                   .toList();
+    return ResponseEntity.ok(summaries);
   }
 }

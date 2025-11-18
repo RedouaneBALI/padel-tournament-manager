@@ -10,6 +10,7 @@ import io.github.redouanebali.dto.response.PoolRankingDTO;
 import io.github.redouanebali.dto.response.PoolRankingDetailsDTO;
 import io.github.redouanebali.dto.response.RoundDTO;
 import io.github.redouanebali.dto.response.TournamentDTO;
+import io.github.redouanebali.dto.response.TournamentSummaryDTO;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.PairType;
@@ -172,4 +173,7 @@ public interface TournamentMapper {
   @Mapping(target = "updatedAt", ignore = true)
   @Mapping(target = "editorIds", source = "editorIds")
   Tournament toEntity(CreateTournamentRequest request);
+
+  // Summary mapping for the public home endpoint
+  TournamentSummaryDTO toSummaryDTO(Tournament tournament);
 }
