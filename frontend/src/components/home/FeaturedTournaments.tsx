@@ -79,8 +79,22 @@ export default function FeaturedTournaments() {
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground mb-2">Tournois à la une</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {loadingFeatured ? (
-              [0, 1, 2, 3].slice(0, Math.max(1, visibleFeatured.length || 2)).map((i) => (
-                <div key={i} className="p-3 border border-border rounded-2xl bg-card animate-pulse h-24" />
+              [0, 1, 2].map((i) => (
+                <div key={i} className="py-3 px-4 border border-border rounded-2xl bg-card">
+                  <div className="w-full max-w-[20rem] sm:max-w-none mx-auto">
+                    <div className="flex flex-col items-center text-center">
+                      <div className="h-3 w-24 rounded bg-slate-200/30 dark:bg-slate-700/30 mb-2 animate-pulse" />
+                      <div className="h-5 w-40 rounded bg-slate-200/30 dark:bg-slate-700/30 mb-2 animate-pulse" />
+                      <div className="h-3 w-32 rounded bg-slate-200/30 dark:bg-slate-700/30 mb-2 animate-pulse" />
+
+                      <div className="flex gap-2 justify-center mt-1">
+                        <div className="h-6 w-14 rounded-full bg-slate-200/30 dark:bg-slate-700/30 animate-pulse" />
+                        <div className="h-6 w-12 rounded-full bg-slate-200/30 dark:bg-slate-700/30 animate-pulse" />
+                      </div>
+                      <div className="h-4 w-28 rounded bg-slate-200/30 dark:bg-slate-700/30 mt-3 animate-pulse" />
+                    </div>
+                  </div>
+                </div>
               ))
             ) : (
               visibleFeatured.map((t) => (
