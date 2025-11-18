@@ -60,6 +60,15 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        source: '/admin/:path*',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow'
+          },
+        ],
+      },
     ];
   },
 };
