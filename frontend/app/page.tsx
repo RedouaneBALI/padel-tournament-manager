@@ -9,12 +9,93 @@ import ContactButton from '@/src/components/ui/buttons/ContactButton';
 import BottomNav from '@/src/components/ui/BottomNav';
 import { getDefaultBottomItems } from '@/src/components/ui/bottomNavPresets';
 import ImageSlider from '@/src/components/ui/ImageSlider';
+import { useEffect, useState } from 'react';
+import FeaturedTournaments from '@/src/components/home/FeaturedTournaments';
+import { fetchActiveTournaments } from '@/src/api/tournamentApi';
 
 export default function Home() {
   const { status } = useSession();
 
   const pathname = usePathname() ?? '';
   const bottomItems = getDefaultBottomItems();
+
+  const [featured, setFeatured] = useState<any[]>([]);
+  const [loadingFeatured, setLoadingFeatured] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoadingFeatured(true);
+    fetchActiveTournaments()
+      .then((list) => {
+        if (mounted) setFeatured(list || []);
+      })
+      .catch(() => {})
+      .finally(() => mounted && setLoadingFeatured(false));
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // --- Helper: formatage de plage de dates en FR, compact
+  const formatDate = (d?: string) => {
+    if (!d) return '';
+    try {
+      return new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(d));
+    } catch (e) {
+      return d;
+    }
+  };
+
+  const formatDateRange = (start?: string, end?: string) => {
+    if (!start && !end) return '';
+    if (!start) return formatDate(end);
+    if (!end) return formatDate(start);
+
+    const ds = new Date(start);
+    const de = new Date(end);
+    if (isNaN(ds.getTime()) || isNaN(de.getTime())) return `${formatDate(start)} — ${formatDate(end)}`;
+
+    const sameMonth = ds.getMonth() === de.getMonth() && ds.getFullYear() === de.getFullYear();
+    const sameYear = ds.getFullYear() === de.getFullYear();
+
+    if (sameMonth) {
+      // 18–23 nov. 2025
+      return `${ds.getDate()}–${de.getDate()} ${new Intl.DateTimeFormat('fr-FR', { month: 'short', year: 'numeric' }).format(de)}`;
+    }
+    if (sameYear) {
+      // 28 oct. — 3 nov. 2025
+      return `${new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(ds)} — ${new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }).format(de)}`;
+    }
+    // different years
+    return `${formatDate(start)} — ${formatDate(end)}`;
+  };
+
+  // Helpers: gender display and level emoji
+  // - levelIcon: fixed to 🏅 as requested
+  const levelEmoji = (_l?: string) => '🏅';
+
+  // genderEmoji: returns a small emoji for the gender and the display label is handled where needed
+  // Also map common backend codes to French labels when rendering badges.
+  const genderEmoji = (g?: string) => {
+    if (!g) return '⚧';
+    const s = String(g).toUpperCase();
+    if (s === 'MEN' || s === 'M' || s === 'MALE') return '♂️';
+    if (s === 'WOMEN' || s === 'F' || s === 'FEMALE') return '♀️';
+    if (s.includes('MIX') || s.includes('MIXED')) return '⚥';
+    return '⚧';
+  };
+
+  // helper to map gender code to French label for display
+  const genderLabel = (g?: string) => {
+    if (!g) return '';
+    const s = String(g).toUpperCase();
+    if (s === 'MEN') return 'Hommes';
+    if (s === 'WOMEN') return 'Femmes';
+    // fallback: capitalize first letter and lower the rest
+    return s.charAt(0) + s.slice(1).toLowerCase();
+  };
+
+  const visibleFeatured = featured.slice(0, 4);
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -55,9 +136,13 @@ export default function Home() {
         <div className="bg-card border border-border rounded-2xl p-8 sm:p-12 shadow-sm">
           <div className="text-center space-y-6 mb-6">
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+
+            <FeaturedTournaments />
+
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground mb-2">
               Gère tes tournois de padel facilement
             </h1>
+
             <p className="text-muted-foreground">Tableaux knockout · Suivi des scores en direct · Liste des joueurs </p>
             <div className="flex justify-center">
               <Image

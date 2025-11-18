@@ -289,3 +289,12 @@ export async function fetchGamesByStage(tournamentId: string, stage: string) {
   }
   return await response.json();
 }
+
+export async function fetchActiveTournaments() {
+  const response = await fetch(api(`/tournaments/active`));
+  if (!response.ok) {
+    toast.error('Erreur lors du chargement des tournois à la une.');
+    throw new Error('Erreur lors du chargement des tournois à la une.');
+  }
+  return await response.json();
+}
