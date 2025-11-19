@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,6 +61,7 @@ public class TournamentService {
    * @throws IllegalArgumentException if tournament is null or configuration is invalid
    */
   @Transactional
+  @CacheEvict(cacheNames = "activeTournaments", allEntries = true)
   public Tournament createTournament(final Tournament tournament) {
     if (tournament == null) {
       throw new IllegalArgumentException("Tournament cannot be null");
@@ -83,6 +86,7 @@ public class TournamentService {
    * @throws AccessDeniedException if user lacks deletion rights
    */
   @Transactional
+  @CacheEvict(cacheNames = "activeTournaments", allEntries = true)
   public void deleteTournament(Long tournamentId) {
     Tournament existing = getTournamentById(tournamentId);
 
@@ -98,6 +102,7 @@ public class TournamentService {
    * Updates an existing tournament with new information. Only the owner or super admins can update tournaments.
    */
   @Transactional
+  @CacheEvict(cacheNames = "activeTournaments", allEntries = true)
   public Tournament updateTournament(Long tournamentId, UpdateTournamentRequest updatedTournament) {
     Tournament existing = getTournamentById(tournamentId);
 
@@ -200,6 +205,7 @@ public class TournamentService {
   /**
    * Returns tournaments active today and having at least one non-null game team.
    */
+  @Cacheable(cacheNames = "activeTournaments")
   public List<Tournament> getActiveTournaments() {
     return tournamentRepository.findActiveWithNonNullGames(LocalDate.now());
   }
