@@ -42,6 +42,12 @@ export default function QualifKoPlayerAssignment({ tournament, playerPairs }: Pr
 
   const [applyingByes, setApplyingByes] = useState(false);
 
+  // Check if there are any BYE pairs in the main draw
+  const hasMainDrawByePairs = React.useMemo(() => {
+    const mainDrawPairs = playerPairs.slice(qualifSlotsSize, qualifSlotsSize + mainSlotsSize);
+    return mainDrawPairs.some((p) => p?.type === 'BYE');
+  }, [playerPairs, qualifSlotsSize, mainSlotsSize]);
+
   // Apply BYE positions using the public/bye-positions.json mapping (main draw only)
   const applyByes = async () => {
     setApplyingByes(true);
@@ -135,16 +141,18 @@ export default function QualifKoPlayerAssignment({ tournament, playerPairs }: Pr
         </div>
 
         <div className="rounded-md border border-border bg-card divide-y">
-          <div className="p-3 flex justify-center">
-            <button
-              type="button"
-              disabled={applyingByes}
-              onClick={applyByes}
-              className={`px-3 py-1 rounded text-sm ${applyingByes ? 'bg-border text-muted-foreground cursor-not-allowed' : 'bg-primary text-on-primary hover:bg-primary-hover'}`}
-            >
-              {applyingByes ? 'Positionnement...' : 'Positionner les BYE'}
-            </button>
-          </div>
+          {hasMainDrawByePairs && (
+            <div className="p-3 flex justify-center">
+              <button
+                type="button"
+                disabled={applyingByes}
+                onClick={applyByes}
+                className={`px-3 py-1 rounded text-sm ${applyingByes ? 'bg-border text-muted-foreground cursor-not-allowed' : 'bg-primary text-on-primary hover:bg-primary-hover'}`}
+              >
+                {applyingByes ? 'Positionnement...' : 'Positionner les BYE'}
+              </button>
+            </div>
+          )}
           {Array.from({ length: mainMatchesCount }).map((_, matchIndex) => {
             const slotIndexA = matchIndex * 2;
             const slotIndexB = slotIndexA + 1;

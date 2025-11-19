@@ -46,6 +46,11 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
 
   const [applyingByes, setApplyingByes] = useState(false);
 
+  // Check if there are any BYE pairs in the list
+  const hasByePairs = React.useMemo(() => {
+    return (playerPairs || []).some((p) => p?.type === 'BYE');
+  }, [playerPairs]);
+
   // Apply BYE positions using the public/bye-positions.json mapping
   const applyByes = async () => {
     setApplyingByes(true);
@@ -82,16 +87,18 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
       </div>
 
       <div className="rounded-md border border-border bg-card divide-y">
-        <div className="p-3 flex justify-center">
-          <button
-            type="button"
-            disabled={applyingByes}
-            onClick={applyByes}
-            className={`px-3 py-1 rounded text-sm ${applyingByes ? 'bg-border text-muted-foreground cursor-not-allowed' : 'bg-primary text-on-primary hover:bg-primary-hover'}`}
-          >
-            {applyingByes ? 'Positionnement...' : 'Positionner les BYE'}
-          </button>
-        </div>
+        {hasByePairs && (
+          <div className="p-3 flex justify-center">
+            <button
+              type="button"
+              disabled={applyingByes}
+              onClick={applyByes}
+              className={`px-3 py-1 rounded text-sm ${applyingByes ? 'bg-border text-muted-foreground cursor-not-allowed' : 'bg-primary text-on-primary hover:bg-primary-hover'}`}
+            >
+              {applyingByes ? 'Positionnement...' : 'Positionner les BYE'}
+            </button>
+          </div>
+        )}
         {Array.from({ length: matchesCount }).map((_, matchIndex) => {
           const slotIndexA = matchIndex * 2;
           const slotIndexB = slotIndexA + 1;
