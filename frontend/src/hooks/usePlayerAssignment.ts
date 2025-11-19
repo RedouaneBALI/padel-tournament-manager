@@ -2,13 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { Tournament } from '@/src/types/tournament';
 import { PlayerPair } from '@/src/types/playerPair';
 import { reorderPlayerPairs } from '@/src/api/tournamentApi';
-
-// Constants for auto-scroll behavior
-const SCROLL_CONFIG = {
-  THRESHOLD: 180,     // px near top/bottom to trigger scroll
-  MAX_SPEED: 28,      // px per frame (capped)
-  MIN_SPEED: 6,       // minimum scroll speed
-} as const;
+import { useAutoScroll } from '@/src/hooks/useAutoScroll';
 
 export function usePlayerAssignment(tournament: Tournament, playerPairs: PlayerPair[], slotsSize: number) {
   const [slots, setSlots] = useState<Array<PlayerPair | null>>([]);
@@ -17,8 +11,9 @@ export function usePlayerAssignment(tournament: Tournament, playerPairs: PlayerP
 
   const matchRefs = useRef<Array<HTMLDivElement | null>>([]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const autoScrollRAF = useRef<number | null>(null);
-  const autoScrollDir = useRef<0 | 1 | -1>(0);
+
+  // Use shared auto-scroll hook
+  const { onRootDragOver, onRootDragEnd } = useAutoScroll(scrollRef);
 
   // Initialize slots from tournament data or playerPairs
   useEffect(() => {
@@ -60,6 +55,30 @@ export function usePlayerAssignment(tournament: Tournament, playerPairs: PlayerP
     setSlots(next);
   }, [tournament.id, slotsSize, playerPairs]);
 
+  // Listen to external requests to replace slots (e.g. apply BYE positions)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      try {
+        const ce = e as CustomEvent;
+        const detail = ce.detail;
+        if (!detail || !Array.isArray(detail.slots)) return;
+        const incoming = detail.slots as Array<PlayerPair | null>;
+        if (incoming.length !== slotsSize) return;
+        setSlots(incoming);
+      } catch (err) {
+        // ignore
+      }
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('knockout:apply-byes', handler as EventListener);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('knockout:apply-byes', handler as EventListener);
+      }
+    };
+  }, [slotsSize]);
+
   // Dispatch custom event when slots change
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -72,34 +91,6 @@ export function usePlayerAssignment(tournament: Tournament, playerPairs: PlayerP
     }
   }, [slots, tournament.id]);
 
-  // Auto-scroll utilities
-  const cancelAutoScroll = useCallback(() => {
-    if (autoScrollRAF.current != null) {
-      cancelAnimationFrame(autoScrollRAF.current);
-      autoScrollRAF.current = null;
-    }
-    autoScrollDir.current = 0;
-  }, []);
-
-  const startAutoScroll = useCallback((dy: number) => {
-    const container = scrollRef.current;
-    const step = () => {
-      if (container && container.scrollHeight > container.clientHeight) {
-        container.scrollTop += dy;
-      } else {
-        window.scrollBy(0, dy);
-      }
-      autoScrollRAF.current = requestAnimationFrame(step);
-    };
-    autoScrollRAF.current = requestAnimationFrame(step);
-  }, []);
-
-  // Calculate scroll speed based on distance from edge
-  const calculateScrollSpeed = useCallback((distanceFromEdge: number): number => {
-    if (distanceFromEdge > SCROLL_CONFIG.THRESHOLD) return 0;
-    const ratio = (SCROLL_CONFIG.THRESHOLD - distanceFromEdge) / SCROLL_CONFIG.THRESHOLD;
-    return Math.max(SCROLL_CONFIG.MIN_SPEED, Math.floor(ratio * SCROLL_CONFIG.MAX_SPEED));
-  }, []);
 
   // Swap two slots
   const swapSlots = useCallback((fromIndex: number, toIndex: number) => {
@@ -194,60 +185,6 @@ export function usePlayerAssignment(tournament: Tournament, playerPairs: PlayerP
     swapSlots(index, targetIndex);
   }, [slots.length, swapSlots]);
 
-  // Root-level drag handlers for auto-scroll
-  const onRootDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-
-    const container = scrollRef.current;
-    const rect = container
-      ? container.getBoundingClientRect()
-      : { top: 0, bottom: window.innerHeight };
-
-    const y = e.clientY;
-    const distTop = y - rect.top;
-    const distBottom = rect.bottom - y;
-
-    const upSpeed = calculateScrollSpeed(distTop);
-    const downSpeed = calculateScrollSpeed(distBottom);
-
-    let dir: 0 | 1 | -1 = 0;
-    let speed = 0;
-
-    if (upSpeed > 0) {
-      dir = -1;
-      speed = upSpeed;
-    } else if (downSpeed > 0) {
-      dir = 1;
-      speed = downSpeed;
-    }
-
-    // Not in scroll zone - cancel auto-scroll
-    if (dir === 0) {
-      cancelAutoScroll();
-      return;
-    }
-
-    // Direction changed or no scroll active - restart with new speed
-    const desiredDy = dir * speed;
-    const currentDir = autoScrollDir.current;
-
-    if (autoScrollRAF.current == null || currentDir !== dir) {
-      cancelAutoScroll();
-      autoScrollDir.current = dir;
-      startAutoScroll(desiredDy);
-    }
-  }, [calculateScrollSpeed, cancelAutoScroll, startAutoScroll]);
-
-  const onRootDragEnd = useCallback(() => {
-    cancelAutoScroll();
-  }, [cancelAutoScroll]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      cancelAutoScroll();
-    };
-  }, [cancelAutoScroll]);
 
   return {
     slots,

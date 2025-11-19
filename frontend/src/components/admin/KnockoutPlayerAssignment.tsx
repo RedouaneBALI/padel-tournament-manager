@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Tournament } from '@/src/types/tournament';
 import { PlayerPair } from '@/src/types/playerPair';
 import GameAssignmentBloc from '@/src/components/admin/GameAssignmentBloc';
 import { usePlayerAssignment } from '@/src/hooks/usePlayerAssignment';
+import { applyByePositions } from '@/src/utils/byePositioning';
 
 interface Props {
   tournament: Tournament;
@@ -43,6 +44,24 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
     onRootDragEnd,
   } = usePlayerAssignment(tournament, playerPairs, slotsSize);
 
+  const [applyingByes, setApplyingByes] = useState(false);
+
+  // Apply BYE positions using the public/bye-positions.json mapping
+  const applyByes = async () => {
+    setApplyingByes(true);
+    try {
+      const result = await applyByePositions(playerPairs, slotsSize);
+      if (result) {
+        // Dispatch event to update slots in the hook
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('knockout:apply-byes', { detail: { slots: result } }));
+        }
+      }
+    } finally {
+      setApplyingByes(false);
+    }
+  };
+
   return (
     <div
       ref={scrollRef}
@@ -63,6 +82,16 @@ export default function KnockoutPlayerAssignment({ tournament, playerPairs }: Pr
       </div>
 
       <div className="rounded-md border border-border bg-card divide-y">
+        <div className="p-3 flex justify-center">
+          <button
+            type="button"
+            disabled={applyingByes}
+            onClick={applyByes}
+            className={`px-3 py-1 rounded text-sm ${applyingByes ? 'bg-border text-muted-foreground cursor-not-allowed' : 'bg-primary text-on-primary hover:bg-primary-hover'}`}
+          >
+            {applyingByes ? 'Positionnement...' : 'Positionner les BYE'}
+          </button>
+        </div>
         {Array.from({ length: matchesCount }).map((_, matchIndex) => {
           const slotIndexA = matchIndex * 2;
           const slotIndexB = slotIndexA + 1;
