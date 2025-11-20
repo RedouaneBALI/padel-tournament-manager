@@ -21,7 +21,6 @@ export async function applyByePositions(
     // Determine number of BYEs from the provided playerPairs (type === 'BYE')
     const byePairs = (playerPairs || []).filter((p) => p?.type === 'BYE');
     const byesCount = byePairs.length;
-
     if (byesCount === 0) {
       window.alert('Aucun BYE trouvé parmi les paires.');
       return null;

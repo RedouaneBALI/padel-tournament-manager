@@ -4,7 +4,6 @@ import io.github.redouanebali.model.Gender;
 import io.github.redouanebali.model.TournamentLevel;
 import io.github.redouanebali.model.format.TournamentConfig;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
@@ -40,7 +39,6 @@ public class CreateTournamentRequest extends BaseTournamentRequest {
   /**
    * Tournament start date must be today or in the future for new tournaments.
    */
-  @FutureOrPresent(message = "Start date must be today or in the future")
   @Override
   public LocalDate getStartDate() {
     return super.getStartDate();
