@@ -1,7 +1,7 @@
 // app/contact/page.tsx
 'use client';
 
-import { FiMail, FiLinkedin, FiMoreHorizontal } from 'react-icons/fi';
+import { FiMail, FiLinkedin, FiInstagram, FiMoreHorizontal } from 'react-icons/fi';
 import { Home } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import BottomNav, { BottomNavItem } from '@/src/components/ui/BottomNav';
@@ -54,6 +54,21 @@ export default function ContactPage() {
               <div>
                 <div className="font-medium">LinkedIn</div>
                 <div className="text-sm text-muted-foreground">/in/redouane-bali</div>
+              </div>
+            </a>
+
+            <a
+              href="https://www.instagram.com/padelrounds/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-4 rounded-xl border border-border bg-card hover:bg-accent hover:text-accent-foreground transition-colors p-4"
+            >
+              <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-white/70 group-hover:bg-background">
+                <FiInstagram size={28} className="text-[#E1306C]" />
+              </span>
+              <div>
+                <div className="font-medium">Instagram</div>
+                <div className="text-sm text-muted-foreground">@padelrounds</div>
               </div>
             </a>
           </div>
