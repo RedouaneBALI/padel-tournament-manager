@@ -42,7 +42,7 @@ export default function GamesList({
       const na = Number(a);
       const nb = Number(b);
       if (!Number.isNaN(na) && !Number.isNaN(nb)) return na - nb;
-      return a.localeCompare(b);
+      return String(a).localeCompare(String(b));
     });
     return ids;
   }, [gamesKey]);

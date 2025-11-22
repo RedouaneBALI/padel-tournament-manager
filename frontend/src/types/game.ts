@@ -1,22 +1,19 @@
-'use client';
-
 import { PlayerPair } from '@/src/types/playerPair';
 import { Score } from '@/src/types/score';
 import { Pool } from '@/src/types/pool';
 
+/**
+ * Game data type matching the backend GameDTO.
+ * This is a pure data type - UI-specific props should be kept in component interfaces.
+ */
 export interface Game {
-  id: string;
+  id: number | string;
   teamA: PlayerPair | null;
   teamB: PlayerPair | null;
-  editable?: boolean;
-  gameId: string;
-  tournamentId: string;
-  score?: Score;
-  onScoreSaved: (result: { tournamentUpdated: boolean; winner: string | null }) => void;
-  winnerSide?: string;
-  stage?: string;
-  pool?: Pool;
   finished: boolean;
-  scheduledTime: string;
-  court: string;
+  score?: Score;
+  winnerSide?: string;
+  scheduledTime?: string;
+  court?: string;
+  pool?: Pool;
 }
