@@ -299,8 +299,8 @@ export default function MatchResultCard({
     >
       {/* Indicateur match en cours */}
       {isInProgress && (
-        <div className="absolute top-2 right-2 z-30">
-          <LiveMatchIndicator />
+        <div className={`absolute top-2 z-30 ${editable ? 'left-2' : 'right-2'}`}>
+          <LiveMatchIndicator showLabel={!editable} />
         </div>
       )}
 

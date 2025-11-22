@@ -50,7 +50,7 @@ export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, 
       {/* Indicateur match en cours */}
       {isInProgress && (
         <div className="absolute top-2 right-2 z-10">
-          <LiveMatchIndicator />
+          <LiveMatchIndicator showLabel={true} />
         </div>
       )}
 
