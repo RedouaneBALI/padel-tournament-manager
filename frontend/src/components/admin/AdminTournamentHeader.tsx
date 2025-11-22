@@ -30,7 +30,7 @@ export default function AdminTournamentHeader({ tournament, tournamentId }: Prop
     }
 
     // Ajouter les query parameters s'ils existent
-    const queryString = searchParams.toString();
+    const queryString = searchParams?.toString() ?? '';
     const shareUrl = queryString
       ? `${FRONT_URL}${publicPathname}?${queryString}`
       : `${FRONT_URL}${publicPathname}`;

@@ -91,9 +91,9 @@ public class AdminTournamentController {
 
   /**
    * Lists tournaments based on the scope parameter. Returns all tournaments for super admins when scope='all', otherwise returns user's own
-   * tournaments.
+   * tournaments and tournaments where the user is an editor.
    *
-   * @param scope the scope filter - "all" for all tournaments (super admin only), "mine" for user's tournaments
+   * @param scope the scope filter - "all" for all tournaments (super admin only), "mine" for user's tournaments and those where user is editor
    * @return ResponseEntity containing list of tournament DTOs
    */
   @GetMapping
@@ -103,7 +103,7 @@ public class AdminTournamentController {
 
     List<Tournament> list = ("all".equalsIgnoreCase(scope) && isSuper)
                             ? tournamentService.listAll()
-                            : tournamentService.listByOwner(me);
+                            : tournamentService.listByOwnerOrEditor(me);
 
     return ResponseEntity.ok(list.stream().map(tournamentMapper::toDTO).toList());
   }

@@ -12,6 +12,15 @@ import java.util.List;
  */
 public class WinnerPropagationUtil {
 
+  // Reusable strategy instances to preserve state (cache) across round boundaries
+  private final KnockoutPropagationStrategy      knockoutStrategy;
+  private final QualifierSlotPropagationStrategy qualifierStrategy;
+
+  public WinnerPropagationUtil() {
+    this.knockoutStrategy  = new KnockoutPropagationStrategy(this);
+    this.qualifierStrategy = new QualifierSlotPropagationStrategy(this);
+  }
+
   /**
    * Propagate winners from all rounds to their next rounds
    */
@@ -19,6 +28,10 @@ public class WinnerPropagationUtil {
     if (tournament == null || tournament.getRounds() == null || tournament.getRounds().size() < 2) {
       return;
     }
+
+    // Reset qualifier strategy cache for new propagation pass
+    qualifierStrategy.resetCache();
+
     final List<Round> rounds = tournament.getRounds();
     // Process every boundary left-to-right so earlier rounds feed later ones in the same call
     for (int i = 0; i < rounds.size() - 1; i++) {
@@ -129,9 +142,9 @@ public class WinnerPropagationUtil {
    */
   private PropagationStrategy determinePropagationStrategy(int currentSize, int nextSize) {
     if (nextSize == currentSize / 2) {
-      return new KnockoutPropagationStrategy(this);
+      return knockoutStrategy;
     } else {
-      return new QualifierSlotPropagationStrategy(this);
+      return qualifierStrategy;
     }
   }
 

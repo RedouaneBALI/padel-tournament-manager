@@ -69,16 +69,21 @@ public class GameService {
    * @return update result with finish status and winner side information
    */
   private UpdateScoreDTO updateScoreAndPropagate(Game game, Tournament tournament, Score score) {
-    game.setScore(score);
+    try {
+      game.setScore(score);
 
-    TeamSide winner = null;
-    if (game.isFinished()) {
-      drawGenerationService.propagateWinners(tournament);
-      winner = game.getWinner().equals(game.getTeamA()) ? TeamSide.TEAM_A : TeamSide.TEAM_B;
+      TeamSide winner = null;
+      if (game.isFinished()) {
+        drawGenerationService.propagateWinners(tournament);
+        winner = game.getWinner().equals(game.getTeamA()) ? TeamSide.TEAM_A : TeamSide.TEAM_B;
+      }
+
+      tournamentRepository.save(tournament);
+      return new UpdateScoreDTO(game.isFinished(), winner);
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to update game score for tournament " + tournament.getId() +
+                                 ", game " + game.getId() + ": " + e.getMessage(), e);
     }
-
-    tournamentRepository.save(tournament);
-    return new UpdateScoreDTO(game.isFinished(), winner);
   }
 
 

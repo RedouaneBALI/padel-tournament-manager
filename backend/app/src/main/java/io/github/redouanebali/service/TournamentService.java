@@ -203,6 +203,16 @@ public class TournamentService {
   }
 
   /**
+   * Retrieves all tournaments owned by or editable by (where user is an editor) a specific user.
+   *
+   * @param userId the user ID
+   * @return list of tournaments owned by or editable by the user
+   */
+  public List<Tournament> listByOwnerOrEditor(String userId) {
+    return tournamentRepository.findByOwnerIdOrEditorId(userId);
+  }
+
+  /**
    * Returns tournaments active today and having at least one non-null game team.
    */
   @Cacheable(cacheNames = "activeTournaments")
