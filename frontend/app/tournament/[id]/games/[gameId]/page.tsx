@@ -37,6 +37,13 @@ export default function GameDetailPage({ params }: PageProps) {
     };
 
     loadGame();
+
+    // Auto-refresh toutes les 5 secondes pour affichage en direct
+    const interval = setInterval(() => {
+      loadGame();
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, [tournamentId, gameId]);
 
   if (loading) {
@@ -68,15 +75,15 @@ export default function GameDetailPage({ params }: PageProps) {
       </div>
 
       {game.round?.stage && (
-        <div className="flex justify-center mb-6">
-          <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary/20 rounded-full shadow-sm">
-            <h1 className="text-xl sm:text-2xl font-bold text-primary">{formatStageLabel(game.round.stage)}</h1>
+        <div className="flex justify-center mb-8">
+          <div className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary/20 rounded-full shadow-sm">
+            <h1 className="text-3xl sm:text-4xl font-bold text-primary">{formatStageLabel(game.round.stage)}</h1>
           </div>
         </div>
       )}
 
       <div className="flex justify-center w-full">
-        <div className="w-full max-w-xl flex justify-center">
+        <div className="w-full max-w-2xl flex justify-center transform scale-110 sm:scale-125">
           <MatchResultCard
             teamA={game.teamA}
             teamB={game.teamB}
@@ -92,6 +99,11 @@ export default function GameDetailPage({ params }: PageProps) {
             scheduledTime={game.scheduledTime}
           />
         </div>
+      </div>
+
+      {/* Indicateur de mise à jour automatique */}
+      <div className="mt-8 text-center text-sm text-muted-foreground">
+        ⟳ Actualisation automatique toutes les 5 secondes
       </div>
     </main>
   );
