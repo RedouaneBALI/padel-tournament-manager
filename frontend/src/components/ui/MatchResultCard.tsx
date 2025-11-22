@@ -291,16 +291,18 @@ export default function MatchResultCard({
           e.stopPropagation();
         }
       }}
-      className={`relative rounded-lg overflow-hidden w-full sm:max-w-[400px] transition-all duration-200
+      className={`relative rounded-lg overflow-hidden w-full sm:max-w-[400px] transition-all duration-200 border border-gray-300
         ${editing
           ? 'shadow-2xl bg-edit-bg/30'
           : 'shadow-sm bg-card'
-        }`}
+        }
+        ${isInProgress ? 'ring-2 ring-red-500/20' : ''}
+        `}
     >
-      {/* Indicateur match en cours */}
-      {isInProgress && (
-        <div className={`absolute top-2 z-30 ${editable ? 'left-2' : 'right-2'}`}>
-          <LiveMatchIndicator showLabel={!editable} />
+      {/* Indicateur match en cours - en mode non-éditable */}
+      {isInProgress && !editable && (
+        <div className="absolute top-2 right-2 z-30">
+          <LiveMatchIndicator showLabel={true} />
         </div>
       )}
 
@@ -321,7 +323,10 @@ export default function MatchResultCard({
           </div>
         )}
         {editable && (
-          <div className="z-10 ml-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="z-10 ml-auto flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+            {/* Point rouge en mode éditable si match en cours */}
+            {isInProgress && <LiveMatchIndicator showLabel={false} />}
+
             {editing ? (
               <SaveAndCancelButtons
                 isSaving={isSaving}
