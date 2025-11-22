@@ -20,8 +20,8 @@ export const stageLabels: Record<Stage, string> = {
   R64: '1/32 de finale',
   R32: '1/16 de finale',
   R16: '1/8 de finale',
-  QUARTERS: 'Quart de finale',
-  SEMIS: 'Demi-finale',
+  QUARTERS: '1/4 de finale',
+  SEMIS: '1/2 finale',
   FINAL: 'Finale',
   WINNER: 'Vainqueur',
 };
@@ -41,3 +41,16 @@ export const getStageFromSize = (size: number): Stage => {
   if (size > 2) return Stage.SEMIS;
   return Stage.FINAL;
 };
+
+/**
+ * Formate le label d'un stage en français
+ * @param stage - Le stage à formater
+ * @returns Le label français du stage, ou la valeur originale si non trouvé
+ */
+export const formatStageLabel = (stage: string | Stage | undefined): string => {
+  if (!stage) return '';
+
+  const stageKey = String(stage).toUpperCase() as Stage;
+  return stageLabels[stageKey] || String(stage);
+};
+

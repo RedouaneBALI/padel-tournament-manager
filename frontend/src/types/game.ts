@@ -3,6 +3,7 @@
 import { PlayerPair } from '@/src/types/playerPair';
 import { Score } from '@/src/types/score';
 import { Pool } from '@/src/types/pool';
+import { Round } from '@/src/types/round';
 
 export interface Game {
   id: string;
@@ -19,4 +20,5 @@ export interface Game {
   finished: boolean;
   scheduledTime: string;
   court: string;
+  round?: Round;
 }

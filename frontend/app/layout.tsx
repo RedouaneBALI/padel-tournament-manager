@@ -11,6 +11,7 @@ import { getAuthOptions } from "@/src/lib/authOptions";
 import Link from 'next/link';
 import Image from 'next/image';
 import { FiPlusCircle, FiList, FiMail } from 'react-icons/fi';
+import GoogleAnalytics from '@/src/components/GoogleAnalytics';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -112,6 +113,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="fr" dir="ltr">
       <head>
+        <GoogleAnalytics />
         {/* iOS: titre utilisé pour l'écran d'accueil */}
         <meta name="apple-mobile-web-app-title" content="PadelRounds" />
         {/* permettant le mode standalone sur iOS */}

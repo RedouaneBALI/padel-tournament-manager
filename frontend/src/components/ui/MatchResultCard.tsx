@@ -286,6 +286,11 @@ export default function MatchResultCard({
   return (
     <div
       aria-busy={isSaving}
+      onClick={(e) => {
+        if (editing) {
+          e.stopPropagation();
+        }
+      }}
       className={`relative rounded-lg overflow-hidden w-full sm:max-w-[400px] transition-all duration-200
         ${editing
           ? 'shadow-2xl bg-edit-bg/30'
@@ -316,7 +321,7 @@ export default function MatchResultCard({
           </div>
         )}
         {editable && (
-          <div className="z-10">
+          <div className="z-10 ml-auto" onClick={(e) => e.stopPropagation()}>
             {editing ? (
               <SaveAndCancelButtons
                 isSaving={isSaving}
@@ -333,7 +338,10 @@ export default function MatchResultCard({
               />
             ) : (
               <button
-                onClick={() => setEditing(true)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditing(true);
+                }}
                 className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-7 w-7 p-0 hover:bg-primary/10 hover:text-primary"
                 title="Modifier les scores"
               >

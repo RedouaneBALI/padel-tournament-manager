@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import MatchResultCard from '@/src/components/ui/MatchResultCard';
 import type { Game } from '@/src/types/game';
 
@@ -27,8 +28,14 @@ export default function GamesList({
   stage,
   isFirstRound = false,
 }: GamesListProps) {
+  const router = useRouter();
   // Nouveau : état local pour le mode de tri (ui seulement pour l'instant)
   const [sortMode, setSortMode] = useState<'time' | 'court'>('time');
+
+  const handleGameClick = (gameId: string) => {
+    const basePath = editable ? '/admin/tournament' : '/tournament';
+    router.push(`${basePath}/${tournamentId}/games/${gameId}`);
+  };
 
   // Créer une clé unique basée sur le stage et les IDs des matchs
   // key basée sur l'ensemble des IDs triés (indépendante de l'ordre)
@@ -130,27 +137,32 @@ export default function GamesList({
 
         return (
           <div key={game.id} className="w-full max-w-xl flex justify-center">
-            <MatchResultCard
-              teamA={game.teamA}
-              teamB={game.teamB}
-              score={game.score}
-              gameId={String(game.id)}
-              tournamentId={tournamentId}
-              editable={editable}
-              court={game.court}
-              scheduledTime={game.scheduledTime}
-              onInfoSaved={onInfoSaved}
-              onTimeChanged={onTimeChanged}
-              onGameUpdated={onGameUpdated}
-              winnerSide={winnerIndex}
-              stage={stage}
-              pool={(game as any).pool}
-              setsToWin={setsToWin}
-              finished={game.finished}
-              matchIndex={originalIndex}
-              totalMatches={totalMatches}
-              isFirstRound={isFirstRound}
-            />
+            <div
+              onClick={() => handleGameClick(String(game.id))}
+              className="cursor-pointer transition-transform hover:scale-[1.02] w-full flex justify-center"
+            >
+              <MatchResultCard
+                teamA={game.teamA}
+                teamB={game.teamB}
+                score={game.score}
+                gameId={String(game.id)}
+                tournamentId={tournamentId}
+                editable={editable}
+                court={game.court}
+                scheduledTime={game.scheduledTime}
+                onInfoSaved={onInfoSaved}
+                onTimeChanged={onTimeChanged}
+                onGameUpdated={onGameUpdated}
+                winnerSide={winnerIndex}
+                stage={stage}
+                pool={(game as any).pool}
+                setsToWin={setsToWin}
+                finished={game.finished}
+                matchIndex={originalIndex}
+                totalMatches={totalMatches}
+                isFirstRound={isFirstRound}
+              />
+            </div>
           </div>
         );
       })}

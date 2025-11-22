@@ -290,6 +290,16 @@ export async function fetchGamesByStage(tournamentId: string, stage: string) {
   return await response.json();
 }
 
+export async function fetchGame(tournamentId: string, gameId: string) {
+  const response = await fetch(api(`/tournaments/${tournamentId}/games/${gameId}`));
+  if (!response.ok) {
+    toast.error('Erreur lors du chargement du match.');
+    throw new Error('Erreur lors du chargement du match.');
+  }
+  return await response.json();
+}
+
+
 export async function fetchActiveTournaments() {
   const response = await fetch(api(`/tournaments/active`));
   if (!response.ok) {
