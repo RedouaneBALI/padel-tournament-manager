@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Settings, Share2, Download } from 'lucide-react';
 import { toast } from 'react-toastify';
 import AdminTournamentTabs from './AdminTournamentTabs';
@@ -17,17 +17,24 @@ interface Props {
 export default function AdminTournamentHeader({ tournament, tournamentId }: Props) {
   const router = useRouter();
   const pathname = usePathname() ?? '';
+  const searchParams = useSearchParams();
   const { onExport } = useExport();
 
   const handleCopyLink = () => {
     const FRONT_URL = (process.env.NEXT_PUBLIC_FRONTEND_URL ?? '').replace(/\/$/, '');
+    // Remplacer /admin/tournament par /tournament en gardant le reste du pathname
     let publicPathname = pathname.replace(/^\/admin\/tournament/, '/tournament');
 
     if (publicPathname.includes('/rounds/config')) {
       publicPathname = `/tournament/${tournamentId}`;
     }
 
-    const shareUrl = `${FRONT_URL}${publicPathname}`;
+    // Ajouter les query parameters s'ils existent
+    const queryString = searchParams.toString();
+    const shareUrl = queryString
+      ? `${FRONT_URL}${publicPathname}?${queryString}`
+      : `${FRONT_URL}${publicPathname}`;
+
     navigator.clipboard
       .writeText(shareUrl)
       .then(() => toast.success('Lien copié dans le presse-papiers !'))
