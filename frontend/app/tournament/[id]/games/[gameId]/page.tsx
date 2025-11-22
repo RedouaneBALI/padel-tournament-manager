@@ -38,10 +38,10 @@ export default function GameDetailPage({ params }: PageProps) {
 
     loadGame();
 
-    // Auto-refresh toutes les 5 secondes pour affichage en direct
+    // Auto-refresh toutes les 30 secondes pour affichage en direct
     const interval = setInterval(() => {
       loadGame();
-    }, 5000);
+    }, 30000);
 
     return () => clearInterval(interval);
   }, [tournamentId, gameId]);
@@ -103,7 +103,7 @@ export default function GameDetailPage({ params }: PageProps) {
 
       {/* Indicateur de mise à jour automatique */}
       <div className="mt-8 text-center text-sm text-muted-foreground">
-        ⟳ Actualisation automatique toutes les 5 secondes
+        ⟳ Actualisation automatique toutes les 30 secondes
       </div>
     </main>
   );

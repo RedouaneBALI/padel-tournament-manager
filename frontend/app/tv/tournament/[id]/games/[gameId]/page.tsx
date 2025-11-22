@@ -32,8 +32,8 @@ export default function TVModePage({ params }: PageProps) {
 
     loadGame();
 
-    // Rafraîchir toutes les 5 secondes pour les mises à jour
-    const interval = setInterval(loadGame, 5000);
+    // Rafraîchir toutes les 10 secondes pour les mises à jour
+    const interval = setInterval(loadGame, 10000);
     return () => clearInterval(interval);
   }, [tournamentId, gameId]);
 
@@ -159,7 +159,7 @@ export default function TVModePage({ params }: PageProps) {
 
       {/* Footer avec logo/branding (optionnel) */}
       <div className="mt-12 text-white/60 text-2xl">
-        PadelRounds
+        www.padelrounds.com
       </div>
     </div>
   );

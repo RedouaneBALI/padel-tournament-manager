@@ -82,7 +82,7 @@ export default function AdminGameDetailPage({ params }: PageProps) {
       <div className="mb-6 flex justify-between items-center">
         <BackButton />
         <button
-          onClick={() => router.push(`/tournament/${tournamentId}/games/${gameId}/tv`)}
+          onClick={() => router.push(`/tv/tournament/${tournamentId}/games/${gameId}`)}
           className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
         >
           📺 Mode TV
@@ -120,4 +120,3 @@ export default function AdminGameDetailPage({ params }: PageProps) {
     </main>
   );
 }
-
