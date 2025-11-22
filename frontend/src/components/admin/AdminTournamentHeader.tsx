@@ -21,7 +21,13 @@ export default function AdminTournamentHeader({ tournament, tournamentId }: Prop
 
   const handleCopyLink = () => {
     const FRONT_URL = (process.env.NEXT_PUBLIC_FRONTEND_URL ?? '').replace(/\/$/, '');
-    const shareUrl = `${FRONT_URL}/tournament/${tournamentId}`;
+    let publicPathname = pathname.replace(/^\/admin\/tournament/, '/tournament');
+
+    if (publicPathname.includes('/rounds/config')) {
+      publicPathname = `/tournament/${tournamentId}`;
+    }
+
+    const shareUrl = `${FRONT_URL}${publicPathname}`;
     navigator.clipboard
       .writeText(shareUrl)
       .then(() => toast.success('Lien copié dans le presse-papiers !'))
