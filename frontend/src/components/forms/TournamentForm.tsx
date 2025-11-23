@@ -31,6 +31,12 @@ export default function TournamentForm({
     useTournamentForm(initialData as Partial<TournamentFormData>);
   const router = useRouter();
 
+  // Déterminer si le tournoi est lancé (a des rounds ou un currentRoundStage)
+  const isTournamentStarted = isEditing && initialData && (
+    (initialData.rounds && initialData.rounds.length > 0) ||
+    (initialData.currentRoundStage && initialData.currentRoundStage !== null)
+  );
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -86,7 +92,12 @@ export default function TournamentForm({
 
               <hr className="border-border" />
 
-              <TournamentConfigSection formData={formData} handleInputChange={handleInputChange} onEmailsChange={handleEmailsChange} />
+              <TournamentConfigSection
+                formData={formData}
+                handleInputChange={handleInputChange}
+                onEmailsChange={handleEmailsChange}
+                isTournamentStarted={isTournamentStarted}
+              />
 
               <hr className="border-border" />
             </form>

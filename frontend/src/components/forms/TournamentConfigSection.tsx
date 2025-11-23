@@ -14,12 +14,14 @@ interface TournamentConfigSectionProps {
   formData: TournamentFormData;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   onEmailsChange: (emails: string[]) => void;
+  isTournamentStarted?: boolean;
 }
 
 export default function TournamentConfigSection({
   formData,
   handleInputChange,
-  onEmailsChange
+  onEmailsChange,
+  isTournamentStarted = false
 }: TournamentConfigSectionProps) {
   const emails = Array.isArray(formData.editorIds) ? formData.editorIds : [];
 
@@ -85,7 +87,9 @@ export default function TournamentConfigSection({
               value={toStr(formData.config?.format ?? '')}
               onChange={handleInputChange}
               required
-              className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+              disabled={isTournamentStarted}
+              className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title={isTournamentStarted ? "Impossible de modifier le format une fois le tournoi lancé" : ""}
             >
               <option value="KNOCKOUT">Élimination directe</option>
               <option value="QUALIF_KO"> Qualif + Élimination directe </option>
@@ -98,13 +102,25 @@ export default function TournamentConfigSection({
 
         <div className="grid gap-6 grid-cols-1 md:grid-cols-2 md:max-w-3xl">
           {formData.config?.format === 'KNOCKOUT' && (
-            <KnockoutConfigSection formData={formData} handleInputChange={handleInputChange} />
+            <KnockoutConfigSection
+              formData={formData}
+              handleInputChange={handleInputChange}
+              isTournamentStarted={isTournamentStarted}
+            />
           )}
           {formData.config?.format === 'GROUPS_KO' && (
-            <GroupsKoConfigSection formData={formData} handleInputChange={handleInputChange} />
+            <GroupsKoConfigSection
+              formData={formData}
+              handleInputChange={handleInputChange}
+              isTournamentStarted={isTournamentStarted}
+            />
           )}
           {formData.config?.format === 'QUALIF_KO' && (
-            <QualifKnockoutConfigSection formData={formData} handleInputChange={handleInputChange} />
+            <QualifKnockoutConfigSection
+              formData={formData}
+              handleInputChange={handleInputChange}
+              isTournamentStarted={isTournamentStarted}
+            />
           )}
         </div>
 

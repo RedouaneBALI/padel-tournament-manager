@@ -6,11 +6,13 @@ import type { TournamentFormData } from '@/src/validation/tournament';
 interface KnockoutConfigSectionProps {
   formData: TournamentFormData;
   handleInputChange: (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  isTournamentStarted?: boolean;
 }
 
 export default function KnockoutConfigSection({
   formData,
-  handleInputChange
+  handleInputChange,
+  isTournamentStarted = false
 }: KnockoutConfigSectionProps) {
   // S'assurer que format existe avec des valeurs par défaut
   const cfg = formData.config || { mainDrawSize: 32, nbSeeds: 16 };
@@ -50,7 +52,9 @@ export default function KnockoutConfigSection({
           onChange={(e) => {
             handleInputChange(e);
           }}
-          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10"
+          disabled={isTournamentStarted}
+          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10 disabled:opacity-50 disabled:cursor-not-allowed"
+          title={isTournamentStarted ? "Impossible de modifier la taille une fois le tournoi lancé" : ""}
         >
           {[4, 8, 16, 32, 64, 128].map((val) => (
             <option key={val} value={val}>{val}</option>
@@ -70,7 +74,9 @@ export default function KnockoutConfigSection({
             hasChangedNbSeeds.current = true;
             handleInputChange(e);
           }}
-          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10"
+          disabled={isTournamentStarted}
+          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10 disabled:opacity-50 disabled:cursor-not-allowed"
+          title={isTournamentStarted ? "Impossible de modifier les têtes de série une fois le tournoi lancé" : ""}
         >
           {seedOptions.map((val) => (
             <option key={val} value={val}>{val}</option>
@@ -80,3 +86,4 @@ export default function KnockoutConfigSection({
     </>
   );
 }
+

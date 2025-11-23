@@ -6,13 +6,15 @@ import { TbTournament } from "react-icons/tb";
 interface GroupsKoConfigSectionProps {
   formData: TournamentFormData;
   handleInputChange: (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  isTournamentStarted?: boolean;
 }
 
 const toStr = (v: unknown) => (v == null ? '' : String(v));
 
 export default function GroupsKoConfigSection({
   formData,
-  handleInputChange
+  handleInputChange,
+  isTournamentStarted = false
 }: GroupsKoConfigSectionProps) {
   const cfg = formData.config as any;
 
@@ -37,7 +39,9 @@ export default function GroupsKoConfigSection({
           name="config.nbPools"
           value={toStr(cfg.nbPools ?? 4)}
           onChange={handleInputChange}
-          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10"
+          disabled={isTournamentStarted}
+          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10 disabled:opacity-50 disabled:cursor-not-allowed"
+          title={isTournamentStarted ? "Impossible de modifier une fois le tournoi lancé" : ""}
         >
           <option value={2}>2</option>
           <option value={4}>4</option>
@@ -61,7 +65,9 @@ export default function GroupsKoConfigSection({
               : String(cfg.nbPairsPerPool)
           }
           onChange={handleInputChange}
-          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10"
+          disabled={isTournamentStarted}
+          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10 disabled:opacity-50 disabled:cursor-not-allowed"
+          title={isTournamentStarted ? "Impossible de modifier une fois le tournoi lancé" : ""}
         />
       </div>
       <div className="space-y-2">
@@ -74,7 +80,9 @@ export default function GroupsKoConfigSection({
           name="config.nbSeeds"
           value={toStr(cfg.nbSeeds ?? cfg.nbPools ?? 4)}
           onChange={handleInputChange}
-          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10"
+          disabled={isTournamentStarted}
+          className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10 disabled:opacity-50 disabled:cursor-not-allowed"
+          title={isTournamentStarted ? "Impossible de modifier une fois le tournoi lancé" : ""}
         >
           {[0, 2, 4, 8, 16].map((val) => (
             <option key={val} value={val}>{val}</option>
@@ -98,7 +106,9 @@ export default function GroupsKoConfigSection({
               name="config.nbQualifiedByPool"
               value={toStr(cfg.nbQualifiedByPool ?? 2)}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10"
+              disabled={isTournamentStarted}
+              className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors h-10 disabled:opacity-50 disabled:cursor-not-allowed"
+              title={isTournamentStarted ? "Impossible de modifier une fois le tournoi lancé" : ""}
             >
               {qualifiedOptions.map((val) => (
                 <option key={val} value={val}>{val}</option>
@@ -110,3 +120,4 @@ export default function GroupsKoConfigSection({
     </>
   );
 }
+
