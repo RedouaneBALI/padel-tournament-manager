@@ -94,6 +94,33 @@ export default function MatchResultCard({
     return initial;
   });
 
+  // Resync scores when `score` prop is updated from parent (e.g. polling)
+  // Only resync when the serialized score actually changed to avoid clobbering local edits
+  const prevScoreSerializedRef = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    const serialized = JSON.stringify(score || null);
+    // If we're editing, don't resync now
+    if (editing) {
+      // but still update the prev serialized so after save we won't resync to an older value
+      prevScoreSerializedRef.current = serialized;
+      return;
+    }
+
+    if (prevScoreSerializedRef.current === serialized) return;
+
+    prevScoreSerializedRef.current = serialized;
+
+    const newScores: string[][] = [[], []];
+    for (let i = 0; i < 3; i++) {
+      newScores[0][i] = score?.sets[i]?.teamAScore?.toString() || '';
+      newScores[1][i] = score?.sets[i]?.teamBScore?.toString() || '';
+    }
+    setScores(newScores);
+    setInitialScores(newScores.map(arr => [...arr]));
+    setIsForfeit(score?.forfeit || false);
+    setForfeitedBy(score?.forfeitedBy || null);
+  }, [score, editing]);
+
   const inputRefs = useRef<(HTMLInputElement | null)[][]>(
     Array.from({ length: 2 }, () => Array(3).fill(null))
   );
@@ -190,6 +217,52 @@ export default function MatchResultCard({
       setLocalCourt(localCourt);
       setLocalScheduledTime(localScheduledTime);
 
+      // If API returned the updated score, apply it to local state so UI reflects 'in progress' immediately
+      if (result && result.score) {
+        try {
+          const apiScore = result.score as Score;
+          const appliedScores: string[][] = [[], []];
+          for (let i = 0; i < 3; i++) {
+            appliedScores[0][i] = apiScore.sets?.[i]?.teamAScore?.toString() || '';
+            appliedScores[1][i] = apiScore.sets?.[i]?.teamBScore?.toString() || '';
+          }
+          setScores(appliedScores);
+          setInitialScores(appliedScores.map(arr => [...arr]));
+          setIsForfeit(apiScore.forfeit || false);
+          setForfeitedBy(apiScore.forfeitedBy || null);
+          // update prev serialized to the api value so the resync effect won't overwrite it
+          prevScoreSerializedRef.current = JSON.stringify(apiScore || null);
+
+          // notify other components (lists) that the game was updated
+          try {
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('game-updated', { detail: { gameId, score: apiScore } }));
+            }
+          } catch (e) { /* ignore */ }
+        } catch (e) {
+          // ignore parsing/apply errors
+          console.error('Apply API score error', e);
+        }
+      } else {
+        // If API didn't return the score, use the payload we sent to reflect changes immediately
+        try {
+          const payloadScore = scorePayload as Score;
+          const appliedScores: string[][] = [[], []];
+          for (let i = 0; i < 3; i++) {
+            appliedScores[0][i] = payloadScore.sets?.[i]?.teamAScore?.toString() || '';
+            appliedScores[1][i] = payloadScore.sets?.[i]?.teamBScore?.toString() || '';
+          }
+          setScores(appliedScores);
+          setInitialScores(appliedScores.map(arr => [...arr]));
+          setIsForfeit(payloadScore.forfeit || false);
+          setForfeitedBy(payloadScore.forfeitedBy || null);
+          prevScoreSerializedRef.current = JSON.stringify(payloadScore || null);
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('game-updated', { detail: { gameId, score: payloadScore } }));
+          }
+        } catch (e) { /* ignore */ }
+       }
+
       if (onTimeChanged && localScheduledTime !== scheduledTime) {
         onTimeChanged(gameId, localScheduledTime);
       }
@@ -274,7 +347,9 @@ export default function MatchResultCard({
   };
 
   // Calculer si le match est en cours
-  const isInProgress = !finished && (score?.sets?.some(set => set.teamAScore || set.teamBScore) || false);
+  const propHasScores = !!(score?.sets && score.sets.some(set => (set.teamAScore !== null && set.teamAScore !== undefined) || (set.teamBScore !== null && set.teamBScore !== undefined)));
+  const localHasScores = !!(scores && (scores[0].some(s => s !== '' && s !== undefined && s !== null) || scores[1].some(s => s !== '' && s !== undefined && s !== null)));
+  const isInProgress = !finished && (propHasScores || localHasScores);
 
   // Calculer le contenu du badge (garder la logique en dehors du JSX pour satisfaire TypeScript)
   const badgeLabel = pool?.name
@@ -473,3 +548,4 @@ export default function MatchResultCard({
     </div>
   );
 }
+

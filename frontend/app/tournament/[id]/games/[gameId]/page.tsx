@@ -21,29 +21,53 @@ export default function GameDetailPage({ params }: PageProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadGame = async () => {
+    let cancelled = false;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
+    const loadInitialGame = async () => {
       try {
         setLoading(true);
         setError(null);
         const data = await fetchGame(tournamentId, gameId);
+        if (cancelled) return;
         setGame(data);
+
+        // Si le match n'est pas terminé, installer l'intervalle de refresh
+        if (!data.finished) {
+          intervalId = setInterval(async () => {
+            try {
+              const updated = await fetchGame(tournamentId, gameId);
+              if (cancelled) return;
+              setGame(updated);
+
+              // Si le match est devenu terminé, on arrête l'intervalle
+              if (updated.finished && intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+              }
+            } catch (e) {
+              // ignore errors for periodic refresh (optional: log)
+              console.error('Refresh error:', e);
+            }
+          }, 30000);
+        }
       } catch (err) {
         console.error('Erreur lors du chargement du match:', err);
-        setError('Impossible de charger le match');
-        toast.error('Erreur lors du chargement du match');
+        if (!cancelled) {
+          setError('Impossible de charger le match');
+          toast.error('Erreur lors du chargement du match');
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
-    loadGame();
+    loadInitialGame();
 
-    // Auto-refresh toutes les 30 secondes pour affichage en direct
-    const interval = setInterval(() => {
-      loadGame();
-    }, 30000);
-
-    return () => clearInterval(interval);
+    return () => {
+      cancelled = true;
+      if (intervalId) clearInterval(intervalId);
+    };
   }, [tournamentId, gameId]);
 
   if (loading) {
@@ -67,6 +91,9 @@ export default function GameDetailPage({ params }: PageProps) {
       </div>
     );
   }
+
+  // Indicateur de mise à jour automatique (affiché seulement si le match peut s'actualiser)
+  const showAutoRefresh = !!game && !game.finished;
 
   return (
     <main className="px-4 sm:px-6 py-4 pb-24 min-h-screen">
@@ -101,11 +128,15 @@ export default function GameDetailPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Indicateur de mise à jour automatique */}
-      <div className="mt-8 text-center text-sm text-muted-foreground">
-        ⟳ Actualisation automatique toutes les 30 secondes
-      </div>
+      {showAutoRefresh ? (
+        <div className="mt-8 text-center text-sm text-muted-foreground">
+          ⟳ Actualisation automatique toutes les 30 secondes
+        </div>
+      ) : (
+        <div className="mt-8 text-center text-sm text-muted-foreground">
+          {game?.finished ? 'Match terminé — actualisation désactivée' : ''}
+        </div>
+      )}
     </main>
   );
 }
-

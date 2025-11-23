@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import MatchResultCard from '@/src/components/ui/MatchResultCard';
 import type { Game } from '@/src/types/game';
@@ -29,13 +29,30 @@ export default function GamesList({
   isFirstRound = false,
 }: GamesListProps) {
   const router = useRouter();
-  // Nouveau : état local pour le mode de tri (ui seulement pour l'instant)
+  // overrides locaux de score quand un match a été modifié (par MatchResultCard dispatch)
+  const [overrides, setOverrides] = useState<Record<string, any>>({});
+  // État de tri local (time | court)
   const [sortMode, setSortMode] = useState<'time' | 'court'>('time');
 
   const handleGameClick = (gameId: string) => {
     const basePath = editable ? '/admin/tournament' : '/tournament';
     router.push(`${basePath}/${tournamentId}/games/${gameId}`);
   };
+
+  // Écouter les mises à jour locales dispatchées par MatchResultCard
+  useEffect(() => {
+    const handler = (e: Event) => {
+      try {
+        const detail = (e as CustomEvent).detail;
+        if (!detail || !detail.gameId) return;
+        setOverrides(prev => ({ ...prev, [String(detail.gameId)]: detail.score }));
+      } catch (err) {
+        // ignore
+      }
+    };
+    window.addEventListener('game-updated', handler as EventListener);
+    return () => window.removeEventListener('game-updated', handler as EventListener);
+  }, []);
 
   // Créer une clé unique basée sur le stage et les IDs des matchs
   // key basée sur l'ensemble des IDs triés (indépendante de l'ordre)
@@ -144,7 +161,7 @@ export default function GamesList({
               <MatchResultCard
                 teamA={game.teamA}
                 teamB={game.teamB}
-                score={game.score}
+                score={overrides[String(game.id)] ?? game.score}
                 gameId={String(game.id)}
                 tournamentId={tournamentId}
                 editable={editable}
