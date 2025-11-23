@@ -10,6 +10,7 @@ import MyTournamentsButton from '@/src/components/ui/buttons/MyTournamentsButton
 import ContactButton from '@/src/components/ui/buttons/ContactButton';
 import GoogleLoginButton from '@/src/components/ui/buttons/GoogleLoginButton';
 import PricingButton from '@/src/components/ui/buttons/PricingButton';
+import PointsCalculatorButton from '@/src/components/ui/buttons/PointsCalculatorButton';
 
 export type BottomNavItem = {
   href: string;
@@ -119,6 +120,7 @@ export default function BottomNav({ items, pathname, className, fixed = true, on
               <div className="flex flex-col gap-2">
                 <CreateTournamentButton href={hrefCreate} onClick={onMoreClick ?? closeMore} />
                 <MyTournamentsButton href={hrefMy} onClick={onMoreClick ?? closeMore} />
+                <PointsCalculatorButton onClick={onMoreClick ?? closeMore} />
                 <PricingButton onClick={onMoreClick ?? closeMore} />
                 <ContactButton onClick={onMoreClick ?? closeMore} />
                 <div role="none">
