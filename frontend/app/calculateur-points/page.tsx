@@ -39,14 +39,47 @@ export default function PointsCalculatorPage() {
       return null;
     }
 
+    // Récupérer le barème pour le niveau de tournoi sélectionné
+    const bareme = BAREMES[tournamentLevel as TournamentLevelKey]?.[teamRange as TeamRangeKey];
+    if (!bareme || bareme.length === 0) return null;
+
+    // Vérifier si c'est une plage (ex: "1-4" ou "16-20")
+    if (ranking.includes('-')) {
+      const parts = ranking.split('-').map(p => p.trim());
+      if (parts.length === 2) {
+        const start = parseInt(parts[0], 10);
+        const end = parseInt(parts[1], 10);
+
+        if (isNaN(start) || isNaN(end) || start < 1 || end < start) {
+          return null;
+        }
+
+        // Calculer la moyenne des points pour la plage
+        let sum = 0;
+        let count = 0;
+
+        for (let i = start; i <= end; i++) {
+          const index = i - 1;
+          if (index < bareme.length) {
+            sum += bareme[index];
+            count++;
+          } else {
+            // Si on dépasse le barème, utiliser le dernier points
+            sum += bareme[bareme.length - 1];
+            count++;
+          }
+        }
+
+        return count > 0 ? Math.round(sum / count) : null;
+      }
+    }
+
+    // Sinon, traitement d'un classement simple
     const rankingNumber = parseInt(ranking, 10);
     if (isNaN(rankingNumber) || rankingNumber < 1) {
       return null;
     }
 
-    // Récupérer le barème pour le niveau de tournoi sélectionné
-    const bareme = BAREMES[tournamentLevel as TournamentLevelKey]?.[teamRange as TeamRangeKey];
-    if (!bareme || bareme.length === 0) return null;
 
     // Le classement commence à 1, donc index = ranking - 1
     const index = rankingNumber - 1;
@@ -63,15 +96,41 @@ export default function PointsCalculatorPage() {
   const errorMessage = useMemo(() => {
     if (!tournamentLevel || !teamRange || !ranking) return null;
 
+    const bareme = BAREMES[tournamentLevel as TournamentLevelKey]?.[teamRange as TeamRangeKey];
+    if (!bareme || bareme.length === 0) {
+      return "Cette combinaison niveau/équipes n'est pas disponible.";
+    }
+
+    // Vérifier si c'est une plage
+    if (ranking.includes('-')) {
+      const parts = ranking.split('-').map(p => p.trim());
+      if (parts.length === 2) {
+        const start = parseInt(parts[0], 10);
+        const end = parseInt(parts[1], 10);
+
+        if (isNaN(start) || isNaN(end)) {
+          return "Format de plage invalide. Utilisez le format: 1-4 ou 16-20";
+        }
+
+        if (start < 1) {
+          return "Le classement doit commencer à partir de 1.";
+        }
+
+        if (end < start) {
+          return "La fin de la plage doit être supérieure ou égale au début.";
+        }
+      } else {
+        return "Format de plage invalide. Utilisez le format: 1-4 ou 16-20";
+      }
+      return null;
+    }
+
+    // Vérification d'un classement simple
     const rankingNumber = parseInt(ranking, 10);
     if (isNaN(rankingNumber) || rankingNumber < 1) {
       return "Le classement doit être un nombre positif.";
     }
 
-    const bareme = BAREMES[tournamentLevel as TournamentLevelKey]?.[teamRange as TeamRangeKey];
-    if (!bareme || bareme.length === 0) {
-      return "Cette combinaison niveau/équipes n'est pas disponible.";
-    }
 
     return null;
   }, [tournamentLevel, teamRange, ranking]);
@@ -142,24 +201,30 @@ export default function PointsCalculatorPage() {
                 </label>
                 <input
                   id="ranking"
-                  type="number"
-                  min="1"
-                  placeholder="Ex: 1, 2, 3..."
+                  type="text"
+                  placeholder="Ex: 1, 3, 1-4, 16-20..."
                   value={ranking}
                   onChange={(e) => setRanking(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
+                <p className="text-xs text-gray-500">
+                  Vous pouvez saisir un classement simple (ex: 3) ou une plage (ex: 1-4 pour la moyenne des places 1 à 4)
+                </p>
               </div>
 
               {/* Résultat */}
               {calculatedPoints !== null && (
                 <div className="mt-8 p-6 bg-blue-50 rounded-lg border-2 border-blue-500">
                   <div className="text-center">
-                    <p className="text-sm text-gray-600 mb-2">Points gagnés</p>
+                    <p className="text-sm text-gray-600 mb-2">
+                      {ranking.includes('-') ? 'Points moyens gagnés' : 'Points gagnés'}
+                    </p>
                     <p className="text-5xl font-bold text-blue-600">
                       {calculatedPoints}
                     </p>
-                    <p className="text-sm text-gray-600 mt-2">points</p>
+                    <p className="text-sm text-gray-600 mt-2">
+                      {ranking.includes('-') ? 'points (moyenne)' : 'points'}
+                    </p>
                   </div>
                 </div>
               )}
