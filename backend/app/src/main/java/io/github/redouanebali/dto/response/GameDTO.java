@@ -1,6 +1,7 @@
 package io.github.redouanebali.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.redouanebali.model.TeamSide;
 import java.time.LocalTime;
 import lombok.Data;
@@ -17,5 +18,7 @@ public class GameDTO {
   @JsonFormat(pattern = "HH:mm")
   private LocalTime     scheduledTime;
   private String        court;
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private RoundDTO      round;
 
 }

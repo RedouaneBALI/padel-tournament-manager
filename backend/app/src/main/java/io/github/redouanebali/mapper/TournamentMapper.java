@@ -41,6 +41,25 @@ public interface TournamentMapper {
 
   Set<GameDTO> toDTOGameSet(Set<Game> games);
 
+  /**
+   * Maps a Game to GameDTO with the associated Round included. This method is used when detailed round information is needed alongside the game
+   * data.
+   *
+   * @param game the game entity to map
+   * @param round the round entity that contains this game
+   * @return GameDTO with round information included
+   */
+  default GameDTO toDTOWithRound(Game game, Round round) {
+    if (game == null) {
+      return null;
+    }
+    GameDTO gameDTO = toDTO(game);
+    if (round != null) {
+      gameDTO.setRound(toDTO(round));
+    }
+    return gameDTO;
+  }
+
   default PlayerPairDTO toDTO(PlayerPair playerPair) {
     if (playerPair == null) {
       return null;

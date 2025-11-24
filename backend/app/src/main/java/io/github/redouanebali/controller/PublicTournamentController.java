@@ -103,6 +103,32 @@ public class PublicTournamentController {
   }
 
   /**
+   * Retrieves a single game by its ID within a tournament.
+   *
+   * @param tournamentId the tournament ID
+   * @param gameId the game ID
+   * @return ResponseEntity containing the game DTO with round information
+   * @throws IllegalArgumentException if tournament or game is not found
+   */
+  @GetMapping("/{tournamentId}/games/{gameId}")
+  public ResponseEntity<GameDTO> getGame(@PathVariable Long tournamentId, @PathVariable Long gameId) {
+    log.debug("Getting game {} for tournament {}", gameId, tournamentId);
+    Tournament tournament = tournamentService.getTournamentById(tournamentId);
+
+    // Find the game in all rounds and include the round information
+    for (var round : tournament.getRounds()) {
+      for (var game : round.getGames()) {
+        if (game.getId() != null && game.getId().equals(gameId)) {
+          GameDTO gameDTO = tournamentMapper.toDTOWithRound(game, round);
+          return ResponseEntity.ok(gameDTO);
+        }
+      }
+    }
+
+    throw new IllegalArgumentException("Game not found with ID: " + gameId);
+  }
+
+  /**
    * Retrieves all games for a specific tournament stage/round. Returns games with current scores and match status.
    *
    * @param id the tournament ID
