@@ -108,7 +108,15 @@ export default function AdminGameDetailPage({ params }: PageProps) {
             score={game.score}
             onInfoSaved={handleInfoSaved}
             onGameUpdated={handleGameUpdated}
-            winnerSide={game.winnerSide ? parseInt(game.winnerSide) : undefined}
+            winnerSide={
+                              game.finished
+                                ? game.winnerSide === 'TEAM_A'
+                                  ? 0
+                                  : game.winnerSide === 'TEAM_B'
+                                    ? 1
+                                    : undefined
+                                : undefined
+                            }
             pool={game.pool}
             finished={game.finished}
             stage={game.round?.stage || game.stage}

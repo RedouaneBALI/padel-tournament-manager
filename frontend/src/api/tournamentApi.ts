@@ -8,6 +8,7 @@ import type { MatchFormat } from '@/src/types/matchFormat';
 import type { Score } from '@/src/types/score';
 import { fetchWithAuth } from "./fetchWithAuth";
 import type { InitializeDrawRequest } from '@/src/types/api/InitializeDrawRequest';
+import type { Game } from '@/src/types/game';
 
 // Utiliser directement l'URL du backend depuis les variables d'environnement
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
@@ -299,6 +300,82 @@ export async function fetchGame(tournamentId: string, gameId: string) {
   return await response.json();
 }
 
+/**
+ * Creates a standalone game (independent of any tournament).
+ * @param teamA First team (PlayerPair with player1Name and player2Name)
+ * @param teamB Second team (PlayerPair with player1Name and player2Name)
+ * @param format Match format configuration
+ */
+export async function createStandaloneGame(
+  teamA: PlayerPair,
+  teamB: PlayerPair,
+  format: MatchFormat
+): Promise<Game> {
+  const payload = {
+    teamA: {
+      player1Name: teamA.player1Name,
+      player2Name: teamA.player2Name,
+    },
+    teamB: {
+      player1Name: teamB.player1Name,
+      player2Name: teamB.player2Name,
+    },
+    format,
+  };
+
+  const res = await fetchWithAuth(api(`/games`), {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    toast.error('Erreur lors de la création du match : ' + text);
+    throw new Error(`Erreur création match (${res.status}) ${text}`);
+  }
+
+  toast.success('Match créé avec succès !');
+  return await res.json();
+}
+
+/**
+ * Fetches a standalone game by its ID (independent of any tournament).
+ * @param gameId The ID of the standalone game
+ */
+export async function fetchStandaloneGame(gameId: string): Promise<Game> {
+  const response = await fetchWithAuth(api(`/games/${gameId}`), {
+    method: 'GET',
+  });
+  if (!response.ok) {
+    toast.error('Erreur lors du chargement du match.');
+    throw new Error('Erreur lors du chargement du match.');
+  }
+  return await response.json();
+}
+
+/**
+ * Updates a standalone game (score, court, scheduled time).
+ * @param gameId The ID of the standalone game
+ * @param scorePayload The score data
+ * @param court The court name
+ * @param scheduledTime The scheduled time
+ */
+export async function updateStandaloneGame(gameId: string, scorePayload: Score, court: string, scheduledTime: string) {
+  const response = await fetchWithAuth(api(`/games/${gameId}`), {
+    method: 'PUT',
+    body: JSON.stringify({
+      score: scorePayload,
+      court,
+      scheduledTime,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Erreur lors de la sauvegarde');
+  }
+
+  return await response.json();
+}
 
 export async function fetchActiveTournaments() {
   const response = await fetch(api(`/tournaments/active`));

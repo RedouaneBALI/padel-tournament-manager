@@ -35,6 +35,7 @@ interface Props {
   matchIndex?: number;
   totalMatches?: number;
   isFirstRound?: boolean;
+  updateGameFn?: (gameId: string, scorePayload: Score, court: string, scheduledTime: string) => Promise<any>;
 }
 
 export default function MatchResultCard({
@@ -55,8 +56,9 @@ export default function MatchResultCard({
   setsToWin,
   finished = true,
   matchIndex,
-  totalMatches
-  , isFirstRound = false
+  totalMatches,
+  isFirstRound = false,
+  updateGameFn,
 }: Props) {
   const group = normalizeGroup(pool?.name);
 
@@ -211,7 +213,11 @@ export default function MatchResultCard({
   const saveGameDetails = async () => {
     try {
       const scorePayload = convertToScoreObject(scores, isForfeit, forfeitedBy);
-      const result = await updateGameDetails(tournamentId, gameId, scorePayload, localCourt, localScheduledTime);
+
+      // Utiliser updateGameFn si fourni (pour les matchs standalone), sinon updateGameDetails (pour les matchs de tournoi)
+      const result = updateGameFn
+        ? await updateGameFn(gameId, scorePayload, localCourt, localScheduledTime)
+        : await updateGameDetails(tournamentId, gameId, scorePayload, localCourt, localScheduledTime);
 
       // Ensure local state reflects saved values immediately (prevents blank UI before parent updates)
       setLocalCourt(localCourt);
