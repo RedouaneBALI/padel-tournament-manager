@@ -5,6 +5,9 @@ import { fetchStandaloneGame, updateStandaloneGame } from '@/src/api/tournamentA
 import GameDetailView from '@/src/components/game/GameDetailView';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import BottomNav from '@/src/components/ui/BottomNav';
+import { useRouter, usePathname } from 'next/navigation';
+import { getDefaultBottomItems } from '@/src/components/ui/bottomNavPresets';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -12,6 +15,8 @@ interface PageProps {
 
 export default function StandaloneGameDetailPage({ params }: PageProps) {
   const { id: gameId } = use(params);
+  const items = getDefaultBottomItems();
+  const pathname = usePathname() ?? '';
 
   return (
     <>
@@ -26,6 +31,7 @@ export default function StandaloneGameDetailPage({ params }: PageProps) {
         tvButtonUrl={`/tv/game/${gameId}`}
       />
       <ToastContainer />
+      <BottomNav items={items} pathname={pathname} />
     </>
   );
 }

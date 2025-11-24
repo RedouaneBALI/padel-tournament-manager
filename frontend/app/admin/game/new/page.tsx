@@ -86,7 +86,7 @@ export default function NewStandaloneGamePage() {
               <div className="p-2 bg-primary/10">
                 <Trophy className="h-6 w-6 text-primary" />
               </div>
-              <h1 className="text-2xl font-semibold text-card-foreground">Créer un match</h1>
+              <h1 className="text-2xl font-semibold text-card-foreground">Créer un match unique</h1>
             </div>
           </div>
 
