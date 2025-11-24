@@ -181,3 +181,106 @@ export function isValidCombination(
   return bareme !== undefined && bareme.length > 0;
 }
 
+/**
+ * Configuration des multiplicateurs de points selon le nombre d'équipes Top 100
+ * Pour les tournois P250, P500, P1000, P1500, P2000
+ */
+export interface Top100TeamOption {
+  value: number;
+  label: string;
+  multiplier: number;
+}
+
+export interface Top100TeamConfig {
+  minTeams: number;
+  maxTeams: number;
+  options: Top100TeamOption[];
+}
+
+export const TOP_100_CONFIGS: Record<string, Top100TeamConfig> = {
+  P250: {
+    minTeams: 4,
+    maxTeams: 8,
+    options: [
+      { value: 8, label: '8 équipes Top 100 (100% des points)', multiplier: 1.0 },
+      { value: 7, label: '7 équipes Top 100 (90% des points)', multiplier: 0.9 },
+      { value: 6, label: '6 équipes Top 100 (80% des points)', multiplier: 0.8 },
+      { value: 5, label: '5 équipes Top 100 (70% des points)', multiplier: 0.7 },
+      { value: 4, label: '4 équipes Top 100 (60% des points)', multiplier: 0.6 },
+    ],
+  },
+  P500: {
+    minTeams: 4,
+    maxTeams: 8,
+    options: [
+      { value: 8, label: '8 équipes Top 100 (100% des points)', multiplier: 1.0 },
+      { value: 7, label: '7 équipes Top 100 (90% des points)', multiplier: 0.9 },
+      { value: 6, label: '6 équipes Top 100 (80% des points)', multiplier: 0.8 },
+      { value: 5, label: '5 équipes Top 100 (70% des points)', multiplier: 0.7 },
+      { value: 4, label: '4 équipes Top 100 (60% des points)', multiplier: 0.6 },
+    ],
+  },
+  P1000: {
+    minTeams: 4,
+    maxTeams: 8,
+    options: [
+      { value: 8, label: '8 équipes Top 100 (100% des points)', multiplier: 1.0 },
+      { value: 7, label: '7 équipes Top 100 (90% des points)', multiplier: 0.9 },
+      { value: 6, label: '6 équipes Top 100 (80% des points)', multiplier: 0.8 },
+      { value: 5, label: '5 équipes Top 100 (70% des points)', multiplier: 0.7 },
+      { value: 4, label: '4 équipes Top 100 (60% des points)', multiplier: 0.6 },
+    ],
+  },
+  P1500: {
+    minTeams: 8,
+    maxTeams: 12,
+    options: [
+      { value: 12, label: '12 équipes Top 100 (100% des points)', multiplier: 1.0 },
+      { value: 11, label: '11 équipes Top 100 (90% des points)', multiplier: 0.9 },
+      { value: 10, label: '10 équipes Top 100 (80% des points)', multiplier: 0.8 },
+      { value: 9, label: '9 équipes Top 100 (70% des points)', multiplier: 0.7 },
+      { value: 8, label: '8 équipes Top 100 (60% des points)', multiplier: 0.6 },
+    ],
+  },
+  P2000: {
+    minTeams: 8,
+    maxTeams: 12,
+    options: [
+      { value: 12, label: '12 équipes Top 100 (100% des points)', multiplier: 1.0 },
+      { value: 11, label: '11 équipes Top 100 (90% des points)', multiplier: 0.9 },
+      { value: 10, label: '10 équipes Top 100 (80% des points)', multiplier: 0.8 },
+      { value: 9, label: '9 équipes Top 100 (70% des points)', multiplier: 0.7 },
+      { value: 8, label: '8 équipes Top 100 (60% des points)', multiplier: 0.6 },
+    ],
+  },
+};
+
+/**
+ * Fonction helper pour vérifier si un niveau de tournoi nécessite la sélection du nombre d'équipes Top 100
+ */
+export function requiresTop100Selection(level: string): boolean {
+  return ['P250', 'P500', 'P1000', 'P1500', 'P2000'].includes(level);
+}
+
+/**
+ * Fonction helper pour obtenir le multiplicateur de points selon le nombre d'équipes Top 100
+ */
+export function getTop100Multiplier(level: string, top100TeamsCount: number | null | undefined): number {
+  if (!requiresTop100Selection(level) || !top100TeamsCount) {
+    return 1.0;
+  }
+
+  const config = TOP_100_CONFIGS[level];
+  if (!config) return 1.0;
+
+  const option = config.options.find(opt => opt.value === top100TeamsCount);
+  return option ? option.multiplier : 1.0;
+}
+
+/**
+ * Fonction helper pour appliquer le multiplicateur Top 100 aux points
+ */
+export function applyTop100Multiplier(basePoints: number, multiplier: number): number {
+  return Math.round(basePoints * multiplier);
+}
+

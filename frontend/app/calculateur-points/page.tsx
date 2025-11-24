@@ -4,15 +4,36 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import BottomNav from '@/src/components/ui/BottomNav';
 import { getDefaultBottomItems } from '@/src/components/ui/bottomNavPresets';
-import { BAREMES, TOURNAMENT_LEVELS, TEAM_RANGES, type TournamentLevelKey, type TeamRangeKey } from './baremes';
+import {
+  BAREMES,
+  TOURNAMENT_LEVELS,
+  TEAM_RANGES,
+  TOP_100_CONFIGS,
+  requiresTop100Selection,
+  getTop100Multiplier,
+  applyTop100Multiplier,
+  type TournamentLevelKey,
+  type TeamRangeKey
+} from './baremes';
 
 export default function PointsCalculatorPage() {
-  const [tournamentLevel, setTournamentLevel] = useState<string>('');
-  const [teamRange, setTeamRange] = useState<string>('');
+  const [tournamentLevel, setTournamentLevel] = useState<string>('P100');
+  const [teamRange, setTeamRange] = useState<string>('29+');
   const [ranking, setRanking] = useState<string>('');
+  const [top100TeamsCount, setTop100TeamsCount] = useState<string>('');
 
   const pathname = usePathname() ?? '';
   const bottomItems = getDefaultBottomItems();
+
+  // Vérifier si le niveau sélectionné nécessite la sélection du Top 100
+  const showTop100Selection = useMemo(() => {
+    return requiresTop100Selection(tournamentLevel);
+  }, [tournamentLevel]);
+
+  const top100Config = useMemo(() => {
+    return TOP_100_CONFIGS[tournamentLevel];
+  }, [tournamentLevel]);
+
   // Filtrer les options de nombre d'équipes selon le niveau de tournoi sélectionné
   const availableTeamRanges = useMemo(() => {
     if (!tournamentLevel) return TEAM_RANGES;
@@ -32,6 +53,10 @@ export default function PointsCalculatorPage() {
         setRanking('');
       }
     }
+    // Réinitialiser top100TeamsCount si le niveau ne nécessite plus cette sélection
+    if (!requiresTop100Selection(tournamentLevel)) {
+      setTop100TeamsCount('');
+    }
   }, [tournamentLevel, teamRange, availableTeamRanges]);
 
   const calculatedPoints = useMemo(() => {
@@ -39,9 +64,16 @@ export default function PointsCalculatorPage() {
       return null;
     }
 
+    // Vérifier si on a besoin de top100TeamsCount et s'il est manquant
+    if (showTop100Selection && !top100TeamsCount) {
+      return null;
+    }
+
     // Récupérer le barème pour le niveau de tournoi sélectionné
     const bareme = BAREMES[tournamentLevel as TournamentLevelKey]?.[teamRange as TeamRangeKey];
     if (!bareme || bareme.length === 0) return null;
+
+    let basePoints: number | null = null;
 
     // Vérifier si c'est une plage (ex: "1-4" ou "16-20")
     if (ranking.includes('-')) {
@@ -70,27 +102,34 @@ export default function PointsCalculatorPage() {
           }
         }
 
-        return count > 0 ? Math.round(sum / count) : null;
+        basePoints = count > 0 ? Math.round(sum / count) : null;
+      }
+    } else {
+      // Sinon, traitement d'un classement simple
+      const rankingNumber = parseInt(ranking, 10);
+      if (isNaN(rankingNumber) || rankingNumber < 1) {
+        return null;
+      }
+
+      // Le classement commence à 1, donc index = ranking - 1
+      const index = rankingNumber - 1;
+
+      if (index >= bareme.length) {
+        // Si le classement dépasse le barème, retourner le dernier points
+        basePoints = bareme[bareme.length - 1];
+      } else {
+        basePoints = bareme[index];
       }
     }
 
-    // Sinon, traitement d'un classement simple
-    const rankingNumber = parseInt(ranking, 10);
-    if (isNaN(rankingNumber) || rankingNumber < 1) {
-      return null;
+    // Appliquer le multiplicateur Top 100 si nécessaire
+    if (basePoints !== null && showTop100Selection) {
+      const multiplier = getTop100Multiplier(tournamentLevel, parseInt(top100TeamsCount, 10));
+      return applyTop100Multiplier(basePoints, multiplier);
     }
 
-
-    // Le classement commence à 1, donc index = ranking - 1
-    const index = rankingNumber - 1;
-
-    if (index >= bareme.length) {
-      // Si le classement dépasse le barème, retourner le dernier points
-      return bareme[bareme.length - 1];
-    }
-
-    return bareme[index];
-  }, [tournamentLevel, teamRange, ranking]);
+    return basePoints;
+  }, [tournamentLevel, teamRange, ranking, top100TeamsCount, showTop100Selection]);
 
   // Message d'erreur spécifique
   const errorMessage = useMemo(() => {
@@ -193,6 +232,31 @@ export default function PointsCalculatorPage() {
                   </p>
                 )}
               </div>
+
+              {/* Équipes Top 100 (pour P250 et supérieur) */}
+              {showTop100Selection && top100Config && (
+                <div className="space-y-2">
+                  <label htmlFor="top100-teams" className="block text-sm font-medium text-gray-700">
+                    Nombre d&apos;équipes Top 100
+                  </label>
+                  <select
+                    id="top100-teams"
+                    value={top100TeamsCount}
+                    onChange={(e) => setTop100TeamsCount(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Sélectionnez...</option>
+                    {top100Config.options.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500">
+                    Le nombre d&apos;équipes Top 100 affecte le multiplicateur de points attribués
+                  </p>
+                </div>
+              )}
 
               {/* Classement */}
               <div className="space-y-2">
