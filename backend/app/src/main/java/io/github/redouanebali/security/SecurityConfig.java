@@ -48,7 +48,7 @@ public class SecurityConfig {
         "http://127.0.0.1:3000",
         // Local dev (phone hitting your machine on LAN)
         "http://192.168.1.12:3000",
-        // (Optionnel) toute IP privée en 192.168.x.x
+        // optional: example LAN pattern for mobile testing
         "http://192.168.*.*:3000",
         // Production custom domain
         "https://padelrounds.com",

@@ -88,7 +88,7 @@ class DrawGenerationServiceTest {
   void generateDraw_manual_knockout_populatesSemis_andSaves() {
     Tournament tournament = baseTournamentKO(4, 0);
 
-    // Utilise la méthode helper pour créer les RoundRequest manuels
+    // Use helper method to create manual RoundRequest objects
     List<PlayerPair>   pairs        = new ArrayList<>(tournament.getPlayerPairs());
     List<RoundRequest> manualRounds = TestFixtures.createManualRoundRequestsFromPairs(Stage.SEMIS, pairs);
 

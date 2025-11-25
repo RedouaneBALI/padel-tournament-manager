@@ -10,11 +10,14 @@ import io.github.redouanebali.model.Score;
 import io.github.redouanebali.repository.GameRepository;
 import io.github.redouanebali.repository.MatchFormatRepository;
 import io.github.redouanebali.repository.PlayerPairRepository;
+import io.github.redouanebali.security.SecurityUtil;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Service for managing standalone games (matches without tournaments). Provides CRUD operations for simple matches between two player pairs.
@@ -53,6 +56,10 @@ public class StandaloneGameService {
     game.setTeamB(teamB);
     game.setPool(null); // Standalone game, not part of any pool/tournament
 
+    // Set owner
+    String me = SecurityUtil.currentUserId();
+    game.setCreatedBy(me);
+
     return gameRepository.save(game);
   }
 
@@ -66,15 +73,24 @@ public class StandaloneGameService {
   }
 
   /**
+   * Retrieves standalone games created by the given user.
+   *
+   * @param userId owner id
+   * @return list of games
+   */
+  public List<Game> getStandaloneGamesByOwner(String userId) {
+    return gameRepository.findByCreatedByAndPoolIsNull(userId);
+  }
+
+  /**
    * Retrieves a specific game by its ID.
    *
    * @param id the game ID
    * @return the game
-   * @throws IllegalArgumentException if game not found
    */
   public Game getGameById(Long id) {
     return gameRepository.findById(id)
-                         .orElseThrow(() -> new IllegalArgumentException("Game not found with ID: " + id));
+                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found with ID: " + id));
   }
 
   /**
@@ -146,4 +162,3 @@ public class StandaloneGameService {
     return playerPairRepository.save(pair);
   }
 }
-

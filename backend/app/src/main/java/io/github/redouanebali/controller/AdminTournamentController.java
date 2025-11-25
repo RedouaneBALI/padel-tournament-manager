@@ -105,7 +105,7 @@ public class AdminTournamentController {
                             ? tournamentService.listAll()
                             : tournamentService.listByOwnerOrEditor(me);
 
-    return ResponseEntity.ok(list.stream().map(tournamentMapper::toDTO).toList());
+    return ResponseEntity.ok(tournamentMapper.toDTO(list));
   }
 
   /**

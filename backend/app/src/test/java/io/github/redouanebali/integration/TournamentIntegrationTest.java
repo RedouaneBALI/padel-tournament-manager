@@ -43,7 +43,7 @@ class TournamentIntegrationTest {
 
   @BeforeEach
   void setUp() {
-    // Configuration du contexte de sécurité pour les tests avec JWT
+    // Configure security context for tests using a fake JWT
     Jwt jwt = Jwt.withTokenValue("fake-token")
                  .header("alg", "none")
                  .claim("email", "io.github.redouanebali.api.integration@test.com")
@@ -64,7 +64,7 @@ class TournamentIntegrationTest {
     Long       id    = saved.getId();
     assertNotNull(id);
     tournamentRepository.deleteById(id);
-    assertTrue(tournamentRepository.findById(id).isEmpty(), "Le tournoi doit être supprimé");
+    assertTrue(tournamentRepository.findById(id).isEmpty(), "Tournament should be deleted");
   }
 
   @Test
@@ -103,9 +103,9 @@ class TournamentIntegrationTest {
     );
     try {
       playerPairService.addPairs(fakeId, pairs);
-      fail("L'ajout de paires à un tournoi inexistant doit échouer");
+      fail("Adding pairs to a non-existent tournament should fail");
     } catch (Exception e) {
-      assertTrue(true);
+      // expected
     }
   }
 

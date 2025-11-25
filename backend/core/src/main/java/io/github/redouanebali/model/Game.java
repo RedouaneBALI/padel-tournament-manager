@@ -2,6 +2,7 @@ package io.github.redouanebali.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -57,6 +58,9 @@ public class Game {
   @ManyToOne
   @JoinColumn(name = "pool_id")
   private Pool pool;
+
+  @Column(name = "created_by")
+  private String createdBy;
 
   public Game(MatchFormat format) {
     if (format == null) {

@@ -54,7 +54,7 @@ class PlayerPairServiceTest {
     JwtAuthenticationToken auth = new JwtAuthenticationToken(jwt, Collections.emptyList(), "bali.redouane@gmail.com");
     SecurityContextHolder.getContext().setAuthentication(auth);
 
-    // super-admins vide par défaut pour les tests
+    // default: no super-admins for tests
     org.mockito.Mockito.lenient().when(securityProps.getSuperAdmins()).thenReturn(Collections.emptySet());
   }
 

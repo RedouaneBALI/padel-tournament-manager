@@ -17,5 +17,20 @@ public interface GameRepository extends JpaRepository<Game, Long> {
    * @return list of standalone games
    */
   List<Game> findByPoolIsNull();
-}
 
+  /**
+   * Finds all standalone games created by a specific user.
+   *
+   * @param createdBy user id
+   * @return list of games
+   */
+  List<Game> findByCreatedByAndPoolIsNull(String createdBy);
+
+  /**
+   * Finds all games (including those in tournaments) created by a specific user.
+   *
+   * @param createdBy user id
+   * @return list of games
+   */
+  List<Game> findByCreatedBy(String createdBy);
+}
