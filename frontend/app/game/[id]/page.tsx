@@ -1,16 +1,18 @@
 // app/game/[id]/page.tsx
 'use client';
 
-import React, { use } from 'react';
+import React from 'react';
+import { useParams } from 'next/navigation';
 import { fetchStandaloneGame } from '@/src/api/tournamentApi';
 import GamePageShell from '@/src/components/game/GamePageShell';
 
-interface PageProps {
-  params: Promise<{ id: string; id: string }>;
-}
+export default function GameDetailPage() {
+  const params = useParams();
+  const id = params?.id as string | undefined;
 
-export default function GameDetailPage({ params }: PageProps) {
-  const { id } = use(params);
+  if (!id) {
+    return <div>Identifiant de match manquant</div>;
+  }
 
   return (
     <GamePageShell
