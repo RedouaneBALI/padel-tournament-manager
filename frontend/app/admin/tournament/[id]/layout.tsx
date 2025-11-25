@@ -9,7 +9,6 @@ import type { Tournament } from '@/src/types/tournament';
 import 'react-toastify/dist/ReactToastify.css';
 import { fetchTournamentAdmin } from '@/src/api/tournamentApi';
 import { useRouter, usePathname } from 'next/navigation';
-import { FiList } from 'react-icons/fi';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
 import BottomNav from '@/src/components/ui/BottomNav';
 import { getAdminTournamentItems } from '@/src/components/ui/bottomNavPresets';
@@ -82,7 +81,10 @@ export default function AdminTournamentLayout({
   return (
     <ExportProvider>
       <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
-        <AdminTournamentHeader tournament={tournament} tournamentId={id} />
+        <AdminTournamentHeader
+          tournament={tournament}
+          tournamentId={id}
+        />
         <div className="mb-15">{children}</div>
         <BottomNav items={items} pathname={pathname} />
         <ToastContainer />

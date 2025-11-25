@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Game } from '@/src/types/game';
 import { Score } from '@/src/types/score';
 import MatchResultCard from '@/src/components/ui/MatchResultCard';
@@ -16,8 +15,6 @@ interface GameDetailViewProps {
   updateGameFn?: (gameId: string, scorePayload: Score, court: string, scheduledTime: string) => Promise<any>;
   editable?: boolean;
   title?: string;
-  showTvButton?: boolean;
-  tvButtonUrl?: string;
 }
 
 /**
@@ -31,10 +28,7 @@ export default function GameDetailView({
   updateGameFn,
   editable = false,
   title,
-  showTvButton = false,
-  tvButtonUrl,
 }: GameDetailViewProps) {
-  const router = useRouter();
   const [game, setGame] = useState<Game | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -107,7 +101,7 @@ export default function GameDetailView({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-full flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Chargement du match...</p>
@@ -118,7 +112,7 @@ export default function GameDetailView({
 
   if (error || !game) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-full flex items-center justify-center">
         <div className="text-center">
           <p className="text-destructive mb-4">{error || 'Match introuvable'}</p>
           <BackButton />
@@ -127,20 +121,10 @@ export default function GameDetailView({
     );
   }
 
-  // Indicateur de mise à jour automatique (affiché seulement si le match peut s'actualiser)
-  const showAutoRefresh = !!game && !game.finished;
   return (
-    <main className="px-4 sm:px-6 py-4 pb-24 min-h-screen">
+    <main className="px-4 sm:px-6 py-4 pb-12 min-h-full">
       <div className="mb-6 flex justify-between items-center">
         <BackButton />
-        {showTvButton && tvButtonUrl && (
-          <button
-            onClick={() => router.push(tvButtonUrl)}
-            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
-          >
-            📺 Mode TV
-          </button>
-        )}
       </div>
 
       {title && (
@@ -172,14 +156,14 @@ export default function GameDetailView({
             onGameUpdated={editable ? handleGameUpdated : undefined}
             updateGameFn={updateGameFn}
             winnerSide={
-                              game.finished
-                                ? game.winnerSide === 'TEAM_A'
-                                  ? 0
-                                  : game.winnerSide === 'TEAM_B'
-                                    ? 1
-                                    : undefined
-                                : undefined
-                            }
+              game.finished
+                ? game.winnerSide === 'TEAM_A'
+                  ? 0
+                  : game.winnerSide === 'TEAM_B'
+                    ? 1
+                    : undefined
+                : undefined
+            }
             pool={game.pool}
             finished={game.finished}
             stage={game.round?.stage || game.stage}
@@ -191,4 +175,3 @@ export default function GameDetailView({
     </main>
   );
 }
-

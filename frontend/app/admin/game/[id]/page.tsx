@@ -3,12 +3,9 @@
 
 import React, { use } from 'react';
 import { fetchStandaloneGame, updateStandaloneGame } from '@/src/api/tournamentApi';
-import GameDetailView from '@/src/components/game/GameDetailView';
+import GamePageShell from '@/src/components/game/GamePageShell';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import BottomNav from '@/src/components/ui/BottomNav';
-import { useRouter, usePathname } from 'next/navigation';
-import { getDefaultBottomItems } from '@/src/components/ui/bottomNavPresets';
 import AdminTournamentHeader from '@/src/components/admin/AdminTournamentHeader';
 import { ExportProvider } from '@/src/contexts/ExportContext';
 
@@ -18,32 +15,27 @@ interface PageProps {
 
 export default function StandaloneGameDetailPage({ params }: PageProps) {
   const { id: gameId } = use(params);
-  const items = getDefaultBottomItems();
-  const pathname = usePathname() ?? '';
 
   return (
     <ExportProvider>
-      <main className="px-4 sm:px-6 py-4 pb-24 min-h-screen">
+      <main className="px-4 sm:px-6 py-4">
         <AdminTournamentHeader tournament={null} />
 
         <div className="w-full max-w-xl mx-auto">
-          <GameDetailView
+          <GamePageShell
             gameId={gameId}
             fetchGameFn={() => fetchStandaloneGame(gameId)}
             updateGameFn={(gId, score, court, scheduledTime) =>
               updateStandaloneGame(gId, score, court, scheduledTime)
             }
             editable={true}
-            showTvButton={true}
-            tvButtonUrl={`/tv/game/${gameId}`}
+            includeViewers={true}
+            includeBottomNav={true}
           />
         </div>
 
         <ToastContainer />
       </main>
-
-      <BottomNav items={items} pathname={pathname} />
     </ExportProvider>
   );
 }
-
