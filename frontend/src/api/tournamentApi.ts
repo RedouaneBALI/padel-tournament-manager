@@ -65,6 +65,21 @@ export async function fetchMyTournaments(scope: 'mine' | 'all' = 'mine'): Promis
   return await res.json();
 }
 
+export async function fetchMyGames(scope: 'mine' | 'all' = 'mine') {
+  const qs = scope && scope !== 'mine' ? `?scope=${encodeURIComponent(scope)}` : '';
+  const res = await fetchWithAuth(api(`/admin/games${qs}`), { method: 'GET' });
+
+  if (res.status === 401) throw new Error('UNAUTHORIZED');
+  if (res.status === 403) throw new Error('FORBIDDEN');
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    toast.error('Erreur lors du chargement de vos matchs.');
+    throw new Error(`HTTP_${res.status} ${text}`);
+  }
+
+  return await res.json();
+}
+
 export async function fetchRounds(tournamentId: string): Promise<Round[]> {
   const response = await fetch(api(`/tournaments/${tournamentId}/rounds`));
   if (!response.ok) {
@@ -323,7 +338,7 @@ export async function createStandaloneGame(
     format,
   };
 
-  const res = await fetchWithAuth(api(`/games`), {
+  const res = await fetchWithAuth(api(`/admin/games`), {
     method: 'POST',
     body: JSON.stringify(payload),
   });
@@ -361,7 +376,7 @@ export async function fetchStandaloneGame(gameId: string): Promise<Game> {
  * @param scheduledTime The scheduled time
  */
 export async function updateStandaloneGame(gameId: string, scorePayload: Score, court: string, scheduledTime: string) {
-  const response = await fetchWithAuth(api(`/games/${gameId}`), {
+  const response = await fetchWithAuth(api(`/admin/games/${gameId}`), {
     method: 'PUT',
     body: JSON.stringify({
       score: scorePayload,

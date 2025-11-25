@@ -14,11 +14,23 @@
   --color-border: #e5e7eb;
   --color-background: #f9fafb;
   --color-foreground: #111827;
+
+  /* Brand colors */
+  --color-brand-google: #4285f4;
+  --color-brand-linkedin: #0077b5;
+  --color-brand-instagram: #e1306c;
 }
 
 :root {
   --color-muted: #d1d5db; /* gris clair */
   --color-muted-foreground: #4b5563; /* gris foncé */
+
+  /* Design tokens */
+  --ui-tv-width: 1200px; /* largeur du composant TVModeView */
+  --ui-loader-size: 24px; /* taille du loader central */
+  --team-score-cell-width-rem: 1rem; /* largeur cellule score (rem) */
+  --team-score-cell-gap-rem: 0.125rem; /* gap entre cellules (rem) */
+  --team-score-ab-slot-width-rem: 1.15rem; /* largeur AB slot (rem) */
 }
 
 @layer base {
@@ -43,5 +55,35 @@
   .animate-slide-up {
     animation: slide-up 0.3s ease-out;
   }
-}
 
+  /* Utility to apply TV mode width centralized */
+  .tv-mode-width {
+    width: var(--ui-tv-width);
+  }
+
+  /* Utility for loader size */
+  .loader-size {
+    width: var(--ui-loader-size);
+    height: var(--ui-loader-size);
+  }
+
+  /* Team score utilities */
+  .team-score-grid {
+    display: grid;
+    align-items: center;
+    column-gap: var(--team-score-cell-gap-rem);
+  }
+  .team-score-justify-center {
+    justify-self: center;
+  }
+
+  /* Brand color utilities */
+  .text-brand-google { color: var(--color-brand-google); }
+  .text-brand-linkedin { color: var(--color-brand-linkedin); }
+  .text-brand-instagram { color: var(--color-brand-instagram); }
+
+  /* stage min-height utility: uses CSS custom property --stage-min-height */
+  .stage-min-height {
+    min-height: var(--stage-min-height);
+  }
+}

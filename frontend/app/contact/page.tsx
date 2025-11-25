@@ -34,7 +34,7 @@ export default function ContactPage() {
               className="group flex items-center gap-4 rounded-xl border border-border bg-card hover:bg-accent hover:text-accent-foreground transition-colors p-4"
             >
               <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-white/70 group-hover:bg-background">
-                <FiMail size={28} className="text-[#EA4335]" />
+                <FiMail size={28} className="text-brand-google" />
               </span>
               <div>
                 <div className="font-medium">Email</div>
@@ -49,7 +49,7 @@ export default function ContactPage() {
               className="group flex items-center gap-4 rounded-xl border border-border bg-card hover:bg-accent hover:text-accent-foreground transition-colors p-4"
             >
               <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-white/70 group-hover:bg-background">
-                <FiLinkedin size={28} className="text-[#0A66C2]" />
+                <FiLinkedin size={28} className="text-brand-linkedin" />
               </span>
               <div>
                 <div className="font-medium">LinkedIn</div>
@@ -64,7 +64,7 @@ export default function ContactPage() {
               className="group flex items-center gap-4 rounded-xl border border-border bg-card hover:bg-accent hover:text-accent-foreground transition-colors p-4"
             >
               <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-white/70 group-hover:bg-background">
-                <FiInstagram size={28} className="text-[#E1306C]" />
+                <FiInstagram size={28} className="text-brand-instagram" />
               </span>
               <div>
                 <div className="font-medium">Instagram</div>

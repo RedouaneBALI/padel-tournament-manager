@@ -7,6 +7,25 @@ interface Props {
   className?: string
 }
 
+const STORAGE_KEY = 'padelrounds_viewer_client_id'
+
+function getOrCreateClientId() {
+  try {
+    if (typeof window === 'undefined') return undefined
+    const existing = localStorage.getItem(STORAGE_KEY)
+    if (existing) return existing
+    const id = Math.random().toString(36).slice(2)
+    try {
+      localStorage.setItem(STORAGE_KEY, id)
+    } catch (e) {
+      // ignore
+    }
+    return id
+  } catch (e) {
+    return undefined
+  }
+}
+
 export default function ViewersCounter({ gameId, className }: Props) {
   const [count, setCount] = useState<number | null>(null)
   const esRef = useRef<EventSource | null>(null)
@@ -24,24 +43,26 @@ export default function ViewersCounter({ gameId, className }: Props) {
       esRef.current = null
     }
 
-    const url = `/api/viewers/${encodeURIComponent(gameId)}`
+    const clientId = getOrCreateClientId()
+    const qs = clientId ? `?clientId=${encodeURIComponent(clientId)}` : ''
+    const url = `/api/viewers/${encodeURIComponent(gameId)}${qs}`
 
-    // EventSource automatically reconnects; keep a ref to close on unmount
     const es = new EventSource(url)
     esRef.current = es
 
     es.onmessage = (e) => {
       const text = String(e.data || '').trim()
       if (!text) return
-      const num = parseInt(text, 10)
-      if (!Number.isNaN(num)) setCount(num)
+      // if server sends client echo or extras, try to extract leading number
+      const numMatch = text.match(/^\s*(\d+)/)
+      if (numMatch) {
+        const num = parseInt(numMatch[1], 10)
+        if (!Number.isNaN(num)) setCount(num)
+      }
     }
 
-    es.onerror = (err) => {
-      // When an error occurs EventSource will try to reconnect automatically.
-      // If the connection is closed permanently, setCount to null to indicate unknown.
-      // We don't close here to allow builtin reconnection.
-      // console.debug('ViewersCounter SSE error', err)
+    es.onerror = () => {
+      // let EventSource handle reconnection
     }
 
     return () => {
@@ -78,8 +99,8 @@ export default function ViewersCounter({ gameId, className }: Props) {
         <circle cx="12" cy="12" r="2" fill="currentColor" />
       </svg>
 
-      <span className="font-medium">Spectateurs</span>
-      <span className="ml-2">{count ?? '...'}</span>
+      <span className="font-medium">Spectateurs :</span>
+      <span>{count ?? '...'}</span>
     </div>
   )
 }

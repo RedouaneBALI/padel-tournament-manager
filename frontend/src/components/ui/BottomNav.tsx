@@ -8,6 +8,7 @@ import LogoutButton from '@/src/components/auth/LogoutButton';
 import CreateTournamentButton from '@/src/components/ui/buttons/CreateTournamentButton';
 import CreateGameButton from '@/src/components/ui/buttons/CreateGameButton';
 import MyTournamentsButton from '@/src/components/ui/buttons/MyTournamentsButton';
+import MyGamesButton from '@/src/components/ui/buttons/MyGamesButton';
 import ContactButton from '@/src/components/ui/buttons/ContactButton';
 import GoogleLoginButton from '@/src/components/ui/buttons/GoogleLoginButton';
 import PricingButton from '@/src/components/ui/buttons/PricingButton';
@@ -123,6 +124,7 @@ export default function BottomNav({ items, pathname, className, fixed = true, on
                 <CreateTournamentButton href={hrefCreateTournament} onClick={onMoreClick ?? closeMore} />
                 <CreateGameButton href={hrefCreateGame} onClick={onMoreClick ?? closeMore} />
                 <MyTournamentsButton href={hrefMy} onClick={onMoreClick ?? closeMore} />
+                <MyGamesButton href={hrefMy.replace('tournaments','games')} onClick={onMoreClick ?? closeMore} />
                 <PointsCalculatorButton onClick={onMoreClick ?? closeMore} />
                 <PricingButton onClick={onMoreClick ?? closeMore} />
                 <ContactButton onClick={onMoreClick ?? closeMore} />

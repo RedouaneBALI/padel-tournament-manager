@@ -17,7 +17,7 @@ export default function GameDetailPage({ params }: PageProps) {
       tournamentId={tournamentId}
       fetchGameFn={() => fetchGame(tournamentId, gameId)}
       editable={false}
-      includeViewers={false}
+      includeViewers={true}
       includeBottomNav={false}
     />
   );

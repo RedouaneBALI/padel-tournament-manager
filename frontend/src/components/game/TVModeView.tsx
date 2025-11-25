@@ -74,7 +74,7 @@ export default function TVModeView({
       </div>
 
       {/* Match Card - Version TV agrandie */}
-      <div className="bg-white rounded-3xl shadow-2xl overflow-hidden" style={{ width: '1200px' }}>
+      <div className="bg-white rounded-3xl shadow-2xl overflow-hidden tv-mode-width">
         {/* En-tête de la carte */}
         <div className="bg-gradient-to-r from-primary to-primary/80 px-8 py-6 flex justify-between items-center">
           <div className="text-white text-3xl font-semibold">
@@ -171,4 +171,3 @@ export default function TVModeView({
     </div>
   );
 }
-

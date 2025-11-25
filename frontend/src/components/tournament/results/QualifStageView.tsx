@@ -28,8 +28,8 @@ export default function QualifStageView({
     <div className="w-full">
       <div
         id="qualif-bracket-container"
-        className="relative overflow-auto border border-border rounded-lg px-2 py-6 md:p-8 bg-background"
-        style={{ minHeight: maxPosition ? `${maxPosition}px` : undefined }}
+        className="relative overflow-auto border border-border rounded-lg px-2 py-6 md:p-8 bg-background stage-min-height"
+        style={maxPosition ? { ['--stage-min-height' as any]: `${maxPosition}px` } as React.CSSProperties : undefined}
       >
         <div className="w-max mx-0 md:mx-auto">
           <KnockoutBracket rounds={qualifRounds} tournamentId={tournamentId} />

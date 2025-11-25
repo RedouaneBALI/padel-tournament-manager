@@ -3,6 +3,7 @@
 import React, { use } from 'react';
 import { fetchGame } from '@/src/api/tournamentApi';
 import GameDetailView from '@/src/components/game/GameDetailView';
+import ViewersCounter from '@/src/components/ui/ViewersCounter';
 
 interface PageProps {
   params: Promise<{ id: string; gameId: string }>;
@@ -21,6 +22,7 @@ export default function AdminGameDetailPage({ params }: PageProps) {
           editable={true}
         />
       </div>
+      <ViewersCounter gameId={String(gameId)} />
     </main>
   );
 }

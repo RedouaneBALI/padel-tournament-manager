@@ -1,43 +1,34 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 
 // In-memory store of connected clients per game id
-const clients: Map<string, Set<NextApiResponse>> = new Map()
+// Map<gameId, Map<clientId, NextApiResponse>>
+const clients: Map<string, Map<string, NextApiResponse>> = new Map()
 
 function isAlive(res: NextApiResponse) {
-  // res.writableEnded true signifie que la réponse est terminée
-  // res.socket?.destroyed true signifie que le socket est fermé
-  // @ts-ignore - some runtimes may not expose socket on the response type
   const socket = (res as any).socket
   return !res.writableEnded && !(socket && socket.destroyed)
 }
 
 function cleanClients(gameId: string) {
-  const set = clients.get(gameId)
-  if (!set) return
-  for (const res of Array.from(set)) {
-    if (!isAlive(res)) {
-      set.delete(res)
-    }
+  const map = clients.get(gameId)
+  if (!map) return
+  for (const [clientId, res] of Array.from(map.entries())) {
+    if (!isAlive(res)) map.delete(clientId)
   }
-  if (set.size === 0) clients.delete(gameId)
+  if (map.size === 0) clients.delete(gameId)
 }
 
 function sendCount(gameId: string) {
   cleanClients(gameId)
-  const set = clients.get(gameId)
-  const count = set ? set.size : 0
+  const map = clients.get(gameId)
+  const count = map ? map.size : 0
   const data = `data: ${count}\n\n`
-  if (!set) return
-  for (const res of Array.from(set)) {
+  if (!map) return
+  for (const res of Array.from(map.values())) {
     try {
       res.write(data)
     } catch (e) {
-      // remove dead/broken connection
-      try {
-        set.delete(res)
-      } catch (err) {
-        // ignore
-      }
+      // ignore
     }
   }
 }
@@ -56,55 +47,62 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   res.setHeader('Connection', 'keep-alive')
   res.flushHeaders?.()
 
-  // Add this response to the clients set
-  let set = clients.get(gameId)
-  if (!set) {
-    set = new Set()
-    clients.set(gameId, set)
-  }
-  set.add(res)
+  // Read clientId from query param (optional)
+  const rawClientId = req.query.clientId
+  const clientId = typeof rawClientId === 'string' && rawClientId ? rawClientId : Math.random().toString(36).slice(2)
 
-  // Setup listeners to cleanup when the socket/response closes
+  // Add to map
+  let map = clients.get(gameId)
+  if (!map) {
+    map = new Map()
+    clients.set(gameId, map)
+  }
+
+  // If same client reconnects, replace the existing response
+  const existing = map.get(clientId)
+  if (existing && existing !== res) {
+    try {
+      existing.end()
+    } catch (e) {
+      // ignore
+    }
+    map.delete(clientId)
+  }
+
+  map.set(clientId, res)
+
   const cleanup = () => {
     clearInterval(heartbeat)
-    const s = clients.get(gameId)
-    if (s) {
-      s.delete(res)
-      if (s.size === 0) clients.delete(gameId)
+    const m = clients.get(gameId)
+    if (m) {
+      m.delete(clientId)
+      if (m.size === 0) clients.delete(gameId)
       else sendCount(gameId)
     }
   }
 
-  // Listen to different close events
   req.on('close', cleanup)
   res.on('close', cleanup)
-  // @ts-ignore
-  if (res.socket) {
-    // @ts-ignore
-    res.socket.on && res.socket.on('close', cleanup)
+  if ((res as any).socket) {
+    ;(res as any).socket.on && (res as any).socket.on('close', cleanup)
   }
 
-  // Send initial count (clean first)
+  // initial send
   cleanClients(gameId)
-  const initial = `data: ${clients.get(gameId)?.size ?? 0}\n\n`
   try {
-    res.write(initial)
+    res.write(`data: ${clients.get(gameId)?.size ?? 0}\n\n`)
   } catch (e) {
-    // if write fails, cleanup and return
     cleanup()
     return
   }
 
-  // Heartbeat to keep connection alive (every 15s)
   const heartbeat = setInterval(() => {
     try {
       res.write(': ping\n\n')
     } catch (e) {
-      // on write error remove the connection
       cleanup()
     }
   }, 15000)
 
-  // Broadcast updated count to all clients for this game
   sendCount(gameId)
 }
