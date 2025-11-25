@@ -4,6 +4,7 @@
 import React, { useEffect, useState, use } from 'react';
 import { ToastContainer } from 'react-toastify';
 import AdminTournamentHeader from '@/src/components/admin/AdminTournamentHeader';
+import { ExportProvider } from '@/src/contexts/ExportContext';
 import type { Tournament } from '@/src/types/tournament';
 import 'react-toastify/dist/ReactToastify.css';
 import { fetchTournamentAdmin } from '@/src/api/tournamentApi';
@@ -12,7 +13,6 @@ import { FiList } from 'react-icons/fi';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
 import BottomNav from '@/src/components/ui/BottomNav';
 import { getAdminTournamentItems } from '@/src/components/ui/bottomNavPresets';
-import { ExportProvider } from '@/src/contexts/ExportContext';
 
 export default function AdminTournamentLayout({
   children,

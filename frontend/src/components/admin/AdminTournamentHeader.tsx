@@ -1,3 +1,4 @@
+//AdminTournamentHeader.tsx
 'use client';
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
@@ -11,7 +12,7 @@ import { useExport } from '@/src/contexts/ExportContext';
 
 interface Props {
   tournament: Tournament | null;
-  tournamentId: string;
+  tournamentId?: string;
 }
 
 export default function AdminTournamentHeader({ tournament, tournamentId }: Props) {
@@ -22,8 +23,8 @@ export default function AdminTournamentHeader({ tournament, tournamentId }: Prop
 
   const handleCopyLink = () => {
     const FRONT_URL = (process.env.NEXT_PUBLIC_FRONTEND_URL ?? '').replace(/\/$/, '');
-    // Remplacer /admin/tournament par /tournament en gardant le reste du pathname
-    let publicPathname = pathname.replace(/^\/admin\/tournament/, '/tournament');
+    // Remplacer /admin par / en gardant le reste du pathname
+    let publicPathname = pathname.replace(/^\/admin\//, '/');
 
     if (publicPathname.includes('/rounds/config')) {
       publicPathname = `/tournament/${tournamentId}`;
@@ -45,13 +46,11 @@ export default function AdminTournamentHeader({ tournament, tournamentId }: Prop
     <>
       <div className="flex items-center justify-between">
         <h1 className="flex flex-col">
-          {tournament ? (
+          {tournamentId && tournament ? (
             <header className="pt-4 pb-2">
               <PageHeader title={tournament.name} />
             </header>
-          ) : (
-            <CenteredLoader />
-          )}
+          ) : null}
         </h1>
         <div className="flex items-center gap-2">
           <button
@@ -61,7 +60,7 @@ export default function AdminTournamentHeader({ tournament, tournamentId }: Prop
           >
             <Share2 className="h-5 w-5 text-muted-foreground hover:text-primary" />
           </button>
-          {onExport && (
+          {tournamentId && onExport && (
             <button
               onClick={onExport}
               className="p-2 rounded hover:bg-muted transition-colors cursor-pointer"
@@ -70,17 +69,21 @@ export default function AdminTournamentHeader({ tournament, tournamentId }: Prop
               <Download className="h-5 w-5 text-muted-foreground hover:text-primary" />
             </button>
           )}
-          <button
-            onClick={() => router.push(`/admin/tournament/${tournamentId}/edit`)}
-            className="p-2 rounded hover:bg-muted transition-colors cursor-pointer"
-            title="Modifier le tournoi"
-          >
-            <Settings className="h-5 w-5 text-muted-foreground hover:text-primary" />
-          </button>
+          {tournamentId && (
+            <button
+              onClick={() => router.push(`/admin/tournament/${tournamentId}/edit`)}
+              className="p-2 rounded hover:bg-muted transition-colors cursor-pointer"
+              title="Modifier le tournoi"
+            >
+              <Settings className="h-5 w-5 text-muted-foreground hover:text-primary" />
+            </button>
+          )}
         </div>
       </div>
 
-      <AdminTournamentTabs tournamentId={tournamentId} pathname={pathname} />
+      {tournamentId && (
+        <AdminTournamentTabs tournamentId={tournamentId} pathname={pathname} />
+      )}
     </>
   );
 }

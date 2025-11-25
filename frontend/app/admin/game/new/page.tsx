@@ -1,3 +1,4 @@
+//app/admin/game/new/page.tsx
 'use client';
 
 import React, { useState } from 'react';

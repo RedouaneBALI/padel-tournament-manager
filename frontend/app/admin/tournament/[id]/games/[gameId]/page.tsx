@@ -1,3 +1,4 @@
+//app/admin/tournament/[id]/games/[gameId]/page.tsx
 'use client';
 
 import React, { use, useEffect, useState } from 'react';
