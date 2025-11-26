@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import ContactButton from '@/src/components/ui/buttons/ContactButton';
+import CommunityButton from '@/src/components/ui/buttons/CommunityButton';
 import BottomNav from '@/src/components/ui/BottomNav';
 import { getDefaultBottomItems } from '@/src/components/ui/bottomNavPresets';
 import ImageSlider from '@/src/components/ui/ImageSlider';
@@ -239,8 +240,9 @@ export default function Home() {
                 </div>
               </div>
             </section>
-            <div className="flex justify-center">
+            <div className="flex justify-center gap-2">
               <ContactButton/>
+              <CommunityButton />
             </div>
           </div>
         </div>
