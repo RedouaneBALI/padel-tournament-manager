@@ -74,7 +74,7 @@ const ImageSlider: React.FC = () => {
               alt={`Slide ${index + 1}`}
               width={300}
               height={600}
-              style={{ objectFit: 'contain' }}
+              className="img-contain"
               priority={index === 0}
             />
           </div>

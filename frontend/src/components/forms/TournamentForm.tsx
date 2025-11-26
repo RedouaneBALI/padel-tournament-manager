@@ -13,6 +13,7 @@ import { useTournamentForm } from '@/src/hooks/useTournamentForm';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
 import { useRouter } from 'next/navigation';
 import type { TournamentFormData } from '@/src/validation/tournament';
+import PrimaryButton from '@/src/components/ui/buttons/PrimaryButton';
 
 interface TournamentFormProps {
   initialData?: Partial<Tournament>;
@@ -116,17 +117,9 @@ export default function TournamentForm({
         />
       </div>
       {/* Floating submit button (always visible) */}
-      <button
+      <PrimaryButton
         type="submit"
-        form="tournament-form"
-        disabled={isSubmitting}
-        className="fixed inset-x-0 z-[1000] flex items-center justify-center gap-2 px-5 py-4 shadow-lg bg-primary text-on-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/40"
-        style={{
-          bottom:
-            'calc(env(safe-area-inset-bottom) + var(--bottom-nav-height, 64px) + 12px)',
-        }}
-        aria-busy={isSubmitting}
-        aria-label={
+        ariaLabel={
           isEditing
             ? isSubmitting
               ? 'Mise à jour…'
@@ -135,12 +128,15 @@ export default function TournamentForm({
             ? 'Création en cours…'
             : 'Créer le tournoi'
         }
+        className={`fixed inset-x-0 z-[1000] flex items-center justify-center gap-2 px-5 py-4 shadow-lg floating-submit`}
+        disabled={isSubmitting}
+
       >
         <Trophy className="h-5 w-5" />
         <span className="text-base font-medium">
           {isEditing ? 'Mettre à jour' : 'Créer le tournoi'}
         </span>
-      </button>
+      </PrimaryButton>
     </>
   );
 }

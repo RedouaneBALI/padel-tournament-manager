@@ -256,6 +256,63 @@ export const TOP_100_CONFIGS: Record<string, Top100TeamConfig> = {
 };
 
 /**
+ * Configuration spécifique pour les tournois féminins : nombre de joueuses Top 10
+ * On ne supporte que pour les niveaux >= P250
+ */
+export const TOP_FEMALE_TOP10_CONFIGS: Record<string, Top100TeamConfig> = {
+  P250: {
+    minTeams: 3,
+    maxTeams: 6,
+    options: [
+      { value: 6, label: '6 joueuses Top 10 (100% des points)', multiplier: 1.0 },
+      { value: 5, label: '5 joueuses Top 10 (90% des points)', multiplier: 0.9 },
+      { value: 4, label: '4 joueuses Top 10 (75% des points)', multiplier: 0.75 },
+      { value: 3, label: '3 joueuses Top 10 (60% des points)', multiplier: 0.6 },
+    ],
+  },
+  P500: {
+    minTeams: 3,
+    maxTeams: 6,
+    options: [
+      { value: 6, label: '6 joueuses Top 10 (100% des points)', multiplier: 1.0 },
+      { value: 5, label: '5 joueuses Top 10 (90% des points)', multiplier: 0.9 },
+      { value: 4, label: '4 joueuses Top 10 (75% des points)', multiplier: 0.75 },
+      { value: 3, label: '3 joueuses Top 10 (60% des points)', multiplier: 0.6 },
+    ],
+  },
+  P1000: {
+    minTeams: 3,
+    maxTeams: 6,
+    options: [
+      { value: 6, label: '6 joueuses Top 10 (100% des points)', multiplier: 1.0 },
+      { value: 5, label: '5 joueuses Top 10 (90% des points)', multiplier: 0.9 },
+      { value: 4, label: '4 joueuses Top 10 (75% des points)', multiplier: 0.75 },
+      { value: 3, label: '3 joueuses Top 10 (60% des points)', multiplier: 0.6 },
+    ],
+  },
+  P1500: {
+    minTeams: 3,
+    maxTeams: 6,
+    options: [
+      { value: 6, label: '6 joueuses Top 10 (100% des points)', multiplier: 1.0 },
+      { value: 5, label: '5 joueuses Top 10 (90% des points)', multiplier: 0.9 },
+      { value: 4, label: '4 joueuses Top 10 (75% des points)', multiplier: 0.75 },
+      { value: 3, label: '3 joueuses Top 10 (60% des points)', multiplier: 0.6 },
+    ],
+  },
+  P2000: {
+    minTeams: 3,
+    maxTeams: 6,
+    options: [
+      { value: 6, label: '6 joueuses Top 10 (100% des points)', multiplier: 1.0 },
+      { value: 5, label: '5 joueuses Top 10 (90% des points)', multiplier: 0.9 },
+      { value: 4, label: '4 joueuses Top 10 (75% des points)', multiplier: 0.75 },
+      { value: 3, label: '3 joueuses Top 10 (60% des points)', multiplier: 0.6 },
+    ],
+  },
+};
+
+/**
  * Fonction helper pour vérifier si un niveau de tournoi nécessite la sélection du nombre d'équipes Top 100
  */
 export function requiresTop100Selection(level: string): boolean {
@@ -265,15 +322,15 @@ export function requiresTop100Selection(level: string): boolean {
 /**
  * Fonction helper pour obtenir le multiplicateur de points selon le nombre d'équipes Top 100
  */
-export function getTop100Multiplier(level: string, top100TeamsCount: number | null | undefined): number {
-  if (!requiresTop100Selection(level) || !top100TeamsCount) {
+export function getTop100Multiplier(level: string, topCount: number | null | undefined, gender: 'M' | 'F' = 'M'): number {
+  if (!requiresTop100Selection(level) || !topCount) {
     return 1.0;
   }
 
-  const config = TOP_100_CONFIGS[level];
+  const config = gender === 'F' ? TOP_FEMALE_TOP10_CONFIGS[level] : TOP_100_CONFIGS[level];
   if (!config) return 1.0;
 
-  const option = config.options.find(opt => opt.value === top100TeamsCount);
+  const option = config.options.find(opt => opt.value === topCount);
   return option ? option.multiplier : 1.0;
 }
 
@@ -282,5 +339,13 @@ export function getTop100Multiplier(level: string, top100TeamsCount: number | nu
  */
 export function applyTop100Multiplier(basePoints: number, multiplier: number): number {
   return Math.round(basePoints * multiplier);
+}
+
+/**
+ * Fonction helper pour obtenir la configuration Top 100 appropriée selon le niveau et le genre
+ */
+export function getTopConfig(level: string, gender: 'M' | 'F' = 'M'): Top100TeamConfig | undefined {
+  if (!requiresTop100Selection(level)) return undefined;
+  return gender === 'F' ? TOP_FEMALE_TOP10_CONFIGS[level] : TOP_100_CONFIGS[level];
 }
 

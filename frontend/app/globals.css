@@ -86,4 +86,10 @@
   .stage-min-height {
     min-height: var(--stage-min-height);
   }
+
+  /* Image fit utility */
+  .img-contain { object-fit: contain; }
+
+  /* Floating full-width submit button bottom calc centralized */
+  .floating-submit { bottom: calc(env(safe-area-inset-bottom) + var(--bottom-nav-height, 64px) + 12px); }
 }

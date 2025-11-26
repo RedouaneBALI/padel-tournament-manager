@@ -9,18 +9,21 @@ import {
   TOURNAMENT_LEVELS,
   TEAM_RANGES,
   TOP_100_CONFIGS,
+  TOP_FEMALE_TOP10_CONFIGS,
   requiresTop100Selection,
   getTop100Multiplier,
   applyTop100Multiplier,
   type TournamentLevelKey,
   type TeamRangeKey
 } from './baremes';
+import GenderToggle from '@/src/components/ui/GenderToggle';
 
 export default function PointsCalculatorPage() {
   const [tournamentLevel, setTournamentLevel] = useState<string>('P100');
   const [teamRange, setTeamRange] = useState<string>('29+');
   const [ranking, setRanking] = useState<string>('');
   const [top100TeamsCount, setTop100TeamsCount] = useState<string>('');
+  const [gender, setGender] = useState<'M' | 'F'>('M');
 
   const pathname = usePathname() ?? '';
   const bottomItems = getDefaultBottomItems();
@@ -30,9 +33,8 @@ export default function PointsCalculatorPage() {
     return requiresTop100Selection(tournamentLevel);
   }, [tournamentLevel]);
 
-  const top100Config = useMemo(() => {
-    return TOP_100_CONFIGS[tournamentLevel];
-  }, [tournamentLevel]);
+  // Choose the appropriate config directly so it updates reliably when `gender` changes
+  const top100Config = gender === 'F' ? TOP_FEMALE_TOP10_CONFIGS[tournamentLevel] : TOP_100_CONFIGS[tournamentLevel];
 
   // Filtrer les options de nombre d'équipes selon le niveau de tournoi sélectionné
   const availableTeamRanges = useMemo(() => {
@@ -58,6 +60,24 @@ export default function PointsCalculatorPage() {
       setTop100TeamsCount('');
     }
   }, [tournamentLevel, teamRange, availableTeamRanges]);
+
+  // Ensure the top100/top10 select defaults to the first option (100%) when options change
+  useEffect(() => {
+    if (!showTop100Selection || !top100Config) {
+      // nothing to select
+      setTop100TeamsCount('');
+      return;
+    }
+
+    const first = top100Config.options?.[0]?.value;
+    if (first == null) return;
+
+    // If current selection is empty or not in the current options, set it to the first option
+    const hasCurrent = top100Config.options.some((o) => String(o.value) === String(top100TeamsCount));
+    if (!top100TeamsCount || !hasCurrent) {
+      setTop100TeamsCount(String(first));
+    }
+  }, [showTop100Selection, top100Config, top100TeamsCount]);
 
   const calculatedPoints = useMemo(() => {
     if (!tournamentLevel || !teamRange || !ranking) {
@@ -124,7 +144,7 @@ export default function PointsCalculatorPage() {
 
     // Appliquer le multiplicateur Top 100 si nécessaire
     if (basePoints !== null && showTop100Selection) {
-      const multiplier = getTop100Multiplier(tournamentLevel, parseInt(top100TeamsCount, 10));
+      const multiplier = getTop100Multiplier(tournamentLevel, Number(top100TeamsCount), gender);
       return applyTop100Multiplier(basePoints, multiplier);
     }
 
@@ -174,6 +194,25 @@ export default function PointsCalculatorPage() {
     return null;
   }, [tournamentLevel, teamRange, ranking]);
 
+  // Available tournament levels depend on gender: women stop at P1000
+  const availableLevels = React.useMemo(() => {
+    if (gender === 'F') {
+      return TOURNAMENT_LEVELS.filter((l) => ['P50','P100','P250','P500','P1000'].includes(l.value));
+    }
+    return TOURNAMENT_LEVELS;
+  }, [gender]);
+
+  // If current tournamentLevel is not allowed for the selected gender, reset it
+  useEffect(() => {
+    const found = availableLevels.some(l => l.value === tournamentLevel);
+    if (!found) {
+      setTournamentLevel('');
+      setTeamRange('');
+      setRanking('');
+      setTop100TeamsCount('');
+    }
+  }, [availableLevels, tournamentLevel]);
+
   return (
     <>
       <div className="container mx-auto py-8 px-4 pb-24">
@@ -187,24 +226,31 @@ export default function PointsCalculatorPage() {
 
           <div className="bg-white rounded-lg shadow-md border border-gray-200">
             <div className="p-6 space-y-6">
+              {/* Genre toggle centered (no label) */}
+              <div className="w-full flex justify-center mt-0 mb-2">
+                <GenderToggle value={gender} onChange={setGender} />
+              </div>
+
               {/* Niveau du tournoi */}
               <div className="space-y-2">
                 <label htmlFor="tournament-level" className="block text-sm font-medium text-gray-700">
                   Niveau du tournoi
                 </label>
-                <select
-                  id="tournament-level"
-                  value={tournamentLevel}
-                  onChange={(e) => setTournamentLevel(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Sélectionnez le niveau</option>
-                  {TOURNAMENT_LEVELS.map((level) => (
-                    <option key={level.value} value={level.value}>
-                      {level.label}
-                    </option>
-                  ))}
-                </select>
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                  <select
+                    id="tournament-level"
+                    value={tournamentLevel}
+                    onChange={(e) => setTournamentLevel(e.target.value)}
+                    className="w-full md:flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Sélectionnez le niveau</option>
+                    {availableLevels.map((level) => (
+                      <option key={level.value} value={level.value}>
+                        {level.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               {/* Nombre d'équipes */}
@@ -226,35 +272,28 @@ export default function PointsCalculatorPage() {
                     </option>
                   ))}
                 </select>
-                {tournamentLevel && availableTeamRanges.length < TEAM_RANGES.length && (
-                  <p className="text-xs text-gray-500">
-                    Seuls les créneaux disponibles pour ce niveau sont affichés
-                  </p>
-                )}
               </div>
 
               {/* Équipes Top 100 (pour P250 et supérieur) */}
               {showTop100Selection && top100Config && (
-                <div className="space-y-2">
+                <div className="space-y-2" key={`top100-block-${gender}-${tournamentLevel}`}>
                   <label htmlFor="top100-teams" className="block text-sm font-medium text-gray-700">
-                    Nombre d&apos;équipes Top 100
+                    {gender === 'F' ? "Nombre de joueuses Top 10" : (top100Config ? "Nombre d'\u00E9quipes Top 100" : "Nombre de joueuses / équipes")}
                   </label>
                   <select
                     id="top100-teams"
+                    key={`top100-select-${gender}-${tournamentLevel}`}
                     value={top100TeamsCount}
                     onChange={(e) => setTop100TeamsCount(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="">Sélectionnez...</option>
                     {top100Config.options.map((option) => (
-                      <option key={option.value} value={option.value}>
+                      <option key={option.value} value={String(option.value)}>
                         {option.label}
                       </option>
                     ))}
                   </select>
-                  <p className="text-xs text-gray-500">
-                    Le nombre d&apos;équipes Top 100 affecte le multiplicateur de points attribués
-                  </p>
                 </div>
               )}
 
@@ -324,4 +363,3 @@ export default function PointsCalculatorPage() {
     </>
   );
 }
-
