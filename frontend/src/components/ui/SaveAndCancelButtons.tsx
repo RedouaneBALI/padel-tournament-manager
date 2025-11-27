@@ -2,8 +2,7 @@
 
 import { useEffect } from 'react';
 import { Save, X } from 'lucide-react';
-import PrimaryButton from '@/src/components/ui/buttons/PrimaryButton';
-import SecondaryButton from '@/src/components/ui/buttons/SecondaryButton';
+import Button from '@/src/components/ui/buttons/Button';
 
 interface SaveAndCancelButtonsProps {
   isSaving?: boolean;
@@ -35,14 +34,14 @@ export default function SaveAndCancelButtons({ isSaving = false, onSave, onCance
 
   return (
     <div className="flex gap-2">
-      <SecondaryButton disabled={isSaving} onClick={onCancel} ariaLabel="Annuler la modification">
+      <Button variant="secondary" disabled={isSaving} onClick={onCancel} aria-label="Annuler la modification">
         <X className="h-3 w-3 mr-1" />
         Annuler
-      </SecondaryButton>
-      <PrimaryButton disabled={isSaving} onClick={onSave} ariaLabel="Sauvegarder les modifications">
+      </Button>
+      <Button variant="primary" disabled={isSaving} onClick={onSave} aria-label="Sauvegarder les modifications">
         <Save className="h-3 w-3 mr-1" />
         Sauver
-      </PrimaryButton>
+      </Button>
     </div>
   );
 }

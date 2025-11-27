@@ -1,19 +1,29 @@
+/* filepath: /app/globals.css */
 @import "tailwindcss";
 
+/* En Tailwind v4, on configure le thème directement ici.
+  Ces variables génèrent automatiquement les classes comme 'bg-primary', 'text-error', etc.
+*/
 @theme {
-  --color-primary: #1b2d5e; /* dark blue */
+  --color-primary: #1b2d5e;
   --color-primary-hover: #153063;
   --color-on-primary: #ffffff;
-  --color-tab-inactive: #d1d5db; /* gray */
+  --color-tab-inactive: #d1d5db;
   --color-success: #4caf50;
   --color-error: #f44336;
   --color-text-black: #000000;
-  --color-text-secondary: #6b7280; /* lighter gray for secondary text */
+  --color-text-secondary: #6b7280;
   --color-card: #ffffff;
   --color-card-foreground: #111827;
   --color-border: #e5e7eb;
   --color-background: #f9fafb;
   --color-foreground: #111827;
+
+  /* Ajout des couleurs nécessaires pour les boutons si elles manquaient */
+  --color-input: #e5e7eb;
+  --color-ring: #1b2d5e; /* Utilisé pour le focus ring */
+  --color-accent: #f3f4f6;
+  --color-accent-foreground: #111827;
 
   /* Brand colors */
   --color-brand-google: #4285f4;
@@ -21,75 +31,80 @@
   --color-brand-instagram: #e1306c;
 }
 
-:root {
-  --color-muted: #d1d5db; /* gris clair */
-  --color-muted-foreground: #4b5563; /* gris foncé */
-
-  /* Design tokens */
-  --ui-tv-width: 1200px; /* largeur du composant TVModeView */
-  --ui-loader-size: 24px; /* taille du loader central */
-  --team-score-cell-width-rem: 1rem; /* largeur cellule score (rem) */
-  --team-score-cell-gap-rem: 0.125rem; /* gap entre cellules (rem) */
-  --team-score-ab-slot-width-rem: 1.15rem; /* largeur AB slot (rem) */
-}
-
+/* Les variables qui ne doivent PAS générer de classes utilitaires (comme bg-...)
+  restent dans :root ou @layer base
+*/
 @layer base {
+  :root {
+    --color-muted: #d1d5db;
+    --color-muted-foreground: #4b5563;
+
+    /* Design tokens spécifiques */
+    --ui-tv-width: 1200px;
+    --ui-loader-size: 24px;
+    --team-score-cell-width-rem: 1rem;
+    --team-score-cell-gap-rem: 0.125rem;
+    --team-score-ab-slot-width-rem: 1.15rem;
+  }
+
   body {
+    /* @apply fonctionne toujours, mais on utilise les vars du thème */
     @apply bg-background text-foreground;
     font-family: Arial, Helvetica, sans-serif;
   }
 }
 
 @layer utilities {
+  /* Animation Slide Up */
   @keyframes slide-up {
-    from {
-      transform: translateY(100%);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
   }
+  .animate-slide-up { animation: slide-up 0.3s ease-out; }
 
-  .animate-slide-up {
-    animation: slide-up 0.3s ease-out;
-  }
+  /* Utilities Custom */
+  .tv-mode-width { width: var(--ui-tv-width); }
 
-  /* Utility to apply TV mode width centralized */
-  .tv-mode-width {
-    width: var(--ui-tv-width);
-  }
-
-  /* Utility for loader size */
   .loader-size {
     width: var(--ui-loader-size);
     height: var(--ui-loader-size);
   }
 
-  /* Team score utilities */
   .team-score-grid {
     display: grid;
     align-items: center;
     column-gap: var(--team-score-cell-gap-rem);
   }
-  .team-score-justify-center {
-    justify-self: center;
-  }
 
-  /* Brand color utilities */
+  .team-score-justify-center { justify-self: center; }
+
+  /* Brand Text Utils */
   .text-brand-google { color: var(--color-brand-google); }
   .text-brand-linkedin { color: var(--color-brand-linkedin); }
   .text-brand-instagram { color: var(--color-brand-instagram); }
 
-  /* stage min-height utility: uses CSS custom property --stage-min-height */
-  .stage-min-height {
-    min-height: var(--stage-min-height);
+  .stage-min-height { min-height: var(--stage-min-height); }
+  .img-contain { object-fit: contain; }
+  .floating-submit { bottom: calc(env(safe-area-inset-bottom) + var(--bottom-nav-height, 64px) + 12px); }
+
+  /* --- TES NOUVEAUX BOUTONS --- */
+  /* J'ai adapté légèrement pour utiliser tes variables de thème */
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-colors;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+    @apply disabled:pointer-events-none disabled:opacity-60 disabled:cursor-not-allowed;
+    @apply h-9 rounded-md px-3 shadow-md;
+    /* ring-offset-background n'existe pas par défaut si background n'est pas defini dans theme, attention */
   }
 
-  /* Image fit utility */
-  .img-contain { object-fit: contain; }
+  .btn-primary {
+    /* Note: bg-green-600 fonctionne car Tailwind inclut les couleurs par défaut */
+    /* J'ai remis text-on-primary qui vient de ton thème */
+    @apply bg-green-600 text-on-primary hover:bg-green-700;
+  }
 
-  /* Floating full-width submit button bottom calc centralized */
-  .floating-submit { bottom: calc(env(safe-area-inset-bottom) + var(--bottom-nav-height, 64px) + 12px); }
+  .btn-secondary {
+    @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground;
+  }
 }

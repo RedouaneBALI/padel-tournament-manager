@@ -13,7 +13,7 @@ import { useTournamentForm } from '@/src/hooks/useTournamentForm';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
 import { useRouter } from 'next/navigation';
 import type { TournamentFormData } from '@/src/validation/tournament';
-import PrimaryButton from '@/src/components/ui/buttons/PrimaryButton';
+import Button from '@/src/components/ui/buttons/Button';
 
 interface TournamentFormProps {
   initialData?: Partial<Tournament>;
@@ -117,10 +117,36 @@ export default function TournamentForm({
         />
       </div>
       {/* Floating submit button (always visible) */}
-      <PrimaryButton
+      <Button
         type="submit"
         form="tournament-form"
-        ariaLabel={
+        onClick={(e) => {
+          // Si le bouton est déjà rattaché au form via l'attribut `form`, pas besoin du fallback.
+          const btn = e?.currentTarget;
+          // event.currentTarget.form est le form natif lié au bouton (peut être null)
+          const nativeFormFromButton = btn?.form as HTMLFormElement | null | undefined;
+          if (nativeFormFromButton) {
+            // L'attribut form est actif dans cet environnement : laisse le navigateur gérer la soumission
+            return;
+          }
+
+          // Fallback global : tente de récupérer le form par id
+          const formEl = document.getElementById('tournament-form') as HTMLFormElement | null;
+          if (formEl) {
+            if (typeof formEl.requestSubmit === 'function') {
+              formEl.requestSubmit();
+            } else {
+              // requestSubmit non disponible : créer un bouton submit temporaire et le cliquer
+              const tempBtn = document.createElement('button');
+              tempBtn.type = 'submit';
+              tempBtn.style.display = 'none';
+              formEl.appendChild(tempBtn);
+              tempBtn.click();
+              tempBtn.remove();
+            }
+          }
+        }}
+        aria-label={
           isEditing
             ? isSubmitting
               ? 'Mise à jour…'
@@ -137,7 +163,7 @@ export default function TournamentForm({
         <span className="text-base font-medium">
           {isEditing ? 'Mettre à jour' : 'Créer le tournoi'}
         </span>
-      </PrimaryButton>
+      </Button>
     </>
   );
 }
