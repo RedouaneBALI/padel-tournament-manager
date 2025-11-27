@@ -202,11 +202,11 @@ export const TOP_100_CONFIGS: Record<string, Top100TeamConfig> = {
     minTeams: 4,
     maxTeams: 8,
     options: [
-      { value: 8, label: '8 équipes Top 100 (100% des points)', multiplier: 1.0 },
-      { value: 7, label: '7 équipes Top 100 (90% des points)', multiplier: 0.9 },
-      { value: 6, label: '6 équipes Top 100 (80% des points)', multiplier: 0.8 },
-      { value: 5, label: '5 équipes Top 100 (70% des points)', multiplier: 0.7 },
-      { value: 4, label: '4 équipes Top 100 (60% des points)', multiplier: 0.6 },
+      { value: 8, label: '8 équipes Top 500 (100% des points)', multiplier: 1.0 },
+      { value: 7, label: '7 équipes Top 500 (90% des points)', multiplier: 0.9 },
+      { value: 6, label: '6 équipes Top 500 (80% des points)', multiplier: 0.8 },
+      { value: 5, label: '5 équipes Top 500 (70% des points)', multiplier: 0.7 },
+      { value: 4, label: '4 équipes Top 500 (60% des points)', multiplier: 0.6 },
     ],
   },
   P500: {
@@ -261,13 +261,14 @@ export const TOP_100_CONFIGS: Record<string, Top100TeamConfig> = {
  */
 export const TOP_FEMALE_TOP10_CONFIGS: Record<string, Top100TeamConfig> = {
   P250: {
-    minTeams: 3,
-    maxTeams: 6,
+    minTeams: 4,
+    maxTeams: 8,
     options: [
-      { value: 6, label: '6 joueuses Top 10 (100% des points)', multiplier: 1.0 },
-      { value: 5, label: '5 joueuses Top 10 (90% des points)', multiplier: 0.9 },
-      { value: 4, label: '4 joueuses Top 10 (75% des points)', multiplier: 0.75 },
-      { value: 3, label: '3 joueuses Top 10 (60% des points)', multiplier: 0.6 },
+      { value: 8, label: '8 joueuses Top 10 (100% des points)', multiplier: 1.0 },
+      { value: 7, label: '7 joueuses Top 10 (90% des points)', multiplier: 0.9 },
+      { value: 6, label: '6 joueuses Top 10 (80% des points)', multiplier: 0.8 },
+      { value: 5, label: '5 joueuses Top 10 (70% des points)', multiplier: 0.7 },
+      { value: 4, label: '4 joueuses Top 10 (60% des points)', multiplier: 0.6 },
     ],
   },
   P500: {
@@ -281,13 +282,14 @@ export const TOP_FEMALE_TOP10_CONFIGS: Record<string, Top100TeamConfig> = {
     ],
   },
   P1000: {
-    minTeams: 3,
-    maxTeams: 6,
+    minTeams: 4,
+    maxTeams: 8,
     options: [
-      { value: 6, label: '6 joueuses Top 10 (100% des points)', multiplier: 1.0 },
-      { value: 5, label: '5 joueuses Top 10 (90% des points)', multiplier: 0.9 },
-      { value: 4, label: '4 joueuses Top 10 (75% des points)', multiplier: 0.75 },
-      { value: 3, label: '3 joueuses Top 10 (60% des points)', multiplier: 0.6 },
+      { value: 8, label: '8 joueuses Top 10 (100% des points)', multiplier: 1.0 },
+      { value: 7, label: '7 joueuses Top 10 (90% des points)', multiplier: 0.9 },
+      { value: 6, label: '6 joueuses Top 10 (80% des points)', multiplier: 0.8 },
+      { value: 5, label: '5 joueuses Top 10 (70% des points)', multiplier: 0.7 },
+      { value: 4, label: '4 joueuses Top 10 (60% des points)', multiplier: 0.6 },
     ],
   },
   P1500: {
@@ -348,4 +350,3 @@ export function getTopConfig(level: string, gender: 'M' | 'F' = 'M'): Top100Team
   if (!requiresTop100Selection(level)) return undefined;
   return gender === 'F' ? TOP_FEMALE_TOP10_CONFIGS[level] : TOP_100_CONFIGS[level];
 }
-

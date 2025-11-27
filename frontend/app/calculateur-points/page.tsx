@@ -278,7 +278,7 @@ export default function PointsCalculatorPage() {
               {showTop100Selection && top100Config && (
                 <div className="space-y-2" key={`top100-block-${gender}-${tournamentLevel}`}>
                   <label htmlFor="top100-teams" className="block text-sm font-medium text-gray-700">
-                    {gender === 'F' ? "Nombre de joueuses Top 10" : (top100Config ? "Nombre d'\u00E9quipes Top 100" : "Nombre de joueuses / équipes")}
+                    Coefficient
                   </label>
                   <select
                     id="top100-teams"

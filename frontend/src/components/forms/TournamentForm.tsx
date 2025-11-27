@@ -119,6 +119,7 @@ export default function TournamentForm({
       {/* Floating submit button (always visible) */}
       <PrimaryButton
         type="submit"
+        form="tournament-form"
         ariaLabel={
           isEditing
             ? isSubmitting

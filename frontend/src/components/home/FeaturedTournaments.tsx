@@ -3,73 +3,39 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { fetchActiveTournaments } from '@/src/api/tournamentApi';
+import { formatDate, formatDateRange, levelEmoji, genderEmoji, genderLabel, filterActiveTournaments } from './tournamentHelpers';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
 
-export default function FeaturedTournaments() {
-  const [featured, setFeatured] = useState<any[]>([]);
-  const [loadingFeatured, setLoadingFeatured] = useState(false);
+type FeaturedTournamentsProps = {
+  items?: any[];
+  loading?: boolean;
+};
+
+export default function FeaturedTournaments({ items, loading }: FeaturedTournamentsProps = {}) {
+  // If parent provides items, use them; otherwise fetch locally.
+  const [featured, setFeatured] = useState<any[]>(items ? filterActiveTournaments(items) : []);
+  const [loadingFeatured, setLoadingFeatured] = useState<boolean>(loading ?? false);
 
   useEffect(() => {
+    // If parent provided items, reflect changes and skip fetching
+    if (items) {
+      setFeatured(filterActiveTournaments(items));
+      setLoadingFeatured(loading ?? false);
+      return;
+    }
+
     let mounted = true;
     setLoadingFeatured(true);
     fetchActiveTournaments()
       .then((list) => {
-        if (mounted) setFeatured(list || []);
+        if (mounted) setFeatured(filterActiveTournaments(list));
       })
       .catch(() => {})
       .finally(() => mounted && setLoadingFeatured(false));
     return () => {
       mounted = false;
     };
-  }, []);
-
-  const formatDate = (d?: string) => {
-    if (!d) return '';
-    try {
-      return new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(d));
-    } catch (e) {
-      return d || '';
-    }
-  };
-
-  const formatDateRange = (start?: string, end?: string) => {
-    if (!start && !end) return '';
-    if (!start) return formatDate(end);
-    if (!end) return formatDate(start);
-
-    const ds = new Date(start);
-    const de = new Date(end);
-    if (isNaN(ds.getTime()) || isNaN(de.getTime())) return `${formatDate(start)} — ${formatDate(end)}`;
-
-    const sameMonth = ds.getMonth() === de.getMonth() && ds.getFullYear() === de.getFullYear();
-    const sameYear = ds.getFullYear() === de.getFullYear();
-
-    if (sameMonth) {
-      return `${ds.getDate()}–${de.getDate()} ${new Intl.DateTimeFormat('fr-FR', { month: 'short', year: 'numeric' }).format(de)}`;
-    }
-    if (sameYear) {
-      return `${new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(ds)} — ${new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }).format(de)}`;
-    }
-    return `${formatDate(start)} — ${formatDate(end)}`;
-  };
-
-  // level fixed to 🏅
-  const levelEmoji = (_l?: string) => '🏅';
-  const genderEmoji = (g?: string) => {
-    if (!g) return '⚧';
-    const s = String(g).toUpperCase();
-    if (s === 'MEN' || s === 'M' || s === 'MALE') return '♂️';
-    if (s === 'WOMEN' || s === 'F' || s === 'FEMALE') return '♀️';
-    if (s.includes('MIX') || s.includes('MIXED')) return '⚥';
-    return '⚧';
-  };
-  const genderLabel = (g?: string) => {
-    if (!g) return '';
-    const s = String(g).toUpperCase();
-    if (s === 'MEN') return 'Hommes';
-    if (s === 'WOMEN') return 'Femmes';
-    return s.charAt(0) + s.slice(1).toLowerCase();
-  };
+  }, [items, loading]);
 
   const visibleFeatured = featured.slice(0, 4);
 

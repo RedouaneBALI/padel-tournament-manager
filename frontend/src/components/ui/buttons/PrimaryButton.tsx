@@ -9,12 +9,14 @@ interface Props {
   className?: string;
   type?: 'button' | 'submit' | 'reset';
   ariaLabel?: string;
+  form?: string; // allow targeting a form by id when the button is outside the <form>
 }
 
-export default function PrimaryButton({ children, onClick, disabled = false, className = '', type = 'button', ariaLabel }: Props) {
+export default function PrimaryButton({ children, onClick, disabled = false, className = '', type = 'button', ariaLabel, form }: Props) {
   return (
     <button
       type={type}
+      form={form}
       disabled={disabled}
       onClick={onClick}
       className={[
@@ -28,4 +30,3 @@ export default function PrimaryButton({ children, onClick, disabled = false, cla
     </button>
   );
 }
-
