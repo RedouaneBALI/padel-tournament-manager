@@ -15,7 +15,6 @@ export interface Game {
   score?: Score;
   onScoreSaved: (result: { tournamentUpdated: boolean; winner: string | null }) => void;
   winnerSide?: string;
-  stage?: string;
   pool?: Pool;
   finished: boolean;
   scheduledTime: string;

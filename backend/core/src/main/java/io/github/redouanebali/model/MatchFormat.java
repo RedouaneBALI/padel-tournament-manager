@@ -23,8 +23,8 @@ public class MatchFormat {
   private int     numberOfSetsToWin       = 2;        // Ex: 2 for a match with 2 winning sets
   @Min(1)
   private int     gamesPerSet             = 6;        // Ex: 6 games to win a set
-  private boolean superTieBreakInFinalSet = false;    // true if the 3rd set is a super tie-break
-  private boolean advantage               = true;     // true = advantage game, false = no-ad
+  private boolean superTieBreakInFinalSet = true;    // true if the 3rd set is a super tie-break
+  private boolean advantage               = false;     // true = advantage game, false = no-ad
   @Min(1)
   private int     tieBreakAt              = 6;        // Score at which tie-break starts (gamesPerSet or gamesPerSet-1)
 

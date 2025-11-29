@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Game } from '@/src/types/game';
 import { Score } from '@/src/types/score';
-import MatchResultCard from '@/src/components/ui/MatchResultCard';
+import MatchResultCardZoom from '@/src/components/match/MatchResultCardZoom';
 import BackButton from '@/src/components/ui/buttons/BackButton';
 import { toast } from 'react-toastify';
 import { formatStageLabel } from '@/src/types/stage';
@@ -145,30 +145,11 @@ export default function GameDetailView({
 
       <div className="flex justify-center w-full">
         <div className="w-full max-w-xl flex justify-center">
-          <MatchResultCard
-            teamA={game.teamA}
-            teamB={game.teamB}
-            editable={editable}
-            gameId={gameId}
+          <MatchResultCardZoom
+            game={game}
             tournamentId={tournamentId || game.tournamentId || ''}
-            score={game.score}
-            onInfoSaved={editable ? handleInfoSaved : undefined}
-            onGameUpdated={editable ? handleGameUpdated : undefined}
-            updateGameFn={updateGameFn}
-            winnerSide={
-              game.finished
-                ? game.winnerSide === 'TEAM_A'
-                  ? 0
-                  : game.winnerSide === 'TEAM_B'
-                    ? 1
-                    : undefined
-                : undefined
-            }
-            pool={game.pool}
-            finished={game.finished}
-            stage={game.round?.stage || game.stage}
-            court={game.court}
-            scheduledTime={game.scheduledTime}
+            mode={editable ? 'admin' : 'spectator'}
+            onScoreUpdate={(updatedGame) => setGame(updatedGame)}
           />
         </div>
       </div>

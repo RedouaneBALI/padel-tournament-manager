@@ -14,5 +14,5 @@ public class UpdateScoreDTO {
 
   private boolean  tournamentUpdated;
   private TeamSide winner; // TEAM_A, TEAM_B ou null
+  private ScoreDTO score;
 }
-

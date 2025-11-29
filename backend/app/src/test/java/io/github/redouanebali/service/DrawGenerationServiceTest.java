@@ -10,7 +10,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.github.redouanebali.TestFixtures;
 import io.github.redouanebali.dto.request.RoundRequest;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
@@ -21,6 +20,7 @@ import io.github.redouanebali.model.format.TournamentConfig;
 import io.github.redouanebali.model.format.TournamentFormat;
 import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.security.SecurityProps;
+import io.github.redouanebali.util.TestFixtures;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

@@ -7,8 +7,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.github.redouanebali.TestFixtures;
 import io.github.redouanebali.dto.response.UpdateScoreDTO;
+import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.PlayerPair;
@@ -20,6 +20,7 @@ import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.TournamentConfig;
 import io.github.redouanebali.model.format.TournamentFormat;
 import io.github.redouanebali.repository.TournamentRepository;
+import io.github.redouanebali.util.TestFixtures;
 import java.util.LinkedList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +36,7 @@ class GameServiceTest {
   private TournamentService     tournamentService;
   private DrawGenerationService drawGenerationService;
   private GameService           gameService;
+  private TournamentMapper      tournamentMapper;
 
   @BeforeEach
   void setUp() {
@@ -45,7 +47,8 @@ class GameServiceTest {
     tournamentRepository  = mock(TournamentRepository.class);
     tournamentService     = mock(TournamentService.class);
     drawGenerationService = mock(DrawGenerationService.class);
-    gameService           = new GameService(tournamentRepository, tournamentService, drawGenerationService);
+    tournamentMapper      = mock(TournamentMapper.class);
+    gameService           = new GameService(tournamentRepository, tournamentService, drawGenerationService, tournamentMapper);
   }
 
 

@@ -400,3 +400,20 @@ export async function fetchActiveTournaments() {
   }
   return await response.json();
 }
+
+/**
+ * Incrémente ou décrémente le point en cours pour une équipe dans un match de tournoi (admin).
+ */
+export async function updateGamePoint(tournamentId: string | number, gameId: string | number, teamSide: string, increment: boolean) {
+  const response = await fetchWithAuth(api(`/admin/tournaments/${tournamentId}/games/${gameId}/game-point`), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ teamSide, increment }),
+  });
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    toast.error('Erreur lors de la mise à jour du point.');
+    throw new Error(`Erreur updateGamePoint (${response.status}) ${text}`);
+  }
+  return await response.json();
+}

@@ -9,6 +9,9 @@ import io.github.redouanebali.dto.response.PoolDTO;
 import io.github.redouanebali.dto.response.PoolRankingDTO;
 import io.github.redouanebali.dto.response.PoolRankingDetailsDTO;
 import io.github.redouanebali.dto.response.RoundDTO;
+import io.github.redouanebali.dto.response.RoundLightDTO;
+import io.github.redouanebali.dto.response.ScoreDTO;
+import io.github.redouanebali.dto.response.SetScoreDTO;
 import io.github.redouanebali.dto.response.TournamentDTO;
 import io.github.redouanebali.dto.response.TournamentSummaryDTO;
 import io.github.redouanebali.model.Game;
@@ -19,8 +22,11 @@ import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.PoolRanking;
 import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.Score;
+import io.github.redouanebali.model.SetScore;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.security.SecurityUtil;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.mapstruct.Mapper;
@@ -55,7 +61,31 @@ public interface TournamentMapper {
     }
     GameDTO gameDTO = toDTO(game);
     if (round != null) {
-      gameDTO.setRound(toDTO(round));
+      RoundLightDTO light = new RoundLightDTO(round.getId(), round.getStage(), toDTO(round.getMatchFormat()));
+      gameDTO.setRound(light);
+    }
+    return gameDTO;
+  }
+
+  /**
+   * Maps a Game to GameDTO with a simplified Round (id, stage, matchFormat only).
+   *
+   * @param game the game entity to map
+   * @param round the round entity that contains this game
+   * @return GameDTO with simplified round information
+   */
+  default GameDTO toDTOWithLightRound(Game game, Round round) {
+    if (game == null) {
+      return null;
+    }
+    GameDTO gameDTO = toDTO(game);
+    if (round != null) {
+      RoundLightDTO light = new RoundLightDTO();
+      light.setId(round.getId());
+      light.setStage(round.getStage());
+      light.setMatchFormat(toDTO(round.getMatchFormat()));
+      // Cast car GameDTO.round est bien de type RoundLightDTO
+      gameDTO.setRound(light);
     }
     return gameDTO;
   }
@@ -195,4 +225,84 @@ public interface TournamentMapper {
 
   // Summary mapping for the public home endpoint
   TournamentSummaryDTO toSummaryDTO(Tournament tournament);
+
+  default ScoreDTO toDTO(Score score) {
+    if (score == null) {
+      return null;
+    }
+    ScoreDTO          dto     = new ScoreDTO();
+    List<SetScoreDTO> setsDto = toDTOSets(score.getSets());
+    // If super tie-break in progress, inject tieBreakPointA/B in last set
+    if (!setsDto.isEmpty() && score.getTieBreakPointA() != null && score.getTieBreakPointB() != null) {
+      SetScoreDTO lastSet = setsDto.get(setsDto.size() - 1);
+      lastSet.setTieBreakTeamA(score.getTieBreakPointA());
+      lastSet.setTieBreakTeamB(score.getTieBreakPointB());
+    }
+    dto.setSets(setsDto);
+    dto.setForfeit(score.isForfeit());
+    dto.setForfeitedBy(score.getForfeitedBy());
+    if (score.getCurrentGamePointA() != null) {
+      dto.setCurrentGamePointA(score.getCurrentGamePointA().name());
+    }
+    if (score.getCurrentGamePointB() != null) {
+      dto.setCurrentGamePointB(score.getCurrentGamePointB().name());
+    }
+    if (score.getTieBreakPointA() != null) {
+      dto.setTieBreakPointA(score.getTieBreakPointA());
+    }
+    if (score.getTieBreakPointB() != null) {
+      dto.setTieBreakPointB(score.getTieBreakPointB());
+    }
+    return dto;
+  }
+
+  default ScoreDTO toDTO(Game game, Score score) {
+    if (score == null) {
+      return null;
+    }
+    ScoreDTO          dto     = new ScoreDTO();
+    List<SetScoreDTO> setsDto = toDTOSets(score.getSets());
+    // Only inject tieBreakPointA/B in last set if we are in a super tie-break scenario
+    if (game != null && game.getFormat() != null && game.getFormat().isSuperTieBreakInFinalSet()) {
+      int setsToWin        = game.getFormat().getNumberOfSetsToWin();
+      int expectedSetCount = setsToWin * 2 - 1;
+      if (setsDto.size() == expectedSetCount && score.getTieBreakPointA() != null && score.getTieBreakPointB() != null) {
+        SetScoreDTO lastSet = setsDto.get(setsDto.size() - 1);
+        lastSet.setTieBreakTeamA(score.getTieBreakPointA());
+        lastSet.setTieBreakTeamB(score.getTieBreakPointB());
+      }
+    }
+    dto.setSets(setsDto);
+    dto.setForfeit(score.isForfeit());
+    dto.setForfeitedBy(score.getForfeitedBy());
+    if (score.getCurrentGamePointA() != null) {
+      dto.setCurrentGamePointA(score.getCurrentGamePointA().name());
+    }
+    if (score.getCurrentGamePointB() != null) {
+      dto.setCurrentGamePointB(score.getCurrentGamePointB().name());
+    }
+    if (score.getTieBreakPointA() != null) {
+      dto.setTieBreakPointA(score.getTieBreakPointA());
+    }
+    if (score.getTieBreakPointB() != null) {
+      dto.setTieBreakPointB(score.getTieBreakPointB());
+    }
+    return dto;
+  }
+
+  default List<SetScoreDTO> toDTOSets(List<SetScore> sets) {
+    if (sets == null) {
+      return null;
+    }
+    List<SetScoreDTO> result = new ArrayList<>();
+    for (SetScore set : sets) {
+      SetScoreDTO dto = new SetScoreDTO();
+      dto.setTeamAScore(set.getTeamAScore());
+      dto.setTeamBScore(set.getTeamBScore());
+      dto.setTieBreakTeamA(set.getTieBreakTeamA());
+      dto.setTieBreakTeamB(set.getTieBreakTeamB());
+      result.add(dto);
+    }
+    return result;
+  }
 }

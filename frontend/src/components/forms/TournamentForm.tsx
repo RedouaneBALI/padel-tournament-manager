@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent } from 'react';
+import { FormEvent } from 'react'; // MouseEvent n'est plus nécessaire
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Trophy } from 'lucide-react';
@@ -32,7 +32,6 @@ export default function TournamentForm({
     useTournamentForm(initialData as Partial<TournamentFormData>);
   const router = useRouter();
 
-  // Déterminer si le tournoi est lancé (a des rounds ou un currentRoundStage)
   const isTournamentStarted = isEditing && initialData && (
     (initialData.rounds && initialData.rounds.length > 0) ||
     (initialData.currentRoundStage && initialData.currentRoundStage !== null)
@@ -60,6 +59,8 @@ export default function TournamentForm({
     }
   };
 
+  // J'ai supprimé handleFloatingSubmitClick ici
+
   return (
     <>
       {isSubmitting && (
@@ -84,22 +85,18 @@ export default function TournamentForm({
           </div>
 
           <div>
+            {/* L'ID ici est crucial */}
             <form id="tournament-form" onSubmit={handleSubmit}>
               <TournamentInfoSection formData={formData} handleInputChange={handleInputChange} />
-
               <hr className="border-border" />
-
               <TournamentDatesSection formData={formData} handleInputChange={handleInputChange} />
-
               <hr className="border-border" />
-
               <TournamentConfigSection
                 formData={formData}
                 handleInputChange={handleInputChange}
                 onEmailsChange={handleEmailsChange}
                 isTournamentStarted={isTournamentStarted}
               />
-
               <hr className="border-border" />
             </form>
           </div>
@@ -116,48 +113,18 @@ export default function TournamentForm({
           pauseOnHover
         />
       </div>
-      {/* Floating submit button (always visible) */}
+
+      {/* Floating submit button */}
       <Button
         type="submit"
         form="tournament-form"
-        onClick={(e) => {
-          // Si le bouton est déjà rattaché au form via l'attribut `form`, pas besoin du fallback.
-          const btn = e?.currentTarget;
-          // event.currentTarget.form est le form natif lié au bouton (peut être null)
-          const nativeFormFromButton = btn?.form as HTMLFormElement | null | undefined;
-          if (nativeFormFromButton) {
-            // L'attribut form est actif dans cet environnement : laisse le navigateur gérer la soumission
-            return;
-          }
-
-          // Fallback global : tente de récupérer le form par id
-          const formEl = document.getElementById('tournament-form') as HTMLFormElement | null;
-          if (formEl) {
-            if (typeof formEl.requestSubmit === 'function') {
-              formEl.requestSubmit();
-            } else {
-              // requestSubmit non disponible : créer un bouton submit temporaire et le cliquer
-              const tempBtn = document.createElement('button');
-              tempBtn.type = 'submit';
-              tempBtn.style.display = 'none';
-              formEl.appendChild(tempBtn);
-              tempBtn.click();
-              tempBtn.remove();
-            }
-          }
-        }}
         aria-label={
           isEditing
-            ? isSubmitting
-              ? 'Mise à jour…'
-              : 'Mettre à jour'
-            : isSubmitting
-            ? 'Création en cours…'
-            : 'Créer le tournoi'
+            ? isSubmitting ? 'Mise à jour…' : 'Mettre à jour'
+            : isSubmitting ? 'Création en cours…' : 'Créer le tournoi'
         }
-        className={`fixed inset-x-0 z-[1000] flex items-center justify-center gap-2 px-5 py-4 shadow-lg floating-submit`}
+        className="fixed inset-x-0 z-[1000] flex items-center justify-center gap-2 px-5 py-4 shadow-lg floating-submit"
         disabled={isSubmitting}
-
       >
         <Trophy className="h-5 w-5" />
         <span className="text-base font-medium">

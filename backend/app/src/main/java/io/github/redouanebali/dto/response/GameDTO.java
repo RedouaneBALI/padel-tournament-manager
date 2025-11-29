@@ -19,6 +19,6 @@ public class GameDTO {
   private LocalTime     scheduledTime;
   private String        court;
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  private RoundDTO      round;
+  private RoundLightDTO round;
 
 }

@@ -1,4 +1,4 @@
-package io.github.redouanebali;
+package io.github.redouanebali.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -15,8 +15,8 @@ import io.github.redouanebali.dto.response.MatchFormatDTO;
 import io.github.redouanebali.dto.response.PlayerPairDTO;
 import io.github.redouanebali.dto.response.PoolRankingDetailsDTO;
 import io.github.redouanebali.dto.response.RoundDTO;
+import io.github.redouanebali.dto.response.ScoreDTO;
 import io.github.redouanebali.dto.response.TournamentDTO;
-import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Gender;
 import io.github.redouanebali.model.MatchFormat;
@@ -25,6 +25,8 @@ import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.PoolRankingDetails;
 import io.github.redouanebali.model.Round;
+import io.github.redouanebali.model.Score;
+import io.github.redouanebali.model.SetScore;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.model.Tournament;
@@ -486,4 +488,100 @@ class TournamentMapperTest {
     assertTrue(t.getEditorIds().contains("e1@test.com"));
     assertTrue(t.getEditorIds().contains("e2@test.com"));
   }
+
+  @Test
+  void testTieBreakPointsInjectedInSetDTO() {
+    // Tie-break in 1st set (not super tie-break)
+    PlayerPair  teamA  = new PlayerPair(new Player("A1"), new Player("A2"), 1);
+    PlayerPair  teamB  = new PlayerPair(new Player("B1"), new Player("B2"), 2);
+    MatchFormat format = new MatchFormat(1L, 2, 6, false, false); // 2 sets to win, no super tie-break
+    Game        game   = new Game(format);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+    Score    score = new Score();
+    SetScore set1  = new SetScore(6, 6); // tie-break triggered
+    set1.setTieBreakTeamA(null);
+    set1.setTieBreakTeamB(null);
+    score.getSets().add(set1);
+    score.setTieBreakPointA(5);
+    score.setTieBreakPointB(4);
+    game.setScore(score);
+    TournamentMapper mapper = new TournamentMapperImpl();
+    ScoreDTO         dto    = mapper.toDTO(game, score);
+    // Tie-break points should NOT be injected in set DTO (not a super tie-break)
+    assertNull(dto.getSets().get(0).getTieBreakTeamA());
+    assertNull(dto.getSets().get(0).getTieBreakTeamB());
+  }
+
+  @Test
+  void testSuperTieBreakPointsInjectedInSetDTO() {
+    // Super tie-break in 3rd set
+    PlayerPair  teamA  = new PlayerPair(new Player("A1"), new Player("A2"), 1);
+    PlayerPair  teamB  = new PlayerPair(new Player("B1"), new Player("B2"), 2);
+    MatchFormat format = new MatchFormat(1L, 2, 6, true, false); // 2 sets to win, super tie-break in final set
+    Game        game   = new Game(format);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+    Score score = new Score();
+    score.addSetScore(6, 0);
+    score.addSetScore(0, 6);
+    SetScore superTie = new SetScore(0, 0);
+    score.getSets().add(superTie);
+    score.setTieBreakPointA(7);
+    score.setTieBreakPointB(8);
+    game.setScore(score);
+    TournamentMapper mapper = new TournamentMapperImpl();
+    ScoreDTO         dto    = mapper.toDTO(game, score);
+    // Tie-break points should be injected in last set
+    assertEquals(7, dto.getSets().get(2).getTieBreakTeamA());
+    assertEquals(8, dto.getSets().get(2).getTieBreakTeamB());
+  }
+
+  @Test
+  void testNoSuperTieBreakPointsInjectedIfNotFinalSet() {
+    // 3rd set, but not super tie-break format
+    PlayerPair  teamA  = new PlayerPair(new Player("A1"), new Player("A2"), 1);
+    PlayerPair  teamB  = new PlayerPair(new Player("B1"), new Player("B2"), 2);
+    MatchFormat format = new MatchFormat(1L, 2, 6, false, false); // 2 sets to win, no super tie-break
+    Game        game   = new Game(format);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+    Score score = new Score();
+    score.addSetScore(6, 0);
+    score.addSetScore(0, 6);
+    SetScore set3 = new SetScore(0, 0);
+    score.getSets().add(set3);
+    score.setTieBreakPointA(3);
+    score.setTieBreakPointB(2);
+    game.setScore(score);
+    TournamentMapper mapper = new TournamentMapperImpl();
+    ScoreDTO         dto    = mapper.toDTO(game, score);
+    // Tie-break points should NOT be injected in last set
+    assertNull(dto.getSets().get(2).getTieBreakTeamA());
+    assertNull(dto.getSets().get(2).getTieBreakTeamB());
+  }
+
+  @Test
+  void testWinnerSideIsSetForSuperTieBreakWin() {
+    PlayerPair  teamA  = new PlayerPair(new Player("A1"), new Player("A2"), 1);
+    PlayerPair  teamB  = new PlayerPair(new Player("B1"), new Player("B2"), 2);
+    MatchFormat format = new MatchFormat(1L, 2, 6, true, false); // 2 sets to win, super tie-break in final set
+    Game        game   = new Game(format);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+    Score score = new Score();
+    score.addSetScore(6, 0);
+    score.addSetScore(0, 6);
+    SetScore superTie = new SetScore(0, 1); // Team B wins super tie-break
+    superTie.setTieBreakTeamA(0);
+    superTie.setTieBreakTeamB(10);
+    score.getSets().add(superTie);
+    game.setScore(score);
+    TournamentMapper mapper = new TournamentMapperImpl();
+    GameDTO          dto    = mapper.toDTO(game);
+    assertTrue(game.isFinished(), "Game should be finished");
+    assertEquals(TeamSide.TEAM_B, game.getWinnerSide(), "Winner side should be TEAM_B");
+    assertEquals(TeamSide.TEAM_B, dto.getWinnerSide(), "DTO winnerSide should be TEAM_B");
+  }
+
 }

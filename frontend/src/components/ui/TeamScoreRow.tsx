@@ -59,7 +59,7 @@ export default function TeamScoreRow({
 
   const setsCount = visibleSets ?? scores.length;
 
-  const scoresCols = `repeat(${setsCount}, var(--team-score-cell-width-rem)` + ')' ;
+  const scoresCols = `repeat(${setsCount}, var(--team-score-cell-width-rem)` + ')';
   const gapVar = 'var(--team-score-cell-gap-rem)';
   const abSlot = 'var(--team-score-ab-slot-width-rem)';
   const gridTemplate = showAbSlot
@@ -84,7 +84,7 @@ export default function TeamScoreRow({
             <span className={forfeited ? 'text-[10px] font-bold' : 'text-[10px] font-normal text-muted-foreground'}>AB</span>
           </button>
           <div className="flex space-x-1">
-            {scores.slice(0, visibleSets ?? 3).map((setScore, setIndex) => (
+            {scores.slice(0, setsCount).map((setScore, setIndex) => (
               <input
                 key={setIndex}
                 type="tel"
@@ -111,9 +111,22 @@ export default function TeamScoreRow({
         >
           {Array.from({ length: setsCount }).map((_, i) => {
             const isWinner = winnerSide !== undefined && winnerSide === teamIndex;
+            let displayValue = scores[i] || '';
+            if (
+              i === 2 &&
+              team &&
+              (team as any).scores &&
+              (team as any).scores.length > 2 &&
+              ((teamIndex === 0 && (team as any).scores[2].tieBreakTeamA != null) ||
+                (teamIndex === 1 && (team as any).scores[2].tieBreakTeamB != null))
+            ) {
+              displayValue = teamIndex === 0
+                ? (team as any).scores[2].tieBreakTeamA?.toString() || ''
+                : (team as any).scores[2].tieBreakTeamB?.toString() || '';
+            }
             return (
               <div key={`score-${i}`} className={`text-center tabular-nums text-base leading-none ${isWinner ? 'font-bold' : 'font-semibold'} team-score-justify-center`}>
-                {scores[i] || ''}
+                {displayValue}
               </div>
             );
           })}

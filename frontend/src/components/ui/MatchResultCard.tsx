@@ -81,8 +81,21 @@ export default function MatchResultCard({
   const [scores, setScores] = useState<string[][]>(() => {
     const initialScores: string[][] = [[], []];
     for (let i = 0; i < 3; i++) {
-      initialScores[0][i] = score?.sets[i]?.teamAScore?.toString() || '';
-      initialScores[1][i] = score?.sets[i]?.teamBScore?.toString() || '';
+      if (
+        i === 2 &&
+        score?.sets?.[2] &&
+        (score.sets[2] as any).tieBreakTeamA != null &&
+        (score.sets[2] as any).tieBreakTeamB != null
+      ) {
+        initialScores[0][i] = (score.sets[2] as any).tieBreakTeamA.toString();
+        initialScores[1][i] = (score.sets[2] as any).tieBreakTeamB.toString();
+      } else if (i === 2 && score?.tieBreakPointA != null && score?.tieBreakPointB != null) {
+        initialScores[0][i] = score.tieBreakPointA.toString();
+        initialScores[1][i] = score.tieBreakPointB.toString();
+      } else {
+        initialScores[0][i] = score?.sets[i]?.teamAScore?.toString() || '';
+        initialScores[1][i] = score?.sets[i]?.teamBScore?.toString() || '';
+      }
     }
     return initialScores;
   });
@@ -90,8 +103,21 @@ export default function MatchResultCard({
   const [initialScores, setInitialScores] = useState<string[][]>(() => {
     const initial: string[][] = [[], []];
     for (let i = 0; i < 3; i++) {
-      initial[0][i] = score?.sets[i]?.teamAScore?.toString() || '';
-      initial[1][i] = score?.sets[i]?.teamBScore?.toString() || '';
+      if (
+        i === 2 &&
+        score?.sets?.[2] &&
+        (score.sets[2] as any).tieBreakTeamA != null &&
+        (score.sets[2] as any).tieBreakTeamB != null
+      ) {
+        initial[0][i] = (score.sets[2] as any).tieBreakTeamA.toString();
+        initial[1][i] = (score.sets[2] as any).tieBreakTeamB.toString();
+      } else if (i === 2 && score?.tieBreakPointA != null && score?.tieBreakPointB != null) {
+        initial[0][i] = score.tieBreakPointA.toString();
+        initial[1][i] = score.tieBreakPointB.toString();
+      } else {
+        initial[0][i] = score?.sets[i]?.teamAScore?.toString() || '';
+        initial[1][i] = score?.sets[i]?.teamBScore?.toString() || '';
+      }
     }
     return initial;
   });
@@ -101,21 +127,29 @@ export default function MatchResultCard({
   const prevScoreSerializedRef = React.useRef<string | null>(null);
   React.useEffect(() => {
     const serialized = JSON.stringify(score || null);
-    // If we're editing, don't resync now
     if (editing) {
-      // but still update the prev serialized so after save we won't resync to an older value
       prevScoreSerializedRef.current = serialized;
       return;
     }
-
     if (prevScoreSerializedRef.current === serialized) return;
-
     prevScoreSerializedRef.current = serialized;
-
     const newScores: string[][] = [[], []];
     for (let i = 0; i < 3; i++) {
-      newScores[0][i] = score?.sets[i]?.teamAScore?.toString() || '';
-      newScores[1][i] = score?.sets[i]?.teamBScore?.toString() || '';
+      if (
+        i === 2 &&
+        score?.sets?.[2] &&
+        (score.sets[2] as any).tieBreakTeamA != null &&
+        (score.sets[2] as any).tieBreakTeamB != null
+      ) {
+        newScores[0][i] = (score.sets[2] as any).tieBreakTeamA.toString();
+        newScores[1][i] = (score.sets[2] as any).tieBreakTeamB.toString();
+      } else if (i === 2 && score?.tieBreakPointA != null && score?.tieBreakPointB != null) {
+        newScores[0][i] = score.tieBreakPointA.toString();
+        newScores[1][i] = score.tieBreakPointB.toString();
+      } else {
+        newScores[0][i] = score?.sets[i]?.teamAScore?.toString() || '';
+        newScores[1][i] = score?.sets[i]?.teamBScore?.toString() || '';
+      }
     }
     setScores(newScores);
     setInitialScores(newScores.map(arr => [...arr]));
@@ -167,14 +201,21 @@ export default function MatchResultCard({
     const sets = scores[0].map((_, i) => {
       const teamAStr = scores[0][i];
       const teamBStr = scores[1][i];
-
       if ((teamAStr === '' || teamAStr === undefined) && (teamBStr === '' || teamBStr === undefined)) {
         return null;
       }
-
+      // Pour le 3e set, si on détecte un super tie-break (score > 7), on place les points dans tieBreakTeamA/tieBreakTeamB
+      if (i === 2 && (Number(teamAStr) > 7 || Number(teamBStr) > 7)) {
+        return {
+          teamAScore: 0, // ou 1 si tu veux, mais il faut un score non null
+          teamBScore: 0,
+          tieBreakTeamA: teamAStr === '' ? null : parseInt(teamAStr, 10),
+          tieBreakTeamB: teamBStr === '' ? null : parseInt(teamBStr, 10)
+        };
+      }
       return {
         teamAScore: teamAStr === '' ? null : parseInt(teamAStr, 10),
-        teamBScore: teamBStr === '' ? null : parseInt(teamBStr, 10),
+        teamBScore: teamBStr === '' ? null : parseInt(teamBStr, 10)
       };
     }).filter(set => set !== null);
 
@@ -229,34 +270,55 @@ export default function MatchResultCard({
           const apiScore = result.score as Score;
           const appliedScores: string[][] = [[], []];
           for (let i = 0; i < 3; i++) {
-            appliedScores[0][i] = apiScore.sets?.[i]?.teamAScore?.toString() || '';
-            appliedScores[1][i] = apiScore.sets?.[i]?.teamBScore?.toString() || '';
+            if (
+              i === 2 &&
+              apiScore.sets?.[2] &&
+              (apiScore.sets[2] as any).tieBreakTeamA != null &&
+              (apiScore.sets[2] as any).tieBreakTeamB != null
+            ) {
+              appliedScores[0][i] = (apiScore.sets[2] as any).tieBreakTeamA.toString();
+              appliedScores[1][i] = (apiScore.sets[2] as any).tieBreakTeamB.toString();
+            } else if (i === 2 && apiScore.tieBreakPointA != null && apiScore.tieBreakPointB != null) {
+              appliedScores[0][i] = apiScore.tieBreakPointA.toString();
+              appliedScores[1][i] = apiScore.tieBreakPointB.toString();
+            } else {
+              appliedScores[0][i] = apiScore.sets?.[i]?.teamAScore?.toString() || '';
+              appliedScores[1][i] = apiScore.sets?.[i]?.teamBScore?.toString() || '';
+            }
           }
           setScores(appliedScores);
           setInitialScores(appliedScores.map(arr => [...arr]));
           setIsForfeit(apiScore.forfeit || false);
           setForfeitedBy(apiScore.forfeitedBy || null);
-          // update prev serialized to the api value so the resync effect won't overwrite it
           prevScoreSerializedRef.current = JSON.stringify(apiScore || null);
-
-          // notify other components (lists) that the game was updated
           try {
             if (typeof window !== 'undefined') {
               window.dispatchEvent(new CustomEvent('game-updated', { detail: { gameId, score: apiScore } }));
             }
           } catch (e) { /* ignore */ }
         } catch (e) {
-          // ignore parsing/apply errors
           console.error('Apply API score error', e);
         }
       } else {
-        // If API didn't return the score, use the payload we sent to reflect changes immediately
         try {
           const payloadScore = scorePayload as Score;
           const appliedScores: string[][] = [[], []];
           for (let i = 0; i < 3; i++) {
-            appliedScores[0][i] = payloadScore.sets?.[i]?.teamAScore?.toString() || '';
-            appliedScores[1][i] = payloadScore.sets?.[i]?.teamBScore?.toString() || '';
+            if (
+              i === 2 &&
+              payloadScore.sets?.[2] &&
+              (payloadScore.sets[2] as any).tieBreakTeamA != null &&
+              (payloadScore.sets[2] as any).tieBreakTeamB != null
+            ) {
+              appliedScores[0][i] = (payloadScore.sets[2] as any).tieBreakTeamA.toString();
+              appliedScores[1][i] = (payloadScore.sets[2] as any).tieBreakTeamB.toString();
+            } else if (i === 2 && payloadScore.tieBreakPointA != null && payloadScore.tieBreakPointB != null) {
+              appliedScores[0][i] = payloadScore.tieBreakPointA.toString();
+              appliedScores[1][i] = payloadScore.tieBreakPointB.toString();
+            } else {
+              appliedScores[0][i] = payloadScore.sets?.[i]?.teamAScore?.toString() || '';
+              appliedScores[1][i] = payloadScore.sets?.[i]?.teamBScore?.toString() || '';
+            }
           }
           setScores(appliedScores);
           setInitialScores(appliedScores.map(arr => [...arr]));
@@ -554,4 +616,3 @@ export default function MatchResultCard({
     </div>
   );
 }
-

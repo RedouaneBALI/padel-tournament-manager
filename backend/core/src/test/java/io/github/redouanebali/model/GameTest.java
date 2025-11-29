@@ -48,11 +48,20 @@ class GameTest {
 
     Score    score     = new Score();
     String[] setScores = scores.split(",");
-    for (String set : setScores) {
+    for (int i = 0; i < setScores.length; i++) {
+      String   set        = setScores[i];
       String[] parts      = set.split("-");
       int      teamAScore = Integer.parseInt(parts[0]);
       int      teamBScore = Integer.parseInt(parts[1]);
-      score.addSetScore(teamAScore, teamBScore);
+      SetScore setScore   = new SetScore(teamAScore, teamBScore);
+      // If super tie-break, set tieBreakTeamA/tieBreakTeamB
+      if (superTieBreakInFinalSet && i == setScores.length - 1 && setScores.length == 3 && (teamAScore >= 7 || teamBScore >= 7)) {
+        setScore.setTieBreakTeamA(teamAScore);
+        setScore.setTieBreakTeamB(teamBScore);
+        setScore.setTeamAScore(0);
+        setScore.setTeamBScore(1); // 1 for winner, 0 for loser
+      }
+      score.getSets().add(setScore);
     }
     game.setScore(score);
     assertEquals(expectedComplete, game.isFinished());
@@ -88,11 +97,20 @@ class GameTest {
 
     Score    score     = new Score();
     String[] setScores = scores.split(",");
-    for (String set : setScores) {
+    for (int i = 0; i < setScores.length; i++) {
+      String   set        = setScores[i];
       String[] parts      = set.split("-");
       int      teamAScore = Integer.parseInt(parts[0]);
       int      teamBScore = Integer.parseInt(parts[1]);
-      score.addSetScore(teamAScore, teamBScore);
+      SetScore setScore   = new SetScore(teamAScore, teamBScore);
+      // If super tie-break, set tieBreakTeamA/tieBreakTeamB
+      if (superTieBreakInFinalSet && i == setScores.length - 1 && setScores.length == 3 && (teamAScore >= 7 || teamBScore >= 7)) {
+        setScore.setTieBreakTeamA(teamAScore);
+        setScore.setTieBreakTeamB(teamBScore);
+        setScore.setTeamAScore(0);
+        setScore.setTeamBScore(1); // 1 for winner, 0 for loser
+      }
+      score.getSets().add(setScore);
     }
     game.setScore(score);
 
@@ -169,10 +187,22 @@ class GameTest {
     game.setTeamA(new PlayerPair());
     game.setTeamB(new PlayerPair());
 
-    Score score = new Score();
-    for (String set : scoreString.split(",")) {
-      String[] parts = set.trim().split("-");
-      score.addSetScore(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+    Score    score     = new Score();
+    String[] setScores = scoreString.split(",");
+    for (int i = 0; i < setScores.length; i++) {
+      String   set        = setScores[i].trim();
+      String[] parts      = set.split("-");
+      int      teamAScore = Integer.parseInt(parts[0]);
+      int      teamBScore = Integer.parseInt(parts[1]);
+      SetScore setScore   = new SetScore(teamAScore, teamBScore);
+      // If super tie-break, set tieBreakTeamA/tieBreakTeamB
+      if (isSuperTieBreakInFinalSet && i == setScores.length - 1 && setScores.length == 3 && (teamAScore >= 7 || teamBScore >= 7)) {
+        setScore.setTieBreakTeamA(teamAScore);
+        setScore.setTieBreakTeamB(teamBScore);
+        setScore.setTeamAScore(0);
+        setScore.setTeamBScore(1); // 1 for winner, 0 for loser
+      }
+      score.getSets().add(setScore);
     }
     game.setScore(score);
 
@@ -239,10 +269,22 @@ class GameTest {
     game.setTeamB(teamB);
     game.setFormat(format);
 
-    Score score = new Score();
-    for (String set : scoreString.split(",")) {
-      String[] parts = set.trim().split("-");
-      score.addSetScore(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+    Score    score     = new Score();
+    String[] setScores = scoreString.split(",");
+    for (int i = 0; i < setScores.length; i++) {
+      String   set        = setScores[i].trim();
+      String[] parts      = set.split("-");
+      int      teamAScore = Integer.parseInt(parts[0]);
+      int      teamBScore = Integer.parseInt(parts[1]);
+      SetScore setScore   = new SetScore(teamAScore, teamBScore);
+      // If super tie-break, set tieBreakTeamA/tieBreakTeamB
+      if (isSuperTieBreakInFinalSet && i == setScores.length - 1 && setScores.length == 3 && (teamAScore >= 7 || teamBScore >= 7)) {
+        setScore.setTieBreakTeamA(teamAScore);
+        setScore.setTieBreakTeamB(teamBScore);
+        setScore.setTeamAScore(0);
+        setScore.setTeamBScore(1); // 1 for winner, 0 for loser
+      }
+      score.getSets().add(setScore);
     }
     game.setScore(score);
 
@@ -499,6 +541,271 @@ class GameTest {
     game.setScore(normalScore);
 
     assertEquals(teamB, game.getWinner(), "Team B should win if Team A is marked as forfeiter");
+  }
+
+  @Test
+  void testSuperTieBreakWinner() {
+    PlayerPair teamA = new PlayerPair(new Player("A1"), new Player("A2"), 1);
+    PlayerPair teamB = new PlayerPair(new Player("B1"), new Player("B2"), 2);
+    Game       game  = new Game(new MatchFormat(1L, 2, 6, true, false));
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+    Score score = new Score();
+    score.addSetScore(6, 0); // A wins first set
+    score.addSetScore(0, 6); // B wins second set
+    SetScore superTie = new SetScore(0, 1); // B wins super tie-break
+    superTie.setTieBreakTeamA(4);
+    superTie.setTieBreakTeamB(10);
+    score.getSets().add(superTie);
+    game.setScore(score);
+    assertTrue(game.isFinished());
+    assertEquals(teamB, game.getWinner());
+    // Now test for teamA win
+    Game game2 = new Game(new MatchFormat(1L, 2, 6, true, false));
+    game2.setTeamA(teamA);
+    game2.setTeamB(teamB);
+    Score score2 = new Score();
+    score2.addSetScore(6, 0);
+    score2.addSetScore(0, 6);
+    SetScore superTie2 = new SetScore(1, 0);
+    superTie2.setTieBreakTeamA(10);
+    superTie2.setTieBreakTeamB(4);
+    score2.getSets().add(superTie2);
+    game2.setScore(score2);
+    assertTrue(game2.isFinished());
+    assertEquals(teamA, game2.getWinner());
+  }
+
+  @ParameterizedTest
+  @CsvSource(value = {
+      // Format: setScores|tieBreakA|tieBreakB|expectedWinnerSide
+      "6-0,0-6,0-1|0|10|TEAM_B",
+      "6-0,0-6,1-0|10|0|TEAM_A",
+      "6-0,0-6,0-1|0|11|TEAM_B",
+      "6-0,0-6,1-0|11|0|TEAM_A",
+      "6-0,0-6,0-1|0|15|TEAM_B",
+      "6-0,0-6,1-0|15|0|TEAM_A",
+      // Edge: not finished
+      "6-0,0-6,0-0|0|0|null",
+      "6-0,0-6,0-1|0|9|null",
+      "6-0,0-6,1-0|9|0|null"
+  }, delimiter = '|')
+  void testWinnerSideIsSetForSuperTieBreakWin_param(String setScores, String tieBreakA, String tieBreakB, String expectedWinnerSide) {
+    PlayerPair  teamA  = new PlayerPair(new Player("A1"), new Player("A2"), 1);
+    PlayerPair  teamB  = new PlayerPair(new Player("B1"), new Player("B2"), 2);
+    MatchFormat format = new MatchFormat(1L, 2, 6, true, false); // 2 sets to win, super tie-break in final set
+    Game        game   = new Game(format);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+    Score    score = new Score();
+    String[] sets  = setScores.split(",");
+    for (String set : sets) {
+      String[] ab = set.split("-");
+      int      a  = Integer.parseInt(ab[0]);
+      int      b  = Integer.parseInt(ab[1]);
+      score.getSets().add(new SetScore(a, b));
+    }
+    // Set tie-break points for last set
+    int tieA = Integer.parseInt(tieBreakA);
+    int tieB = Integer.parseInt(tieBreakB);
+    score.getSets().get(score.getSets().size() - 1).setTieBreakTeamA(tieA);
+    score.getSets().get(score.getSets().size() - 1).setTieBreakTeamB(tieB);
+    game.setScore(score);
+    if ("TEAM_A".equals(expectedWinnerSide)) {
+      assertEquals(TeamSide.TEAM_A, game.getWinnerSide());
+    } else if ("TEAM_B".equals(expectedWinnerSide)) {
+      assertEquals(TeamSide.TEAM_B, game.getWinnerSide());
+    } else {
+      assertNull(game.getWinnerSide());
+    }
+  }
+
+  @Test
+  void testSuperTieBreakWithZeroGamesButValidTieBreakScore() {
+    PlayerPair  teamA  = new PlayerPair(new Player("A1"), new Player("A2"), 1);
+    PlayerPair  teamB  = new PlayerPair(new Player("B1"), new Player("B2"), 2);
+    MatchFormat format = new MatchFormat(1L, 2, 6, true, false);
+    Game        game   = new Game(format);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+    Score score = new Score();
+    score.addSetScore(6, 0);
+    score.addSetScore(0, 6);
+    SetScore superTie = new SetScore(0, 0); // games = 0-0
+    superTie.setTieBreakTeamA(4);
+    superTie.setTieBreakTeamB(10); // teamB wins
+    score.getSets().add(superTie);
+    game.setScore(score);
+    assertTrue(game.isFinished(), "Game should be finished when super tie-break is won, even if games are 0-0");
+    assertEquals(teamB, game.getWinner(), "Team B should be the winner");
+    assertEquals(TeamSide.TEAM_B, game.getWinnerSide(), "Winner side should be TEAM_B");
+  }
+
+  @Test
+  void testSuperTieBreakWithZeroOneGamesAndValidTieBreakScore() {
+    PlayerPair  teamA  = new PlayerPair(new Player("A1"), new Player("A2"), 1);
+    PlayerPair  teamB  = new PlayerPair(new Player("B1"), new Player("B2"), 2);
+    MatchFormat format = new MatchFormat(1L, 2, 6, true, false);
+    Game        game   = new Game(format);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+    Score score = new Score();
+    score.addSetScore(6, 0);
+    score.addSetScore(0, 6);
+    SetScore superTie = new SetScore(0, 1); // games = 0-1
+    superTie.setTieBreakTeamA(1);
+    superTie.setTieBreakTeamB(10); // teamB wins
+    score.getSets().add(superTie);
+    game.setScore(score);
+    assertTrue(game.isFinished(), "Game should be finished when super tie-break is won, even if games are 0-1");
+    assertEquals(teamB, game.getWinner(), "Team B should be the winner");
+    assertEquals(TeamSide.TEAM_B, game.getWinnerSide(), "Winner side should be TEAM_B");
+  }
+
+  @Test
+  void testSuperTieBreakWithOneZeroGamesAndValidTieBreakScore_TeamA() {
+    PlayerPair  teamA  = new PlayerPair(new Player("A1"), new Player("A2"), 1);
+    PlayerPair  teamB  = new PlayerPair(new Player("B1"), new Player("B2"), 2);
+    MatchFormat format = new MatchFormat(1L, 2, 6, true, false);
+    Game        game   = new Game(format);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+    Score score = new Score();
+    score.addSetScore(6, 0);
+    score.addSetScore(2, 6);
+    SetScore superTie = new SetScore(1, 0); // games = 1-0
+    superTie.setTieBreakTeamA(10);
+    superTie.setTieBreakTeamB(2); // teamA wins
+    score.getSets().add(superTie);
+    game.setScore(score);
+    assertTrue(game.isFinished(), "Game should be finished when super tie-break is won, even if games are 1-0");
+    assertEquals(teamA, game.getWinner(), "Team A should be the winner");
+    assertEquals(TeamSide.TEAM_A, game.getWinnerSide(), "Winner side should be TEAM_A");
+  }
+
+  @Test
+  void testSuperTieBreakWithZeroZeroGamesAndValidTieBreakScore() {
+    PlayerPair  teamA  = new PlayerPair(new Player("A1"), new Player("A2"), 1);
+    PlayerPair  teamB  = new PlayerPair(new Player("B1"), new Player("B2"), 2);
+    MatchFormat format = new MatchFormat(1L, 2, 6, true, false);
+    Game        game   = new Game(format);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+    Score score = new Score();
+    score.addSetScore(6, 0);
+    score.addSetScore(0, 6);
+    SetScore superTie = new SetScore(0, 0); // games = 0-0
+    superTie.setTieBreakTeamA(10);
+    superTie.setTieBreakTeamB(4); // teamA wins
+    score.getSets().add(superTie);
+    game.setScore(score);
+    assertTrue(game.isFinished(), "Game should be finished when super tie-break is won, even if games are 0-0");
+    assertEquals(teamA, game.getWinner(), "Team A should be the winner");
+    assertEquals(TeamSide.TEAM_A, game.getWinnerSide(), "Winner side should be TEAM_A");
+  }
+
+  @Test
+  void testSuperTieBreakWithZeroZeroGamesAndValidTieBreakScore_realFrontCase() {
+    PlayerPair  teamA  = new PlayerPair(new Player("A1"), new Player("A2"), 1);
+    PlayerPair  teamB  = new PlayerPair(new Player("B1"), new Player("B2"), 2);
+    MatchFormat format = new MatchFormat(1L, 2, 6, true, false);
+    Game        game   = new Game(format);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+    Score score = new Score();
+    score.addSetScore(6, 2);
+    score.addSetScore(2, 6);
+    SetScore superTie = new SetScore(0, 0); // games = 0-0
+    superTie.setTieBreakTeamA(10);
+    superTie.setTieBreakTeamB(4); // teamA wins
+    score.getSets().add(superTie);
+    game.setScore(score);
+    assertTrue(game.isFinished(), "Game should be finished when super tie-break is won, even if games are 0-0");
+    assertEquals(teamA, game.getWinner(), "Team A should be the winner");
+    assertEquals(TeamSide.TEAM_A, game.getWinnerSide(), "Winner side should be TEAM_A");
+  }
+
+  @Test
+  void testSuperTieBreakWithZeroZeroGamesAndValidTieBreakScore_realFrontCase_variant() {
+    PlayerPair  teamA  = new PlayerPair(new Player("A1"), new Player("A2"), 1);
+    PlayerPair  teamB  = new PlayerPair(new Player("B1"), new Player("B2"), 2);
+    MatchFormat format = new MatchFormat(1L, 2, 6, true, false);
+    Game        game   = new Game(format);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+    Score score = new Score();
+    score.addSetScore(6, 2);
+    score.addSetScore(2, 6);
+    SetScore superTie = new SetScore(0, 0); // games = 0-0
+    superTie.setTieBreakTeamA(4);
+    superTie.setTieBreakTeamB(10); // teamB wins
+    score.getSets().add(superTie);
+    game.setScore(score);
+    assertTrue(game.isFinished(), "Game should be finished when super tie-break is won, even if games are 0-0");
+    assertEquals(teamB, game.getWinner(), "Team B should be the winner");
+    assertEquals(TeamSide.TEAM_B, game.getWinnerSide(), "Winner side should be TEAM_B");
+  }
+
+  @Test
+  void testSuperTieBreakWithZeroZeroGamesAndValidTieBreakScore_realFrontCase_teamB() {
+    PlayerPair  teamA  = new PlayerPair(new Player("A1"), new Player("A2"), 1);
+    PlayerPair  teamB  = new PlayerPair(new Player("B1"), new Player("B2"), 2);
+    MatchFormat format = new MatchFormat(1L, 2, 6, true, false);
+    Game        game   = new Game(format);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+    Score score = new Score();
+    score.addSetScore(6, 2);
+    score.addSetScore(2, 6);
+    SetScore superTie = new SetScore(0, 0); // games = 0-0
+    superTie.setTieBreakTeamA(4);
+    superTie.setTieBreakTeamB(10); // teamB wins
+    score.getSets().add(superTie);
+    game.setScore(score);
+    assertTrue(game.isFinished(), "Game should be finished when super tie-break is won, even if games are 0-0");
+    assertEquals(teamB, game.getWinner(), "Team B should be the winner");
+    assertEquals(TeamSide.TEAM_B, game.getWinnerSide(), "Winner side should be TEAM_B");
+  }
+
+  @Test
+  void testSuperTieBreakWithZeroZeroGamesAndInvalidTieBreakScore_notFinished() {
+    PlayerPair  teamA  = new PlayerPair(new Player("A1"), new Player("A2"), 1);
+    PlayerPair  teamB  = new PlayerPair(new Player("B1"), new Player("B2"), 2);
+    MatchFormat format = new MatchFormat(1L, 2, 6, true, false);
+    Game        game   = new Game(format);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+    Score score = new Score();
+    score.addSetScore(6, 2);
+    score.addSetScore(2, 6);
+    SetScore superTie = new SetScore(0, 0); // games = 0-0
+    superTie.setTieBreakTeamA(7);
+    superTie.setTieBreakTeamB(6); // not enough for win
+    score.getSets().add(superTie);
+    game.setScore(score);
+    assertFalse(game.isFinished(), "Game should not be finished if tie-break is not won");
+    assertNull(game.getWinner(), "No winner should be set");
+    assertNull(game.getWinnerSide(), "Winner side should be null");
+  }
+
+  @Test
+  void testSuperTieBreakWithZeroZeroGamesAndNoTieBreakScore_notFinished() {
+    PlayerPair  teamA  = new PlayerPair(new Player("A1"), new Player("A2"), 1);
+    PlayerPair  teamB  = new PlayerPair(new Player("B1"), new Player("B2"), 2);
+    MatchFormat format = new MatchFormat(1L, 2, 6, true, false);
+    Game        game   = new Game(format);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+    Score score = new Score();
+    score.addSetScore(6, 2);
+    score.addSetScore(2, 6);
+    SetScore superTie = new SetScore(0, 0); // games = 0-0
+    // No tieBreakTeamA or tieBreakTeamB set
+    score.getSets().add(superTie);
+    game.setScore(score);
+    assertFalse(game.isFinished(), "Game should not be finished if tie-break is not set");
+    assertNull(game.getWinner(), "No winner should be set");
+    assertNull(game.getWinnerSide(), "Winner side should be null");
   }
 
 }

@@ -121,7 +121,7 @@ public class PublicTournamentController {
     for (var round : tournament.getRounds()) {
       for (var game : round.getGames()) {
         if (game.getId() != null && game.getId().equals(gameId)) {
-          GameDTO gameDTO = tournamentMapper.toDTOWithRound(game, round);
+          GameDTO gameDTO = tournamentMapper.toDTOWithLightRound(game, round);
           return ResponseEntity.ok(gameDTO);
         }
       }

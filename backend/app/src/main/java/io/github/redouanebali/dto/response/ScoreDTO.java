@@ -10,4 +10,8 @@ public class ScoreDTO {
   private List<SetScoreDTO> sets;
   private boolean           forfeit;
   private TeamSide          forfeitedBy;
+  private String            currentGamePointA;
+  private String            currentGamePointB;
+  private Integer           tieBreakPointA;
+  private Integer           tieBreakPointB;
 }

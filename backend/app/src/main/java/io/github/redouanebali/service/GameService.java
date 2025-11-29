@@ -1,7 +1,9 @@
 package io.github.redouanebali.service;
 
 import io.github.redouanebali.dto.request.UpdateGameRequest;
+import io.github.redouanebali.dto.response.ScoreDTO;
 import io.github.redouanebali.dto.response.UpdateScoreDTO;
+import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.TeamSide;
@@ -18,56 +20,27 @@ public class GameService {
   private final TournamentRepository  tournamentRepository;
   private final TournamentService     tournamentService;
   private final DrawGenerationService drawGenerationService;
+  private final TournamentMapper      tournamentMapper;
+  private final GamePointManager      gamePointManager = new GamePointManager();
 
+  // --- EXISTING METHODS (UNCHANGED) ---
 
-  /**
-   * Updates the score of a specific game and propagates winners if the game is finished. Saves the tournament after the update.
-   *
-   * @param tournamentId the tournament ID
-   * @param gameId the game ID to update
-   * @param score the new score to set
-   * @return update result containing finish status and winner information
-   * @throws IllegalArgumentException if tournament or game is not found
-   */
   @Transactional
   public UpdateScoreDTO updateGameScore(Long tournamentId, Long gameId, Score score) {
+    Game       game       = findGameInTournament(tournamentId, gameId);
     Tournament tournament = tournamentService.getTournamentById(tournamentId);
-    Game       game       = findGameInTournament(tournament, gameId);
-
     return updateScoreAndPropagate(game, tournament, score);
   }
 
-  /**
-   * Updates a game's complete information including score, scheduled time, and court. Propagates winners if the game becomes finished after the
-   * update.
-   *
-   * @param tournamentId the tournament ID
-   * @param gameId the game ID to update
-   * @param request the update request containing score, time, and court information
-   * @return update result containing finish status and winner information
-   * @throws IllegalArgumentException if tournament or game is not found
-   */
   @Transactional
   public UpdateScoreDTO updateGame(Long tournamentId, Long gameId, UpdateGameRequest request) {
+    Game       game       = findGameInTournament(tournamentId, gameId);
     Tournament tournament = tournamentService.getTournamentById(tournamentId);
-    Game       game       = findGameInTournament(tournament, gameId);
-
-    // Update time and court
     game.setScheduledTime(request.getScheduledTime());
     game.setCourt(request.getCourt());
-
     return updateScoreAndPropagate(game, tournament, request.getScore());
   }
 
-  /**
-   * Updates a game's score and propagates winners through the tournament if the game is finished. This is a common method used by both score-only and
-   * full game updates.
-   *
-   * @param game the game to update
-   * @param tournament the tournament containing the game
-   * @param score the new score to set
-   * @return update result with finish status and winner side information
-   */
   private UpdateScoreDTO updateScoreAndPropagate(Game game, Tournament tournament, Score score) {
     try {
       game.setScore(score);
@@ -79,23 +52,16 @@ public class GameService {
       }
 
       tournamentRepository.save(tournament);
-      return new UpdateScoreDTO(game.isFinished(), winner);
+      ScoreDTO scoreDTO = tournamentMapper.toDTO(game.getScore());
+      return new UpdateScoreDTO(game.isFinished(), winner, scoreDTO);
     } catch (Exception e) {
       throw new RuntimeException("Failed to update game score for tournament " + tournament.getId() +
                                  ", game " + game.getId() + ": " + e.getMessage(), e);
     }
   }
 
-
-  /**
-   * Finds a specific game within a tournament by its ID. Searches through all rounds and games in the tournament.
-   *
-   * @param tournament the tournament to search in
-   * @param gameId the ID of the game to find
-   * @return the found game
-   * @throws IllegalArgumentException if no game with the given ID is found
-   */
-  private Game findGameInTournament(Tournament tournament, Long gameId) {
+  public Game findGameInTournament(Long tournamentId, Long gameId) {
+    Tournament tournament = tournamentService.getTournamentById(tournamentId);
     return tournament.getRounds().stream()
                      .flatMap(round -> round.getGames().stream())
                      .filter(g -> g.getId().equals(gameId))
@@ -103,4 +69,15 @@ public class GameService {
                      .orElseThrow(() -> new IllegalArgumentException("Game not found with ID: " + gameId));
   }
 
+  @Transactional
+  public UpdateScoreDTO updateGamePoint(Long tournamentId, Long gameId, TeamSide teamSide, boolean increment, boolean withAdvantage) {
+    Game       game       = findGameInTournament(tournamentId, gameId);
+    Tournament tournament = tournamentService.getTournamentById(tournamentId);
+    gamePointManager.updateGamePoint(game, teamSide, increment, withAdvantage);
+    // Force winnerSide update
+    game.setScore(game.getScore());
+    tournamentRepository.save(tournament);
+    ScoreDTO scoreDTO = tournamentMapper.toDTO(game.getScore());
+    return new UpdateScoreDTO(true, game.getWinnerSide(), scoreDTO);
+  }
 }

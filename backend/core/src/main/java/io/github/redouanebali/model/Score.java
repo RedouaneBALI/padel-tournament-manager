@@ -41,6 +41,17 @@ public class Score {
   @Enumerated(EnumType.STRING)
   private TeamSide forfeitedBy;
 
+  // Current game points (live game score), can be null if not used
+  @Enumerated(EnumType.STRING)
+  private GamePoint currentGamePointA;
+
+  @Enumerated(EnumType.STRING)
+  private GamePoint currentGamePointB;
+
+  // Tie-break points (used only in tie-break or super tie-break games)
+  private Integer tieBreakPointA;
+  private Integer tieBreakPointB;
+
   public static Score fromString(String scoreStr) {
     Score score = new Score();
     if (scoreStr == null || scoreStr.isBlank()) {
@@ -117,12 +128,20 @@ public class Score {
                          .map(set -> set.getTeamAScore() + "-" + set.getTeamBScore())
                          .collect(Collectors.joining(" "));
 
+    String gamePoints = "";
+    // Display tie-break points if present (priority over GamePoint)
+    if (tieBreakPointA != null && tieBreakPointB != null) {
+      gamePoints = " (" + tieBreakPointA + "-" + tieBreakPointB + ")";
+    } else if (currentGamePointA != null && currentGamePointB != null) {
+      gamePoints = " (" + currentGamePointA.getDisplay() + "-" + currentGamePointB.getDisplay() + ")";
+    }
+
     if (forfeit) {
       String forfeitInfo = forfeitedBy != null ? " (Forfeit by " + forfeitedBy + ")" : " (Forfeit)";
       return setsStr.isEmpty() ? forfeitInfo.trim() : setsStr + forfeitInfo;
     }
 
-    return setsStr;
+    return setsStr + (gamePoints.isEmpty() ? "" : " " + gamePoints);
   }
 
 }
