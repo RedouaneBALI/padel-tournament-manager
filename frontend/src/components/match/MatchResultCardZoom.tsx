@@ -3,7 +3,8 @@ import type { Game, PlayerPair, TeamSide } from '@/src/types/game';
 import type { GamePoint } from '@/src/types/score';
 import { cn } from '@/src/lib/utils';
 import TeamRow from '@/src/components/ui/TeamRow';
-import { updateGamePoint, fetchMatchFormat } from '@/src/api/tournamentApi';
+import { incrementGamePoint, undoGamePoint, fetchMatchFormat } from '@/src/api/tournamentApi';
+import { Undo2 } from 'lucide-react';
 
 // Utilitaire pour formater les points
 function formatPoints(points: number) {
@@ -43,7 +44,7 @@ function TeamScoreRow({
   teamSide: TeamSide;
   mode: 'spectator' | 'admin';
   loading: boolean;
-  onPointChange: (teamSide: TeamSide, increment: boolean) => void;
+  onPointChange: (teamSide: TeamSide) => void;
   winnerSide?: number;
 }) {
   return (
@@ -80,18 +81,10 @@ function TeamScoreRow({
           <button
             className="btn btn-outline btn-xs w-8"
             disabled={loading || (typeof winnerSide !== 'undefined')}
-            onClick={() => onPointChange(teamSide, true)}
+            onClick={() => onPointChange(teamSide)}
             type="button"
           >
             +
-          </button>
-          <button
-            className="btn btn-outline btn-xs w-8"
-            disabled={loading}
-            onClick={() => onPointChange(teamSide, false)}
-            type="button"
-          >
-            -
           </button>
         </div>
       )}
@@ -114,6 +107,7 @@ export default function MatchResultCardZoom({
 }: MatchResultCardZoomProps) {
   const [currentGame, setCurrentGame] = useState<Game>(game);
   const [loading, setLoading] = useState<TeamSide | null>(null);
+  const [undoLoading, setUndoLoading] = useState(false);
   const [matchFormat, setMatchFormat] = useState<import('@/src/types/matchFormat').MatchFormat | null>(null);
 
   useEffect(() => {
@@ -131,25 +125,21 @@ export default function MatchResultCardZoom({
     loadFormat();
   }, [game.round?.stage, tournamentId]);
 
-  const handlePointChange = async (teamSide: TeamSide, increment: boolean) => {
+  const handlePointChange = async (teamSide: TeamSide) => {
     setLoading(teamSide);
-    // Sauvegarde l'état courant pour rollback en cas d'erreur
     const prevScore = currentGame.score;
     try {
-      const result = await updateGamePoint(
+      const result = await incrementGamePoint(
         tournamentId,
         game.id,
-        teamSide,
-        increment
+        teamSide
       );
-      // result doit contenir { tournamentUpdated, winner, score }
       if (result && result.score) {
         setCurrentGame((prev) => ({
           ...prev,
           score: result.score,
         }));
       }
-      // Optionnel : mettre à jour winnerSide si fourni
       if (result && typeof result.winner !== 'undefined') {
         setCurrentGame((prev) => ({
           ...prev,
@@ -163,6 +153,34 @@ export default function MatchResultCardZoom({
       }));
     } finally {
       setLoading(null);
+    }
+  };
+
+  // Ajout Undo global
+  const handleUndo = async () => {
+    setUndoLoading(true);
+    try {
+      const result = await undoGamePoint(
+        tournamentId,
+        game.id
+      );
+      if (result && result.score) {
+        setCurrentGame((prev) => ({
+          ...prev,
+          score: result.score,
+        }));
+      }
+      if (result && typeof result.winner !== 'undefined') {
+        setCurrentGame((prev) => ({
+          ...prev,
+          winnerSide: result.winner,
+        }));
+      }
+      if (onScoreUpdate) onScoreUpdate(currentGame);
+    } catch (e) {
+      // Optionnel : toast d'erreur
+    } finally {
+      setUndoLoading(false);
     }
   };
 
@@ -220,6 +238,18 @@ export default function MatchResultCardZoom({
             winnerSide={currentGame.winnerSide === 'TEAM_A' ? 0 : currentGame.winnerSide === 'TEAM_B' ? 1 : undefined}
           />
         </div>
+        {mode === 'admin' && (
+          <button
+            className="btn btn-outline btn-xs ml-4 flex items-center justify-center"
+            disabled={undoLoading}
+            onClick={handleUndo}
+            type="button"
+            aria-label="Undo last point"
+            title="Annuler le dernier point"
+          >
+            <Undo2 className="w-5 h-5" />
+          </button>
+        )}
       </div>
       {/* Détails supplémentaires (court, heure, etc.) si besoin */}
       <div className="flex justify-between text-xs text-muted-foreground">

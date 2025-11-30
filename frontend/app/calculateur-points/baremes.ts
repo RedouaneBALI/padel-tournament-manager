@@ -213,11 +213,11 @@ export const TOP_100_CONFIGS: Record<string, Top100TeamConfig> = {
     minTeams: 4,
     maxTeams: 8,
     options: [
-      { value: 8, label: '8 équipes Top 100 (100% des points)', multiplier: 1.0 },
-      { value: 7, label: '7 équipes Top 100 (90% des points)', multiplier: 0.9 },
-      { value: 6, label: '6 équipes Top 100 (80% des points)', multiplier: 0.8 },
-      { value: 5, label: '5 équipes Top 100 (70% des points)', multiplier: 0.7 },
-      { value: 4, label: '4 équipes Top 100 (60% des points)', multiplier: 0.6 },
+      { value: 8, label: '8 équipes Top 200 (100% des points)', multiplier: 1.0 },
+      { value: 7, label: '7 équipes Top 200 (90% des points)', multiplier: 0.9 },
+      { value: 6, label: '6 équipes Top 200 (80% des points)', multiplier: 0.8 },
+      { value: 5, label: '5 équipes Top 200 (70% des points)', multiplier: 0.7 },
+      { value: 4, label: '4 équipes Top 200 (60% des points)', multiplier: 0.6 },
     ],
   },
   P1000: {

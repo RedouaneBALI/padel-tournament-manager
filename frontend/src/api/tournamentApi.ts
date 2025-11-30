@@ -404,16 +404,37 @@ export async function fetchActiveTournaments() {
 /**
  * Incrémente ou décrémente le point en cours pour une équipe dans un match de tournoi (admin).
  */
-export async function updateGamePoint(tournamentId: string | number, gameId: string | number, teamSide: string, increment: boolean) {
-  const response = await fetchWithAuth(api(`/admin/tournaments/${tournamentId}/games/${gameId}/game-point`), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ teamSide, increment }),
+export async function incrementGamePoint(tournamentId: string | number, gameId: string | number, teamSide: string) {
+  return await patchGamePointEndpoint(
+    `/admin/tournaments/${tournamentId}/games/${gameId}/game-point`,
+    teamSide,
+    'Erreur lors de l\'incrémentation du point.'
+  );
+}
+
+/**
+ * Undoes the last game point for a team (admin).
+ * @param tournamentId
+ * @param gameId
+ */
+export async function undoGamePoint(tournamentId: string | number, gameId: string | number) {
+  return await patchGamePointEndpoint(
+    `/admin/tournaments/${tournamentId}/games/${gameId}/undo-game-point`,
+    undefined,
+    'Erreur lors de l\'annulation du point.'
+  );
+}
+
+// Internal helper to avoid code duplication
+async function patchGamePointEndpoint(endpoint: string, teamSide: string | undefined, errorMsg: string) {
+  const url = teamSide !== undefined ? api(endpoint) + `?teamSide=${encodeURIComponent(teamSide)}` : api(endpoint);
+  const response = await fetchWithAuth(url, {
+    method: 'PATCH',
   });
   if (!response.ok) {
     const text = await response.text().catch(() => '');
-    toast.error('Erreur lors de la mise à jour du point.');
-    throw new Error(`Erreur updateGamePoint (${response.status}) ${text}`);
+    toast.error(errorMsg);
+    throw new Error(`${errorMsg} (${response.status}) ${text}`);
   }
   return await response.json();
 }

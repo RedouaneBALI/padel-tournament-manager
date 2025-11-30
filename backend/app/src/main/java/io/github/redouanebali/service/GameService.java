@@ -82,10 +82,10 @@ public class GameService {
   }
 
   @Transactional
-  public UpdateScoreDTO undoGamePoint(Long tournamentId, Long gameId, TeamSide teamSide) {
+  public UpdateScoreDTO undoGamePoint(Long tournamentId, Long gameId) {
     Game       game       = findGameInTournament(tournamentId, gameId);
     Tournament tournament = tournamentService.getTournamentById(tournamentId);
-    gamePointManager.undoGamePoint(game, teamSide);
+    gamePointManager.undoGamePoint(game);
     // Force winnerSide update
     game.setScore(game.getScore());
     tournamentRepository.save(tournament);

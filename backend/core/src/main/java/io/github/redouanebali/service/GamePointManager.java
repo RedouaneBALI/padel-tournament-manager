@@ -6,8 +6,12 @@ import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.SetScore;
 import io.github.redouanebali.model.TeamSide;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GamePointManager {
+
+  private static final Logger log = LoggerFactory.getLogger(GamePointManager.class);
 
   public void updateGamePoint(Game game, TeamSide teamSide) {
     Score score = game.getScore();
@@ -15,6 +19,9 @@ public class GamePointManager {
       score = new Score();
       game.setScore(score);
     }
+    // Save history before any modification
+    log.debug("[updateGamePoint] Saving history. Current score: {}", score);
+    score.saveToHistory();
     if (score.getSets().isEmpty()) {
       score.getSets().add(new SetScore(0, 0));
     }
@@ -223,70 +230,14 @@ public class GamePointManager {
   }
 
   /**
-   * Undo the last game point for the given team side. This method is naive: it only decrements the last point (standard/tiebreak), does not handle
-   * full history. For robust undo, a stack of actions is needed.
+   * Undo the last score change. Restores the previous state using the score history.
    */
-  public void undoGamePoint(Game game, TeamSide teamSide) {
+  public void undoGamePoint(Game game) {
     Score score = game.getScore();
-    if (score == null || score.getSets().isEmpty()) {
-      return;
-    }
-    SetScore set             = score.getSets().get(score.getSets().size() - 1);
-    boolean  isSuperTieBreak = isSuperTieBreak(game);
-    boolean  isTieBreak      = !isSuperTieBreak && isTieBreak(game, set, score);
-    boolean  withAdvantage   = game.getFormat() != null && game.getFormat().isAdvantage();
-
-    if (isSuperTieBreak || isTieBreak) {
-      // Undo tiebreak point
-      if (teamSide == TeamSide.TEAM_A) {
-        Integer tbA = score.getTieBreakPointA();
-        if (tbA != null && tbA > 0) {
-          tbA = tbA - 1;
-          score.setTieBreakPointA(tbA == 0 ? null : tbA);
-        } else if (tbA != null && tbA == 0) {
-          score.setTieBreakPointA(null);
-        }
-      } else {
-        Integer tbB = score.getTieBreakPointB();
-        if (tbB != null && tbB > 0) {
-          tbB = tbB - 1;
-          score.setTieBreakPointB(tbB == 0 ? null : tbB);
-        } else if (tbB != null && tbB == 0) {
-          score.setTieBreakPointB(null);
-        }
-      }
-    } else {
-      // Undo standard game point
-      if (teamSide == TeamSide.TEAM_A) {
-        GamePoint pA = score.getCurrentGamePointA();
-        score.setCurrentGamePointA(prevGamePoint(pA, withAdvantage));
-      } else {
-        GamePoint pB = score.getCurrentGamePointB();
-        score.setCurrentGamePointB(prevGamePoint(pB, withAdvantage));
-      }
-    }
-  }
-
-  private GamePoint prevGamePoint(GamePoint current, boolean withAdvantage) {
-    if (current == null) {
-      return null;
-    }
-    if (withAdvantage) {
-      return switch (current) {
-        case AVANTAGE -> GamePoint.QUARANTE;
-        case QUARANTE -> GamePoint.TRENTE;
-        case TRENTE -> GamePoint.QUINZE;
-        case QUINZE -> GamePoint.ZERO;
-        case ZERO -> GamePoint.ZERO;
-      };
-    } else {
-      return switch (current) {
-        case QUARANTE -> GamePoint.TRENTE;
-        case TRENTE -> GamePoint.QUINZE;
-        case QUINZE -> GamePoint.ZERO;
-        case ZERO -> GamePoint.ZERO;
-        default -> null;
-      };
+    if (score != null) {
+      log.debug("[undoGamePoint] Undo requested. Current score: {} | Previous score: {}", score, score.getPreviousScore());
+      score.undo();
+      log.debug("[undoGamePoint] After undo. New current score: {} | New previous score: {}", score, score.getPreviousScore());
     }
   }
 }

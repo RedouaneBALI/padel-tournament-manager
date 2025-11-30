@@ -239,16 +239,16 @@ public class GamePointManagerTest {
   @CsvSource({
       // Format: currentA,currentB,side,expectedA,expectedB,isTieBreak
       "QUINZE,ZERO,TEAM_A,ZERO,ZERO,false",
-      "TRENTE,QUINZE,TEAM_B,TRENTE,ZERO,false",
+      "TRENTE,QUINZE,TEAM_B,QUINZE,ZERO,false",
       "QUARANTE,QUINZE,TEAM_A,TRENTE,QUINZE,false",
-      "QUARANTE,QUARANTE,TEAM_A,TRENTE,QUARANTE,false",
-      "AVANTAGE,QUARANTE,TEAM_B,AVANTAGE,TRENTE,false",
-      "QUARANTE,AVANTAGE,TEAM_A,TRENTE,AVANTAGE,false",
+      "QUARANTE,QUARANTE,TEAM_A,QUARANTE,QUARANTE,false",
+      "AVANTAGE,QUARANTE,TEAM_B,QUARANTE,QUARANTE,false",
+      "QUARANTE,AVANTAGE,TEAM_A,QUARANTE,QUARANTE,false",
       // Tie-break
-      "3,3,TEAM_A,2,3,true",
-      "3,3,TEAM_B,3,2,true",
-      "3,5,TEAM_A,2,5,true",
-      "5,3,TEAM_B,5,2,true"
+      "3,3,TEAM_A,3,3,true",
+      "3,3,TEAM_B,3,3,true",
+      "3,5,TEAM_A,3,5,true",
+      "5,3,TEAM_B,5,3,true"
   })
   void testUndoGamePointStandardAndTieBreak(String currentA, String currentB, String side, String expectedA, String expectedB, boolean isTieBreak) {
     Game        game   = new Game();
@@ -267,13 +267,68 @@ public class GamePointManagerTest {
       score.setCurrentGamePointB(currentB == null || currentB.isEmpty() ? null : GamePoint.valueOf(currentB));
     }
     game.setScore(score);
-    gamePointManager.undoGamePoint(game, TeamSide.valueOf(side));
+
+    // Inject previous score with expectedA/expectedB to simulate real undo
+    Score previous = new Score();
+    previous.getSets().add(new SetScore(0, 0));
     if (isTieBreak) {
-      assertEquals(Integer.parseInt(expectedA), game.getScore().getTieBreakPointA());
-      assertEquals(Integer.parseInt(expectedB), game.getScore().getTieBreakPointB());
+      previous.setTieBreakPointA(expectedA == null || expectedA.equals("null") ? null : Integer.parseInt(expectedA));
+      previous.setTieBreakPointB(expectedB == null || expectedB.equals("null") ? null : Integer.parseInt(expectedB));
     } else {
-      assertEquals(expectedA == null || expectedA.equals("null") ? null : GamePoint.valueOf(expectedA), game.getScore().getCurrentGamePointA());
-      assertEquals(expectedB == null || expectedB.equals("null") ? null : GamePoint.valueOf(expectedB), game.getScore().getCurrentGamePointB());
+      previous.setCurrentGamePointA(expectedA == null || expectedA.equals("null") ? null : GamePoint.valueOf(expectedA));
+      previous.setCurrentGamePointB(expectedB == null || expectedB.equals("null") ? null : GamePoint.valueOf(expectedB));
     }
+    score.setPreviousScore(previous);
+
+    GamePointManager manager = new GamePointManager();
+    manager.undoGamePoint(game);
+
+    if (isTieBreak) {
+      assertEquals(previous.getTieBreakPointA(), game.getScore().getTieBreakPointA());
+      assertEquals(previous.getTieBreakPointB(), game.getScore().getTieBreakPointB());
+    } else {
+      assertEquals(previous.getCurrentGamePointA(), game.getScore().getCurrentGamePointA());
+      assertEquals(previous.getCurrentGamePointB(), game.getScore().getCurrentGamePointB());
+    }
+  }
+
+  @Test
+  void testScoreHistoryIsSavedOnEachUpdate() {
+    GamePointManager manager = new GamePointManager();
+    Game             game    = new Game();
+    MatchFormat      format  = new MatchFormat();
+    format.setNumberOfSetsToWin(2);
+    format.setGamesPerSet(6);
+    game.setFormat(format);
+    Score score = new Score();
+    score.getSets().add(new SetScore(0, 0));
+    game.setScore(score);
+
+    // 1er point
+    manager.updateGamePoint(game, TeamSide.TEAM_A);
+    Score afterFirst = game.getScore().deepCopy();
+    // 2e point
+    manager.updateGamePoint(game, TeamSide.TEAM_A);
+    Score afterSecond = game.getScore().deepCopy();
+    // 3e point
+    manager.updateGamePoint(game, TeamSide.TEAM_B);
+    Score afterThird = game.getScore().deepCopy();
+
+    // On vérifie que previousScore n'est pas null après chaque update
+    assertEquals(afterThird, game.getScore());
+    assertEquals(afterSecond, game.getScore().getPreviousScore());
+    assertEquals(afterFirst, game.getScore().getPreviousScore().getPreviousScore());
+    // The very first previousScore is not null, but its content is a 'blank' score (0-0)
+    // So test for a blank score instead of null
+    Score blank = new Score();
+    blank.getSets().add(new SetScore(0, 0));
+    assertEquals(blank, game.getScore().getPreviousScore().getPreviousScore().getPreviousScore());
+
+    // Undo 1 fois
+    game.getScore().undo();
+    assertEquals(afterSecond, game.getScore());
+    // Undo 2 fois
+    game.getScore().undo();
+    assertEquals(afterFirst, game.getScore());
   }
 }

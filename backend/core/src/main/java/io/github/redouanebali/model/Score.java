@@ -8,10 +8,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderColumn;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -52,8 +54,9 @@ public class Score {
   private Integer tieBreakPointA;
   private Integer tieBreakPointB;
 
-  // Historique pour undo multi-niveaux (chaînage)
-  private transient Score previousScore;
+  @ManyToOne(cascade = CascadeType.ALL)
+  @JoinColumn(name = "previous_score_id")
+  private Score previousScore;
 
   public static Score fromString(String scoreStr) {
     Score score = new Score();
@@ -125,14 +128,17 @@ public class Score {
   }
 
   private void copyFrom(Score source) {
-    this.sets              = source.getSets().stream()
-                                   .map(s -> new SetScore(
-                                       s.getTeamAScore(),
-                                       s.getTeamBScore(),
-                                       s.getTieBreakTeamA(),
-                                       s.getTieBreakTeamB()
-                                   ))
-                                   .collect(Collectors.toList());
+    this.sets.clear();
+    this.sets.addAll(
+        source.getSets().stream()
+              .map(s -> new SetScore(
+                  s.getTeamAScore(),
+                  s.getTeamBScore(),
+                  s.getTieBreakTeamA(),
+                  s.getTieBreakTeamB()
+              ))
+              .toList()
+    );
     this.forfeit           = source.isForfeit();
     this.forfeitedBy       = source.getForfeitedBy();
     this.currentGamePointA = source.getCurrentGamePointA();
@@ -186,6 +192,29 @@ public class Score {
     }
 
     return setsStr + (gamePoints.isEmpty() ? "" : " " + gamePoints);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Score score = (Score) o;
+    return forfeit == score.forfeit &&
+           Objects.equals(sets, score.sets) &&
+           forfeitedBy == score.forfeitedBy &&
+           currentGamePointA == score.currentGamePointA &&
+           currentGamePointB == score.currentGamePointB &&
+           Objects.equals(tieBreakPointA, score.tieBreakPointA) &&
+           Objects.equals(tieBreakPointB, score.tieBreakPointB);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(sets, forfeit, forfeitedBy, currentGamePointA, currentGamePointB, tieBreakPointA, tieBreakPointB);
   }
 
 }

@@ -234,15 +234,13 @@ public class AdminTournamentController {
    *
    * @param tournamentId the tournament ID
    * @param gameId the game ID
-   * @param teamSide the team side to undo the point for
    * @return ResponseEntity containing the updated score DTO
    */
   @PatchMapping("/{tournamentId}/games/{gameId}/undo-game-point")
   public ResponseEntity<UpdateScoreDTO> undoGamePoint(@PathVariable Long tournamentId,
-                                                      @PathVariable Long gameId,
-                                                      @RequestParam TeamSide teamSide) {
+                                                      @PathVariable Long gameId) {
     checkOwnership(tournamentId);
-    return ResponseEntity.ok(gameService.undoGamePoint(tournamentId, gameId, teamSide));
+    return ResponseEntity.ok(gameService.undoGamePoint(tournamentId, gameId));
   }
 
   /**
