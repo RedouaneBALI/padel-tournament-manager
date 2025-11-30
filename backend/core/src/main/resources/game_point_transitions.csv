@@ -38,8 +38,8 @@ ZERO,ZERO,TEAM_B,true,false,true,false,6,6,0,6,6,7,,,,,TB Loss Clean: 0-7 -> Set
 ZERO,ZERO,TEAM_A,true,false,true,false,6,6,6,5,7,6,,,,,TB Win Standard: 7-5 -> Set 7-6
 ZERO,ZERO,TEAM_B,true,false,true,false,6,6,5,6,6,7,,,,,TB Loss Standard: 5-7 -> Set 6-7
 ZERO,ZERO,TEAM_A,true,false,true,false,6,6,6,6,6,6,7,6,,,TB Deep: 6-6 -> 7-6
-ZERO,ZERO,TEAM_A,true,false,true,false,6,6,7,6,7,6,8,6,,,TB Deep Lead: 7-6 -> 8-6 (Win)
-ZERO,ZERO,TEAM_A,true,false,true,false,6,6,8,6,7,6,,,,,TB Deep Win: 8-6 -> Set 7-6
+ZERO,ZERO,TEAM_A,true,false,true,false,6,6,7,7,6,6,8,7,,,TB Deep Lead: 7-7 -> 8-7 (Not Win)
+ZERO,ZERO,TEAM_A,true,false,true,false,6,6,7,6,7,6,,,,,TB Win Standard: 8-6 -> Set 7-6
 ZERO,ZERO,TEAM_A,true,false,true,false,6,6,12,12,6,6,13,12,,,TB Very Deep: 12-12 -> 13-12
 ZERO,ZERO,TEAM_A,true,false,true,false,6,6,13,12,7,6,,,,,TB Very Deep Win: 14-12 -> Set 7-6
 ZERO,ZERO,TEAM_A,true,false,false,true,0,0,0,0,0,0,1,0,,,STB Start: 0-0 -> 1-0

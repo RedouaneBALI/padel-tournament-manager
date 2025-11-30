@@ -26,11 +26,15 @@ public class GamePointManagerTest {
                                             GamePoint pointA,
                                             GamePoint pointB,
                                             String startTieBreakA,
-                                            String startTieBreakB) {
+                                            String startTieBreakB,
+                                            boolean withSuperTieBreak) {
     Game        game   = new Game();
     MatchFormat format = new MatchFormat();
     format.setNumberOfSetsToWin(2);
     format.setGamesPerSet(6);
+    if (withSuperTieBreak) {
+      format.setSuperTieBreakInFinalSet(true);
+    }
     game.setFormat(format);
     Score score = new Score();
     score.getSets().add(new SetScore(gamesA, gamesB));
@@ -69,17 +73,22 @@ public class GamePointManagerTest {
     GamePoint pointA = (currentA == null || currentA.isBlank()) ? null : GamePoint.valueOf(currentA);
     GamePoint pointB = (currentB == null || currentB.isBlank()) ? null : GamePoint.valueOf(currentB);
     TeamSide  side   = TeamSide.valueOf(teamSide);
-    Game      game   = createGameWithScoreAndFormat(startGamesA, startGamesB, pointA, pointB, startTieBreakA, startTieBreakB);
+    Game      game   = createGameWithScoreAndFormat(startGamesA, startGamesB, pointA, pointB, startTieBreakA, startTieBreakB, withSuperTieBreak);
+
     gamePointManager.updateGamePoint(game, side, increment, withAdvantage);
-    int     expGamesA       = (expectedGamesA == null || expectedGamesA.isBlank()) ? startGamesA : Integer.parseInt(expectedGamesA);
-    int     expGamesB       = (expectedGamesB == null || expectedGamesB.isBlank()) ? startGamesB : Integer.parseInt(expectedGamesB);
+
+    int expGamesA = (expectedGamesA == null || expectedGamesA.isBlank()) ? startGamesA : Integer.parseInt(expectedGamesA);
+    int expGamesB = (expectedGamesB == null || expectedGamesB.isBlank()) ? startGamesB : Integer.parseInt(expectedGamesB);
+
     boolean isSuperTieBreak = withSuperTieBreak;
     int     setIndex;
+
+    // Logic to verify correct set (handling new set creation on win)
     if (isSuperTieBreak) {
       setIndex = game.getScore().getSets().size() - 1;
     } else {
-      // If a new set was added (0-0), check the previous set
       int lastIdx = game.getScore().getSets().size() - 1;
+      // If a new set (0-0) was added, check the previous set
       if (game.getScore().getSets().get(lastIdx).getTeamAScore() == 0
           && game.getScore().getSets().get(lastIdx).getTeamBScore() == 0
           && game.getScore().getSets().size() > 1) {
@@ -88,8 +97,18 @@ public class GamePointManagerTest {
         setIndex = lastIdx;
       }
     }
+
     assertEquals(expGamesA, game.getScore().getSets().get(setIndex).getTeamAScore(), description + " : Game Score A Incorrect");
     assertEquals(expGamesB, game.getScore().getSets().get(setIndex).getTeamBScore(), description + " : Game Score B Incorrect");
+
+    // Tie Break Points assertion
+    if (expectedTieBreakA != null && !expectedTieBreakA.isEmpty()) {
+      assertEquals(Integer.parseInt(expectedTieBreakA), game.getScore().getTieBreakPointA(), description + " : TieBreak A Incorrect");
+    }
+    if (expectedTieBreakB != null && !expectedTieBreakB.isEmpty()) {
+      assertEquals(Integer.parseInt(expectedTieBreakB), game.getScore().getTieBreakPointB(), description + " : TieBreak B Incorrect");
+    }
+
     if (expectedPointA != null && !expectedPointA.isEmpty()) {
       String actualA = game.getScore().getCurrentGamePointA() != null ? game.getScore().getCurrentGamePointA().name() : null;
       if (actualA != null && !actualA.equals(expectedPointA)) {
@@ -103,6 +122,7 @@ public class GamePointManagerTest {
         assertEquals(expectedPointA, actualA, description);
       }
     }
+
     if (expectedPointB != null && !expectedPointB.isEmpty()) {
       String actualB = game.getScore().getCurrentGamePointB() != null ? game.getScore().getCurrentGamePointB().name() : null;
       if (actualB != null && !actualB.equals(expectedPointB)) {
