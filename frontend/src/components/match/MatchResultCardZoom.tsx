@@ -136,9 +136,26 @@ export default function MatchResultCardZoom({
         teamSide
       );
       if (result && result.score) {
+        let newScore = { ...result.score };
+        // Correction : synchronise teamAScore/teamBScore et tieBreakPointA/B avec tieBreakTeamA/B si présents
+        const isSuperTB = (
+          (matchFormat?.superTieBreakInFinalSet || (newScore.tieBreakPointA != null || newScore.tieBreakPointB != null) || (newScore.sets?.[2]?.tieBreakTeamA != null || newScore.sets?.[2]?.tieBreakTeamB != null))
+          && newScore.sets?.length === 3
+        );
+        if (isSuperTB && newScore.sets && newScore.sets.length === 3) {
+          const set3 = newScore.sets[2];
+          if (typeof set3.tieBreakTeamA === 'number') {
+            newScore.sets[2].teamAScore = set3.tieBreakTeamA;
+            newScore.tieBreakPointA = set3.tieBreakTeamA;
+          }
+          if (typeof set3.tieBreakTeamB === 'number') {
+            newScore.sets[2].teamBScore = set3.tieBreakTeamB;
+            newScore.tieBreakPointB = set3.tieBreakTeamB;
+          }
+        }
         setCurrentGame((prev) => ({
           ...prev,
-          score: result.score,
+          score: newScore,
         }));
       }
       if (result && typeof result.winner !== 'undefined') {
@@ -166,9 +183,26 @@ export default function MatchResultCardZoom({
         game.id
       );
       if (result && result.score) {
+        let newScore = { ...result.score };
+        // Correction : synchronise teamAScore/teamBScore et tieBreakPointA/B avec tieBreakTeamA/B si présents
+        const isSuperTB = (
+          (matchFormat?.superTieBreakInFinalSet || (newScore.tieBreakPointA != null || newScore.tieBreakPointB != null) || (newScore.sets?.[2]?.tieBreakTeamA != null || newScore.sets?.[2]?.tieBreakTeamB != null))
+          && newScore.sets?.length === 3
+        );
+        if (isSuperTB && newScore.sets && newScore.sets.length === 3) {
+          const set3 = newScore.sets[2];
+          if (typeof set3.tieBreakTeamA === 'number') {
+            newScore.sets[2].teamAScore = set3.tieBreakTeamA;
+            newScore.tieBreakPointA = set3.tieBreakTeamA;
+          }
+          if (typeof set3.tieBreakTeamB === 'number') {
+            newScore.sets[2].teamBScore = set3.tieBreakTeamB;
+            newScore.tieBreakPointB = set3.tieBreakTeamB;
+          }
+        }
         setCurrentGame((prev) => ({
           ...prev,
-          score: result.score,
+          score: newScore,
         }));
       }
       if (result && typeof result.winner !== 'undefined') {
@@ -197,18 +231,18 @@ export default function MatchResultCardZoom({
   let tieBreakPointB = currentGame.score?.tieBreakPointB;
   // Gestion du super tie-break en 3e set (affiche le score réel du set)
   const isSuperTieBreak = (
-    (matchFormat?.superTieBreakInFinalSet || (currentGame.score?.tieBreakPointA != null || currentGame.score?.tieBreakPointB != null))
+    (matchFormat?.superTieBreakInFinalSet || (currentGame.score?.tieBreakPointA != null || currentGame.score?.tieBreakPointB != null) || (currentGame.score?.sets?.[2]?.tieBreakTeamA != null || currentGame.score?.sets?.[2]?.tieBreakTeamB != null))
     && currentGame.score?.sets?.length === 3
   );
   if (isSuperTieBreak && currentGame.score?.sets?.[2]) {
     const set3 = currentGame.score.sets[2];
     setScoresA = [setScoresA[0], setScoresA[1], set3.tieBreakTeamA ?? setScoresA[2]];
     setScoresB = [setScoresB[0], setScoresB[1], set3.tieBreakTeamB ?? setScoresB[2]];
-    // Si les tieBreakPointA/B sont null, on prend la valeur du tieBreakTeamA/B pour l'affichage du point en cours
-    if (tieBreakPointA == null && set3.tieBreakTeamA != null) {
+    // Correction : pour l'affichage des points en cours (gamePoints), on prend tieBreakTeamA/B si tieBreakPointA/B sont null
+    if ((tieBreakPointA == null || typeof tieBreakPointA === 'undefined') && set3.tieBreakTeamA != null) {
       tieBreakPointA = set3.tieBreakTeamA;
     }
-    if (tieBreakPointB == null && set3.tieBreakTeamB != null) {
+    if ((tieBreakPointB == null || typeof tieBreakPointB === 'undefined') && set3.tieBreakTeamB != null) {
       tieBreakPointB = set3.tieBreakTeamB;
     }
   } else if (isSuperTieBreak) {
@@ -241,7 +275,7 @@ export default function MatchResultCardZoom({
             team={teams[0]}
             gamePoint={currentGame.score?.currentGamePointA}
             setScores={setScoresA}
-            tieBreakPoint={currentGame.score?.tieBreakPointA}
+            tieBreakPoint={tieBreakPointA}
             teamSide="TEAM_A"
             mode={mode}
             loading={loading === 'TEAM_A'}
@@ -252,7 +286,7 @@ export default function MatchResultCardZoom({
             team={teams[1]}
             gamePoint={currentGame.score?.currentGamePointB}
             setScores={setScoresB}
-            tieBreakPoint={currentGame.score?.tieBreakPointB}
+            tieBreakPoint={tieBreakPointB}
             teamSide="TEAM_B"
             mode={mode}
             loading={loading === 'TEAM_B'}

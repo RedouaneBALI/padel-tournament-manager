@@ -63,6 +63,14 @@ public class GameService {
         if (isSetWin(lastSet.getTeamAScore(), lastSet.getTeamBScore())) {
           sets.add(new SetScore(0, 0));
         }
+        // Synchronize tie-break points at root with last set if in tie-break
+        if (lastSet.getTieBreakTeamA() != null || lastSet.getTieBreakTeamB() != null) {
+          currentScore.setTieBreakPointA(lastSet.getTieBreakTeamA());
+          currentScore.setTieBreakPointB(lastSet.getTieBreakTeamB());
+        } else {
+          currentScore.setTieBreakPointA(null);
+          currentScore.setTieBreakPointB(null);
+        }
       }
     }
     // --- End history logic ---

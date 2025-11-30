@@ -108,25 +108,23 @@ public class GamePointManager {
     int tbA = score.getTieBreakPointA() != null ? score.getTieBreakPointA() : 0;
     int tbB = score.getTieBreakPointB() != null ? score.getTieBreakPointB() : 0;
 
-    // Incrément
+    // Increment
     if (teamSide == TeamSide.TEAM_A) {
       tbA++;
-      score.setTieBreakPointA(tbA);
     } else {
       tbB++;
-      score.setTieBreakPointB(tbB);
     }
-
-    // CORRECTION ICI : On met à jour le SetScore en temps réel (pour que votre test passe)
+    // Synchronize both Score and SetScore
+    score.setTieBreakPointA(tbA);
+    score.setTieBreakPointB(tbB);
     set.setTieBreakTeamA(tbA);
     set.setTieBreakTeamB(tbB);
 
     int winPoints = isSuperTieBreak ? 10 : 7;
 
-    // Victoire
+    // Victory
     if ((tbA >= winPoints || tbB >= winPoints) && Math.abs(tbA - tbB) >= 2) {
       if (isSuperTieBreak) {
-        // Super Tie-Break : Le vainqueur gagne le set 1-0
         if (tbA > tbB) {
           set.setTeamAScore(1);
           set.setTeamBScore(0);
@@ -135,18 +133,13 @@ public class GamePointManager {
           set.setTeamBScore(1);
         }
       } else {
-        // Standard Tie-Break : Le vainqueur gagne le set 7-6
         if (tbA > tbB) {
           set.setTeamAScore(set.getTeamAScore() + 1);
         } else {
           set.setTeamBScore(set.getTeamBScore() + 1);
         }
       }
-
-      // Le set étant fini, on vérifie si on doit ajouter le suivant
       checkAndAddNewSet(game, score);
-
-      // Reset des points temporaires
       score.setTieBreakPointA(null);
       score.setTieBreakPointB(null);
     }
