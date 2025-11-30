@@ -24,23 +24,23 @@ public class SetScore {
   private Long id;
 
   @Column(name = "team_a_score")
-  private int teamAScore;
+  private Integer teamAScore;
 
   @Column(name = "team_b_score")
-  private int teamBScore;
+  private Integer teamBScore;
 
   @Column(name = "tie_break_team_a")
-  private int tieBreakTeamA; // 0 si pas de tie-break
+  private Integer tieBreakTeamA; // null si pas de tie-break
 
   @Column(name = "tie_break_team_b")
-  private int tieBreakTeamB;
+  private Integer tieBreakTeamB;
 
-  public SetScore(int teamAScore, int teamBScore) {
+  public SetScore(Integer teamAScore, Integer teamBScore) {
     this.teamAScore = teamAScore;
     this.teamBScore = teamBScore;
   }
 
-  public SetScore(int teamAScore, int teamBScore, int tieBreakTeamA, int tieBreakTeamB) {
+  public SetScore(Integer teamAScore, Integer teamBScore, Integer tieBreakTeamA, Integer tieBreakTeamB) {
     this.teamAScore    = teamAScore;
     this.teamBScore    = teamBScore;
     this.tieBreakTeamA = tieBreakTeamA;

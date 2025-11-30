@@ -80,4 +80,16 @@ public class GameService {
     ScoreDTO scoreDTO = tournamentMapper.toDTO(game.getScore());
     return new UpdateScoreDTO(true, game.getWinnerSide(), scoreDTO);
   }
+
+  @Transactional
+  public UpdateScoreDTO undoGamePoint(Long tournamentId, Long gameId, TeamSide teamSide) {
+    Game       game       = findGameInTournament(tournamentId, gameId);
+    Tournament tournament = tournamentService.getTournamentById(tournamentId);
+    gamePointManager.undoGamePoint(game, teamSide);
+    // Force winnerSide update
+    game.setScore(game.getScore());
+    tournamentRepository.save(tournament);
+    ScoreDTO scoreDTO = tournamentMapper.toDTO(game.getScore());
+    return new UpdateScoreDTO(true, game.getWinnerSide(), scoreDTO);
+  }
 }

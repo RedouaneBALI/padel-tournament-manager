@@ -232,12 +232,6 @@ public interface TournamentMapper {
     }
     ScoreDTO          dto     = new ScoreDTO();
     List<SetScoreDTO> setsDto = toDTOSets(score.getSets());
-    // If super tie-break in progress, inject tieBreakPointA/B in last set
-    if (!setsDto.isEmpty() && score.getTieBreakPointA() != null && score.getTieBreakPointB() != null) {
-      SetScoreDTO lastSet = setsDto.get(setsDto.size() - 1);
-      lastSet.setTieBreakTeamA(score.getTieBreakPointA());
-      lastSet.setTieBreakTeamB(score.getTieBreakPointB());
-    }
     dto.setSets(setsDto);
     dto.setForfeit(score.isForfeit());
     dto.setForfeitedBy(score.getForfeitedBy());
@@ -299,8 +293,11 @@ public interface TournamentMapper {
       SetScoreDTO dto = new SetScoreDTO();
       dto.setTeamAScore(set.getTeamAScore());
       dto.setTeamBScore(set.getTeamBScore());
-      dto.setTieBreakTeamA(set.getTieBreakTeamA());
-      dto.setTieBreakTeamB(set.getTieBreakTeamB());
+      // Inject tie-break only if not 0 (0 = pas de tie-break en cours, doit être null côté DTO)
+      Integer tieBreakA = set.getTieBreakTeamA();
+      dto.setTieBreakTeamA((tieBreakA != null && tieBreakA == 0) ? null : tieBreakA);
+      Integer tieBreakB = set.getTieBreakTeamB();
+      dto.setTieBreakTeamB((tieBreakB != null && tieBreakB == 0) ? null : tieBreakB);
       result.add(dto);
     }
     return result;

@@ -230,6 +230,22 @@ public class AdminTournamentController {
   }
 
   /**
+   * Undoes the last game point for a team (undo button).
+   *
+   * @param tournamentId the tournament ID
+   * @param gameId the game ID
+   * @param teamSide the team side to undo the point for
+   * @return ResponseEntity containing the updated score DTO
+   */
+  @PatchMapping("/{tournamentId}/games/{gameId}/undo-game-point")
+  public ResponseEntity<UpdateScoreDTO> undoGamePoint(@PathVariable Long tournamentId,
+                                                      @PathVariable Long gameId,
+                                                      @RequestParam TeamSide teamSide) {
+    checkOwnership(tournamentId);
+    return ResponseEntity.ok(gameService.undoGamePoint(tournamentId, gameId, teamSide));
+  }
+
+  /**
    * Debug endpoint that returns current authentication information. Useful for testing authentication and authorization.
    *
    * @param a the current authentication object

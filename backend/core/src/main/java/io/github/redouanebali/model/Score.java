@@ -158,11 +158,11 @@ public class Score {
     this.forfeitedBy = forfeitedBy;
   }
 
-  public void addSetScore(int teamAScore, int teamBScore) {
+  public void addSetScore(Integer teamAScore, Integer teamBScore) {
     sets.add(new SetScore(teamAScore, teamBScore));
   }
 
-  public void addSetScore(int teamAScore, int teamBScore, Integer tieBreakAScore, Integer tieBreakBScore) {
+  public void addSetScore(Integer teamAScore, Integer teamBScore, Integer tieBreakAScore, Integer tieBreakBScore) {
     sets.add(new SetScore(teamAScore, teamBScore, tieBreakAScore, tieBreakBScore));
   }
 

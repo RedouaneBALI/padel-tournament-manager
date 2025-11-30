@@ -500,8 +500,8 @@ class TournamentMapperTest {
     game.setTeamB(teamB);
     Score    score = new Score();
     SetScore set1  = new SetScore(6, 6); // tie-break triggered
-    set1.setTieBreakTeamA(null);
-    set1.setTieBreakTeamB(null);
+    set1.setTieBreakTeamA(0);
+    set1.setTieBreakTeamB(0);
     score.getSets().add(set1);
     score.setTieBreakPointA(5);
     score.setTieBreakPointB(4);

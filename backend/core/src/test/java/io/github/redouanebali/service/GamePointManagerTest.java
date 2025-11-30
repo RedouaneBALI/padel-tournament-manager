@@ -234,4 +234,46 @@ public class GamePointManagerTest {
     // Nouvelle version : il faut utiliser la méthode undo dédiée ou adapter le test si undo n'est plus supporté ici
     // manager.updateGamePoint(game, TeamSide.valueOf(teamSide)); // à remplacer par la logique undo si existante
   }
+
+  @ParameterizedTest
+  @CsvSource({
+      // Format: currentA,currentB,side,expectedA,expectedB,isTieBreak
+      "QUINZE,ZERO,TEAM_A,ZERO,ZERO,false",
+      "TRENTE,QUINZE,TEAM_B,TRENTE,ZERO,false",
+      "QUARANTE,QUINZE,TEAM_A,TRENTE,QUINZE,false",
+      "QUARANTE,QUARANTE,TEAM_A,TRENTE,QUARANTE,false",
+      "AVANTAGE,QUARANTE,TEAM_B,AVANTAGE,TRENTE,false",
+      "QUARANTE,AVANTAGE,TEAM_A,TRENTE,AVANTAGE,false",
+      // Tie-break
+      "3,3,TEAM_A,2,3,true",
+      "3,3,TEAM_B,3,2,true",
+      "3,5,TEAM_A,2,5,true",
+      "5,3,TEAM_B,5,2,true"
+  })
+  void testUndoGamePointStandardAndTieBreak(String currentA, String currentB, String side, String expectedA, String expectedB, boolean isTieBreak) {
+    Game        game   = new Game();
+    MatchFormat format = new MatchFormat();
+    game.setFormat(format);
+    Score    score = new Score();
+    SetScore set   = new SetScore(0, 0);
+    score.getSets().add(set);
+    if (isTieBreak) {
+      Integer tbA = (currentA == null || currentA.isEmpty()) ? 3 : Integer.parseInt(currentA);
+      Integer tbB = (currentB == null || currentB.isEmpty()) ? 2 : Integer.parseInt(currentB);
+      score.setTieBreakPointA(tbA);
+      score.setTieBreakPointB(tbB);
+    } else {
+      score.setCurrentGamePointA(currentA == null || currentA.isEmpty() ? null : GamePoint.valueOf(currentA));
+      score.setCurrentGamePointB(currentB == null || currentB.isEmpty() ? null : GamePoint.valueOf(currentB));
+    }
+    game.setScore(score);
+    gamePointManager.undoGamePoint(game, TeamSide.valueOf(side));
+    if (isTieBreak) {
+      assertEquals(Integer.parseInt(expectedA), game.getScore().getTieBreakPointA());
+      assertEquals(Integer.parseInt(expectedB), game.getScore().getTieBreakPointB());
+    } else {
+      assertEquals(expectedA == null || expectedA.equals("null") ? null : GamePoint.valueOf(expectedA), game.getScore().getCurrentGamePointA());
+      assertEquals(expectedB == null || expectedB.equals("null") ? null : GamePoint.valueOf(expectedB), game.getScore().getCurrentGamePointB());
+    }
+  }
 }
