@@ -63,6 +63,19 @@ export default function TVModeView({
   // Déterminer le titre à afficher
   const displayTitle = title || (game.round?.stage ? formatStageLabel(game.round.stage) : 'Match');
 
+  // Tennis point formatter
+  function formatGamePoint(point) {
+    if (point === null || point === undefined) return '';
+    switch (point) {
+      case 'ZERO': return '0';
+      case 'QUINZE': return '15';
+      case 'TRENTE': return '30';
+      case 'QUARANTE': return '40';
+      case 'AVANTAGE': return 'A';
+      default: return point;
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex flex-col items-center justify-center p-8 text-white">
       {/* Header avec stage */}
@@ -102,7 +115,7 @@ export default function TVModeView({
             </div>
 
             {/* Scores Team A */}
-            <div className="flex gap-8 ml-8">
+            <div className="flex gap-8 ml-8 items-center">
               {Array.from({ length: visibleSets }).map((_, i) => (
                 <div
                   key={i}
@@ -115,6 +128,12 @@ export default function TVModeView({
                   {sets[i]?.teamAScore ?? '-'}
                 </div>
               ))}
+              {/* GamePoint Team A */}
+              {game.score?.currentGamePointA != null && (
+                <div className="w-20 h-20 flex items-center justify-center rounded-xl text-4xl font-bold bg-red-100 text-red-600 ml-4 border-2 border-red-300">
+                  {formatGamePoint(game.score.currentGamePointA)}
+                </div>
+              )}
             </div>
 
             {/* Icône champion si gagnant */}
@@ -135,7 +154,7 @@ export default function TVModeView({
             </div>
 
             {/* Scores Team B */}
-            <div className="flex gap-8 ml-8">
+            <div className="flex gap-8 ml-8 items-center">
               {Array.from({ length: visibleSets }).map((_, i) => (
                 <div
                   key={i}
@@ -148,6 +167,12 @@ export default function TVModeView({
                   {sets[i]?.teamBScore ?? '-'}
                 </div>
               ))}
+              {/* GamePoint Team B */}
+              {game.score?.currentGamePointB != null && (
+                <div className="w-20 h-20 flex items-center justify-center rounded-xl text-4xl font-bold bg-red-100 text-red-600 ml-4 border-2 border-red-300">
+                  {formatGamePoint(game.score.currentGamePointB)}
+                </div>
+              )}
             </div>
 
             {/* Icône champion si gagnant */}

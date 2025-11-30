@@ -5,6 +5,7 @@ import { cn } from '@/src/lib/utils';
 import TeamRow from '@/src/components/ui/TeamRow';
 import { incrementGamePoint, undoGamePoint, fetchMatchFormat } from '@/src/api/tournamentApi';
 import { Undo2 } from 'lucide-react';
+import LiveMatchIndicator from '@/src/components/ui/LiveMatchIndicator';
 
 // Utilitaire pour formater les points
 function formatPoints(points: number) {
@@ -192,27 +193,48 @@ export default function MatchResultCardZoom({
   // Préparation des scores par set pour chaque équipe
   let setScoresA = currentGame.score?.sets?.map((set) => set.teamAScore) ?? [];
   let setScoresB = currentGame.score?.sets?.map((set) => set.teamBScore) ?? [];
-
-  // Gestion du super tie-break en 3e set (remplace le 3e set par tieBreakTeamA/B si présent dans le set)
+  let tieBreakPointA = currentGame.score?.tieBreakPointA;
+  let tieBreakPointB = currentGame.score?.tieBreakPointB;
+  // Gestion du super tie-break en 3e set (affiche le score réel du set)
   const isSuperTieBreak = (
     (matchFormat?.superTieBreakInFinalSet || (currentGame.score?.tieBreakPointA != null || currentGame.score?.tieBreakPointB != null))
     && currentGame.score?.sets?.length === 3
   );
-  if (isSuperTieBreak) {
-    // On privilégie tieBreakTeamA/tieBreakTeamB du 3e set si présents, sinon tieBreakPointA/B global
-    const lastSet = currentGame.score.sets[2];
-    const superTieBreakA = lastSet.tieBreakTeamA ?? currentGame.score.tieBreakPointA;
-    const superTieBreakB = lastSet.tieBreakTeamB ?? currentGame.score.tieBreakPointB;
-    setScoresA = [setScoresA[0], setScoresA[1], superTieBreakA ?? 0];
-    setScoresB = [setScoresB[0], setScoresB[1], superTieBreakB ?? 0];
+  if (isSuperTieBreak && currentGame.score?.sets?.[2]) {
+    const set3 = currentGame.score.sets[2];
+    setScoresA = [setScoresA[0], setScoresA[1], set3.tieBreakTeamA ?? setScoresA[2]];
+    setScoresB = [setScoresB[0], setScoresB[1], set3.tieBreakTeamB ?? setScoresB[2]];
+    // Si les tieBreakPointA/B sont null, on prend la valeur du tieBreakTeamA/B pour l'affichage du point en cours
+    if (tieBreakPointA == null && set3.tieBreakTeamA != null) {
+      tieBreakPointA = set3.tieBreakTeamA;
+    }
+    if (tieBreakPointB == null && set3.tieBreakTeamB != null) {
+      tieBreakPointB = set3.tieBreakTeamB;
+    }
+  } else if (isSuperTieBreak) {
+    setScoresA = [setScoresA[0], setScoresA[1], setScoresA[2]];
+    setScoresB = [setScoresB[0], setScoresB[1], setScoresB[2]];
+    if (tieBreakPointA == null && setScoresA[2] != null) {
+      tieBreakPointA = setScoresA[2];
+    }
+    if (tieBreakPointB == null && setScoresB[2] != null) {
+      tieBreakPointB = setScoresB[2];
+    }
   } else {
-    // Si plus de 3 sets (cas anormal), on limite à 3
     setScoresA = setScoresA.slice(0, 3);
     setScoresB = setScoresB.slice(0, 3);
   }
 
   return (
     <div className={cn('rounded-lg border p-4 bg-background flex flex-col gap-4')}>
+      {/* Header: Live en haut à droite, non flottant */}
+      <div className="flex flex-row items-center justify-between w-full min-h-[32px]">
+        <div />
+        {!currentGame.finished && (
+          <LiveMatchIndicator showLabel={true} />
+        )}
+      </div>
+      {/* Score et équipes + Undo */}
       <div className="flex justify-between items-center">
         <div className="flex-1 flex flex-col gap-2">
           <TeamScoreRow
