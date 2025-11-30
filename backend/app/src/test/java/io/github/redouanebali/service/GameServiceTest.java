@@ -157,7 +157,7 @@ class GameServiceTest {
   }
 
   @org.junit.jupiter.api.Test
-  void testMixUpdateGamePointAndDirectScoreUpdate() {
+  void testMixUpdateGamePointAndDirectScoreIncrement() {
     Long             tournamentId = 5L;
     Long             gameId       = 50L;
     MatchFormat      format       = new MatchFormat();
@@ -180,10 +180,10 @@ class GameServiceTest {
     when(tournamentService.getTournamentById(tournamentId)).thenReturn(tournament);
 
     // 1. Incrémentation point par point (méthode 1)
-    gameService.updateGamePoint(tournamentId, gameId, TeamSide.TEAM_A); // 15-0
+    gameService.incrementGamePoint(tournamentId, gameId, TeamSide.TEAM_A); // 15-0
     assertEquals(io.github.redouanebali.model.GamePoint.QUINZE, game.getScore().getCurrentGamePointA());
     assertNull(game.getScore().getCurrentGamePointB());
-    gameService.updateGamePoint(tournamentId, gameId, TeamSide.TEAM_A); // 30-0
+    gameService.incrementGamePoint(tournamentId, gameId, TeamSide.TEAM_A); // 30-0
     assertEquals(io.github.redouanebali.model.GamePoint.TRENTE, game.getScore().getCurrentGamePointA());
     assertNull(game.getScore().getCurrentGamePointB());
 
@@ -203,7 +203,7 @@ class GameServiceTest {
   }
 
   @org.junit.jupiter.api.Test
-  void testMixDirectScoreUpdateAndUpdateGamePoint() {
+  void testMixDirectScoreUpdateAndIncrementGamePoint() {
     Long             tournamentId = 6L;
     Long             gameId       = 60L;
     MatchFormat      format       = new MatchFormat();
@@ -236,12 +236,58 @@ class GameServiceTest {
     assertNull(game.getScore().getCurrentGamePointA());
     assertNull(game.getScore().getCurrentGamePointB());
 
-    gameService.updateGamePoint(tournamentId, gameId, TeamSide.TEAM_B); // 4-6 2-6, 0-15
+    gameService.incrementGamePoint(tournamentId, gameId, TeamSide.TEAM_B); // 4-6 2-6, 0-15
     assertEquals(io.github.redouanebali.model.GamePoint.QUINZE, game.getScore().getCurrentGamePointB());
     assertNull(game.getScore().getCurrentGamePointA());
     assertEquals(4, game.getScore().getSets().getFirst().getTeamAScore());
     assertEquals(6, game.getScore().getSets().getFirst().getTeamBScore());
     assertEquals(2, game.getScore().getSets().get(1).getTeamAScore());
     assertEquals(6, game.getScore().getSets().get(1).getTeamBScore());
+  }
+
+  @org.junit.jupiter.api.Test
+  void testAddSetAfterDirectScoreUpdateThenIncrement() {
+    Long             tournamentId = 7L;
+    Long             gameId       = 70L;
+    MatchFormat      format       = new MatchFormat();
+    List<PlayerPair> pairs        = TestFixtures.createPlayerPairs(2);
+    PlayerPair       teamA        = pairs.getFirst();
+    PlayerPair       teamB        = pairs.get(1);
+    Game             game         = new Game(format);
+    game.setId(gameId);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+    Score initialScore = new Score();
+    game.setScore(initialScore);
+    Round round = new Round();
+    round.addGames(List.of(game));
+    Tournament tournament = new Tournament();
+    tournament.setId(tournamentId);
+    tournament.getRounds().add(round);
+    tournament.setConfig(TournamentConfig.builder().mainDrawSize(4).nbSeeds(0).format(TournamentFormat.KNOCKOUT).build());
+    when(tournamentService.getTournamentById(tournamentId)).thenReturn(tournament);
+
+    io.github.redouanebali.dto.request.UpdateGameRequest req = new io.github.redouanebali.dto.request.UpdateGameRequest();
+    req.setCourt("Court Test");
+    Score score = new Score();
+    score.setSets(List.of(new SetScore(6, 2)));
+    req.setScore(score);
+    gameService.updateGame(tournamentId, gameId, req);
+    assertEquals(2, game.getScore().getSets().size());
+    assertEquals(6, game.getScore().getSets().get(0).getTeamAScore());
+    assertEquals(2, game.getScore().getSets().get(0).getTeamBScore());
+    assertEquals(0, game.getScore().getSets().get(1).getTeamAScore());
+    assertEquals(0, game.getScore().getSets().get(1).getTeamBScore());
+
+    // Increment 4 points for TEAM_A to win a game
+    gameService.incrementGamePoint(tournamentId, gameId, TeamSide.TEAM_A);
+    gameService.incrementGamePoint(tournamentId, gameId, TeamSide.TEAM_A);
+    gameService.incrementGamePoint(tournamentId, gameId, TeamSide.TEAM_A);
+    gameService.incrementGamePoint(tournamentId, gameId, TeamSide.TEAM_A);
+    assertEquals(2, game.getScore().getSets().size());
+    assertEquals(6, game.getScore().getSets().get(0).getTeamAScore());
+    assertEquals(2, game.getScore().getSets().get(0).getTeamBScore());
+    assertEquals(1, game.getScore().getSets().get(1).getTeamAScore());
+    assertEquals(0, game.getScore().getSets().get(1).getTeamBScore());
   }
 }

@@ -6,6 +6,7 @@ import io.github.redouanebali.dto.response.UpdateScoreDTO;
 import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Score;
+import io.github.redouanebali.model.SetScore;
 import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.TournamentRepository;
@@ -56,6 +57,13 @@ public class GameService {
       currentScore.setTieBreakPointB(newScore.getTieBreakPointB());
       currentScore.setCurrentGamePointA(newScore.getCurrentGamePointA());
       currentScore.setCurrentGamePointB(newScore.getCurrentGamePointB());
+      var sets = currentScore.getSets();
+      if (!sets.isEmpty()) {
+        SetScore lastSet = sets.get(sets.size() - 1);
+        if (isSetWin(lastSet.getTeamAScore(), lastSet.getTeamBScore())) {
+          sets.add(new SetScore(0, 0));
+        }
+      }
     }
     // --- End history logic ---
     return updateScoreAndPropagate(game, tournament, currentScore);
@@ -90,7 +98,7 @@ public class GameService {
   }
 
   @Transactional
-  public UpdateScoreDTO updateGamePoint(Long tournamentId, Long gameId, TeamSide teamSide) {
+  public UpdateScoreDTO incrementGamePoint(Long tournamentId, Long gameId, TeamSide teamSide) {
     Game       game       = findGameInTournament(tournamentId, gameId);
     Tournament tournament = tournamentService.getTournamentById(tournamentId);
     gamePointManager.updateGamePoint(game, teamSide);
@@ -111,5 +119,10 @@ public class GameService {
     tournamentRepository.save(tournament);
     ScoreDTO scoreDTO = tournamentMapper.toDTO(game.getScore());
     return new UpdateScoreDTO(true, game.getWinnerSide(), scoreDTO);
+  }
+
+  // Utilitaire local pour éviter la dépendance circulaire
+  private boolean isSetWin(int gamesWinner, int gamesLoser) {
+    return (gamesWinner == 6 && gamesWinner - gamesLoser >= 2) || gamesWinner == 7;
   }
 }

@@ -223,10 +223,10 @@ public class AdminTournamentController {
    * Increments the game point for a team (plus button only).
    */
   @PatchMapping("/{tournamentId}/games/{gameId}/game-point")
-  public ResponseEntity<UpdateScoreDTO> updateGamePoint(@PathVariable Long tournamentId,
-                                                        @PathVariable Long gameId,
-                                                        @RequestParam TeamSide teamSide) {
-    return ResponseEntity.ok(gameService.updateGamePoint(tournamentId, gameId, teamSide));
+  public ResponseEntity<UpdateScoreDTO> incrementGamePoint(@PathVariable Long tournamentId,
+                                                           @PathVariable Long gameId,
+                                                           @RequestParam TeamSide teamSide) {
+    return ResponseEntity.ok(gameService.incrementGamePoint(tournamentId, gameId, teamSide));
   }
 
   /**
