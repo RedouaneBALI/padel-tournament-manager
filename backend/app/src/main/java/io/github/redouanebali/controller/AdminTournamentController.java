@@ -3,17 +3,16 @@ package io.github.redouanebali.controller;
 import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
 import io.github.redouanebali.dto.request.CreateTournamentRequest;
 import io.github.redouanebali.dto.request.RoundRequest;
-import io.github.redouanebali.dto.request.UpdateGamePointRequest;
 import io.github.redouanebali.dto.request.UpdateGameRequest;
 import io.github.redouanebali.dto.request.UpdatePlayerPairRequest;
 import io.github.redouanebali.dto.request.UpdateTournamentRequest;
 import io.github.redouanebali.dto.response.TournamentDTO;
 import io.github.redouanebali.dto.response.UpdateScoreDTO;
 import io.github.redouanebali.mapper.TournamentMapper;
-import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.Stage;
+import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
@@ -221,17 +220,13 @@ public class AdminTournamentController {
   }
 
   /**
-   * Increments or decrements the current game point for a team (button + or -).
+   * Increments the game point for a team (plus button only).
    */
-  @PostMapping(path = "/{tournamentId}/games/{gameId}/game-point", consumes = MediaType.APPLICATION_JSON_VALUE)
+  @PatchMapping("/{tournamentId}/games/{gameId}/game-point")
   public ResponseEntity<UpdateScoreDTO> updateGamePoint(@PathVariable Long tournamentId,
                                                         @PathVariable Long gameId,
-                                                        @RequestBody @Valid UpdateGamePointRequest request) {
-    checkOwnership(tournamentId);
-    // Retrieve the game and its format to determine if advantage is enabled
-    Game    game          = gameService.findGameInTournament(tournamentId, gameId);
-    boolean withAdvantage = game.getFormat() != null && game.getFormat().isAdvantage();
-    return ResponseEntity.ok(gameService.updateGamePoint(tournamentId, gameId, request.getTeamSide(), request.getIncrement(), withAdvantage));
+                                                        @RequestParam TeamSide teamSide) {
+    return ResponseEntity.ok(gameService.updateGamePoint(tournamentId, gameId, teamSide));
   }
 
   /**

@@ -9,7 +9,7 @@ import io.github.redouanebali.model.TeamSide;
 
 public class GamePointManager {
 
-  public void updateGamePoint(Game game, TeamSide teamSide, boolean increment, boolean withAdvantage) {
+  public void updateGamePoint(Game game, TeamSide teamSide) {
     Score score = game.getScore();
     if (score == null) {
       score = new Score();
@@ -19,49 +19,45 @@ public class GamePointManager {
       score.getSets().add(new SetScore(0, 0));
     }
 
-    // Toujours travailler sur le dernier set
+    // Always work on the last set
     SetScore set = score.getSets().get(score.getSets().size() - 1);
 
-    boolean isTieBreak      = isTieBreak(game, set, score);
+    // Detect game mode
     boolean isSuperTieBreak = isSuperTieBreak(game);
+    // Only check for standard TieBreak if it's NOT a Super TieBreak
+    boolean isTieBreak    = !isSuperTieBreak && isTieBreak(game, set, score);
+    boolean withAdvantage = game.getFormat() != null && game.getFormat().isAdvantage();
 
-    if (isTieBreak || isSuperTieBreak) {
-      handleTieBreak(score, set, teamSide, increment, isSuperTieBreak);
-      return;
+    if (isSuperTieBreak) {
+      handleTieBreak(score, set, teamSide, true);
+    } else if (isTieBreak) {
+      handleTieBreak(score, set, teamSide, false);
+    } else {
+      handleStandardGame(score, set, teamSide, withAdvantage);
     }
-
-    handleStandardGame(score, set, teamSide, increment, withAdvantage);
   }
 
-  private void handleTieBreak(Score score, SetScore set, TeamSide teamSide, boolean increment, boolean isSuperTieBreak) {
-    boolean forceSuperTB = isSuperTieBreak;
-    if (!isSuperTieBreak && set != null) {
-      if (set.getTeamAScore() == 0 && set.getTeamBScore() == 0) {
-        int tbA = score.getTieBreakPointA() != null ? score.getTieBreakPointA() : 0;
-        int tbB = score.getTieBreakPointB() != null ? score.getTieBreakPointB() : 0;
-        if (tbA >= 9 || tbB >= 9) {
-          forceSuperTB = true;
-        }
-      }
-    }
+  private void handleTieBreak(Score score, SetScore set, TeamSide teamSide, boolean isSuperTieBreak) {
     int tbA = score.getTieBreakPointA() != null ? score.getTieBreakPointA() : 0;
     int tbB = score.getTieBreakPointB() != null ? score.getTieBreakPointB() : 0;
 
     if (teamSide == TeamSide.TEAM_A) {
-      tbA = increment ? tbA + 1 : Math.max(0, tbA - 1);
+      tbA++;
       score.setTieBreakPointA(tbA);
     } else {
-      tbB = increment ? tbB + 1 : Math.max(0, tbB - 1);
+      tbB++;
       score.setTieBreakPointB(tbB);
     }
 
-    int winPoints = forceSuperTB ? 10 : 7;
+    int winPoints = isSuperTieBreak ? 10 : 7;
 
-    if (increment && (tbA >= winPoints || tbB >= winPoints) && Math.abs(tbA - tbB) >= 2) {
+    // Check for victory (Target points reached + 2 points difference)
+    if ((tbA >= winPoints || tbB >= winPoints) && Math.abs(tbA - tbB) >= 2) {
       set.setTieBreakTeamA(tbA);
       set.setTieBreakTeamB(tbB);
 
-      if (forceSuperTB) {
+      if (isSuperTieBreak) {
+        // Super Tie-Break: Winner takes the set (1-0)
         if (tbA > tbB) {
           set.setTeamAScore(1);
           set.setTeamBScore(0);
@@ -70,80 +66,74 @@ public class GamePointManager {
           set.setTeamBScore(1);
         }
       } else {
+        // Standard Tie-Break: Winner takes the set (7-6)
         if (tbA > tbB) {
           set.setTeamAScore(set.getTeamAScore() + 1);
         } else {
           set.setTeamBScore(set.getTeamBScore() + 1);
         }
+        // Prepare next set
         score.getSets().add(new SetScore(0, 0));
       }
+
+      // Reset tie-break points
       score.setTieBreakPointA(null);
       score.setTieBreakPointB(null);
     }
   }
 
-  private void handleStandardGame(Score score, SetScore set, TeamSide teamSide, boolean increment, boolean withAdvantage) {
-    if (increment) {
-      GamePoint pA = score.getCurrentGamePointA();
-      GamePoint pB = score.getCurrentGamePointB();
-      if (teamSide == TeamSide.TEAM_A) {
-        if (shouldWinGame(pA, pB, withAdvantage)) {
-          set.setTeamAScore(set.getTeamAScore() + 1);
-          resetGamePoints(score);
-          if (isSetWin(set.getTeamAScore(), set.getTeamBScore())) {
-            score.getSets().add(new SetScore(0, 0));
-          }
-        } else {
-          if (pB == GamePoint.AVANTAGE) {
-            score.setCurrentGamePointB(GamePoint.QUARANTE);
-          }
-          score.setCurrentGamePointA(nextGamePoint(pA, pB, withAdvantage));
-        }
+  private void handleStandardGame(Score score, SetScore set, TeamSide teamSide, boolean withAdvantage) {
+    GamePoint pA = score.getCurrentGamePointA();
+    GamePoint pB = score.getCurrentGamePointB();
+
+    // Use ZERO for null to simplify logic, but store null in DB
+    GamePoint currentA = pA == null ? GamePoint.ZERO : pA;
+    GamePoint currentB = pB == null ? GamePoint.ZERO : pB;
+
+    if (teamSide == TeamSide.TEAM_A) {
+      if (shouldWinGame(currentA, currentB, withAdvantage)) {
+        winStandardGame(score, set, TeamSide.TEAM_A);
       } else {
-        if (shouldWinGame(pB, pA, withAdvantage)) {
-          set.setTeamBScore(set.getTeamBScore() + 1);
-          resetGamePoints(score);
-          if (isSetWin(set.getTeamBScore(), set.getTeamAScore())) {
-            score.getSets().add(new SetScore(0, 0));
-          }
+        // Handle return to Deuce
+        if (withAdvantage && currentB == GamePoint.AVANTAGE) {
+          score.setCurrentGamePointB(GamePoint.QUARANTE);
+          // A stays at 40
         } else {
-          if (pA == GamePoint.AVANTAGE) {
-            score.setCurrentGamePointA(GamePoint.QUARANTE);
-          }
-          score.setCurrentGamePointB(nextGamePoint(pB, pA, withAdvantage));
+          score.setCurrentGamePointA(nextGamePoint(currentA, currentB, withAdvantage));
         }
       }
-    } else {
-      // Logique de décrémentation (Undo)
-      if (teamSide == TeamSide.TEAM_A) {
-        if (score.getCurrentGamePointA() == null && score.getCurrentGamePointB() == null && set.getTeamAScore() > 0) {
-          set.setTeamAScore(set.getTeamAScore() - 1);
-          score.setCurrentGamePointA(GamePoint.QUARANTE);
-          score.setCurrentGamePointB(GamePoint.QUARANTE);
-        } else {
-          GamePoint prev = prevGamePoint(score.getCurrentGamePointA());
-          score.setCurrentGamePointA(prev);
-          if (prev == null) {
-            score.setCurrentGamePointA(GamePoint.ZERO);
-          }
-        }
+    } else { // TEAM_B
+      if (shouldWinGame(currentB, currentA, withAdvantage)) {
+        winStandardGame(score, set, TeamSide.TEAM_B);
       } else {
-        if (score.getCurrentGamePointA() == null && score.getCurrentGamePointB() == null && set.getTeamBScore() > 0) {
-          set.setTeamBScore(set.getTeamBScore() - 1);
+        // Handle return to Deuce
+        if (withAdvantage && currentA == GamePoint.AVANTAGE) {
           score.setCurrentGamePointA(GamePoint.QUARANTE);
-          score.setCurrentGamePointB(GamePoint.QUARANTE);
+          // B stays at 40
         } else {
-          GamePoint prev = prevGamePoint(score.getCurrentGamePointB());
-          score.setCurrentGamePointB(prev);
-          if (prev == null) {
-            score.setCurrentGamePointB(GamePoint.ZERO);
-          }
+          score.setCurrentGamePointB(nextGamePoint(currentB, currentA, withAdvantage));
         }
       }
     }
   }
 
+  private void winStandardGame(Score score, SetScore set, TeamSide winner) {
+    if (winner == TeamSide.TEAM_A) {
+      set.setTeamAScore(set.getTeamAScore() + 1);
+    } else {
+      set.setTeamBScore(set.getTeamBScore() + 1);
+    }
+
+    resetGamePoints(score);
+
+    // Check if set is won
+    if (isSetWin(set.getTeamAScore(), set.getTeamBScore())) {
+      score.getSets().add(new SetScore(0, 0));
+    }
+  }
+
   private void resetGamePoints(Score score) {
+    // IMPORTANT: Set to null to match test expectations
     score.setCurrentGamePointA(null);
     score.setCurrentGamePointB(null);
   }
@@ -153,10 +143,12 @@ public class GamePointManager {
     if (format == null) {
       return false;
     }
+
     int     tieBreakAt        = format.getTieBreakAt() > 0 ? format.getTieBreakAt() : 6;
     boolean scoreReached      = set.getTeamAScore() == tieBreakAt && set.getTeamBScore() == tieBreakAt;
     boolean hasTieBreakPoints = score.getTieBreakPointA() != null || score.getTieBreakPointB() != null;
-    return (scoreReached || hasTieBreakPoints) && !isSuperTieBreak(game);
+
+    return scoreReached || hasTieBreakPoints;
   }
 
   private boolean isSuperTieBreak(Game game) {
@@ -167,15 +159,24 @@ public class GamePointManager {
     if (!format.isSuperTieBreakInFinalSet()) {
       return false;
     }
-    int setsToWin = format.getNumberOfSetsToWin() > 0 ? format.getNumberOfSetsToWin() : 2;
-    // On est en Super Tie Break si on est au set décisif
-    // Note: Pour un match en 2 sets gagnants, le set index 2 (taille 3) est le décisif
-    return game.getScore().getSets().size() == (setsToWin * 2 - 1);
+
+    int setsToWin       = format.getNumberOfSetsToWin() > 0 ? format.getNumberOfSetsToWin() : 2;
+    int currentSetCount = game.getScore().getSets().size();
+
+    // Case 1: Real match context (e.g., 3rd set in a best of 3)
+    boolean isDecidingSet = currentSetCount == (setsToWin * 2 - 1);
+
+    // Correction : ne pas activer le super tie-break en test si le flag n'est pas activé
+    // On retire la condition isTestScenario qui rendait isSuperTieBreak toujours vrai en test
+    // Ancien code :
+    // boolean isTestScenario = currentSetCount == 1 && format.isSuperTieBreakInFinalSet();
+    // return isDecidingSet || isTestScenario;
+    return isDecidingSet;
   }
 
   public GamePoint nextGamePoint(GamePoint current, GamePoint opponent, boolean withAdvantage) {
     if (current == null) {
-      return GamePoint.QUINZE; // Si null (0), passe à 15
+      return GamePoint.QUINZE;
     }
     if (opponent == null) {
       opponent = GamePoint.ZERO;
@@ -199,22 +200,6 @@ public class GamePointManager {
     }
   }
 
-  public GamePoint prevGamePoint(GamePoint current) {
-    if (current == null || current == GamePoint.ZERO || current == GamePoint.QUINZE) {
-      return null; // ou Zero selon impl
-    }
-    if (current == GamePoint.AVANTAGE) {
-      return GamePoint.QUARANTE;
-    }
-    if (current == GamePoint.QUARANTE) {
-      return GamePoint.TRENTE;
-    }
-    if (current == GamePoint.TRENTE) {
-      return GamePoint.QUINZE;
-    }
-    return GamePoint.ZERO;
-  }
-
   public boolean shouldWinGame(GamePoint currentPoint, GamePoint opponentPoint, boolean withAdvantage) {
     if (currentPoint == null) {
       currentPoint = GamePoint.ZERO;
@@ -222,6 +207,7 @@ public class GamePointManager {
     if (opponentPoint == null) {
       opponentPoint = GamePoint.ZERO;
     }
+
     if (withAdvantage) {
       if (currentPoint == GamePoint.AVANTAGE) {
         return true;
@@ -233,6 +219,7 @@ public class GamePointManager {
   }
 
   private boolean isSetWin(int gamesWinner, int gamesLoser) {
-    return (gamesWinner >= 6 && gamesWinner - gamesLoser >= 2) || gamesWinner == 7;
+    return (gamesWinner == 6 && gamesWinner - gamesLoser >= 2) || gamesWinner == 7;
   }
 }
+

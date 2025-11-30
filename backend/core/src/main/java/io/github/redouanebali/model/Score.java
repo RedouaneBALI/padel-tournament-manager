@@ -52,6 +52,9 @@ public class Score {
   private Integer tieBreakPointA;
   private Integer tieBreakPointB;
 
+  // Historique pour undo multi-niveaux (chaînage)
+  private transient Score previousScore;
+
   public static Score fromString(String scoreStr) {
     Score score = new Score();
     if (scoreStr == null || scoreStr.isBlank()) {
@@ -104,6 +107,47 @@ public class Score {
     return partialScore;
   }
 
+  public void saveToHistory() {
+    Score prev = this.deepCopy();
+    prev.setPreviousScore(this.getPreviousScore()); // chaînage via setter
+    this.setPreviousScore(prev);
+  }
+
+  public boolean canUndo() {
+    return previousScore != null;
+  }
+
+  public Score deepCopy() {
+    Score copy = new Score();
+    copy.copyFrom(this);
+    copy.previousScore = this.previousScore;
+    return copy;
+  }
+
+  private void copyFrom(Score source) {
+    this.sets              = source.getSets().stream()
+                                   .map(s -> new SetScore(
+                                       s.getTeamAScore(),
+                                       s.getTeamBScore(),
+                                       s.getTieBreakTeamA(),
+                                       s.getTieBreakTeamB()
+                                   ))
+                                   .collect(Collectors.toList());
+    this.forfeit           = source.isForfeit();
+    this.forfeitedBy       = source.getForfeitedBy();
+    this.currentGamePointA = source.getCurrentGamePointA();
+    this.currentGamePointB = source.getCurrentGamePointB();
+    this.tieBreakPointA    = source.getTieBreakPointA();
+    this.tieBreakPointB    = source.getTieBreakPointB();
+  }
+
+  public void undo() {
+    if (canUndo()) {
+      this.copyFrom(getPreviousScore());
+      this.setPreviousScore(getPreviousScore() != null ? getPreviousScore().getPreviousScore() : null);
+    }
+  }
+
   /**
    * Marks this score as forfeit.
    *
@@ -118,7 +162,7 @@ public class Score {
     sets.add(new SetScore(teamAScore, teamBScore));
   }
 
-  public void addSetScore(int teamAScore, int teamBScore, int tieBreakAScore, int tieBreakBScore) {
+  public void addSetScore(int teamAScore, int teamBScore, Integer tieBreakAScore, Integer tieBreakBScore) {
     sets.add(new SetScore(teamAScore, teamBScore, tieBreakAScore, tieBreakBScore));
   }
 

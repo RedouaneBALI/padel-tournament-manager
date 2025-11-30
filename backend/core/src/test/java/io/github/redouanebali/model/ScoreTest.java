@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class ScoreTest {
 
@@ -246,6 +248,104 @@ class ScoreTest {
     score.setTieBreakPointB(5);
     String result = score.toString();
     assertTrue(result.contains("(7-5)"), "Tie-break points should be displayed at 9-9");
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+      // format: actions,expectedSetCount,expectedLastSetA,expectedLastSetB,expectedForfeit,expectedForfeitedBy,expectedTieBreakA,expectedTieBreakB,expectedGamePointA,expectedGamePointB
+      "add:6-4|add:7-5|undo,1,6,4,false,,null,null,null,null",
+      "add:6-4|add:7-5|add:10-8|undo,2,7,5,false,,null,null,null,null",
+      "add:6-4|add:7-5|add:10-8|undo|undo,1,6,4,false,,null,null,null,null",
+      "add:6-6|setTieBreak:5-7|setGamePoint:15-40|setTieBreak:8-10|setGamePoint:AVANTAGE-0|forfeit:TEAM_B|undo,1,6,6,false,,8,10,AVANTAGE,0",
+      "add:6-4|undo,1,6,4,false,,null,null,null,null",
+      "add:6-2|undo,1,6,2,false,,null,null,null,null"
+  })
+  void testUndoParametrized(String actions,
+                            int expectedSetCount,
+                            int expectedLastSetA,
+                            int expectedLastSetB,
+                            boolean expectedForfeit,
+                            String expectedForfeitedBy,
+                            String expectedTieBreakA,
+                            String expectedTieBreakB,
+                            String expectedGamePointA,
+                            String expectedGamePointB) {
+    Score    score             = new Score();
+    String[] steps             = actions.split("\\|");
+    boolean  firstModification = true;
+    for (String step : steps) {
+      // Sauvegarde automatique avant chaque modification (sauf undo), sauf avant la toute première modif
+      if (!step.equals("undo") && !firstModification) {
+        score.saveToHistory();
+      }
+      if (step.startsWith("add:")) {
+        String[] ab = step.substring(4).split("-");
+        score.addSetScore(Integer.parseInt(ab[0]), Integer.parseInt(ab[1]));
+        firstModification = false;
+      } else if (step.equals("undo")) {
+        score.undo();
+      } else if (step.startsWith("setTieBreak:")) {
+        String[] ab = step.substring(12).split("-");
+        score.setTieBreakPointA(Integer.parseInt(ab[0]));
+        score.setTieBreakPointB(Integer.parseInt(ab[1]));
+        firstModification = false;
+      } else if (step.startsWith("setGamePoint:")) {
+        String[] ab = step.substring(13).split("-");
+        score.setCurrentGamePointA(parseGamePoint(ab[0]));
+        score.setCurrentGamePointB(parseGamePoint(ab[1]));
+        firstModification = false;
+      } else if (step.startsWith("forfeit:")) {
+        score.markAsForfeit(TeamSide.valueOf(step.substring(8)));
+        firstModification = false;
+      }
+    }
+    assertEquals(expectedSetCount, score.getSets().size());
+    assertEquals(expectedLastSetA, score.getSets().get(score.getSets().size() - 1).getTeamAScore());
+    assertEquals(expectedLastSetB, score.getSets().get(score.getSets().size() - 1).getTeamBScore());
+    assertEquals(expectedForfeit, score.isForfeit());
+    if (expectedForfeitedBy == null || expectedForfeitedBy.isEmpty()) {
+      assertNull(score.getForfeitedBy());
+    } else {
+      assertEquals(TeamSide.valueOf(expectedForfeitedBy), score.getForfeitedBy());
+    }
+    if (expectedTieBreakA != null && !expectedTieBreakA.equals("null")) {
+      assertEquals(Integer.parseInt(expectedTieBreakA), score.getTieBreakPointA());
+    } else {
+      assertNull(score.getTieBreakPointA());
+    }
+    if (expectedTieBreakB != null && !expectedTieBreakB.equals("null")) {
+      assertEquals(Integer.parseInt(expectedTieBreakB), score.getTieBreakPointB());
+    } else {
+      assertNull(score.getTieBreakPointB());
+    }
+    if (expectedGamePointA != null && !expectedGamePointA.equals("null")) {
+      if (expectedGamePointA.equals("0")) {
+        assertNull(score.getCurrentGamePointA());
+      } else {
+        assertEquals(parseGamePoint(expectedGamePointA), score.getCurrentGamePointA());
+      }
+    }
+    if (expectedGamePointB != null && !expectedGamePointB.equals("null")) {
+      if (expectedGamePointB.equals("0")) {
+        assertNull(score.getCurrentGamePointB());
+      } else {
+        assertEquals(parseGamePoint(expectedGamePointB), score.getCurrentGamePointB());
+      }
+    }
+  }
+
+  private GamePoint parseGamePoint(String s) {
+    if (s == null || s.equals("null") || s.equals("0")) {
+      return null;
+    }
+    return switch (s) {
+      case "ZERO" -> GamePoint.ZERO;
+      case "QUINZE", "15" -> GamePoint.QUINZE;
+      case "TRENTE", "30" -> GamePoint.TRENTE;
+      case "QUARANTE", "40" -> GamePoint.QUARANTE;
+      case "AVANTAGE" -> GamePoint.AVANTAGE;
+      default -> throw new IllegalArgumentException("Unknown GamePoint: " + s);
+    };
   }
 
   // Helpers (copied from GameService for test purpose)

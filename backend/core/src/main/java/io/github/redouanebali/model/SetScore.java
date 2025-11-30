@@ -30,10 +30,10 @@ public class SetScore {
   private int teamBScore;
 
   @Column(name = "tie_break_team_a")
-  private Integer tieBreakTeamA; // Null si pas de tie-break
+  private int tieBreakTeamA; // 0 si pas de tie-break
 
   @Column(name = "tie_break_team_b")
-  private Integer tieBreakTeamB;
+  private int tieBreakTeamB;
 
   public SetScore(int teamAScore, int teamBScore) {
     this.teamAScore = teamAScore;

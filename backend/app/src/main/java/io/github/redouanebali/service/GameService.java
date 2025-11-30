@@ -70,10 +70,10 @@ public class GameService {
   }
 
   @Transactional
-  public UpdateScoreDTO updateGamePoint(Long tournamentId, Long gameId, TeamSide teamSide, boolean increment, boolean withAdvantage) {
+  public UpdateScoreDTO updateGamePoint(Long tournamentId, Long gameId, TeamSide teamSide) {
     Game       game       = findGameInTournament(tournamentId, gameId);
     Tournament tournament = tournamentService.getTournamentById(tournamentId);
-    gamePointManager.updateGamePoint(game, teamSide, increment, withAdvantage);
+    gamePointManager.updateGamePoint(game, teamSide);
     // Force winnerSide update
     game.setScore(game.getScore());
     tournamentRepository.save(tournament);

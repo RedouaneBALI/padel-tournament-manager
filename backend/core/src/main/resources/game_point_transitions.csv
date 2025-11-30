@@ -1,60 +1,59 @@
-currentA,currentB,teamSide,increment,withAdvantage,withTieBreak,withSuperTieBreak,startGamesA,startGamesB,startTieBreakA,startTieBreakB,expectedGamesA,expectedGamesB,expectedTieBreakA,expectedTieBreakB,expectedPointA,expectedPointB,description
-ZERO,ZERO,TEAM_A,true,true,false,false,0,0,,,0,0,,,QUINZE,ZERO,Start: 0-0 -> 15-0
-QUINZE,ZERO,TEAM_A,true,true,false,false,0,0,,,0,0,,,TRENTE,ZERO,15-0 -> 30-0
-TRENTE,ZERO,TEAM_A,true,true,false,false,0,0,,,0,0,,,QUARANTE,ZERO,30-0 -> 40-0
-QUARANTE,ZERO,TEAM_A,true,true,false,false,0,0,,,1,0,,,,,Game Win: 40-0 (Love game)
-ZERO,ZERO,TEAM_B,true,true,false,false,1,0,,,1,0,,,ZERO,QUINZE,Start B: 0-0 -> 0-15
-ZERO,QUINZE,TEAM_B,true,true,false,false,1,0,,,1,0,,,ZERO,TRENTE,0-15 -> 0-30
-ZERO,TRENTE,TEAM_B,true,true,false,false,1,0,,,1,0,,,ZERO,QUARANTE,0-30 -> 0-40
-ZERO,QUARANTE,TEAM_B,true,true,false,false,1,0,,,1,1,,,,,Game Win B: 0-40
-TRENTE,TRENTE,TEAM_A,true,true,false,false,2,2,,,2,2,,,QUARANTE,TRENTE,30-30 -> 40-30
-TRENTE,TRENTE,TEAM_B,true,true,false,false,2,2,,,2,2,,,TRENTE,QUARANTE,30-30 -> 30-40
-QUARANTE,TRENTE,TEAM_B,true,true,false,false,2,2,,,2,2,,,QUARANTE,QUARANTE,40-30 -> Deuce
-TRENTE,QUARANTE,TEAM_A,true,true,false,false,2,2,,,2,2,,,QUARANTE,QUARANTE,30-40 -> Deuce
-QUARANTE,QUARANTE,TEAM_A,true,true,false,false,3,3,,,3,3,,,AVANTAGE,QUARANTE,Deuce -> Adv A
-AVANTAGE,QUARANTE,TEAM_A,true,true,false,false,3,3,,,4,3,,,,,Adv A -> Game A
-AVANTAGE,QUARANTE,TEAM_B,true,true,false,false,3,3,,,3,3,,,QUARANTE,QUARANTE,Adv A -> Back to Deuce
-QUARANTE,QUARANTE,TEAM_B,true,true,false,false,3,3,,,3,3,,,QUARANTE,AVANTAGE,Deuce -> Adv B
-QUARANTE,AVANTAGE,TEAM_B,true,true,false,false,3,3,,,3,4,,,,,Adv B -> Game B
-QUARANTE,AVANTAGE,TEAM_A,true,true,false,false,3,3,,,3,3,,,QUARANTE,QUARANTE,Adv B -> Back to Deuce
-QUARANTE,QUARANTE,TEAM_A,true,false,false,false,4,4,,,5,4,,,,,No-Ad: Deuce -> Game A (Golden Point)
-QUARANTE,QUARANTE,TEAM_B,true,false,false,false,4,4,,,4,5,,,,,No-Ad: Deuce -> Game B (Golden Point)
-QUARANTE,QUINZE,TEAM_A,true,true,false,false,5,0,,,6,0,,,,,Set Win: 5-0 -> 6-0 (Bagel)
-ZERO,QUARANTE,TEAM_B,true,true,false,false,0,5,,,0,6,,,,,Set Loss: 0-5 -> 0-6
-QUARANTE,ZERO,TEAM_A,true,true,false,false,5,4,,,6,4,,,,,Set Win: 5-4 -> 6-4
-ZERO,QUARANTE,TEAM_B,true,true,false,false,4,5,,,4,6,,,,,Set Loss: 4-5 -> 4-6
-QUARANTE,TRENTE,TEAM_A,true,true,false,false,5,5,,,6,5,,,,,Set Lead: 5-5 -> 6-5
-TRENTE,QUARANTE,TEAM_B,true,true,false,false,5,5,,,5,6,,,,,Set Trail: 5-5 -> 5-6
-QUARANTE,QUINZE,TEAM_A,true,true,false,false,6,5,,,7,5,,,,,Set Win Extended: 6-5 -> 7-5
-QUINZE,QUARANTE,TEAM_B,true,true,false,false,5,6,,,5,7,,,,,Set Loss Extended: 5-6 -> 5-7
-TRENTE,QUARANTE,TEAM_B,true,true,false,false,6,5,,,6,6,,,,,Force Tie-Break: 6-5 -> 6-6
-QUARANTE,TRENTE,TEAM_A,true,true,false,false,5,6,,,6,6,,,,,Force Tie-Break: 5-6 -> 6-6
-ZERO,ZERO,TEAM_A,true,false,true,false,6,6,0,0,6,6,1,0,,,TB Start: 0-0 -> 1-0
-ZERO,ZERO,TEAM_B,true,false,true,false,6,6,0,0,6,6,0,1,,,TB Start B: 0-0 -> 0-1
-ZERO,ZERO,TEAM_A,true,false,true,false,6,6,5,5,6,6,6,5,,,TB Tension: 5-5 -> 6-5
-ZERO,ZERO,TEAM_B,true,false,true,false,6,6,6,5,6,6,6,6,,,TB Save: 6-5 -> 6-6
-ZERO,ZERO,TEAM_A,true,false,true,false,6,6,6,0,7,6,,,,,TB Win Clean: 7-0 -> Set 7-6
-ZERO,ZERO,TEAM_B,true,false,true,false,6,6,0,6,6,7,,,,,TB Loss Clean: 0-7 -> Set 6-7
-ZERO,ZERO,TEAM_A,true,false,true,false,6,6,6,5,7,6,,,,,TB Win Standard: 7-5 -> Set 7-6
-ZERO,ZERO,TEAM_B,true,false,true,false,6,6,5,6,6,7,,,,,TB Loss Standard: 5-7 -> Set 6-7
-ZERO,ZERO,TEAM_A,true,false,true,false,6,6,6,6,6,6,7,6,,,TB Deep: 6-6 -> 7-6
-ZERO,ZERO,TEAM_A,true,false,true,false,6,6,7,7,6,6,8,7,,,TB Deep Lead: 7-7 -> 8-7 (Not Win)
-ZERO,ZERO,TEAM_A,true,false,true,false,6,6,7,6,7,6,,,,,TB Win Standard: 8-6 -> Set 7-6
-ZERO,ZERO,TEAM_A,true,false,true,false,6,6,12,12,6,6,13,12,,,TB Very Deep: 12-12 -> 13-12
-ZERO,ZERO,TEAM_A,true,false,true,false,6,6,13,12,7,6,,,,,TB Very Deep Win: 14-12 -> Set 7-6
-ZERO,ZERO,TEAM_A,true,false,false,true,0,0,0,0,0,0,1,0,,,STB Start: 0-0 -> 1-0
-ZERO,ZERO,TEAM_A,true,false,false,true,0,0,8,8,0,0,9,8,,,STB Tension: 8-8 -> 9-8
-ZERO,ZERO,TEAM_A,true,false,false,true,0,0,9,0,1,0,,,,,STB Win Clean: 10-0 -> Set 1-0
-ZERO,ZERO,TEAM_A,true,false,false,true,0,0,9,8,1,0,,,,,STB Win Standard: 10-8 -> Set 1-0
-ZERO,ZERO,TEAM_B,true,false,false,true,0,0,8,9,0,1,,,,,STB Loss Standard: 8-10 -> Set 0-1
-ZERO,ZERO,TEAM_A,true,false,false,true,0,0,9,9,0,0,10,9,,,STB Deep: 9-9 -> 10-9
-ZERO,ZERO,TEAM_B,true,false,false,true,0,0,10,9,0,0,10,10,,,STB Save Deep: 10-9 -> 10-10
-ZERO,ZERO,TEAM_A,true,false,false,true,0,0,11,10,1,0,,,,,STB Deep Win: 12-10 -> Set 1-0
-QUINZE,ZERO,TEAM_A,false,true,false,false,0,0,,,0,0,,,ZERO,ZERO,Undo: 15-0 -> 0-0
-TRENTE,ZERO,TEAM_A,false,true,false,false,0,0,,,0,0,,,QUINZE,ZERO,Undo: 30-0 -> 15-0
-QUARANTE,ZERO,TEAM_A,false,true,false,false,0,0,,,0,0,,,TRENTE,ZERO,Undo: 40-0 -> 30-0
-AVANTAGE,QUARANTE,TEAM_A,false,true,false,false,3,3,,,3,3,,,QUARANTE,QUARANTE,Undo: Adv A -> Deuce
-QUARANTE,AVANTAGE,TEAM_B,false,true,false,false,3,3,,,3,3,,,QUARANTE,QUARANTE,Undo: Adv B -> Deuce
-ZERO,ZERO,TEAM_A,false,false,true,false,6,6,1,0,6,6,0,0,,,Undo TB: 1-0 -> 0-0
-ZERO,ZERO,TEAM_B,false,false,true,false,6,6,5,5,6,6,5,4,,,Undo TB: 5-5 -> 5-4
-ZERO,ZERO,TEAM_A,false,false,false,true,0,0,1,0,0,0,0,0,,,Undo STB: 1-0 -> 0-0
+currentA,currentB,teamSide,withAdvantage,withTieBreak,withSuperTieBreak,startGamesA,startGamesB,startTieBreakA,startTieBreakB,expectedGamesA,expectedGamesB,expectedTieBreakA,expectedTieBreakB,expectedPointA,expectedPointB,description
+QUARANTE,QUINZE,TEAM_A,true,false,false,0,0,,,1,0,,,,,"STB Win Clean: 10-0 -> Set 1-0"
+ZERO,ZERO,TEAM_A,true,false,false,0,0,,,0,0,,,QUINZE,ZERO,"Simple progression: 0-0 -> 15-0"
+QUINZE,QUINZE,TEAM_A,true,false,false,0,0,,,0,0,,,TRENTE,QUINZE,"Simple progression: 15-15 -> 30-15"
+TRENTE,QUINZE,TEAM_B,true,false,false,0,0,,,0,0,,,TRENTE,TRENTE,"Simple progression: 30-15 -> 30-30"
+QUARANTE,QUINZE,TEAM_B,true,false,false,0,0,,,0,0,,,QUARANTE,TRENTE,"Simple progression: 40-15 -> 40-30"
+QUARANTE,QUARANTE,TEAM_A,true,false,false,0,0,,,0,0,,,AVANTAGE,QUARANTE,"Deuce: 40-40 -> Avantage A"
+QUARANTE,QUARANTE,TEAM_B,true,false,false,0,0,,,0,0,,,QUARANTE,AVANTAGE,"Deuce: 40-40 -> Avantage B"
+TRENTE,QUARANTE,TEAM_A,true,false,false,0,0,,,0,0,,,QUARANTE,QUARANTE,"Simple: 30-40 -> 40-40"
+QUARANTE,QUARANTE,TEAM_A,true,false,false,0,0,,,0,0,,,AVANTAGE,QUARANTE,"Advantage: 40-40 -> Avantage A"
+AVANTAGE,QUARANTE,TEAM_B,true,false,false,0,0,,,0,0,,,QUARANTE,QUARANTE,"Back to deuce: Avantage A -> 40-40"
+QUARANTE,AVANTAGE,TEAM_A,true,false,false,0,0,,,0,0,,,QUARANTE,QUARANTE,"Back to deuce: Avantage B -> 40-40"
+AVANTAGE,QUARANTE,TEAM_A,true,false,false,0,0,,,1,0,,,,,"Game win: Avantage A -> 1-0 (A wins)"
+QUARANTE,AVANTAGE,TEAM_B,true,false,false,0,0,,,0,1,,,,,"Game win: 40-Avantage -> 0-1 (B wins)"
+ZERO,ZERO,TEAM_A,true,true,false,6,6,0,0,6,6,1,0,,,,"Tie-break: 0-0 -> 1-0 (A wins)"
+ZERO,ZERO,TEAM_B,true,true,false,6,6,0,0,6,6,0,1,,,,"Tie-break: 0-0 -> 0-1 (B wins)"
+ZERO,ZERO,TEAM_A,true,true,false,6,6,6,5,7,6,,,,,"Tie-break win: 6-5 -> 7-5 (Set A wins 7-6)"
+ZERO,ZERO,TEAM_B,true,true,false,6,6,5,6,6,7,,,,,"Tie-break win: 5-6 -> 5-7 (Set B wins 6-7)"
+ZERO,ZERO,TEAM_A,true,true,true,0,0,0,0,0,0,1,0,,,,"Super tie-break: 0-0 -> 1-0 pts (Games 0-0)"
+ZERO,ZERO,TEAM_B,true,true,true,0,0,0,0,0,0,0,1,,,,"Super tie-break: 0-0 -> 0-1 pts (Games 0-0)"
+ZERO,ZERO,TEAM_A,true,true,true,0,0,9,9,0,0,10,9,,,,"Super tie-break: 9-9 -> 10-9 pts (Games 0-0)"
+ZERO,ZERO,TEAM_A,true,true,true,0,0,9,8,1,0,,,,,"Super tie-break WIN: 9-8 -> 10-8 (Set 1-0)"
+ZERO,ZERO,TEAM_B,true,true,true,0,0,8,9,0,1,,,,,"Super tie-break WIN: 8-9 -> 8-10 (Set 0-1)"
+QUARANTE,ZERO,TEAM_A,true,false,false,5,4,,,6,4,,,,,"Set win: 5-4 -> 6-4"
+ZERO,QUARANTE,TEAM_B,true,false,false,4,5,,,4,6,,,,,"Set win: 4-5 -> 4-6"
+QUARANTE,ZERO,TEAM_A,true,false,false,6,4,,,7,4,,,,,"Set win: 6-4 -> 7-4"
+ZERO,QUARANTE,TEAM_B,true,false,false,4,6,,,4,7,,,,,"Set win: 4-6 -> 4-7"
+QUARANTE,ZERO,TEAM_A,true,false,false,6,5,,,7,5,,,,,"Set win: 6-5 -> 7-5"
+ZERO,QUARANTE,TEAM_B,true,false,false,5,6,,,5,7,,,,,"Set win: 5-6 -> 5-7"
+QUARANTE,ZERO,TEAM_A,true,false,false,7,5,,,8,5,,,,,"Set win: 7-5 -> 8-5"
+ZERO,QUARANTE,TEAM_B,true,false,false,5,7,,,5,8,,,,,"Set win: 5-7 -> 5-8"
+QUARANTE,ZERO,TEAM_A,true,false,false,6,0,,,7,0,,,,,"Set win: 6-0 -> 7-0"
+ZERO,QUARANTE,TEAM_B,true,false,false,0,6,,,0,7,,,,,"Set win: 0-6 -> 0-7"
+QUARANTE,ZERO,TEAM_A,true,false,false,0,0,,,1,0,,,,,"Game win: 0-0 -> 1-0"
+ZERO,QUARANTE,TEAM_B,true,false,false,0,0,,,0,1,,,,,"Game win: 0-0 -> 0-1"
+QUARANTE,ZERO,TEAM_A,true,false,false,1,0,,,2,0,,,,,"Game win: 1-0 -> 2-0"
+ZERO,QUARANTE,TEAM_B,true,false,false,0,1,,,0,2,,,,,"Game win: 0-1 -> 0-2"
+QUARANTE,ZERO,TEAM_A,true,false,false,2,0,,,3,0,,,,,"Game win: 2-0 -> 3-0"
+ZERO,QUARANTE,TEAM_B,true,false,false,0,2,,,0,3,,,,,"Game win: 0-2 -> 0-3"
+QUARANTE,ZERO,TEAM_A,true,false,false,3,0,,,4,0,,,,,"Game win: 3-0 -> 4-0"
+ZERO,QUARANTE,TEAM_B,true,false,false,0,3,,,0,4,,,,,"Game win: 0-3 -> 0-4"
+QUARANTE,ZERO,TEAM_A,true,false,false,4,0,,,5,0,,,,,"Game win: 4-0 -> 5-0"
+ZERO,QUARANTE,TEAM_B,true,false,false,0,4,,,0,5,,,,,"Game win: 0-4 -> 0-5"
+QUARANTE,ZERO,TEAM_A,true,false,false,5,0,,,6,0,,,,,"Game win: 5-0 -> 6-0"
+ZERO,QUARANTE,TEAM_B,true,false,false,0,5,,,0,6,,,,,"Game win: 0-5 -> 0-6"
+QUARANTE,ZERO,TEAM_A,true,false,false,6,0,,,7,0,,,,,"Game win: 6-0 -> 7-0"
+ZERO,QUARANTE,TEAM_B,true,false,false,0,6,,,0,7,,,,,"Game win: 0-6 -> 0-7"
+QUARANTE,ZERO,TEAM_A,true,false,false,0,0,,,1,0,,,,,"Game win repeat: 0-0 -> 1-0"
+ZERO,QUARANTE,TEAM_B,true,false,false,0,0,,,0,1,,,,,"Game win repeat: 0-0 -> 0-1"
+QUARANTE,ZERO,TEAM_A,true,false,false,1,0,,,2,0,,,,,"Game win repeat: 1-0 -> 2-0"
+ZERO,QUARANTE,TEAM_B,true,false,false,0,1,,,0,2,,,,,"Game win repeat: 0-1 -> 0-2"
+QUARANTE,ZERO,TEAM_A,true,false,false,2,0,,,3,0,,,,,"Game win repeat: 2-0 -> 3-0"
+ZERO,QUARANTE,TEAM_B,true,false,false,0,2,,,0,3,,,,,"Game win repeat: 0-2 -> 0-3"
+QUARANTE,ZERO,TEAM_A,true,false,false,3,0,,,4,0,,,,,"Game win repeat: 3-0 -> 4-0"
+ZERO,QUARANTE,TEAM_B,true,false,false,0,3,,,0,4,,,,,"Game win repeat: 0-3 -> 0-4"
+QUARANTE,ZERO,TEAM_A,true,false,false,4,0,,,5,0,,,,,"Game win repeat: 4-0 -> 5-0"
+ZERO,QUARANTE,TEAM_B,true,false,false,0,4,,,0,5,,,,,"Game win repeat: 0-4 -> 0-5"
+QUARANTE,ZERO,TEAM_A,true,false,false,5,0,,,6,0,,,,,"Game win repeat: 5-0 -> 6-0"
+ZERO,QUARANTE,TEAM_B,true,false,false,0,5,,,0,6,,,,,"Game win repeat: 0-5 -> 0-6"
