@@ -23,8 +23,6 @@ public class GameService {
   private final TournamentMapper      tournamentMapper;
   private final GamePointManager      gamePointManager = new GamePointManager();
 
-  // --- EXISTING METHODS (UNCHANGED) ---
-
   @Transactional
   public UpdateScoreDTO updateGameScore(Long tournamentId, Long gameId, Score score) {
     Game       game       = findGameInTournament(tournamentId, gameId);
@@ -38,7 +36,29 @@ public class GameService {
     Tournament tournament = tournamentService.getTournamentById(tournamentId);
     game.setScheduledTime(request.getScheduledTime());
     game.setCourt(request.getCourt());
-    return updateScoreAndPropagate(game, tournament, request.getScore());
+    // --- Always use score history for any update (even direct set update) ---
+    Score currentScore = game.getScore();
+    if (currentScore == null) {
+      currentScore = new Score();
+      game.setScore(currentScore);
+    }
+    currentScore.saveToHistory();
+    // Copy values from request.getScore() to currentScore (do not replace instance)
+    Score newScore = request.getScore();
+    if (newScore != null) {
+      currentScore.getSets().clear();
+      if (newScore.getSets() != null) {
+        currentScore.getSets().addAll(newScore.getSets());
+      }
+      currentScore.setForfeit(newScore.isForfeit());
+      currentScore.setForfeitedBy(newScore.getForfeitedBy());
+      currentScore.setTieBreakPointA(newScore.getTieBreakPointA());
+      currentScore.setTieBreakPointB(newScore.getTieBreakPointB());
+      currentScore.setCurrentGamePointA(newScore.getCurrentGamePointA());
+      currentScore.setCurrentGamePointB(newScore.getCurrentGamePointB());
+    }
+    // --- End history logic ---
+    return updateScoreAndPropagate(game, tournament, currentScore);
   }
 
   private UpdateScoreDTO updateScoreAndPropagate(Game game, Tournament tournament, Score score) {

@@ -331,4 +331,32 @@ public class GamePointManagerTest {
     game.getScore().undo();
     assertEquals(afterFirst, game.getScore());
   }
+
+  @Test
+  void shouldCreateNewSetAutomaticallyWhenSetIsWon() {
+    GamePointManager manager = new GamePointManager();
+    Game             game    = new Game();
+    MatchFormat      format  = new MatchFormat();
+    format.setNumberOfSetsToWin(2);
+    format.setGamesPerSet(6);
+    format.setAdvantage(false);
+    game.setFormat(format);
+    Score score = new Score();
+    score.getSets().add(new SetScore(0, 0));
+    game.setScore(score);
+
+    for (int i = 0; i < 6; i++) {
+      for (int p = 0; p < 4; p++) {
+        manager.updateGamePoint(game, TeamSide.TEAM_A);
+      }
+    }
+    manager.updateGamePoint(game, TeamSide.TEAM_A); // 15
+    manager.updateGamePoint(game, TeamSide.TEAM_A); // 30
+    manager.updateGamePoint(game, TeamSide.TEAM_A); // 40
+    manager.updateGamePoint(game, TeamSide.TEAM_A); // point
+
+    assertEquals(2, game.getScore().getSets().size(), "A new set should be created after the first set is won");
+    assertEquals(1, game.getScore().getSets().get(1).getTeamAScore(), "Team A should have 1 point in the new set");
+    assertEquals(0, game.getScore().getSets().get(1).getTeamBScore(), "Team B should have 0 point in the new set");
+  }
 }
