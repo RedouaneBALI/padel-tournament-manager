@@ -290,4 +290,48 @@ class GameServiceTest {
     assertEquals(1, game.getScore().getSets().get(1).getTeamAScore());
     assertEquals(0, game.getScore().getSets().get(1).getTeamBScore());
   }
+
+  @org.junit.jupiter.api.Test
+  void testIncrementGamePoint_createsNewSetAfterSetWin() {
+    Long             tournamentId = 8L;
+    Long             gameId       = 80L;
+    MatchFormat      format       = new MatchFormat();
+    List<PlayerPair> pairs        = TestFixtures.createPlayerPairs(2);
+    PlayerPair       teamA        = pairs.getFirst();
+    PlayerPair       teamB        = pairs.get(1);
+    Game             game         = new Game(format);
+    game.setId(gameId);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+    Score initialScore = new Score();
+    // Set 1: 6-2, Set 2: 2-5
+    initialScore.setSets(new LinkedList<>(List.of(
+        new SetScore(6, 2),
+        new SetScore(2, 5)
+    )));
+    game.setScore(initialScore);
+    Round round = new Round();
+    round.addGames(List.of(game));
+    Tournament tournament = new Tournament();
+    tournament.setId(tournamentId);
+    tournament.getRounds().add(round);
+    tournament.setConfig(TournamentConfig.builder().mainDrawSize(4).nbSeeds(0).format(TournamentFormat.KNOCKOUT).build());
+    when(tournamentService.getTournamentById(tournamentId)).thenReturn(tournament);
+
+    // Incrémente pour faire passer le 2e set à 2-6 (TEAM_B gagne le set)
+    for (int i = 0; i < 4; i++) {
+      gameService.incrementGamePoint(tournamentId, gameId, TeamSide.TEAM_B);
+    }
+    // Après la victoire du set, un 3e set vide doit être créé
+    assertEquals(3, game.getScore().getSets().size(), "A new set should be created after set win");
+    assertEquals(0, game.getScore().getSets().get(2).getTeamAScore());
+    assertEquals(0, game.getScore().getSets().get(2).getTeamBScore());
+
+    // On continue d'incrémenter, les jeux doivent s'ajouter au 3e set
+    for (int i = 0; i < 4; i++) {
+      gameService.incrementGamePoint(tournamentId, gameId, TeamSide.TEAM_A);
+    }
+    assertEquals(4, game.getScore().getSets().get(2).getTieBreakTeamA(), "Games should be added to the new set");
+    assertEquals(0, game.getScore().getSets().get(2).getTeamBScore());
+  }
 }

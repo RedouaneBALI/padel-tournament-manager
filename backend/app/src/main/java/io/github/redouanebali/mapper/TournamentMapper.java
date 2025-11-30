@@ -293,11 +293,10 @@ public interface TournamentMapper {
       SetScoreDTO dto = new SetScoreDTO();
       dto.setTeamAScore(set.getTeamAScore());
       dto.setTeamBScore(set.getTeamBScore());
-      // Inject tie-break only if not 0 (0 = pas de tie-break en cours, doit être null côté DTO)
       Integer tieBreakA = set.getTieBreakTeamA();
-      dto.setTieBreakTeamA((tieBreakA != null && tieBreakA == 0) ? null : tieBreakA);
+      dto.setTieBreakTeamA(tieBreakA);
       Integer tieBreakB = set.getTieBreakTeamB();
-      dto.setTieBreakTeamB((tieBreakB != null && tieBreakB == 0) ? null : tieBreakB);
+      dto.setTieBreakTeamB(tieBreakB);
       result.add(dto);
     }
     return result;

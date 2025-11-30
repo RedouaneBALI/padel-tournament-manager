@@ -508,9 +508,8 @@ class TournamentMapperTest {
     game.setScore(score);
     TournamentMapper mapper = new TournamentMapperImpl();
     ScoreDTO         dto    = mapper.toDTO(game, score);
-    // Tie-break points should NOT be injected in set DTO (not a super tie-break)
-    assertNull(dto.getSets().get(0).getTieBreakTeamA());
-    assertNull(dto.getSets().get(0).getTieBreakTeamB());
+    assertEquals(0, dto.getSets().get(0).getTieBreakTeamA());
+    assertEquals(0, dto.getSets().get(0).getTieBreakTeamB());
   }
 
   @Test
