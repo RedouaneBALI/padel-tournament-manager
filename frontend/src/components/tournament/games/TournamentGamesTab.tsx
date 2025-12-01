@@ -59,7 +59,7 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
   const getValidGamesSortedByTime = useCallback((games: Game[]) => {
     return games
       .filter(game =>
-        (game.teamA !== null || game.teamB !== null) &&
+        // On ne filtre plus sur teamA/teamB null, on garde seulement le filtre BYE
         (game.teamA?.player1Name !== 'BYE' &&
          game.teamA?.player2Name !== 'BYE' &&
          game.teamB?.player1Name !== 'BYE' &&

@@ -1,8 +1,15 @@
-export type GamePoint = 'ZERO' | 'FIFTEEN' | 'THIRTY' | 'FORTY' | 'ADVANTAGE';
+export type GamePoint =
+  | 'ZERO'
+  | 'QUINZE'
+  | 'TRENTE'
+  | 'QUARANTE'
+  | 'AVANTAGE';
 
 export interface SetScore {
   teamAScore: number | null;
   teamBScore: number | null;
+  tieBreakTeamA?: number | null;
+  tieBreakTeamB?: number | null;
 }
 
 export interface Score {

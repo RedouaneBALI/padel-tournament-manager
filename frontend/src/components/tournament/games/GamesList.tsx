@@ -104,10 +104,6 @@ export default function GamesList({
     });
   }, [games, sortMode]);
 
-  if (!games || games.length === 0) {
-    return <p className="text-muted-foreground text-center">Aucun match à afficher</p>;
-  }
-
   return (
     <div className="flex flex-col gap-4 w-full items-center mb-4">
       {/* Contrôle de tri (UI only) */}

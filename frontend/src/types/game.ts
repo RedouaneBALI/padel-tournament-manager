@@ -1,9 +1,9 @@
 'use client';
 
-import { PlayerPair } from '@/src/types/playerPair';
 import { Score } from '@/src/types/score';
 import { Pool } from '@/src/types/pool';
 import { Round } from '@/src/types/round';
+import { PlayerPair } from '@/src/types/playerPair';
 
 export interface Game {
   id: string;
@@ -21,3 +21,6 @@ export interface Game {
   court: string;
   round?: Round;
 }
+
+export type { PlayerPair } from '@/src/types/playerPair';
+export type { TeamSide } from '@/src/types/teamSide';

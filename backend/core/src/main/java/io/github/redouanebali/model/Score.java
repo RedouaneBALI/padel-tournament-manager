@@ -1,6 +1,7 @@
 package io.github.redouanebali.model;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -45,13 +46,17 @@ public class Score {
 
   // Current game points (live game score), can be null if not used
   @Enumerated(EnumType.STRING)
+  @Column(name = "current_game_point_a")
   private GamePoint currentGamePointA;
 
   @Enumerated(EnumType.STRING)
+  @Column(name = "current_game_point_b")
   private GamePoint currentGamePointB;
 
   // Tie-break points (used only in tie-break or super tie-break games)
+  @Column(name = "tie_break_point_a")
   private Integer tieBreakPointA;
+  @Column(name = "tie_break_point_b")
   private Integer tieBreakPointB;
 
   @ManyToOne(cascade = CascadeType.ALL)

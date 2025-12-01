@@ -64,7 +64,7 @@ export default function TVModeView({
   const displayTitle = title || (game.round?.stage ? formatStageLabel(game.round.stage) : 'Match');
 
   // Tennis point formatter
-  function formatGamePoint(point) {
+  function formatGamePoint(point: import('@/src/types/score').GamePoint | null | undefined) {
     if (point === null || point === undefined) return '';
     switch (point) {
       case 'ZERO': return '0';
@@ -72,7 +72,7 @@ export default function TVModeView({
       case 'TRENTE': return '30';
       case 'QUARANTE': return '40';
       case 'AVANTAGE': return 'A';
-      default: return point;
+      default: return '';
     }
   }
 

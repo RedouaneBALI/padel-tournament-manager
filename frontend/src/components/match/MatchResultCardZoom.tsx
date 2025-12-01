@@ -26,6 +26,15 @@ function formatGamePoint(point: GamePoint | null | undefined) {
   }
 }
 
+function formatScheduledTime(value?: string | null) {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (/^\d{1,2}:\d{2}$/.test(trimmed)) return trimmed;
+  const parsed = new Date(trimmed);
+  if (Number.isNaN(parsed.getTime())) return trimmed;
+  return parsed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
 // Extraction d'une ligne équipe + score + boutons
 function TeamScoreRow({
   team,
@@ -98,6 +107,7 @@ type MatchResultCardZoomProps = {
   tournamentId: string | number;
   mode: 'spectator' | 'admin';
   onScoreUpdate?: (updatedGame: Game) => void;
+  matchIndex?: number;
 };
 
 export default function MatchResultCardZoom({
@@ -105,11 +115,14 @@ export default function MatchResultCardZoom({
   tournamentId,
   mode,
   onScoreUpdate,
+  matchIndex = 0,
 }: MatchResultCardZoomProps) {
   const [currentGame, setCurrentGame] = useState<Game>(game);
   const [loading, setLoading] = useState<TeamSide | null>(null);
   const [undoLoading, setUndoLoading] = useState(false);
   const [matchFormat, setMatchFormat] = useState<import('@/src/types/matchFormat').MatchFormat | null>(null);
+
+  const formattedScheduledTime = formatScheduledTime(currentGame.scheduledTime);
 
   useEffect(() => {
     async function loadFormat() {
@@ -223,7 +236,6 @@ export default function MatchResultCardZoom({
   const teams: (PlayerPair | null)[] = [currentGame.teamA ?? null, currentGame.teamB ?? null];
   // Affichage des jeux (sets)
   const gamesScore = currentGame.score?.sets?.map((set) => [set.teamAScore, set.teamBScore]) ?? [];
-  const points = currentGame.score?.points ?? [0, 0];
   // Préparation des scores par set pour chaque équipe
   let setScoresA = currentGame.score?.sets?.map((set) => set.teamAScore) ?? [];
   let setScoresB = currentGame.score?.sets?.map((set) => set.teamBScore) ?? [];
@@ -310,13 +322,10 @@ export default function MatchResultCardZoom({
       {/* Détails supplémentaires (court, heure, etc.) si besoin */}
       <div className="flex justify-between text-xs text-muted-foreground">
         <span>
-          {currentGame.court?.name && <>Court : {currentGame.court.name}</>}
+          {currentGame.court && <>{currentGame.court}</>}
         </span>
         <span>
-          {currentGame.startTime && <>Début : {new Date(currentGame.startTime).toLocaleTimeString()}</>}
-        </span>
-        <span>
-          {currentGame.number && <>Match n°{currentGame.number}</>}
+          {formattedScheduledTime && <>Début : {formattedScheduledTime}</>}
         </span>
       </div>
     </div>
