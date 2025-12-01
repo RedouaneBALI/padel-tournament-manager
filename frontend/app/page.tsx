@@ -80,11 +80,16 @@ export default function Home() {
 
             <FeaturedTournaments items={featured} loading={loadingFeatured} />
 
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground mb-2">
-              Gère tes tournois de padel facilement
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">
+              VIS TES TOURNOIS INTENSÉMENT <span role="img" aria-label="flamme">🔥</span>
             </h1>
 
-            <p className="text-muted-foreground">Tableaux knockout · Suivi des scores en direct · Liste des joueurs </p>
+            <p className="text-lg font-semibold mb-2">
+              Une seule app pour </p>
+            <p className="text-lg font-semibold mb-2">
+              Organiser · Suivre · Partager · Jouer l'esprit tranquille
+            </p>
+
             <div className="flex justify-center">
               <Image
                 src="/pr-logo.png"
@@ -96,11 +101,9 @@ export default function Home() {
               />
             </div>
 
-            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-              Crée, organise et gère tes tournois de padel en quelques clics.
-              Une interface simple pour préparer les tableaux, gérer les équipes et partager les scores.
-            </p>
-
+            <h2 className="text-2xl sm:text-3xl font-bold text-center my-6">
+              Joue. On s'occupe du reste. <span role="img" aria-label="balle de tennis">🎾</span>
+            </h2>
 
             <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
               {status === 'authenticated' ? (
