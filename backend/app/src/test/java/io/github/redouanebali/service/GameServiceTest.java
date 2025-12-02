@@ -168,7 +168,7 @@ class GameServiceTest {
     game.setId(gameId);
     game.setTeamA(teamA);
     game.setTeamB(teamB);
-    // Initialisation explicite du score pour garantir la cohérence
+    // Explicit initialization of the score for consistency
     Score initialScore = new Score();
     game.setScore(initialScore);
     Round round = new Round();
@@ -179,15 +179,14 @@ class GameServiceTest {
     tournament.setConfig(TournamentConfig.builder().mainDrawSize(4).nbSeeds(0).format(TournamentFormat.KNOCKOUT).build());
     when(tournamentService.getTournamentById(tournamentId)).thenReturn(tournament);
 
-    // 1. Incrémentation point par point (méthode 1)
+    // 1. Increment point by point (method 1)
     gameService.incrementGamePoint(tournamentId, gameId, TeamSide.TEAM_A); // 15-0
     assertEquals(io.github.redouanebali.model.GamePoint.QUINZE, game.getScore().getCurrentGamePointA());
-    assertNull(game.getScore().getCurrentGamePointB());
+    assertEquals(io.github.redouanebali.model.GamePoint.ZERO, game.getScore().getCurrentGamePointB());
     gameService.incrementGamePoint(tournamentId, gameId, TeamSide.TEAM_A); // 30-0
     assertEquals(io.github.redouanebali.model.GamePoint.TRENTE, game.getScore().getCurrentGamePointA());
-    assertNull(game.getScore().getCurrentGamePointB());
+    assertEquals(io.github.redouanebali.model.GamePoint.ZERO, game.getScore().getCurrentGamePointB());
 
-    // 2. Modification directe du score (méthode 2)
     io.github.redouanebali.dto.request.UpdateGameRequest req = new io.github.redouanebali.dto.request.UpdateGameRequest();
     req.setCourt("Court 2");
     Score score = new Score();
@@ -197,7 +196,7 @@ class GameServiceTest {
     assertEquals("Court 2", game.getCourt());
     assertEquals(6, game.getScore().getSets().getFirst().getTeamAScore());
     assertEquals(TeamSide.TEAM_A, result.getWinner());
-    // Vérification que les points courants sont bien réinitialisés
+    // Check that current points are reset
     assertNull(game.getScore().getCurrentGamePointA());
     assertNull(game.getScore().getCurrentGamePointB());
   }
@@ -233,12 +232,13 @@ class GameServiceTest {
     assertEquals("Court 3", game.getCourt());
     assertEquals(4, game.getScore().getSets().getFirst().getTeamAScore());
     assertEquals(TeamSide.TEAM_B, result.getWinner());
+    // Check that current points are reset
     assertNull(game.getScore().getCurrentGamePointA());
     assertNull(game.getScore().getCurrentGamePointB());
 
     gameService.incrementGamePoint(tournamentId, gameId, TeamSide.TEAM_B); // 4-6 2-6, 0-15
     assertEquals(io.github.redouanebali.model.GamePoint.QUINZE, game.getScore().getCurrentGamePointB());
-    assertNull(game.getScore().getCurrentGamePointA());
+    assertEquals(io.github.redouanebali.model.GamePoint.ZERO, game.getScore().getCurrentGamePointA());
     assertEquals(4, game.getScore().getSets().getFirst().getTeamAScore());
     assertEquals(6, game.getScore().getSets().getFirst().getTeamBScore());
     assertEquals(2, game.getScore().getSets().get(1).getTeamAScore());
@@ -322,12 +322,12 @@ class GameServiceTest {
     for (int i = 0; i < 4; i++) {
       gameService.incrementGamePoint(tournamentId, gameId, TeamSide.TEAM_B);
     }
-    // Après la victoire du set, un 3e set vide doit être créé
+    // After set win, a 3rd empty set should be created
     assertEquals(3, game.getScore().getSets().size(), "A new set should be created after set win");
     assertEquals(0, game.getScore().getSets().get(2).getTeamAScore());
     assertEquals(0, game.getScore().getSets().get(2).getTeamBScore());
 
-    // On continue d'incrémenter, les jeux doivent s'ajouter au 3e set
+    // Continue incrementing, games should be added to the new set
     for (int i = 0; i < 4; i++) {
       gameService.incrementGamePoint(tournamentId, gameId, TeamSide.TEAM_A);
     }
