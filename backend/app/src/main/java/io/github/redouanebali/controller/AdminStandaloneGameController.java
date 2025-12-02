@@ -1,10 +1,11 @@
 package io.github.redouanebali.controller;
 
 import io.github.redouanebali.dto.request.CreateStandaloneGameRequest;
-import io.github.redouanebali.dto.request.UpdateGameRequest;
 import io.github.redouanebali.dto.response.GameDTO;
+import io.github.redouanebali.dto.response.UpdateScoreDTO;
 import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.Game;
+import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
 import io.github.redouanebali.service.StandaloneGameService;
@@ -19,9 +20,9 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -71,13 +72,19 @@ public class AdminStandaloneGameController {
     return ResponseEntity.noContent().build();
   }
 
-  @PutMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<GameDTO> updateStandaloneGame(@PathVariable Long id,
-                                                      @RequestBody @Valid UpdateGameRequest request) {
-    log.info("User {} updating standalone game {}", SecurityUtil.currentUserId(), id);
+  @PatchMapping(path = "/{id}/game-point")
+  public ResponseEntity<UpdateScoreDTO> incrementGamePoint(@PathVariable Long id,
+                                                           @RequestParam TeamSide teamSide) {
+    log.info("User {} increments point for standalone game {}", SecurityUtil.currentUserId(), id);
     checkOwnership(id);
-    Game updated = standaloneGameService.updateGame(id, request);
-    return ResponseEntity.ok(tournamentMapper.toDTO(updated));
+    return ResponseEntity.ok(standaloneGameService.incrementGamePoint(id, teamSide));
+  }
+
+  @PatchMapping(path = "/{id}/undo-game-point")
+  public ResponseEntity<UpdateScoreDTO> undoGamePoint(@PathVariable Long id) {
+    log.info("User {} undoes point for standalone game {}", SecurityUtil.currentUserId(), id);
+    checkOwnership(id);
+    return ResponseEntity.ok(standaloneGameService.undoGamePoint(id));
   }
 
   private void checkOwnership(Long gameId) {

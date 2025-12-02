@@ -425,6 +425,22 @@ export async function undoGamePoint(tournamentId: string | number, gameId: strin
   );
 }
 
+export async function incrementStandaloneGamePoint(gameId: string | number, teamSide: string) {
+  return await patchGamePointEndpoint(
+    `/admin/games/${gameId}/game-point`,
+    teamSide,
+    'Erreur lors de l\'incrémentation du point (match standalone).'
+  );
+}
+
+export async function undoStandaloneGamePoint(gameId: string | number) {
+  return await patchGamePointEndpoint(
+    `/admin/games/${gameId}/undo-game-point`,
+    undefined,
+    'Erreur lors de l\'annulation du point (match standalone).'
+  );
+}
+
 // Internal helper to avoid code duplication
 async function patchGamePointEndpoint(endpoint: string, teamSide: string | undefined, errorMsg: string) {
   const url = teamSide !== undefined ? api(endpoint) + `?teamSide=${encodeURIComponent(teamSide)}` : api(endpoint);

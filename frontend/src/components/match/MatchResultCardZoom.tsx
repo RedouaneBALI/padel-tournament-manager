@@ -3,7 +3,7 @@ import type { Game, PlayerPair, TeamSide } from '@/src/types/game';
 import type { GamePoint } from '@/src/types/score';
 import { cn } from '@/src/lib/utils';
 import TeamRow from '@/src/components/ui/TeamRow';
-import { incrementGamePoint, undoGamePoint, fetchMatchFormat } from '@/src/api/tournamentApi';
+import { incrementGamePoint, undoGamePoint, fetchMatchFormat, incrementStandaloneGamePoint, undoStandaloneGamePoint } from '@/src/api/tournamentApi';
 import { Undo2 } from 'lucide-react';
 import LiveMatchIndicator from '@/src/components/ui/LiveMatchIndicator';
 
@@ -46,6 +46,7 @@ function TeamScoreRow({
   loading,
   onPointChange,
   winnerSide,
+  canIncrement,
 }: {
   team: PlayerPair | null;
   gamePoint: GamePoint | null | undefined;
@@ -56,6 +57,7 @@ function TeamScoreRow({
   loading: boolean;
   onPointChange: (teamSide: TeamSide) => void;
   winnerSide?: number;
+  canIncrement: boolean;
 }) {
   return (
     <div className="flex flex-1 items-center gap-2 min-h-[40px]">
@@ -86,7 +88,7 @@ function TeamScoreRow({
           </span>
         )}
       </div>
-      {mode === 'admin' && (
+      {mode === 'admin' && canIncrement && (
         <div className="flex flex-col gap-1 items-end min-w-[32px] ml-2">
           <button
             className="btn btn-outline btn-xs w-8"
@@ -123,11 +125,13 @@ export default function MatchResultCardZoom({
   const [matchFormat, setMatchFormat] = useState<import('@/src/types/matchFormat').MatchFormat | null>(null);
 
   const formattedScheduledTime = formatScheduledTime(currentGame.scheduledTime);
+  const hasTournamentContext = Boolean(tournamentId);
+  const canIncrement = mode === 'admin';
 
   useEffect(() => {
     async function loadFormat() {
       const stage = game.round?.stage;
-      if (stage && tournamentId) {
+      if (stage && hasTournamentContext) {
         try {
           const format = await fetchMatchFormat(String(tournamentId), stage);
           setMatchFormat(format);
@@ -137,17 +141,28 @@ export default function MatchResultCardZoom({
       }
     }
     loadFormat();
-  }, [game.round?.stage, tournamentId]);
+  }, [game.round?.stage, hasTournamentContext, tournamentId]);
+
+  const callIncrementEndpoint = (teamSide: TeamSide) => {
+    return hasTournamentContext
+      ? incrementGamePoint(tournamentId, game.id, teamSide)
+      : incrementStandaloneGamePoint(game.id, teamSide);
+  };
+
+  const callUndoEndpoint = () => {
+    return hasTournamentContext
+      ? undoGamePoint(tournamentId, game.id)
+      : undoStandaloneGamePoint(game.id);
+  };
 
   const handlePointChange = async (teamSide: TeamSide) => {
+    if (!canIncrement) {
+      return;
+    }
     setLoading(teamSide);
     const prevScore = currentGame.score;
     try {
-      const result = await incrementGamePoint(
-        tournamentId,
-        game.id,
-        teamSide
-      );
+      const result = await callIncrementEndpoint(teamSide);
       if (result && result.score) {
         let newScore = { ...result.score };
         // Correction : synchronise teamAScore/teamBScore et tieBreakPointA/B avec tieBreakTeamA/B si présents
@@ -189,12 +204,12 @@ export default function MatchResultCardZoom({
 
   // Ajout Undo global
   const handleUndo = async () => {
+    if (!canIncrement) {
+      return;
+    }
     setUndoLoading(true);
     try {
-      const result = await undoGamePoint(
-        tournamentId,
-        game.id
-      );
+      const result = await callUndoEndpoint();
       if (result && result.score) {
         let newScore = { ...result.score };
         // Correction : synchronise teamAScore/teamBScore et tieBreakPointA/B avec tieBreakTeamA/B si présents
@@ -293,6 +308,7 @@ export default function MatchResultCardZoom({
             loading={loading === 'TEAM_A'}
             onPointChange={handlePointChange}
             winnerSide={currentGame.winnerSide === 'TEAM_A' ? 0 : currentGame.winnerSide === 'TEAM_B' ? 1 : undefined}
+            canIncrement={canIncrement}
           />
           <TeamScoreRow
             team={teams[1]}
@@ -304,9 +320,10 @@ export default function MatchResultCardZoom({
             loading={loading === 'TEAM_B'}
             onPointChange={handlePointChange}
             winnerSide={currentGame.winnerSide === 'TEAM_A' ? 0 : currentGame.winnerSide === 'TEAM_B' ? 1 : undefined}
+            canIncrement={canIncrement}
           />
         </div>
-        {mode === 'admin' && (
+        {mode === 'admin' && canIncrement && (
           <button
             className="btn btn-outline btn-xs ml-4 flex items-center justify-center"
             disabled={undoLoading}

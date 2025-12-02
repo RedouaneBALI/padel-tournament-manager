@@ -129,9 +129,9 @@ export default function TVModeView({
                 </div>
               ))}
               {/* GamePoint Team A */}
-              {game.score?.currentGamePointA != null && (
+              {(game.score?.currentGamePointA != null || game.score?.currentGamePointB != null) && (
                 <div className="w-20 h-20 flex items-center justify-center rounded-xl text-4xl font-bold bg-red-100 text-red-600 ml-4 border-2 border-red-300">
-                  {formatGamePoint(game.score.currentGamePointA)}
+                  {formatGamePoint(game.score?.currentGamePointA ?? 'ZERO')}
                 </div>
               )}
             </div>
@@ -168,9 +168,9 @@ export default function TVModeView({
                 </div>
               ))}
               {/* GamePoint Team B */}
-              {game.score?.currentGamePointB != null && (
+              {(game.score?.currentGamePointA != null || game.score?.currentGamePointB != null) && (
                 <div className="w-20 h-20 flex items-center justify-center rounded-xl text-4xl font-bold bg-red-100 text-red-600 ml-4 border-2 border-red-300">
-                  {formatGamePoint(game.score.currentGamePointB)}
+                  {formatGamePoint(game.score?.currentGamePointB ?? 'ZERO')}
                 </div>
               )}
             </div>

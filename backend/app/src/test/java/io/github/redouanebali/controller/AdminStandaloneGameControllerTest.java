@@ -1,27 +1,31 @@
 package io.github.redouanebali.controller;
 
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
 import io.github.redouanebali.dto.request.CreateStandaloneGameRequest;
-import io.github.redouanebali.dto.request.UpdateGameRequest;
 import io.github.redouanebali.dto.response.GameDTO;
+import io.github.redouanebali.dto.response.ScoreDTO;
+import io.github.redouanebali.dto.response.UpdateScoreDTO;
 import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.PlayerPair;
+import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
 import io.github.redouanebali.service.StandaloneGameService;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -73,6 +77,7 @@ public class AdminStandaloneGameControllerTest {
   public void setUp() {
     secMock = Mockito.mockStatic(SecurityUtil.class);
     secMock.when(SecurityUtil::currentUserId).thenReturn("user1");
+    when(securityProps.getSuperAdmins()).thenReturn(Set.of());
   }
 
   @AfterEach
@@ -158,28 +163,37 @@ public class AdminStandaloneGameControllerTest {
   }
 
   @Test
-  public void updateGame_returnsOk_whenOwner() throws Exception {
-    Long id   = 77L;
-    Game game = sampleGame("u");
+  public void incrementGamePoint_returnsScore_whenOwner() throws Exception {
+    Long id   = 88L;
+    Game game = sampleGame("inc");
     game.setId(id);
     game.setCreatedBy("user1");
-
-    UpdateGameRequest req = new UpdateGameRequest();
-    req.setCourt("Court 1");
-    req.setScheduledTime(java.time.LocalTime.of(15, 30));
-
-    Game updated = sampleGame("u-upd");
-    updated.setId(id);
-    updated.setCourt("Court 1");
+    UpdateScoreDTO dto = new UpdateScoreDTO(false, null, new ScoreDTO());
 
     when(standaloneGameService.getGameById(id)).thenReturn(game);
-    when(standaloneGameService.updateGame(org.mockito.Mockito.eq(id), org.mockito.Mockito.any(UpdateGameRequest.class))).thenReturn(updated);
-    when(tournamentMapper.toDTO(updated)).thenReturn(new GameDTO());
+    when(standaloneGameService.incrementGamePoint(id, TeamSide.TEAM_A)).thenReturn(dto);
 
-    mockMvc.perform(put("/admin/games/{id}", id)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req)))
+    mockMvc.perform(patch("/admin/games/{id}/game-point", id)
+                        .param("teamSide", TeamSide.TEAM_A.name()))
            .andExpect(status().isOk());
+
+    verify(standaloneGameService).incrementGamePoint(id, TeamSide.TEAM_A);
   }
 
+  @Test
+  public void undoGamePoint_returnsScore_whenOwner() throws Exception {
+    Long id   = 91L;
+    Game game = sampleGame("undo");
+    game.setId(id);
+    game.setCreatedBy("user1");
+    UpdateScoreDTO dto = new UpdateScoreDTO(false, TeamSide.TEAM_A, new ScoreDTO());
+
+    when(standaloneGameService.getGameById(id)).thenReturn(game);
+    when(standaloneGameService.undoGamePoint(id)).thenReturn(dto);
+
+    mockMvc.perform(patch("/admin/games/{id}/undo-game-point", id))
+           .andExpect(status().isOk());
+
+    verify(standaloneGameService).undoGamePoint(id);
+  }
 }

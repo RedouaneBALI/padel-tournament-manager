@@ -17,6 +17,7 @@ import {
   type TeamRangeKey
 } from './baremes';
 import GenderToggle from '@/src/components/ui/GenderToggle';
+import Head from 'next/head';
 
 export default function PointsCalculatorPage() {
   const [tournamentLevel, setTournamentLevel] = useState<string>('P100');
@@ -215,13 +216,31 @@ export default function PointsCalculatorPage() {
 
   return (
     <>
+      <Head>
+        <title>Calculateur de points tournois padel FRMT Maroc | P50 P100 P250 P500 P1000 P1500 P2000</title>
+        <meta name="description" content="Calculateur de points pour tournois de padel au Maroc (FRMT) : P50, P100, P250, P500, P1000, P1500, P2000. Homme et femme. Classement officiel Fédération Royale Marocaine de Tennis." />
+        <meta name="keywords" content="calculateur, points, padel, tournoi, FRMT, Maroc, classement, P50, P100, P250, P500, P1000, P1500, P2000, homme, femme, fédération royale marocaine de tennis" />
+        <meta property="og:title" content="Calculateur de points tournois padel FRMT Maroc" />
+        <meta property="og:description" content="Outil pour calculer vos points de classement dans les tournois de padel FRMT au Maroc (P50 à P2000, homme et femme)." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://padelrounds.com/calculateur-points" />
+        <meta property="og:image" content="https://padelrounds.com/pr-logo.png" />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'WebApplication',
+          'name': 'Calculateur de points tournois padel FRMT',
+          'url': 'https://padelrounds.com/calculateur-points',
+          'applicationCategory': 'SportsApplication',
+          'operatingSystem': 'All',
+          'description': 'Calculateur de points pour tournois de padel FRMT au Maroc (P50, P100, P250, P500, P1000, P1500, P2000, homme, femme, classement officiel Fédération Royale Marocaine de Tennis)',
+          'keywords': 'calculateur, points, padel, tournoi, FRMT, Maroc, classement, P50, P100, P250, P500, P1000, P1500, P2000, homme, femme, fédération royale marocaine de tennis'
+        }) }} />
+      </Head>
       <div className="container mx-auto py-8 px-4 pb-24">
         <div className="max-w-2xl mx-auto">
           <div className="mb-8">
-            <h1 className="text-4xl font-bold mb-2">Calculateur de Points</h1>
-            <p className="text-gray-600">
-              Calculez les points gagnés selon votre classement dans un tournoi FRMT.
-            </p>
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">Calculateur de Points</h1>
+            <p className="text-gray-600">Calculez les points gagnés selon votre classement dans un tournoi FRMT.</p>
           </div>
 
           <div className="bg-white rounded-lg shadow-md border border-gray-200">

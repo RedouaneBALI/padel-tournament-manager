@@ -2,11 +2,14 @@ package io.github.redouanebali.service;
 
 import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
 import io.github.redouanebali.dto.request.CreateStandaloneGameRequest;
+import io.github.redouanebali.dto.response.ScoreDTO;
+import io.github.redouanebali.dto.response.UpdateScoreDTO;
+import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
-import io.github.redouanebali.model.Score;
+import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.repository.GameRepository;
 import io.github.redouanebali.repository.MatchFormatRepository;
 import io.github.redouanebali.repository.PlayerPairRepository;
@@ -30,6 +33,8 @@ public class StandaloneGameService {
   private final GameRepository        gameRepository;
   private final PlayerPairRepository  playerPairRepository;
   private final MatchFormatRepository matchFormatRepository;
+  private final TournamentMapper      tournamentMapper;
+  private final GamePointManager      gamePointManager = new GamePointManager();
 
   /**
    * Creates a new standalone game with two player pairs and a match format.
@@ -84,51 +89,30 @@ public class StandaloneGameService {
 
   /**
    * Retrieves a specific game by its ID.
-   *
-   * @param id the game ID
-   * @return the game
    */
   public Game getGameById(Long id) {
     return gameRepository.findById(id)
                          .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found with ID: " + id));
   }
 
-  /**
-   * Updates a standalone game's complete information including score, scheduled time, and court.
-   *
-   * @param gameId the game ID
-   * @param request the update request containing score, time, and court information
-   * @return the updated game
-   */
   @Transactional
-  public Game updateGame(Long gameId, io.github.redouanebali.dto.request.UpdateGameRequest request) {
+  public UpdateScoreDTO incrementGamePoint(Long gameId, TeamSide teamSide) {
     Game game = getGameById(gameId);
-
-    if (request.getScore() != null) {
-      game.setScore(request.getScore());
-    }
-    if (request.getScheduledTime() != null) {
-      game.setScheduledTime(request.getScheduledTime());
-    }
-    if (request.getCourt() != null) {
-      game.setCourt(request.getCourt());
-    }
-
-    return gameRepository.save(game);
+    gamePointManager.updateGamePoint(game, teamSide);
+    game.setScore(game.getScore()); // refresh winner side when a game finishes
+    gameRepository.save(game);
+    ScoreDTO scoreDTO = tournamentMapper.toDTO(game, game.getScore());
+    return new UpdateScoreDTO(game.isFinished(), game.getWinnerSide(), scoreDTO);
   }
 
-  /**
-   * Updates the score of a standalone game.
-   *
-   * @param gameId the game ID
-   * @param score the new score
-   * @return the updated game
-   */
   @Transactional
-  public Game updateGameScore(Long gameId, Score score) {
+  public UpdateScoreDTO undoGamePoint(Long gameId) {
     Game game = getGameById(gameId);
-    game.setScore(score);
-    return gameRepository.save(game);
+    gamePointManager.undoGamePoint(game);
+    game.setScore(game.getScore());
+    gameRepository.save(game);
+    ScoreDTO scoreDTO = tournamentMapper.toDTO(game, game.getScore());
+    return new UpdateScoreDTO(game.isFinished(), game.getWinnerSide(), scoreDTO);
   }
 
   /**
