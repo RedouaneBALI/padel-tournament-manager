@@ -171,12 +171,24 @@ public class GamePointManagerTest {
     MatchFormat      format  = new MatchFormat();
     format.setNumberOfSetsToWin(2);
     format.setGamesPerSet(6);
+    format.setAdvantage(false);
     game.setFormat(format);
     Score score = new Score();
-    score.getSets().add(new SetScore(1, 0));
-    score.setCurrentGamePointA(null);
-    score.setCurrentGamePointB(null);
+    score.getSets().add(new SetScore(0, 0));
     game.setScore(score);
+
+    // Simulate a full game (4 points to win without advantage)
+    manager.updateGamePoint(game, TeamSide.TEAM_A); // 15-0
+    manager.updateGamePoint(game, TeamSide.TEAM_A); // 30-0
+    manager.updateGamePoint(game, TeamSide.TEAM_A); // 40-0
+    manager.updateGamePoint(game, TeamSide.TEAM_A); // Game win -> 1-0
+
+    // Now undo should restore to 40-0
+    manager.undoGamePoint(game);
+    assertEquals(0, game.getScore().getSets().get(0).getTeamAScore());
+    assertEquals(0, game.getScore().getSets().get(0).getTeamBScore());
+    assertEquals(GamePoint.QUARANTE, game.getScore().getCurrentGamePointA());
+    assertEquals(GamePoint.ZERO, game.getScore().getCurrentGamePointB());
   }
 
   @Test
@@ -186,54 +198,37 @@ public class GamePointManagerTest {
     MatchFormat      format  = new MatchFormat();
     format.setNumberOfSetsToWin(2);
     format.setGamesPerSet(6);
+    format.setAdvantage(false);
     game.setFormat(format);
     Score score = new Score();
-    // Simule un set gagné 1-6, puis un set vide ajouté
-    score.getSets().add(new SetScore(1, 6));
     score.getSets().add(new SetScore(0, 0));
-    score.setCurrentGamePointA(null);
-    score.setCurrentGamePointB(GamePoint.ZERO);
     game.setScore(score);
 
-    // Ancienne version : manager.updateGamePoint(game, TeamSide.TEAM_B, false, true);
-    // Nouvelle version : il faut utiliser la méthode undo dédiée ou adapter le test si undo n'est plus supporté ici
-    // manager.updateGamePoint(game, TeamSide.TEAM_B); // à remplacer par la logique undo si existante
-  }
-
-  @ParameterizedTest
-  @CsvSource({
-      // startGamesA,startGamesB,nextGamesA,nextGamesB,currentA,currentB,teamSide,expectedGamesA,expectedGamesB,expectedSetCount,expectedPointA,expectedPointB,description
-      "1,6,0,0,,ZERO,TEAM_B,1,5,1,ZERO,ZERO,'Undo set win B, set vide supprimé, score décrémenté'",
-      "6,2,0,0,,ZERO,TEAM_A,5,2,1,ZERO,ZERO,'Undo set win A, set vide supprimé, score décrémenté'",
-      "6,0,0,0,,ZERO,TEAM_A,5,0,1,ZERO,ZERO,'Undo set win A, set vide supprimé, score décrémenté (6-0)'",
-      "6,4,1,0,,ZERO,TEAM_A,6,3,1,ZERO,ZERO,'Undo set 2 win A, set vide supprimé, score décrémenté (1-0)'",
-      "6,4,0,1,,ZERO,TEAM_B,6,0,1,ZERO,ZERO,'Undo set 2 win B, set vide supprimé, score décrémenté (0-1)'",
-      "3,5,-1,-1,QUARANTE,,TEAM_B,3,5,1,QUARANTE,,'Undo classique, pas de set vide'"
-  })
-  void testUndoAfterSetWinParamCsv(
-      int startGamesA, int startGamesB, int nextGamesA, int nextGamesB,
-      String currentA, String currentB, String teamSide,
-      int expectedGamesA, int expectedGamesB, int expectedSetCount,
-      String expectedPointA, String expectedPointB, String description) {
-    GamePointManager manager = new GamePointManager();
-    Game             game    = new Game();
-    MatchFormat      format  = new MatchFormat();
-    format.setNumberOfSetsToWin(2);
-    format.setGamesPerSet(6);
-    game.setFormat(format);
-    Score score = new Score();
-    score.getSets().add(new SetScore(startGamesA, startGamesB));
-    if (nextGamesA != -1 && nextGamesB != -1) {
-      score.getSets().add(new SetScore(nextGamesA, nextGamesB));
+    // Simulate Team B winning 6 games (1-6)
+    // First, Team A wins 1 game
+    for (int p = 0; p < 4; p++) {
+      manager.updateGamePoint(game, TeamSide.TEAM_A);
     }
-    score.setCurrentGamePointA(currentA == null || currentA.isEmpty() ? null : GamePoint.valueOf(currentA));
-    score.setCurrentGamePointB(currentB == null || currentB.isEmpty() ? null : GamePoint.valueOf(currentB));
-    game.setScore(score);
+    // Then Team B wins 6 games
+    for (int g = 0; g < 6; g++) {
+      for (int p = 0; p < 4; p++) {
+        manager.updateGamePoint(game, TeamSide.TEAM_B);
+      }
+    }
 
-    // Ancienne version : manager.updateGamePoint(game, TeamSide.valueOf(teamSide), false, true);
-    // Nouvelle version : il faut utiliser la méthode undo dédiée ou adapter le test si undo n'est plus supporté ici
-    // manager.updateGamePoint(game, TeamSide.valueOf(teamSide)); // à remplacer par la logique undo si existante
+    // At this point: set should be 1-6, and a new empty set (0-0) should be created
+    assertEquals(2, game.getScore().getSets().size());
+    assertEquals(1, game.getScore().getSets().get(0).getTeamAScore());
+    assertEquals(6, game.getScore().getSets().get(0).getTeamBScore());
+
+    // Now undo should restore to 1-5 with 40-0 for Team B
+    manager.undoGamePoint(game);
+    assertEquals(1, game.getScore().getSets().size());
+    assertEquals(1, game.getScore().getSets().get(0).getTeamAScore());
+    assertEquals(5, game.getScore().getSets().get(0).getTeamBScore());
+    assertEquals(GamePoint.QUARANTE, game.getScore().getCurrentGamePointB());
   }
+
 
   @ParameterizedTest
   @CsvSource({
@@ -318,10 +313,12 @@ public class GamePointManagerTest {
     assertEquals(afterThird, game.getScore());
     assertEquals(afterSecond, game.getScore().getPreviousScore());
     assertEquals(afterFirst, game.getScore().getPreviousScore().getPreviousScore());
-    // The very first previousScore is not null, but its content is a 'blank' score (0-0)
+    // The very first previousScore is not null, but its content is a 'blank' score (0-0) with ZERO game points
     // So test for a blank score instead of null
     Score blank = new Score();
     blank.getSets().add(new SetScore(0, 0));
+    blank.setCurrentGamePointA(GamePoint.ZERO);
+    blank.setCurrentGamePointB(GamePoint.ZERO);
     assertEquals(blank, game.getScore().getPreviousScore().getPreviousScore().getPreviousScore());
 
     // Undo 1 fois

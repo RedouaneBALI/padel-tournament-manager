@@ -23,6 +23,7 @@ import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
 import io.github.redouanebali.service.StandaloneGameService;
+import io.github.redouanebali.websocket.GameScoreWebSocketController;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Set;
@@ -57,6 +58,9 @@ public class AdminStandaloneGameControllerTest {
 
   @MockBean
   private SecurityProps securityProps;
+
+  @MockBean
+  private GameScoreWebSocketController gameScoreWebSocketController;
 
   private MockedStatic<SecurityUtil> secMock;
 

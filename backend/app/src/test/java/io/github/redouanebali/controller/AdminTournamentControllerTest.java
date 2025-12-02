@@ -16,6 +16,7 @@ import io.github.redouanebali.service.GameService;
 import io.github.redouanebali.service.MatchFormatService;
 import io.github.redouanebali.service.PlayerPairService;
 import io.github.redouanebali.service.TournamentService;
+import io.github.redouanebali.websocket.GameScoreWebSocketController;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,6 +58,9 @@ public class AdminTournamentControllerTest {
 
   @MockBean
   private MatchFormatService matchFormatService;
+
+  @MockBean
+  private GameScoreWebSocketController gameScoreWebSocketController;
 
   private MockedStatic<SecurityUtil> secMock;
 

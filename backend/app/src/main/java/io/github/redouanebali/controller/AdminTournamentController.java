@@ -20,6 +20,7 @@ import io.github.redouanebali.service.GameService;
 import io.github.redouanebali.service.MatchFormatService;
 import io.github.redouanebali.service.PlayerPairService;
 import io.github.redouanebali.service.TournamentService;
+import io.github.redouanebali.websocket.GameScoreWebSocketController;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -53,12 +54,13 @@ import org.springframework.web.bind.annotation.RestController;
 @PreAuthorize("isAuthenticated()")
 public class AdminTournamentController {
 
-  private final TournamentService  tournamentService;
-  private final PlayerPairService  playerPairService;
-  private final GameService        gameService;
-  private final MatchFormatService matchFormatService;
-  private final SecurityProps      securityProps;
-  private final TournamentMapper   tournamentMapper;
+  private final TournamentService            tournamentService;
+  private final PlayerPairService            playerPairService;
+  private final GameService                  gameService;
+  private final MatchFormatService           matchFormatService;
+  private final SecurityProps                securityProps;
+  private final TournamentMapper             tournamentMapper;
+  private final GameScoreWebSocketController gameScoreWebSocketController;
 
   /**
    * Creates a new tournament with the provided configuration. Validates the tournament structure if both format and config are provided.
@@ -226,7 +228,9 @@ public class AdminTournamentController {
   public ResponseEntity<UpdateScoreDTO> incrementGamePoint(@PathVariable Long tournamentId,
                                                            @PathVariable Long gameId,
                                                            @RequestParam TeamSide teamSide) {
-    return ResponseEntity.ok(gameService.incrementGamePoint(tournamentId, gameId, teamSide));
+    UpdateScoreDTO dto = gameService.incrementGamePoint(tournamentId, gameId, teamSide);
+    gameScoreWebSocketController.broadcastScoreUpdate(gameId, dto);
+    return ResponseEntity.ok(dto);
   }
 
   /**
@@ -240,7 +244,9 @@ public class AdminTournamentController {
   public ResponseEntity<UpdateScoreDTO> undoGamePoint(@PathVariable Long tournamentId,
                                                       @PathVariable Long gameId) {
     checkOwnership(tournamentId);
-    return ResponseEntity.ok(gameService.undoGamePoint(tournamentId, gameId));
+    UpdateScoreDTO dto = gameService.undoGamePoint(tournamentId, gameId);
+    gameScoreWebSocketController.broadcastScoreUpdate(gameId, dto);
+    return ResponseEntity.ok(dto);
   }
 
   /**

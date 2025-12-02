@@ -9,6 +9,7 @@ import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
 import io.github.redouanebali.service.StandaloneGameService;
+import io.github.redouanebali.websocket.GameScoreWebSocketController;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -38,9 +39,10 @@ import org.springframework.web.bind.annotation.RestController;
 @PreAuthorize("isAuthenticated()")
 public class AdminStandaloneGameController {
 
-  private final StandaloneGameService standaloneGameService;
-  private final TournamentMapper      tournamentMapper;
-  private final SecurityProps         securityProps;
+  private final StandaloneGameService        standaloneGameService;
+  private final TournamentMapper             tournamentMapper;
+  private final SecurityProps                securityProps;
+  private final GameScoreWebSocketController gameScoreWebSocketController;
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
   @PreAuthorize("isAuthenticated()")
@@ -77,14 +79,18 @@ public class AdminStandaloneGameController {
                                                            @RequestParam TeamSide teamSide) {
     log.info("User {} increments point for standalone game {}", SecurityUtil.currentUserId(), id);
     checkOwnership(id);
-    return ResponseEntity.ok(standaloneGameService.incrementGamePoint(id, teamSide));
+    UpdateScoreDTO dto = standaloneGameService.incrementGamePoint(id, teamSide);
+    gameScoreWebSocketController.broadcastScoreUpdate(id, dto);
+    return ResponseEntity.ok(dto);
   }
 
   @PatchMapping(path = "/{id}/undo-game-point")
   public ResponseEntity<UpdateScoreDTO> undoGamePoint(@PathVariable Long id) {
     log.info("User {} undoes point for standalone game {}", SecurityUtil.currentUserId(), id);
     checkOwnership(id);
-    return ResponseEntity.ok(standaloneGameService.undoGamePoint(id));
+    UpdateScoreDTO dto = standaloneGameService.undoGamePoint(id);
+    gameScoreWebSocketController.broadcastScoreUpdate(id, dto);
+    return ResponseEntity.ok(dto);
   }
 
   private void checkOwnership(Long gameId) {

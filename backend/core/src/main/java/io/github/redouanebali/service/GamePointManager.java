@@ -19,6 +19,15 @@ public class GamePointManager {
       score = new Score();
       game.setScore(score);
     }
+
+    // Initialize game points to ZERO if null (beginning of a game)
+    if (score.getCurrentGamePointA() == null) {
+      score.setCurrentGamePointA(GamePoint.ZERO);
+    }
+    if (score.getCurrentGamePointB() == null) {
+      score.setCurrentGamePointB(GamePoint.ZERO);
+    }
+    
     score.saveToHistory();
 
     // 1. On s'assure d'avoir un set actif valide (création du 3e set si besoin)
@@ -256,8 +265,8 @@ public class GamePointManager {
   }
 
   private void resetGamePoints(Score score) {
-    score.setCurrentGamePointA(null);
-    score.setCurrentGamePointB(null);
+    score.setCurrentGamePointA(GamePoint.ZERO);
+    score.setCurrentGamePointB(GamePoint.ZERO);
   }
 
   public GamePoint nextGamePoint(GamePoint current, GamePoint opponent, boolean withAdvantage) {

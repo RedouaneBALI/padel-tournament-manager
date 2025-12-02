@@ -26,6 +26,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()     // preflight
             .requestMatchers(HttpMethod.GET, "/tournaments/**").permitAll() // ⬅️ public GET
+            .requestMatchers("/ws/**").permitAll() // WebSocket endpoints public
             .anyRequest().authenticated()
         )
         .oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()));
