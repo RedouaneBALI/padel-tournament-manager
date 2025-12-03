@@ -44,6 +44,9 @@ public class PublicStandaloneGameControllerTest {
   @MockBean
   private SecurityProps securityProps;
 
+  @MockBean
+  private io.github.redouanebali.security.AuthorizationService authorizationService;
+
   private MockedStatic<SecurityUtil> secMock;
 
   private Game sampleGame(String idSuffix) {
@@ -83,10 +86,53 @@ public class PublicStandaloneGameControllerTest {
 
     when(standaloneGameService.getGameById(g1.getId())).thenReturn(g1);
     when(tournamentMapper.toDTO(g1)).thenReturn(sampleGameDTO());
+    when(authorizationService.canEditGame(g1, "user1")).thenReturn(false);
 
     mockMvc.perform(get("/games/{id}", g1.getId()).accept(MediaType.APPLICATION_JSON))
            .andExpect(status().isOk())
            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+  }
+
+  @Test
+  public void getGame_isEditableFalse_whenNotOwner() throws Exception {
+    Game g1 = sampleGame("notMine");
+    g1.setCreatedBy("otherUser");
+
+    GameDTO dto = sampleGameDTO();
+    dto.setId(g1.getId());
+
+    when(standaloneGameService.getGameById(g1.getId())).thenReturn(g1);
+    when(tournamentMapper.toDTO(g1)).thenReturn(dto);
+    when(authorizationService.canEditGame(g1, "user1")).thenReturn(false);
+
+    String response = mockMvc.perform(get("/games/{id}", g1.getId()).accept(MediaType.APPLICATION_JSON))
+                             .andExpect(status().isOk())
+                             .andReturn()
+                             .getResponse()
+                             .getContentAsString();
+
+    org.assertj.core.api.Assertions.assertThat(response).contains("\"isEditable\":false");
+  }
+
+  @Test
+  public void getGame_isEditableTrue_whenOwner() throws Exception {
+    Game g1 = sampleGame("mine");
+    g1.setCreatedBy("user1");
+
+    GameDTO dto = sampleGameDTO();
+    dto.setId(g1.getId());
+
+    when(standaloneGameService.getGameById(g1.getId())).thenReturn(g1);
+    when(tournamentMapper.toDTO(g1)).thenReturn(dto);
+    when(authorizationService.canEditGame(g1, "user1")).thenReturn(true);
+
+    String response = mockMvc.perform(get("/games/{id}", g1.getId()).accept(MediaType.APPLICATION_JSON))
+                             .andExpect(status().isOk())
+                             .andReturn()
+                             .getResponse()
+                             .getContentAsString();
+
+    org.assertj.core.api.Assertions.assertThat(response).contains("\"isEditable\":true");
   }
 
   @Test

@@ -4,24 +4,26 @@
 import React from 'react';
 import { PlayerPair } from '@/src/types/playerPair';
 import { Trophy } from 'lucide-react';
+import { cn } from '@/src/lib/utils';
 
 interface Props {
   team: PlayerPair | null;
   winnerSide?: number;
   teamIndex?: number;
   showChampion?: boolean;
+  fontSize?: string;
 }
 
-export default function TeamRow({ team, winnerSide, teamIndex, showChampion }: Props) {
+export default function TeamRow({ team, winnerSide, teamIndex, showChampion, fontSize }: Props) {
   return (
     <div
       className={`flex flex-1 items-center gap-2 ${
         winnerSide !== undefined && winnerSide === teamIndex ? 'font-bold' : ''
       }`}
     >
-      <div className={`flex flex-col ${winnerSide !== undefined && winnerSide !== teamIndex ? 'text-muted-foreground' : ''}`}>
-        <span className="text-sm">{team?.player1Name || ''}</span>
-        <span className="text-sm">{team?.player2Name || ''}</span>
+      <div className={cn('flex flex-col', fontSize ? fontSize : 'text-sm', winnerSide !== undefined && winnerSide !== teamIndex ? 'text-muted-foreground' : '')}>
+        {team?.player1Name && <span>{team.player1Name}</span>}
+        {team?.player2Name && <span>{team.player2Name}</span>}
       </div>
 
       {team?.displaySeed ? (

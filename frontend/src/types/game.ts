@@ -9,7 +9,7 @@ export interface Game {
   id: string;
   teamA: PlayerPair | null;
   teamB: PlayerPair | null;
-  editable?: boolean;
+  isEditable?: boolean;
   gameId: string;
   tournamentId: string;
   score?: Score;

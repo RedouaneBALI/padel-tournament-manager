@@ -41,6 +41,48 @@ public interface TournamentMapper {
 
   Set<TournamentDTO> toDTO(Set<Tournament> tournaments);
 
+  /**
+   * Converts a Tournament to TournamentDTO with isEditable flag based on user permissions. Uses AuthorizationService to determine edit rights (owner,
+   * editor, or super-admin).
+   *
+   * @param tournament the tournament entity
+   * @param userId the current user ID
+   * @param canEdit whether the user can edit this tournament
+   * @return TournamentDTO with isEditable flag set
+   */
+  default TournamentDTO toDTOWithEditPermission(Tournament tournament, String userId, boolean canEdit) {
+    if (tournament == null) {
+      return null;
+    }
+    TournamentDTO dto = toDTO(tournament);
+    dto.setIsEditable(canEdit);
+    return dto;
+  }
+
+  /**
+   * Converts a list of tournaments to DTOs with isEditable flag for each.
+   *
+   * @param tournaments the list of tournament entities
+   * @param userId the current user ID
+   * @param authService the authorization service to check permissions
+   * @return list of TournamentDTOs with isEditable flags set
+   */
+  default List<TournamentDTO> toDTOWithEditPermission(
+      List<Tournament> tournaments,
+      String userId,
+      io.github.redouanebali.security.AuthorizationService authService
+  ) {
+    if (tournaments == null) {
+      return null;
+    }
+    List<TournamentDTO> dtos = new ArrayList<>();
+    for (Tournament t : tournaments) {
+      boolean canEdit = authService.canEditTournament(t, userId);
+      dtos.add(toDTOWithEditPermission(t, userId, canEdit));
+    }
+    return dtos;
+  }
+
   GameDTO toDTO(Game game);
 
   List<GameDTO> toDTOGameList(List<Game> games);

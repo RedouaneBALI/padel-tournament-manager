@@ -3,6 +3,7 @@ package io.github.redouanebali.controller;
 import io.github.redouanebali.dto.response.GameDTO;
 import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.Game;
+import io.github.redouanebali.security.AuthorizationService;
 import io.github.redouanebali.service.StandaloneGameService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,12 +25,21 @@ public class PublicStandaloneGameController {
 
   private final StandaloneGameService standaloneGameService;
   private final TournamentMapper      tournamentMapper;
+  private final AuthorizationService  authorizationService;
 
   @GetMapping("/{id}")
   public ResponseEntity<GameDTO> getGame(@PathVariable Long id) {
     log.info("Getting public game with ID: {}", id);
-    Game game = standaloneGameService.getGameById(id);
-    return ResponseEntity.ok(tournamentMapper.toDTO(game));
+    Game    game = standaloneGameService.getGameById(id);
+    GameDTO dto  = tournamentMapper.toDTO(game);
+
+    // Add isEditable flag based on current user permissions
+    String  userId  = io.github.redouanebali.security.SecurityUtil.currentUserId();
+    boolean canEdit = authorizationService.canEditGame(game, userId);
+    dto.setIsEditable(canEdit);
+
+    log.debug("Game {} - user {} - canEdit: {}", id, userId, canEdit);
+    return ResponseEntity.ok(dto);
   }
 }
 

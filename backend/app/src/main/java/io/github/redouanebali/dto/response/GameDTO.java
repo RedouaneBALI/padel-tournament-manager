@@ -20,5 +20,6 @@ public class GameDTO {
   private String        court;
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private RoundLightDTO round;
+  private Boolean       isEditable;
 
 }

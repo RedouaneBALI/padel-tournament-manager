@@ -5,6 +5,7 @@ import { Game } from '@/src/types/game';
 import { toast } from 'react-toastify';
 import { formatStageLabel } from '@/src/types/stage';
 import LiveMatchIndicator from '@/src/components/ui/LiveMatchIndicator';
+import { useRealtimeGame } from '@/src/hooks/useRealtimeGame';
 
 interface TVModeViewProps {
   gameId: string;
@@ -24,6 +25,41 @@ export default function TVModeView({
   const [game, setGame] = useState<Game | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Real-time score updates via WebSocket
+  useRealtimeGame({
+    gameId,
+    enabled: !!game && !game.finished,
+    onScoreUpdate: (dto) => {
+      if (!game) return;
+
+      setGame((prev) => {
+        if (!prev) return prev;
+
+        let newScore = dto.score ? { ...dto.score } : prev.score;
+
+        // Sync super tie-break scores if present
+        if (newScore && newScore.sets?.length === 3) {
+          const set3 = newScore.sets[2];
+          if (typeof set3?.tieBreakTeamA === 'number') {
+            newScore.sets[2].teamAScore = set3.tieBreakTeamA;
+            newScore.tieBreakPointA = set3.tieBreakTeamA;
+          }
+          if (typeof set3?.tieBreakTeamB === 'number') {
+            newScore.sets[2].teamBScore = set3.tieBreakTeamB;
+            newScore.tieBreakPointB = set3.tieBreakTeamB;
+          }
+        }
+
+        return {
+          ...prev,
+          score: newScore,
+          winnerSide: dto.winner || prev.winnerSide,
+          finished: dto.winner ? true : prev.finished,
+        };
+      });
+    },
+  });
+
   useEffect(() => {
     const loadGame = async () => {
       try {
@@ -39,10 +75,6 @@ export default function TVModeView({
     };
 
     loadGame();
-
-    // Rafraîchir toutes les 10 secondes pour les mises à jour
-    const interval = setInterval(loadGame, 10000);
-    return () => clearInterval(interval);
   }, [fetchGameFn]);
 
   if (loading || !game) {

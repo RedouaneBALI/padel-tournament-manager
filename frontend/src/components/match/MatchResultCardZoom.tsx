@@ -6,6 +6,7 @@ import TeamRow from '@/src/components/ui/TeamRow';
 import { incrementGamePoint, undoGamePoint, fetchMatchFormat, incrementStandaloneGamePoint, undoStandaloneGamePoint } from '@/src/api/tournamentApi';
 import { Undo2 } from 'lucide-react';
 import LiveMatchIndicator from '@/src/components/ui/LiveMatchIndicator';
+import { useRealtimeGame } from '@/src/hooks/useRealtimeGame';
 
 // Utilitaire pour formater les points
 function formatPoints(points: number) {
@@ -42,34 +43,38 @@ function TeamScoreRow({
   setScores,
   tieBreakPoint,
   teamSide,
-  mode,
+  editable,
   loading,
   onPointChange,
   winnerSide,
-  canIncrement,
 }: {
   team: PlayerPair | null;
   gamePoint: GamePoint | null | undefined;
   setScores: (number | null)[];
   tieBreakPoint: number | null | undefined;
   teamSide: TeamSide;
-  mode: 'spectator' | 'admin';
+  editable: boolean;
   loading: boolean;
   onPointChange: (teamSide: TeamSide) => void;
   winnerSide?: number;
-  canIncrement: boolean;
 }) {
+
   return (
-    <div className="flex flex-1 items-center gap-2 min-h-[40px]">
+    <div className="flex items-center gap-1 sm:gap-2 min-h-[56px] sm:min-h-[64px]">
       <div className="flex-1">
-        <TeamRow team={team} teamIndex={teamSide === 'TEAM_A' ? 0 : 1} winnerSide={winnerSide} />
+        <TeamRow
+          team={team}
+          teamIndex={teamSide === 'TEAM_A' ? 0 : 1}
+          winnerSide={winnerSide}
+          fontSize={!editable ? 'text-lg sm:text-xl' : undefined}
+        />
       </div>
       {/* Affichage des jeux (sets) */}
-      <div className="flex gap-2 min-w-[60px] justify-center">
+      <div className="flex gap-3 sm:gap-4 min-w-[48px] sm:min-w-[72px] justify-center">
         {setScores.map((score, i) => (
           <span
             key={i}
-            className="text-base font-bold text-foreground"
+            className="text-xl sm:text-3xl font-bold text-foreground"
             style={{ letterSpacing: '0.04em' }}
           >
             {score ?? '-'}
@@ -77,21 +82,21 @@ function TeamScoreRow({
         ))}
       </div>
       {/* Affichage des points tennis ou tie-break */}
-      <div className="w-10 flex justify-center">
+      <div className="w-10 sm:w-12 flex justify-center">
         {tieBreakPoint !== null && tieBreakPoint !== undefined ? (
-          <span className="text-lg font-bold text-blue-600" style={{ fontWeight: 700 }}>
+          <span className="text-lg sm:text-xl font-bold text-blue-600" style={{ fontWeight: 700 }}>
             {tieBreakPoint}
           </span>
         ) : (
-          <span className="text-lg font-medium text-muted-foreground" style={{ fontWeight: 500 }}>
+          <span className="text-lg sm:text-xl font-medium text-muted-foreground" style={{ fontWeight: 500 }}>
             {formatGamePoint(gamePoint)}
           </span>
         )}
       </div>
-      {mode === 'admin' && canIncrement && (
-        <div className="flex flex-col gap-1 items-end min-w-[32px] ml-2">
+      {editable && (
+        <div className="flex flex-col gap-1 items-end min-w-[28px] sm:min-w-[32px] ml-1 sm:ml-2">
           <button
-            className="btn btn-outline btn-xs w-8"
+            className="btn btn-outline btn-xs w-7 sm:w-8"
             disabled={loading || (typeof winnerSide !== 'undefined')}
             onClick={() => onPointChange(teamSide)}
             type="button"
@@ -107,7 +112,7 @@ function TeamScoreRow({
 type MatchResultCardZoomProps = {
   game: Game;
   tournamentId: string | number;
-  mode: 'spectator' | 'admin';
+  editable?: boolean;
   onScoreUpdate?: (updatedGame: Game) => void;
   matchIndex?: number;
 };
@@ -115,7 +120,7 @@ type MatchResultCardZoomProps = {
 export default function MatchResultCardZoom({
   game,
   tournamentId,
-  mode,
+  editable = false,
   onScoreUpdate,
   matchIndex = 0,
 }: MatchResultCardZoomProps) {
@@ -126,7 +131,43 @@ export default function MatchResultCardZoom({
 
   const formattedScheduledTime = formatScheduledTime(currentGame.scheduledTime);
   const hasTournamentContext = Boolean(tournamentId);
-  const canIncrement = mode === 'admin';
+
+
+  // Real-time score updates via WebSocket
+  useRealtimeGame({
+    gameId: game.id,
+    enabled: !currentGame.finished,
+    onScoreUpdate: (dto) => {
+      if (dto.score) {
+        let newScore = { ...dto.score };
+        // Sync super tie-break scores if present
+        const isSuperTB = (
+          (matchFormat?.superTieBreakInFinalSet || (newScore.tieBreakPointA != null || newScore.tieBreakPointB != null) || (newScore.sets?.[2]?.tieBreakTeamA != null || newScore.sets?.[2]?.tieBreakTeamB != null))
+          && newScore.sets?.length === 3
+        );
+        if (isSuperTB && newScore.sets && newScore.sets.length === 3) {
+          const set3 = newScore.sets[2];
+          if (typeof set3.tieBreakTeamA === 'number') {
+            newScore.sets[2].teamAScore = set3.tieBreakTeamA;
+            newScore.tieBreakPointA = set3.tieBreakTeamA;
+          }
+          if (typeof set3.tieBreakTeamB === 'number') {
+            newScore.sets[2].teamBScore = set3.tieBreakTeamB;
+            newScore.tieBreakPointB = set3.tieBreakTeamB;
+          }
+        }
+        setCurrentGame((prev) => ({
+          ...prev,
+          score: newScore,
+          winnerSide: dto.winner || prev.winnerSide,
+          finished: dto.winner ? true : prev.finished,
+        }));
+      }
+      if (onScoreUpdate) {
+        onScoreUpdate(currentGame);
+      }
+    },
+  });
 
   useEffect(() => {
     async function loadFormat() {
@@ -156,7 +197,7 @@ export default function MatchResultCardZoom({
   };
 
   const handlePointChange = async (teamSide: TeamSide) => {
-    if (!canIncrement) {
+    if (!editable) {
       return;
     }
     setLoading(teamSide);
@@ -204,7 +245,7 @@ export default function MatchResultCardZoom({
 
   // Ajout Undo global
   const handleUndo = async () => {
-    if (!canIncrement) {
+    if (!editable) {
       return;
     }
     setUndoLoading(true);
@@ -287,63 +328,68 @@ export default function MatchResultCardZoom({
   }
 
   return (
-    <div className={cn('rounded-lg border p-4 bg-background flex flex-col gap-4')}>
-      {/* Header: Live en haut à droite, non flottant */}
-      <div className="flex flex-row items-center justify-between w-full min-h-[32px]">
-        <div />
+    <div className={cn('relative rounded-lg border p-2 sm:p-4 bg-background flex flex-col gap-2 sm:gap-4')}>
+      {/* Barre flottante en haut pour le badge LIVE */}
+      <div className="absolute left-0 right-0 top-0 h-10 flex items-center justify-end px-4 pointer-events-none">
         {!currentGame.finished && (
-          <LiveMatchIndicator showLabel={true} />
+          <div className="pointer-events-auto">
+            <LiveMatchIndicator showLabel={true} />
+          </div>
         )}
       </div>
-      {/* Score et équipes + Undo */}
-      <div className="flex justify-between items-center">
-        <div className="flex-1 flex flex-col gap-2">
-          <TeamScoreRow
-            team={teams[0]}
-            gamePoint={currentGame.score?.currentGamePointA}
-            setScores={setScoresA}
-            tieBreakPoint={tieBreakPointA}
-            teamSide="TEAM_A"
-            mode={mode}
-            loading={loading === 'TEAM_A'}
-            onPointChange={handlePointChange}
-            winnerSide={currentGame.winnerSide === 'TEAM_A' ? 0 : currentGame.winnerSide === 'TEAM_B' ? 1 : undefined}
-            canIncrement={canIncrement}
-          />
-          <TeamScoreRow
-            team={teams[1]}
-            gamePoint={currentGame.score?.currentGamePointB}
-            setScores={setScoresB}
-            tieBreakPoint={tieBreakPointB}
-            teamSide="TEAM_B"
-            mode={mode}
-            loading={loading === 'TEAM_B'}
-            onPointChange={handlePointChange}
-            winnerSide={currentGame.winnerSide === 'TEAM_A' ? 0 : currentGame.winnerSide === 'TEAM_B' ? 1 : undefined}
-            canIncrement={canIncrement}
-          />
+      {/* Ajoute un padding-top pour ne pas que le contenu chevauche la barre LIVE */}
+      <div className="pt-12 sm:pt-14">
+        {/* Score et équipes + Undo */}
+        <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex flex-col gap-3 sm:gap-4 flex-1">
+            <TeamScoreRow
+              team={teams[0]}
+              gamePoint={currentGame.score?.currentGamePointA}
+              setScores={setScoresA}
+              tieBreakPoint={tieBreakPointA}
+              teamSide="TEAM_A"
+              editable={editable}
+              loading={loading === 'TEAM_A'}
+              onPointChange={handlePointChange}
+              winnerSide={currentGame.winnerSide === 'TEAM_A' ? 0 : currentGame.winnerSide === 'TEAM_B' ? 1 : undefined}
+            />
+            <TeamScoreRow
+              team={teams[1]}
+              gamePoint={currentGame.score?.currentGamePointB}
+              setScores={setScoresB}
+              tieBreakPoint={tieBreakPointB}
+              teamSide="TEAM_B"
+              editable={editable}
+              loading={loading === 'TEAM_B'}
+              onPointChange={handlePointChange}
+              winnerSide={currentGame.winnerSide === 'TEAM_A' ? 0 : currentGame.winnerSide === 'TEAM_B' ? 1 : undefined}
+            />
+          </div>
+          {/* Boutons d'action (Undo + increment) uniquement en mode admin */}
+          {editable && (
+            <div className="flex flex-col gap-2 items-end ml-3 sm:ml-4">
+              <button
+                className="btn btn-outline btn-xs flex items-center justify-center"
+                disabled={undoLoading}
+                onClick={handleUndo}
+                type="button"
+                aria-label="Undo last point"
+                title="Annuler le dernier point"
+              >
+                <Undo2 className="w-5 h-5" />
+              </button>
+            </div>
+          )}
         </div>
-        {mode === 'admin' && canIncrement && (
-          <button
-            className="btn btn-outline btn-xs ml-4 flex items-center justify-center"
-            disabled={undoLoading}
-            onClick={handleUndo}
-            type="button"
-            aria-label="Undo last point"
-            title="Annuler le dernier point"
-          >
-            <Undo2 className="w-5 h-5" />
-          </button>
-        )}
-      </div>
-      {/* Détails supplémentaires (court, heure, etc.) si besoin */}
-      <div className="flex justify-between text-xs text-muted-foreground">
-        <span>
-          {currentGame.court && <>{currentGame.court}</>}
-        </span>
-        <span>
-          {formattedScheduledTime && <>Début : {formattedScheduledTime}</>}
-        </span>
+        {/* Détails supplémentaires (court, heure, etc.) si besoin */}
+        <div className="flex justify-between text-xs text-muted-foreground mt-4 sm:mt-6">
+          <span>
+            {currentGame.court && <>{currentGame.court}</>}
+          </span>
+          <span>
+            {formattedScheduledTime && <>Début : {formattedScheduledTime}</>}
+          </span>
+        </div>
       </div>
     </div>
   );

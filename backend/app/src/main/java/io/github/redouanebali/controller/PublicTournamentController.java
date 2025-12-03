@@ -11,6 +11,7 @@ import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.security.SecurityUtil;
 import io.github.redouanebali.service.MatchFormatService;
 import io.github.redouanebali.service.PlayerPairService;
 import io.github.redouanebali.service.TournamentService;
@@ -46,23 +47,28 @@ import org.springframework.web.server.ResponseStatusException;
 @Slf4j
 public class PublicTournamentController {
 
-  private final TournamentService  tournamentService;
-  private final PlayerPairService  playerPairService;
-  private final MatchFormatService matchFormatService;
-  private final TournamentMapper   tournamentMapper;
+  private final TournamentService                                    tournamentService;
+  private final PlayerPairService                                    playerPairService;
+  private final MatchFormatService                                   matchFormatService;
+  private final TournamentMapper                                     tournamentMapper;
+  private final io.github.redouanebali.security.AuthorizationService authorizationService;
 
   /**
-   * Retrieves complete tournament information by ID. Returns all tournament details including configuration, dates, and metadata.
+   * Retrieves complete tournament information by ID. Returns all tournament details including configuration, dates, and metadata. If user is
+   * authenticated, includes isEditable flag to indicate if user can modify the tournament.
    *
    * @param id the tournament ID
-   * @return ResponseEntity containing the tournament DTO
+   * @return ResponseEntity containing the tournament DTO with isEditable flag
    * @throws IllegalArgumentException if tournament is not found
    */
   @GetMapping("/{id}")
   public ResponseEntity<TournamentDTO> getTournament(@PathVariable Long id) {
-    log.debug("Public access to tournament {}", id);
-    Tournament tournament = tournamentService.getTournamentById(id);
-    return ResponseEntity.ok(tournamentMapper.toDTO(tournament));
+    Tournament    tournament = tournamentService.getTournamentById(id);
+    TournamentDTO dto        = tournamentMapper.toDTO(tournament);
+    String        userId     = SecurityUtil.currentUserId();
+    boolean       canEdit    = authorizationService.canEditTournament(tournament, userId);
+    dto.setIsEditable(canEdit);
+    return ResponseEntity.ok(dto);
   }
 
   /**

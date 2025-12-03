@@ -1,17 +1,17 @@
 // app/admin/tournament/[id]/layout.tsx
 'use client';
 
-import React, { useEffect, useState, use } from 'react';
+import React, { use, useEffect, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { ToastContainer } from 'react-toastify';
 import AdminTournamentHeader from '@/src/components/admin/AdminTournamentHeader';
 import { ExportProvider } from '@/src/contexts/ExportContext';
-import type { Tournament } from '@/src/types/tournament';
 import 'react-toastify/dist/ReactToastify.css';
-import { fetchTournamentAdmin } from '@/src/api/tournamentApi';
-import { useRouter, usePathname } from 'next/navigation';
-import CenteredLoader from '@/src/components/ui/CenteredLoader';
 import BottomNav from '@/src/components/ui/BottomNav';
 import { getAdminTournamentItems } from '@/src/components/ui/bottomNavPresets';
+import { fetchTournamentAdmin } from '@/src/api/tournamentApi';
+import type { Tournament } from '@/src/types/tournament';
+import CenteredLoader from '@/src/components/ui/CenteredLoader';
 
 export default function AdminTournamentLayout({
   children,
@@ -22,60 +22,57 @@ export default function AdminTournamentLayout({
 }) {
   const { id } = use(params);
   const [tournament, setTournament] = useState<Tournament | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-
   const pathname = usePathname() ?? '';
   const items = getAdminTournamentItems(id);
 
   useEffect(() => {
     let mounted = true;
+
     async function loadTournament() {
       try {
         const data = await fetchTournamentAdmin(id);
         if (!mounted) return;
-        if (data && data.isEditable === false) {
-          // Redirect to read-only public version instead of 403
-          // Preserve sub-path if possible (e.g., /admin/tournament/12/bracket → /tournament/12/bracket)
-          const currentPath = pathname ?? '';
-          const subPath = currentPath.replace(`/admin/tournament/${id}`, '');
-          router.replace(`/tournament/${id}${subPath}`);
+
+        // Backend now returns isEditable correctly
+        if (data.isEditable !== true) {
+          const subPath = pathname.replace(`/admin/tournament/${id}`, '');
+          const search = window.location.search;
+          router.replace(`/tournament/${id}${subPath}${search}`);
           return;
         }
+
         setTournament(data);
       } catch (e: any) {
-        if (e?.message === 'FORBIDDEN') {
-          // Redirect to read-only version for forbidden access
-          const currentPath = pathname ?? '';
-          const subPath = currentPath.replace(`/admin/tournament/${id}`, '');
-          router.replace(`/tournament/${id}${subPath}`);
+        if (!mounted) return;
+
+        if (e?.message === 'FORBIDDEN' || e?.message === 'UNAUTHORIZED') {
+          const subPath = pathname.replace(`/admin/tournament/${id}`, '');
+          const search = window.location.search;
+          router.replace(`/tournament/${id}${subPath}${search}`);
           return;
         }
-        if (e?.message === 'UNAUTHORIZED') {
-          router.replace('/');
-          return;
-        }
-        // fallback erreur générique
-        router.replace('/500');
+
+        console.error("Failed to load tournament:", e);
       } finally {
-        if (mounted) setLoading(false);
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     }
+
     loadTournament();
     return () => { mounted = false; };
   }, [id, router, pathname]);
 
-  if (loading) {
+  if (isLoading || !tournament) {
     return (
       <div className="w-full max-w-screen-2xl px-1 sm:px-4 mx-auto">
         <CenteredLoader />
         <ToastContainer />
       </div>
     );
-  }
-
-  if (!tournament) {
-    return null;
   }
 
   return (
@@ -92,3 +89,4 @@ export default function AdminTournamentLayout({
     </ExportProvider>
   );
 }
+

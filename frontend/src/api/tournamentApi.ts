@@ -37,6 +37,12 @@ export async function fetchTournamentAdmin(tournamentId: string): Promise<Tourna
     method: "GET",
   });
 
+  if (res.status === 401) {
+    throw new Error('UNAUTHORIZED');
+  }
+  if (res.status === 403) {
+    throw new Error('FORBIDDEN');
+  }
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     toast.error(`Erreur lors de la récupération du tournoi (${res.status})`);
@@ -361,6 +367,13 @@ export async function fetchStandaloneGame(gameId: string): Promise<Game> {
   const response = await fetchWithAuth(api(`/games/${gameId}`), {
     method: 'GET',
   });
+
+  if (response.status === 401) {
+    throw new Error('UNAUTHORIZED');
+  }
+  if (response.status === 403) {
+    throw new Error('FORBIDDEN');
+  }
   if (!response.ok) {
     toast.error('Erreur lors du chargement du match.');
     throw new Error('Erreur lors du chargement du match.');

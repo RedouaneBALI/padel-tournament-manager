@@ -29,13 +29,13 @@ export default function GameDetailView({
   editable = false,
   title,
 }: GameDetailViewProps) {
+
   const [game, setGame] = useState<Game | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    let intervalId: ReturnType<typeof setInterval> | null = null;
 
     const loadInitialGame = async () => {
       try {
@@ -44,26 +44,6 @@ export default function GameDetailView({
         const data = await fetchGameFn();
         if (cancelled) return;
         setGame(data);
-
-        // Si le match n'est pas terminé, installer l'intervalle de refresh
-        if (!data.finished) {
-          intervalId = setInterval(async () => {
-            try {
-              const updated = await fetchGameFn();
-              if (cancelled) return;
-              setGame(updated);
-
-              // Si le match est devenu terminé, on arrête l'intervalle
-              if (updated.finished && intervalId) {
-                clearInterval(intervalId);
-                intervalId = null;
-              }
-            } catch (e) {
-              // ignore errors for periodic refresh (optional: log)
-              console.error('Refresh error:', e);
-            }
-          }, 30000);
-        }
       } catch (err) {
         console.error('Erreur lors du chargement du match:', err);
         if (!cancelled) {
@@ -79,7 +59,6 @@ export default function GameDetailView({
 
     return () => {
       cancelled = true;
-      if (intervalId) clearInterval(intervalId);
     };
   }, [fetchGameFn]);
 
@@ -122,7 +101,7 @@ export default function GameDetailView({
   }
 
   return (
-    <main className="px-4 sm:px-6 py-4 pb-12 min-h-full">
+    <main className={`py-4 pb-12 min-h-full ${editable ? '' : 'px-4 sm:px-6'}`}>
       <div className="mb-6 flex justify-between items-center">
         <BackButton />
       </div>
@@ -144,11 +123,11 @@ export default function GameDetailView({
       )}
 
       <div className="flex justify-center w-full">
-        <div className="w-full max-w-xl flex justify-center">
+        <div className="w-full">
           <MatchResultCardZoom
             game={game}
             tournamentId={tournamentId || game.tournamentId || ''}
-            mode={editable ? 'admin' : 'spectator'}
+            editable={editable}
             onScoreUpdate={(updatedGame) => setGame(updatedGame)}
           />
         </div>
