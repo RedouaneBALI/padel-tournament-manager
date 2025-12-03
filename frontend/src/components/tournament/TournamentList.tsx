@@ -26,7 +26,7 @@ export default function TournamentList() {
       }
       if (!cancelled) setLoading(true);
       try {
-        const data = await fetchMyTournaments('mine');
+        const data = await fetchMyTournaments('all');
         if (!cancelled) setItems(data);
       } catch (e: any) {
         if (!cancelled) setError(e?.message || 'Erreur inconnue');
