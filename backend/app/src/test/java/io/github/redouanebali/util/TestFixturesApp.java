@@ -1,5 +1,8 @@
 package io.github.redouanebali.util;
 
+import io.github.redouanebali.dto.request.GameRequest;
+import io.github.redouanebali.dto.request.PlayerPairRequest;
+import io.github.redouanebali.dto.request.RoundRequest;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.GamePoint;
 import io.github.redouanebali.model.MatchFormat;
@@ -20,29 +23,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
 
-/**
- * Shared test data builders to avoid duplication across tests.
- */
-public final class TestFixtures {
+public final class TestFixturesApp {
 
-  private TestFixtures() {
+  private TestFixturesApp() {
   }
 
-  /**
-   * Builds a PlayerPair with a given seed.
-   */
   public static PlayerPair buildPairWithSeed(int seed) {
     Player player1 = new Player((long) seed, "Player" + seed + "A", seed, 0, 1990);
     Player player2 = new Player((long) seed + 100, "Player" + seed + "B", seed, 0, 1990);
     return new PlayerPair(player1, player2, seed);
   }
 
-  /**
-   * Utility to build a round with nbTeams/2 empty games.
-   *
-   * @param nbTeams total number of teams (power of two)
-   * @return a Round containing nbTeams/2 empty Game instances
-   */
   public static Round buildEmptyRound(int nbTeams) {
     Round round = new Round();
     for (int i = 0; i < nbTeams / 2; i++) {
@@ -55,31 +46,22 @@ public final class TestFixtures {
     Round round = new Round();
     round.setStage(Stage.GROUPS);
     int expectedGames = nbPairsPerPool * (nbPairsPerPool - 1) / 2;
-
     for (int i = 0; i < nbPools; i++) {
       Pool pool = new Pool();
-      pool.setName("Pool " + (char) ('A' + i)); // Pool A, Pool B, etc.
+      pool.setName("Pool " + (char) ('A' + i));
       round.getPools().add(pool);
     }
-
     for (int i = 0; i < expectedGames * nbPools; i++) {
       round.getGames().add(new Game());
     }
-
     return round;
   }
 
-  /**
-   * Creates a single PlayerPair where the seed encodes pool & rank for deterministic ordering.
-   */
   public static PlayerPair makePairFromPoolRank(int poolIndex, int rankInPool) {
     int seed = (poolIndex + 1) * 100 + rankInPool;
     return buildPairWithSeed(seed);
   }
 
-  /**
-   * Creates a score where the given winner wins straight sets according to the game's MatchFormat. If format is null, defaults to 1 set to 6–0.
-   */
   public static Score createScoreWithWinner(Game game, PlayerPair winner) {
     int setsToWin        = 1;
     int gamesToWinPerSet = 6;
@@ -104,16 +86,10 @@ public final class TestFixtures {
     return score;
   }
 
-  /**
-   * Checks if a game contains both given pairs.
-   */
   public static boolean gameContainsBoth(Game g, PlayerPair p, PlayerPair q) {
     return (g.getTeamA() == p && g.getTeamB() == q) || (g.getTeamA() == q && g.getTeamB() == p);
   }
 
-  /**
-   * Creates a simple match format with a given number of sets to win.
-   */
   public static MatchFormat createSimpleFormat(int nbSetToWin) {
     MatchFormat format = new MatchFormat();
     format.setNumberOfSetsToWin(nbSetToWin);
@@ -122,49 +98,31 @@ public final class TestFixtures {
     return format;
   }
 
-  /**
-   * Calculates the number of round robin games per pool.
-   */
   public static int roundRobinGamesPerPool(int pairsPerPool) {
     return pairsPerPool * (pairsPerPool - 1) / 2;
   }
 
-  /**
-   * Calculates the total number of group games.
-   */
   public static int totalGroupGames(int nbPools, int pairsPerPool) {
     return nbPools * roundRobinGamesPerPool(pairsPerPool);
   }
 
-  /**
-   * Sorts pools by name.
-   */
   public static List<Pool> sortedPoolsByName(List<Pool> pools) {
     List<Pool> list = new ArrayList<>(pools);
     list.sort(java.util.Comparator.comparing(p -> p.getName() == null ? "" : p.getName()));
     return list;
   }
 
-  /**
-   * Sorts pairs by seed.
-   */
   public static List<PlayerPair> sortedPairsBySeed(List<PlayerPair> pairs) {
     List<PlayerPair> list = new ArrayList<>(pairs);
     list.sort(java.util.Comparator.comparingInt(PlayerPair::getSeed));
     return list;
   }
 
-  /**
-   * Finds a round by stage in a tournament.
-   */
   public static Round findRound(Tournament t, Stage stage) {
     return t.getRounds().stream().filter(r -> r.getStage() == stage).findFirst()
             .orElseThrow(() -> new IllegalArgumentException("Round not found for stage: " + stage));
   }
 
-  /**
-   * Applies generated groups to the tournament.
-   */
   public static void applyGeneratedGroups(Tournament t, Round generatedGroups) {
     Round groups = findRound(t, Stage.GROUPS);
     groups.getPools().clear();
@@ -175,13 +133,7 @@ public final class TestFixtures {
     }
   }
 
-  /**
-   * Simulates pool winners for a round and pool.
-   */
-  public static void simulatePoolWinners(Round groups,
-                                         Pool pool,
-                                         PlayerPair top1,
-                                         PlayerPair top2) {
+  public static void simulatePoolWinners(Round groups, Pool pool, PlayerPair top1, PlayerPair top2) {
     for (Game g : groups.getGames()) {
       if (!(pool.getPairs().contains(g.getTeamA()) || pool.getPairs().contains(g.getTeamB()))) {
         continue;
@@ -193,21 +145,18 @@ public final class TestFixtures {
       boolean    aInTop2 = ta == top1 || ta == top2;
       boolean    bInTop2 = tb == top1 || tb == top2;
       if (aInTop2 && bInTop2) {
-        winner = top1; // break tie deterministically
+        winner = top1;
       } else if (aInTop2) {
         winner = ta;
       } else if (bInTop2) {
         winner = tb;
       } else {
-        winner = ta; // arbitrary
+        winner = ta;
       }
       g.setScore(createScoreWithWinner(g, winner));
     }
   }
 
-  /**
-   * Returns all teams in a round.
-   */
   public static Set<PlayerPair> teamsInRound(Round r) {
     Set<PlayerPair> teams = new HashSet<>();
     for (Game g : r.getGames()) {
@@ -221,9 +170,6 @@ public final class TestFixtures {
     return teams;
   }
 
-  /**
-   * Parses a CSV string of stages into a list of Stage enums.
-   */
   public static List<Stage> parseStages(String stagesCsv) {
     return Arrays.stream(stagesCsv.split(";"))
                  .map(String::trim)
@@ -231,9 +177,6 @@ public final class TestFixtures {
                  .toList();
   }
 
-  /**
-   * Parses a CSV string of integers into a list of Integer.
-   */
   public static List<Integer> parseInts(String csv) {
     return Arrays.stream(csv.split(";"))
                  .map(String::trim)
@@ -241,10 +184,6 @@ public final class TestFixtures {
                  .toList();
   }
 
-
-  /**
-   * Creates a tournament with the given configuration.
-   */
   public static Tournament makeTournament(int preQualDrawSize,
                                           int nbQualifiers,
                                           int mainDrawSize,
@@ -271,18 +210,13 @@ public final class TestFixtures {
     return tournament;
   }
 
-  /**
-   * Creates a list of PlayerPair for tests, with seeds from 1 to count.
-   *
-   * @param count total number of pairs to create
-   */
   public static List<PlayerPair> createPlayerPairs(int count) {
     List<PlayerPair> pairs = new ArrayList<>();
     for (int i = 1; i <= count; i++) {
       Player     player1 = new Player((long) i, "Player" + i + "A", i, 0, 1990);
       Player     player2 = new Player((long) i + 100, "Player" + i + "B", i, 0, 1990);
       PlayerPair pair    = new PlayerPair(player1, player2, i);
-      pair.setId((long) i); // incremental id
+      pair.setId((long) i);
       pairs.add(pair);
     }
     return pairs;
@@ -320,5 +254,23 @@ public final class TestFixtures {
     score.setCurrentGamePointB(pointB);
     game.setScore(score);
     return game;
+  }
+
+  public static List<RoundRequest> createManualRoundRequestsFromPairs(Stage stage, List<PlayerPair> pairs) {
+    RoundRequest roundRequest = new RoundRequest();
+    roundRequest.setStage(stage.name());
+    List<GameRequest> gameRequests = new ArrayList<>();
+    for (int i = 0; i < pairs.size(); i += 2) {
+      GameRequest gReq = new GameRequest();
+      gReq.setTeamA(PlayerPairRequest.fromModel(pairs.get(i)));
+      if (i + 1 < pairs.size()) {
+        gReq.setTeamB(PlayerPairRequest.fromModel(pairs.get(i + 1)));
+      }
+      gameRequests.add(gReq);
+    }
+    roundRequest.setGames(gameRequests);
+    List<RoundRequest> result = new ArrayList<>();
+    result.add(roundRequest);
+    return result;
   }
 }

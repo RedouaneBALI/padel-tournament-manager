@@ -36,7 +36,7 @@ class PlayerPairServiceTest {
   private TournamentRepository tournamentRepository;
 
   @Mock
-  private io.github.redouanebali.security.SecurityProps securityProps;
+  private io.github.redouanebali.security.AuthorizationService authorizationService;
 
   @InjectMocks
   private PlayerPairService playerPairService;
@@ -53,9 +53,6 @@ class PlayerPairServiceTest {
 
     JwtAuthenticationToken auth = new JwtAuthenticationToken(jwt, Collections.emptyList(), "bali.redouane@gmail.com");
     SecurityContextHolder.getContext().setAuthentication(auth);
-
-    // default: no super-admins for tests
-    org.mockito.Mockito.lenient().when(securityProps.getSuperAdmins()).thenReturn(Collections.emptySet());
   }
 
   @Test

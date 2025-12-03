@@ -460,7 +460,7 @@ class TournamentMapperTest {
     t.setId(100L);
     t.setOwnerId("owner@test.com");
     // add an editor
-    t.addEditor("editor@test.com");
+    t.getEditorIds().add("editor@test.com");
 
     // owner should be editable
     setAuth("owner@test.com");

@@ -8,7 +8,12 @@ import io.github.redouanebali.model.SetScore;
 import io.github.redouanebali.model.TeamSide;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
+/**
+ * Service responsible for managing game points during a match. Handles point increment, undo operations, and game/set completion logic.
+ */
+@Component
 public class GamePointManager {
 
   private static final Logger log = LoggerFactory.getLogger(GamePointManager.class);
@@ -27,7 +32,7 @@ public class GamePointManager {
     if (score.getCurrentGamePointB() == null) {
       score.setCurrentGamePointB(GamePoint.ZERO);
     }
-    
+
     score.saveToHistory();
 
     // 1. On s'assure d'avoir un set actif valide (création du 3e set si besoin)

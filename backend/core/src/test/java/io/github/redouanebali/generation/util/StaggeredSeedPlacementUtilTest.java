@@ -10,7 +10,7 @@ import io.github.redouanebali.model.PairType;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
-import io.github.redouanebali.util.TestFixtures;
+import io.github.redouanebali.util.TestFixturesCore;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,8 +29,8 @@ class StaggeredSeedPlacementUtilTest {
       "16, 4"
   })
   void testFirstRound_AllSeedSlotsAreQualifier(int drawSize, int totalSeeds) {
-    Round            round = TestFixtures.buildEmptyRound(drawSize);
-    List<PlayerPair> pairs = TestFixtures.createPlayerPairs(drawSize);
+    Round            round = TestFixturesCore.buildEmptyRound(drawSize);
+    List<PlayerPair> pairs = TestFixturesCore.createPlayerPairs(drawSize);
     Stage            stage = Stage.fromNbTeams(drawSize);
 
     StaggeredSeedPlacementUtil.placeSeedTeamsStaggered(round, pairs, stage, drawSize, totalSeeds, true);
@@ -55,8 +55,8 @@ class StaggeredSeedPlacementUtilTest {
       "16, 4"
   })
   void testSecondRound_SeedsArePlaced(int drawSize, int totalSeeds) {
-    Round            round = TestFixtures.buildEmptyRound(drawSize / 2);
-    List<PlayerPair> pairs = TestFixtures.createPlayerPairs(drawSize);
+    Round            round = TestFixturesCore.buildEmptyRound(drawSize / 2);
+    List<PlayerPair> pairs = TestFixturesCore.createPlayerPairs(drawSize);
     Stage            stage = Stage.fromNbTeams(drawSize / 2);
 
     // Simule le fait que la moitié des seeds sont déjà entrés
@@ -81,8 +81,8 @@ class StaggeredSeedPlacementUtilTest {
   @Test
   void testNoSeeds_NoPlacementOrQualifier() {
     int              drawSize = 16;
-    Round            round    = TestFixtures.buildEmptyRound(drawSize);
-    List<PlayerPair> pairs    = TestFixtures.createPlayerPairs(drawSize);
+    Round            round    = TestFixturesCore.buildEmptyRound(drawSize);
+    List<PlayerPair> pairs    = TestFixturesCore.createPlayerPairs(drawSize);
     Stage            stage    = Stage.fromNbTeams(drawSize);
 
     StaggeredSeedPlacementUtil.placeSeedTeamsStaggered(round, pairs, stage, drawSize, 0, true);
@@ -96,8 +96,8 @@ class StaggeredSeedPlacementUtilTest {
   void testSeedsAlreadyEntered_NotPlacedAgain() {
     int              drawSize   = 32;
     int              totalSeeds = 8;
-    Round            round      = TestFixtures.buildEmptyRound(drawSize / 2);
-    List<PlayerPair> pairs      = TestFixtures.createPlayerPairs(drawSize);
+    Round            round      = TestFixturesCore.buildEmptyRound(drawSize / 2);
+    List<PlayerPair> pairs      = TestFixturesCore.createPlayerPairs(drawSize);
     Stage            stage      = Stage.fromNbTeams(drawSize / 2);
 
     // Place seeds as if they already entered in previous round
@@ -132,7 +132,7 @@ class StaggeredSeedPlacementUtilTest {
     round.replaceGames(null);
     StaggeredSeedPlacementUtil.placeSeedTeamsStaggered(round, null, null, 0, 0, true);
     // Null playerPairs
-    Round validRound = TestFixtures.buildEmptyRound(8);
+    Round validRound = TestFixturesCore.buildEmptyRound(8);
     StaggeredSeedPlacementUtil.placeSeedTeamsStaggered(validRound, null, Stage.fromNbTeams(8), 8, 4, true);
     // Should not throw
     assertTrue(true, "Should handle null inputs without throwing exception");

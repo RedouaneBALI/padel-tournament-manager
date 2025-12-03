@@ -6,6 +6,7 @@ import io.github.redouanebali.dto.response.UpdateScoreDTO;
 import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.TeamSide;
+import io.github.redouanebali.security.AuthorizationService;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
 import io.github.redouanebali.service.StandaloneGameService;
@@ -17,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,6 +43,7 @@ public class AdminStandaloneGameController {
   private final TournamentMapper             tournamentMapper;
   private final SecurityProps                securityProps;
   private final GameScoreWebSocketController gameScoreWebSocketController;
+  private final AuthorizationService         authorizationService;
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
   @PreAuthorize("isAuthenticated()")
@@ -94,15 +95,8 @@ public class AdminStandaloneGameController {
   }
 
   private void checkOwnership(Long gameId) {
-    String me = SecurityUtil.currentUserId();
-    if (securityProps.getSuperAdmins().contains(me)) {
-      return; // super-admin can do anything
-    }
-    Game   game  = standaloneGameService.getGameById(gameId);
-    String owner = game.getCreatedBy();
-    if (owner == null || !owner.equals(me)) {
-      throw new AccessDeniedException("You are not allowed to modify this game");
-    }
+    Game game = standaloneGameService.getGameById(gameId);
+    authorizationService.requireGameEditPermission(game, SecurityUtil.currentUserId());
   }
 
 }

@@ -24,7 +24,6 @@ import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -103,11 +102,6 @@ public class Tournament {
     this.updatedAt = Instant.now();
   }
 
-  public void applyRound(Round round) {
-    this.rounds.removeIf(r -> r.getStage() == round.getStage());
-    this.rounds.add(round);
-    this.rounds.sort(Comparator.comparing(Round::getStage));
-  }
 
   public Round getRoundByStage(Stage stage) {
     return this.getRounds().stream()
@@ -124,26 +118,6 @@ public class Tournament {
       editorIds = new HashSet<>();
     }
     return editorIds;
-  }
-
-  /**
-   * Add an editor (no-op if null/empty). Editors are additional users allowed to edit the tournament.
-   */
-  public void addEditor(String editorId) {
-    if (editorId == null || editorId.trim().isEmpty()) {
-      return;
-    }
-    getEditorIds().add(editorId.trim());
-  }
-
-  /**
-   * Remove an editor (no-op if null)
-   */
-  public void removeEditor(String editorId) {
-    if (editorId == null) {
-      return;
-    }
-    getEditorIds().remove(editorId);
   }
 
   /**

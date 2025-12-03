@@ -8,12 +8,14 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import io.github.redouanebali.PadelTournamentManagerApplication;
 import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
+import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.TournamentConfig;
 import io.github.redouanebali.model.format.TournamentFormat;
+import io.github.redouanebali.repository.MatchFormatRepository;
 import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.service.PlayerPairService;
 import io.github.redouanebali.service.TournamentService;
@@ -35,11 +37,13 @@ import org.springframework.transaction.annotation.Transactional;
 class TournamentIntegrationTest {
 
   @Autowired
-  private TournamentRepository tournamentRepository;
+  private TournamentRepository  tournamentRepository;
   @Autowired
-  private TournamentService    tournamentService;
+  private TournamentService     tournamentService;
   @Autowired
-  private PlayerPairService    playerPairService;
+  private PlayerPairService     playerPairService;
+  @Autowired
+  private MatchFormatRepository matchFormatRepository;
 
   @BeforeEach
   void setUp() {
@@ -119,11 +123,20 @@ class TournamentIntegrationTest {
     t.setEndDate(LocalDate.now().plusDays(1));
     t.setConfig(TournamentConfig.builder().mainDrawSize(4).nbSeeds(0).format(TournamentFormat.KNOCKOUT).build());
 
+    // Create and persist a default match format for games
+    io.github.redouanebali.model.MatchFormat defaultFormat = new io.github.redouanebali.model.MatchFormat();
+    defaultFormat.setNumberOfSetsToWin(2);
+    defaultFormat.setGamesPerSet(6);
+    defaultFormat.setSuperTieBreakInFinalSet(false);
+    defaultFormat = matchFormatRepository.save(defaultFormat); // Persist to avoid TransientPropertyValueException
+    final io.github.redouanebali.model.MatchFormat finalFormat = defaultFormat; // Make it effectively final for lambdas
+
     // Create a round with a real game (teamA assigned)
     Round      round = new Round(Stage.R32);
     PlayerPair pairA = new PlayerPair("A1", "A2", 0);
     PlayerPair pairB = new PlayerPair("B1", "B2", 0);
     round.addGame(pairA, pairB);
+    round.getGames().forEach(g -> g.setFormat(finalFormat));
 
     t.getRounds().add(round);
     Tournament saved = tournamentRepository.save(t);
@@ -137,6 +150,7 @@ class TournamentIntegrationTest {
     futureT.setEndDate(LocalDate.now().plusDays(3));
     Round futRound = new Round(Stage.R32);
     futRound.addGame(new PlayerPair("F1", "F2", 0), new PlayerPair("F3", "F4", 0));
+    futRound.getGames().forEach(g -> g.setFormat(finalFormat));
     futureT.getRounds().add(futRound);
     tournamentRepository.save(futureT);
 
@@ -148,6 +162,7 @@ class TournamentIntegrationTest {
     pastT.setEndDate(LocalDate.now().minusDays(1));
     Round pastRound = new Round(Stage.R32);
     pastRound.addGame(new PlayerPair("P1", "P2", 0), new PlayerPair("P3", "P4", 0));
+    pastRound.getGames().forEach(g -> g.setFormat(finalFormat));
     pastT.getRounds().add(pastRound);
     tournamentRepository.save(pastT);
 
@@ -158,8 +173,10 @@ class TournamentIntegrationTest {
     emptyTeams.setStartDate(LocalDate.now());
     emptyTeams.setEndDate(LocalDate.now().plusDays(1));
     Round rEmpty = new Round(Stage.R32);
-    // add a Game with no teams assigned
-    rEmpty.addGame(new io.github.redouanebali.model.Game());
+    // add a Game with no teams assigned but with format
+    Game emptyGame = new Game();
+    emptyGame.setFormat(finalFormat);
+    rEmpty.addGame(emptyGame);
     emptyTeams.getRounds().add(rEmpty);
     tournamentRepository.save(emptyTeams);
 

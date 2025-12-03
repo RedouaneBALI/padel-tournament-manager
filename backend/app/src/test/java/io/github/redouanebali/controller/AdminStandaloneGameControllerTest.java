@@ -1,5 +1,6 @@
 package io.github.redouanebali.controller;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -60,6 +61,9 @@ public class AdminStandaloneGameControllerTest {
   private SecurityProps securityProps;
 
   @MockBean
+  private io.github.redouanebali.security.AuthorizationService authorizationService;
+
+  @MockBean
   private GameScoreWebSocketController gameScoreWebSocketController;
 
   private MockedStatic<SecurityUtil> secMock;
@@ -82,6 +86,23 @@ public class AdminStandaloneGameControllerTest {
     secMock = Mockito.mockStatic(SecurityUtil.class);
     secMock.when(SecurityUtil::currentUserId).thenReturn("user1");
     when(securityProps.getSuperAdmins()).thenReturn(Set.of());
+
+    // Configure authorizationService to throw AccessDeniedException when user is not the owner
+    Mockito.doAnswer(inv -> {
+      io.github.redouanebali.model.Game game   = inv.getArgument(0);
+      String                            userId = inv.getArgument(1);
+
+      // Check if user is owner or super-admin
+      if (securityProps.getSuperAdmins().contains(userId)) {
+        return null; // super-admin can do anything
+      }
+
+      String owner = game.getCreatedBy();
+      if (owner == null || !owner.equals(userId)) {
+        throw new org.springframework.security.access.AccessDeniedException("You are not allowed to modify this game");
+      }
+      return null;
+    }).when(authorizationService).requireGameEditPermission(any(), any());
   }
 
   @AfterEach
@@ -124,7 +145,7 @@ public class AdminStandaloneGameControllerTest {
     Game created = sampleGame("created");
     created.setId(123L);
 
-    when(standaloneGameService.createStandaloneGame(org.mockito.Mockito.any(CreateStandaloneGameRequest.class))).thenReturn(created);
+    when(standaloneGameService.createStandaloneGame(any(CreateStandaloneGameRequest.class))).thenReturn(created);
     when(tournamentMapper.toDTO(created)).thenReturn(new GameDTO());
 
     mockMvc.perform(post("/admin/games")

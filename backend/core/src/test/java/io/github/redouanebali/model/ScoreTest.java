@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,57 @@ class ScoreTest {
     assertEquals(3, score.getSets().size());
     assertEquals(10, score.getSets().get(2).getTeamAScore());
     assertEquals(7, score.getSets().get(2).getTeamBScore());
+  }
+
+  // ============= FROM STRING TESTS =============
+
+  @ParameterizedTest
+  @CsvSource({
+      "'6-4 6-3', 2",
+      "'6-4,6-3', 2",
+      "'6-4  6-3', 2",
+      "'7-5', 1",
+      "'6-0 6-0 6-4', 3",
+      "'', 0",
+      "' ', 0"
+  })
+  void testFromString_validFormats(String input, int expectedSets) {
+    Score score = Score.fromString(input);
+
+    assertNotNull(score);
+    assertEquals(expectedSets, score.getSets().size());
+  }
+
+  @Test
+  void testFromString_parsesTwoSetsCorrectly() {
+    Score score = Score.fromString("6-4 6-3");
+
+    assertEquals(2, score.getSets().size());
+    assertEquals(6, score.getSets().getFirst().getTeamAScore());
+    assertEquals(4, score.getSets().getFirst().getTeamBScore());
+    assertEquals(6, score.getSets().get(1).getTeamAScore());
+    assertEquals(3, score.getSets().get(1).getTeamBScore());
+  }
+
+  @Test
+  void testFromString_parsesCommaDelimiter() {
+    Score score = Score.fromString("6-4,6-3");
+
+    assertEquals(2, score.getSets().size());
+    assertEquals(6, score.getSets().getFirst().getTeamAScore());
+    assertEquals(4, score.getSets().getFirst().getTeamBScore());
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+      "'invalid'",
+      "'6-'",
+      "'-4'",
+      "'6'",
+      "'a-b'"
+  })
+  void testFromString_invalidFormats(String input) {
+    assertThrows(IllegalArgumentException.class, () -> Score.fromString(input));
   }
 
   // ============= FORFEIT TESTS =============

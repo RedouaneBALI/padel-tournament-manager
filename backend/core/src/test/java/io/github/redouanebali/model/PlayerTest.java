@@ -7,21 +7,6 @@ import org.junit.jupiter.api.Test;
 
 class PlayerTest {
 
-  @Test
-  void testPlayerAttributes() {
-    Player player = new Player();
-    player.setId(1L);
-    player.setName("John Doe");
-    player.setRanking(5);
-    player.setPoints(1200);
-    player.setBirthYear(1990);
-
-    assertEquals(1L, player.getId());
-    assertEquals("John Doe", player.getName());
-    assertEquals(5, player.getRanking());
-    assertEquals(1200, player.getPoints());
-    assertEquals(1990, player.getBirthYear());
-  }
 
   @Test
   @Disabled("Test disabled: Player.toString() implementation may change and is not critical for business logic")

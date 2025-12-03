@@ -8,7 +8,6 @@ import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.model.format.DrawMath;
 import io.github.redouanebali.model.format.TournamentConfig;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +23,10 @@ public class GroupPhase implements TournamentPhase {
   private int nbPools;
   private int nbPairsPerPool;
   private int nbQualifiedByPool;
+
+  public static boolean isPowerOfTwo(int n) {
+    return n > 0 && (n & (n - 1)) == 0;
+  }
 
   @Override
   public List<String> validate(final Tournament tournament) {
@@ -55,7 +58,7 @@ public class GroupPhase implements TournamentPhase {
 
     // Check that total qualified is a power of 2 (for knockout phase)
     int totalQualified = nbPools * nbQualifiedByPool;
-    if (totalQualified > 0 && !DrawMath.isPowerOfTwo(totalQualified)) {
+    if (totalQualified > 0 && !isPowerOfTwo(totalQualified)) {
       errors.add("Total qualified teams (" + totalQualified + ") must be a power of 2 for knockout phase");
     }
 

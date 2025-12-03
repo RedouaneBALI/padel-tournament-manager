@@ -19,6 +19,30 @@ public enum GamePoint {
     return String.valueOf(value);
   }
 
+  /**
+   * Returns the next game point in the progression. AVANTAGE stays at AVANTAGE (game won).
+   */
+  public GamePoint next() {
+    return switch (this) {
+      case ZERO -> QUINZE;
+      case QUINZE -> TRENTE;
+      case TRENTE -> QUARANTE;
+      case QUARANTE, AVANTAGE -> AVANTAGE;
+    };
+  }
+
+  /**
+   * Returns the previous game point (used for undo). ZERO stays at ZERO.
+   */
+  public GamePoint previous() {
+    return switch (this) {
+      case AVANTAGE -> QUARANTE;
+      case QUARANTE -> TRENTE;
+      case TRENTE -> QUINZE;
+      case QUINZE, ZERO -> ZERO;
+    };
+  }
+
   @Override
   public String toString() {
     return getDisplay();

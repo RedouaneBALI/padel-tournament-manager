@@ -7,7 +7,7 @@ import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Round;
-import io.github.redouanebali.util.TestFixtures;
+import io.github.redouanebali.util.TestFixturesCore;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -29,8 +29,8 @@ class RandomPlacementUtilTest {
   })
   void testPlaceRemainingTeamsRandomly(int nbTeams, int drawSize) {
     // Arrange
-    Round            round = TestFixtures.buildEmptyRound(drawSize);
-    List<PlayerPair> teams = TestFixtures.createPlayerPairs(nbTeams);
+    Round            round = TestFixturesCore.buildEmptyRound(drawSize);
+    List<PlayerPair> teams = TestFixturesCore.createPlayerPairs(nbTeams);
 
     // Act
     RandomPlacementUtil.placeRemainingTeamsRandomly(round, teams);
@@ -60,9 +60,9 @@ class RandomPlacementUtilTest {
   @Test
   void testPlaceRemainingTeamsRandomly_IsActuallyRandom() {
     // Arrange
-    Round            round1 = TestFixtures.buildEmptyRound(8);
-    Round            round2 = TestFixtures.buildEmptyRound(8);
-    List<PlayerPair> teams  = TestFixtures.createPlayerPairs(6); // Leave some slots empty for variation
+    Round            round1 = TestFixturesCore.buildEmptyRound(8);
+    Round            round2 = TestFixturesCore.buildEmptyRound(8);
+    List<PlayerPair> teams  = TestFixturesCore.createPlayerPairs(6); // Leave some slots empty for variation
 
     // Act - place teams multiple times
     RandomPlacementUtil.placeRemainingTeamsRandomly(round1, teams);
@@ -96,8 +96,8 @@ class RandomPlacementUtilTest {
   })
   void testPlaceTeamsInOrder(int nbTeams, int drawSize) {
     // Arrange
-    Round            round = TestFixtures.buildEmptyRound(drawSize);
-    List<PlayerPair> teams = TestFixtures.createPlayerPairs(nbTeams);
+    Round            round = TestFixturesCore.buildEmptyRound(drawSize);
+    List<PlayerPair> teams = TestFixturesCore.createPlayerPairs(nbTeams);
 
     // Act
     RandomPlacementUtil.placeTeamsInOrder(round, teams);
@@ -125,10 +125,10 @@ class RandomPlacementUtilTest {
   @Test
   void testPlaceTeamsInOrder_PreservesExistingPlacements() {
     // Arrange
-    Round round = TestFixtures.buildEmptyRound(8);
+    Round round = TestFixturesCore.buildEmptyRound(8);
 
     // Place some existing teams manually
-    List<PlayerPair> allTeams      = TestFixtures.createPlayerPairs(6);
+    List<PlayerPair> allTeams      = TestFixturesCore.createPlayerPairs(6);
     List<PlayerPair> existingTeams = allTeams.subList(0, 2);
     List<PlayerPair> newTeams      = allTeams.subList(2, 6);
 
@@ -161,10 +161,10 @@ class RandomPlacementUtilTest {
   @Test
   void testPlaceRemainingTeamsRandomly_PreservesExistingPlacements() {
     // Arrange
-    Round round = TestFixtures.buildEmptyRound(8);
+    Round round = TestFixturesCore.buildEmptyRound(8);
 
     // Place some existing teams manually
-    List<PlayerPair> allTeams      = TestFixtures.createPlayerPairs(6);
+    List<PlayerPair> allTeams      = TestFixturesCore.createPlayerPairs(6);
     List<PlayerPair> existingTeams = allTeams.subList(0, 2);
     List<PlayerPair> newTeams      = allTeams.subList(2, 6);
 
@@ -197,14 +197,14 @@ class RandomPlacementUtilTest {
   @Test
   void testPlaceRemainingTeamsRandomly_HandlesNullRound() {
     // Act & Assert
-    RandomPlacementUtil.placeRemainingTeamsRandomly(null, TestFixtures.createPlayerPairs(4));
+    RandomPlacementUtil.placeRemainingTeamsRandomly(null, TestFixturesCore.createPlayerPairs(4));
     // Should not throw exception
     assertTrue(true, "Should handle null teams without throwing exception");
   }
 
   @Test
   void testPlaceRemainingTeamsRandomly_HandlesNullTeams() {
-    Round round = TestFixtures.buildEmptyRound(8);
+    Round round = TestFixturesCore.buildEmptyRound(8);
     RandomPlacementUtil.placeRemainingTeamsRandomly(round, null);
     // Should not throw exception
     assertTrue(true, "Should handle null teams without throwing exception");
@@ -213,8 +213,8 @@ class RandomPlacementUtilTest {
   @Test
   void testPlaceTeamsInOrder_HandlesOverflow() {
     // Arrange
-    Round            round = TestFixtures.buildEmptyRound(4); // Only 4 slots total
-    List<PlayerPair> teams = TestFixtures.createPlayerPairs(10); // More teams than slots
+    Round            round = TestFixturesCore.buildEmptyRound(4); // Only 4 slots total
+    List<PlayerPair> teams = TestFixturesCore.createPlayerPairs(10); // More teams than slots
 
     // Act
     RandomPlacementUtil.placeTeamsInOrder(round, teams);
@@ -240,8 +240,8 @@ class RandomPlacementUtilTest {
   @Test
   void testPlaceRemainingTeamsRandomly_HandlesOverflow() {
     // Arrange
-    Round            round = TestFixtures.buildEmptyRound(4); // Only 4 slots total
-    List<PlayerPair> teams = TestFixtures.createPlayerPairs(10); // More teams than slots
+    Round            round = TestFixturesCore.buildEmptyRound(4); // Only 4 slots total
+    List<PlayerPair> teams = TestFixturesCore.createPlayerPairs(10); // More teams than slots
 
     // Act
     RandomPlacementUtil.placeRemainingTeamsRandomly(round, teams);
@@ -264,14 +264,14 @@ class RandomPlacementUtilTest {
   @Test
   void testPlaceTeamsInOrder_HandlesNullRound() {
     // Act & Assert
-    RandomPlacementUtil.placeTeamsInOrder(null, TestFixtures.createPlayerPairs(4));
+    RandomPlacementUtil.placeTeamsInOrder(null, TestFixturesCore.createPlayerPairs(4));
     // Should not throw exception
     assertTrue(true, "Should handle null teams without throwing exception");
   }
 
   @Test
   void testPlaceTeamsInOrder_HandlesNullTeams() {
-    Round round = TestFixtures.buildEmptyRound(8);
+    Round round = TestFixturesCore.buildEmptyRound(8);
     RandomPlacementUtil.placeTeamsInOrder(round, null);
     // Should not throw exception
     assertTrue(true, "Should handle null teams without throwing exception");
@@ -287,8 +287,8 @@ class RandomPlacementUtilTest {
   })
   void testPlaceRemainingTeamsRandomly_InPools(int totalTeams, int nbPools) {
     // Arrange
-    Round            round = TestFixtures.buildEmptyPoolRound(nbPools, totalTeams / nbPools);
-    List<PlayerPair> teams = TestFixtures.createPlayerPairs(totalTeams);
+    Round            round = TestFixturesCore.buildEmptyPoolRound(nbPools, totalTeams / nbPools);
+    List<PlayerPair> teams = TestFixturesCore.createPlayerPairs(totalTeams);
 
     // Act
     RandomPlacementUtil.placeRemainingTeamsRandomly(round, teams);
@@ -312,8 +312,8 @@ class RandomPlacementUtilTest {
   @Test
   void testPlaceRemainingTeamsRandomly_InPools_ExactlyDivisible() {
     // Arrange
-    Round            round = TestFixtures.buildEmptyPoolRound(3, 3);
-    List<PlayerPair> teams = TestFixtures.createPlayerPairs(9); // Exactly divisible by 3
+    Round            round = TestFixturesCore.buildEmptyPoolRound(3, 3);
+    List<PlayerPair> teams = TestFixturesCore.createPlayerPairs(9); // Exactly divisible by 3
 
     // Act
     RandomPlacementUtil.placeRemainingTeamsRandomly(round, teams);
@@ -334,10 +334,10 @@ class RandomPlacementUtilTest {
   @Test
   void testPlaceRemainingTeamsRandomly_InPools_PreservesExistingTeams() {
     // Arrange
-    Round round = TestFixtures.buildEmptyPoolRound(2, 3);
+    Round round = TestFixturesCore.buildEmptyPoolRound(2, 3);
 
     // Add some existing teams to pools
-    List<PlayerPair> allTeams      = TestFixtures.createPlayerPairs(6);
+    List<PlayerPair> allTeams      = TestFixturesCore.createPlayerPairs(6);
     List<PlayerPair> existingTeams = allTeams.subList(0, 2); // First 2 teams
     List<PlayerPair> newTeams      = allTeams.subList(2, 6); // Teams 3-6
 
@@ -365,8 +365,8 @@ class RandomPlacementUtilTest {
   @Test
   void testPlaceTeamsInOrder_InPools() {
     // Arrange
-    Round            round = TestFixtures.buildEmptyPoolRound(2, 2);
-    List<PlayerPair> teams = TestFixtures.createPlayerPairs(4);
+    Round            round = TestFixturesCore.buildEmptyPoolRound(2, 2);
+    List<PlayerPair> teams = TestFixturesCore.createPlayerPairs(4);
 
     // Act
     RandomPlacementUtil.placeTeamsInOrder(round, teams);
@@ -387,8 +387,8 @@ class RandomPlacementUtilTest {
   @Test
   void testPlaceRemainingTeamsRandomly_InPools_HandlesEmptyPools() {
     // Arrange
-    Round            round = TestFixtures.buildEmptyPoolRound(2, 2);
-    List<PlayerPair> teams = TestFixtures.createPlayerPairs(2); // Fewer teams than pools
+    Round            round = TestFixturesCore.buildEmptyPoolRound(2, 2);
+    List<PlayerPair> teams = TestFixturesCore.createPlayerPairs(2); // Fewer teams than pools
 
     // Act
     RandomPlacementUtil.placeRemainingTeamsRandomly(round, teams);

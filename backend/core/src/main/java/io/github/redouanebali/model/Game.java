@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -44,6 +45,7 @@ public class Game {
 
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "format_id")
+  @NotNull
   private MatchFormat format;
 
   @Enumerated(EnumType.STRING)
@@ -133,21 +135,6 @@ public class Game {
       }
     }
     return new int[]{teamAWonSets, teamBWonSets};
-  }
-
-  private boolean isFinalSetScenario(int setIndex, int teamAWonSets, int teamBWonSets, int setsToWin) {
-    boolean isLastSet          = (setIndex == score.getSets().size() - 1);
-    boolean isTieBreakScenario = (teamAWonSets == setsToWin - 1) && (teamBWonSets == setsToWin - 1);
-    return isLastSet && isTieBreakScenario;
-  }
-
-  private int evaluateSuperTieBreak(SetScore set) {
-    int a = set.getTeamAScore();
-    int b = set.getTeamBScore();
-    if ((a >= 10 || b >= 10) && Math.abs(a - b) >= 2) {
-      return a > b ? 1 : 2;
-    }
-    return 0; // No winner yet
   }
 
   private int evaluateRegularSet(SetScore set, int pointsPerSet) {
@@ -245,39 +232,11 @@ public class Game {
   }
 
   private PlayerPair determineWinnerByScore() {
-    int     setsToWin         = format.getNumberOfSetsToWin();
-    int     setsWonByA        = 0;
-    int     setsWonByB        = 0;
-    int     pointsPerSet      = format.getGamesPerSet();
-    boolean superTie          = format.isSuperTieBreakInFinalSet();
-    int     lastSetIndex      = score.getSets().size() - 1;
-    int     expectedTotalSets = 2 * setsToWin - 1;
-    for (int i = 0; i < score.getSets().size(); i++) {
-      SetScore set        = score.getSets().get(i);
-      boolean  isFinalSet = (i == lastSetIndex) && superTie && (score.getSets().size() == expectedTotalSets);
-      if (isFinalSet) {
-        Integer tieA = set.getTieBreakTeamA();
-        Integer tieB = set.getTieBreakTeamB();
-        if (tieA != null && tieB != null && (tieA >= 10 || tieB >= 10) && Math.abs(tieA - tieB) >= 2) {
-          if (tieA > tieB) {
-            setsWonByA++;
-          } else if (tieB > tieA) {
-            setsWonByB++;
-          }
-        }
-        continue;
-      }
-      int winner = evaluateRegularSet(set, pointsPerSet);
-      if (winner == 1) {
-        setsWonByA++;
-      } else if (winner == 2) {
-        setsWonByB++;
-      }
-    }
-    if (setsWonByA > setsWonByB) {
+    int[] setsWon = calculateSetsWon();
+    if (setsWon[0] > setsWon[1]) {
       return teamA;
     }
-    if (setsWonByB > setsWonByA) {
+    if (setsWon[1] > setsWon[0]) {
       return teamB;
     }
     return null;

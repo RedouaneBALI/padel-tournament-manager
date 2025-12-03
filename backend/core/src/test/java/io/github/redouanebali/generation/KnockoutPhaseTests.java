@@ -12,7 +12,7 @@ import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.DrawMode;
 import io.github.redouanebali.model.format.TournamentConfig;
-import io.github.redouanebali.util.TestFixtures;
+import io.github.redouanebali.util.TestFixturesCore;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -137,7 +137,7 @@ class KnockoutPhaseTests {
     KnockoutPhase mainDrawPhase = new KnockoutPhase(mainDrawSize, nbSeeds, PhaseType.MAIN_DRAW);
 
     // Prepare current round
-    Round currentRound = TestFixtures.buildEmptyRound(totalPairs);
+    Round currentRound = TestFixturesCore.buildEmptyRound(totalPairs);
     currentRound.setStage(currentStageEnum);
 
     if (nbSeeds > totalPairs) {
@@ -162,7 +162,7 @@ class KnockoutPhaseTests {
       t.getRounds().clear();
       t.getRounds().add(currentRound);
 
-      List<PlayerPair> allPairs = TestFixtures.createPlayerPairs(pairsNonBye);
+      List<PlayerPair> allPairs = TestFixturesCore.createPlayerPairs(pairsNonBye);
 
       // Handle staggered entry
       if (staggeredEntry && !currentStageEnum.isQualification()) {
@@ -283,7 +283,7 @@ class KnockoutPhaseTests {
       }
 
       // Create and add nextRound only now
-      Round nextRound = TestFixtures.buildEmptyRound(totalPairs / 2);
+      Round nextRound = TestFixturesCore.buildEmptyRound(totalPairs / 2);
       t.getRounds().add(nextRound);
 
     } else {
@@ -295,13 +295,13 @@ class KnockoutPhaseTests {
         // R64 following qualifications - previous round is Q2 or Q3
         int   qualifRounds    = Integer.numberOfTrailingZeros(preQualDrawSize / nbQualifiers);
         Stage prevQualifStage = Stage.fromQualifIndex(qualifRounds);
-        prevRound = TestFixtures.buildEmptyRound(totalPairs * 2);
+        prevRound = TestFixturesCore.buildEmptyRound(totalPairs * 2);
         prevRound.setStage(prevQualifStage);
       } else if (currentStageEnum.isQualification()) {
         // Previous qualification round
         int   currentQualifIndex = currentStageEnum == Stage.Q2 ? 2 : 3;
         Stage prevQualifStage    = Stage.fromQualifIndex(currentQualifIndex - 1);
-        prevRound = TestFixtures.buildEmptyRound(totalPairs * 2);
+        prevRound = TestFixturesCore.buildEmptyRound(totalPairs * 2);
         prevRound.setStage(prevQualifStage);
       } else {
         // Normal main draw progression
@@ -310,10 +310,10 @@ class KnockoutPhaseTests {
         if (prevRoundSize > 64) {
           // If previous would be > 64, it means we're coming from qualifications
           // Create a qualification round instead
-          prevRound = TestFixtures.buildEmptyRound(totalPairs * 2);
+          prevRound = TestFixturesCore.buildEmptyRound(totalPairs * 2);
           prevRound.setStage(Stage.Q2); // Most common case
         } else {
-          prevRound = TestFixtures.buildEmptyRound(prevRoundSize);
+          prevRound = TestFixturesCore.buildEmptyRound(prevRoundSize);
           prevRound.setStage(Stage.fromNbTeams(prevRoundSize));
         }
       }
@@ -322,14 +322,14 @@ class KnockoutPhaseTests {
       t.getRounds().add(prevRound);
       t.getRounds().add(currentRound);
 
-      List<PlayerPair> prevPairs = TestFixtures.createPlayerPairs(prevRound.getGames().size() * 2);
+      List<PlayerPair> prevPairs = TestFixturesCore.createPlayerPairs(prevRound.getGames().size() * 2);
       int              idx       = 0;
       for (Game g : prevRound.getGames()) {
         if (idx + 1 < prevPairs.size()) {
           g.setTeamA(prevPairs.get(idx));
           g.setTeamB(prevPairs.get(idx + 1));
-          g.setFormat(TestFixtures.createSimpleFormat(1));
-          g.setScore(TestFixtures.createScoreWithWinner(g, g.getTeamA()));
+          g.setFormat(TestFixturesCore.createSimpleFormat(1));
+          g.setScore(TestFixturesCore.createScoreWithWinner(g, g.getTeamA()));
           idx += 2;
         }
       }
@@ -347,7 +347,7 @@ class KnockoutPhaseTests {
 
       // Create teams according to CSV data - need enough teams for all matches + default qualifs
       int              totalTeamsNeeded     = (matches * 2) + defaultQualif;
-      List<PlayerPair> teamsForCurrentRound = TestFixtures.createPlayerPairs(totalTeamsNeeded);
+      List<PlayerPair> teamsForCurrentRound = TestFixturesCore.createPlayerPairs(totalTeamsNeeded);
       int              teamIndex            = 0;
 
       // Place real matches (team vs team) - exactly 'matches' games
@@ -356,8 +356,8 @@ class KnockoutPhaseTests {
         if (placedMatches < matches && teamIndex + 1 < teamsForCurrentRound.size()) {
           g.setTeamA(teamsForCurrentRound.get(teamIndex++));
           g.setTeamB(teamsForCurrentRound.get(teamIndex++));
-          g.setFormat(TestFixtures.createSimpleFormat(1));
-          g.setScore(TestFixtures.createScoreWithWinner(g, g.getTeamA()));
+          g.setFormat(TestFixturesCore.createSimpleFormat(1));
+          g.setScore(TestFixturesCore.createScoreWithWinner(g, g.getTeamA()));
           placedMatches++;
         }
       }
@@ -368,8 +368,8 @@ class KnockoutPhaseTests {
         if (placedDefaults < defaultQualif && g.getTeamA() == null && teamIndex < teamsForCurrentRound.size()) {
           g.setTeamA(teamsForCurrentRound.get(teamIndex++));
           g.setTeamB(PlayerPair.bye());
-          g.setFormat(TestFixtures.createSimpleFormat(1));
-          g.setScore(TestFixtures.createScoreWithWinner(g, g.getTeamA()));
+          g.setFormat(TestFixturesCore.createSimpleFormat(1));
+          g.setScore(TestFixturesCore.createScoreWithWinner(g, g.getTeamA()));
           placedDefaults++;
         }
       }
@@ -385,7 +385,7 @@ class KnockoutPhaseTests {
       }
 
       // Create and add nextRound
-      Round nextRound = TestFixtures.buildEmptyRound(totalPairs / 2);
+      Round nextRound = TestFixturesCore.buildEmptyRound(totalPairs / 2);
       t.getRounds().add(nextRound);
     }
 
@@ -416,7 +416,7 @@ class KnockoutPhaseTests {
   @Test
   void testKnockout_40Teams_16Seeds_allSeedsPlayByes_noBYEvsBAYE() {
     // Given: A tournament in KNOCKOUT mode with 40 teams, 64 slots, and 16 seeds
-    Tournament tournament = TestFixtures.makeTournament(
+    Tournament tournament = TestFixturesCore.makeTournament(
         0,              // preQualDrawSize
         0,              // nbQualifiers
         64,             // mainDrawSize
@@ -426,7 +426,7 @@ class KnockoutPhaseTests {
     );
 
     // Create 40 teams (seeds 1-40)
-    List<PlayerPair> teams = TestFixtures.createPlayerPairs(40);
+    List<PlayerPair> teams = TestFixturesCore.createPlayerPairs(40);
 
     // Initialize tournament structure
     KnockoutPhase mainDrawPhase = new KnockoutPhase(64, 16, PhaseType.MAIN_DRAW);
@@ -547,7 +547,7 @@ class KnockoutPhaseTests {
   @Test
   void testQualifierPropagation_maintainsCorrectQualifierNumbers() {
     // Given: Tournament with 4 qualif matches -> 4 qualifiers to main draw of 8
-    Tournament tournament = TestFixtures.makeTournament(
+    Tournament tournament = TestFixturesCore.makeTournament(
         8,  // preQualDrawSize: 8 teams in qualification
         4,  // nbQualifiers: 4 teams qualify to main draw
         8,  // mainDrawSize: 8 slots in main draw
@@ -557,7 +557,7 @@ class KnockoutPhaseTests {
     );
 
     // Create 12 teams total: 8 for qualifications + 4 for direct main draw
-    List<PlayerPair> allTeams = TestFixtures.createPlayerPairs(12);
+    List<PlayerPair> allTeams = TestFixturesCore.createPlayerPairs(12);
 
     // First 4 teams (seeds 1-4) go directly to main draw
     List<PlayerPair> directTeams = allTeams.subList(0, 4);
@@ -727,8 +727,8 @@ class KnockoutPhaseTests {
    * Helper method to set the winner of a game and update its score.
    */
   private void setGameWinner(Game game, PlayerPair winner) {
-    game.setFormat(TestFixtures.createSimpleFormat(1));
-    game.setScore(TestFixtures.createScoreWithWinner(game, winner));
+    game.setFormat(TestFixturesCore.createSimpleFormat(1));
+    game.setScore(TestFixturesCore.createScoreWithWinner(game, winner));
   }
 
 }

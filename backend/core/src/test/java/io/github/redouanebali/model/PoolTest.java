@@ -2,7 +2,7 @@ package io.github.redouanebali.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.github.redouanebali.util.TestFixtures;
+import io.github.redouanebali.util.TestFixturesCore;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +24,7 @@ class PoolTest {
     SecurityContextHolder.getContext().setAuthentication(
         new UsernamePasswordAuthenticationToken("bali.redouane@gmail.com", null, List.of())
     );
-    defaultPairs = TestFixtures.createPlayerPairs(3); // three pairs: [0],[1],[2]
+    defaultPairs = TestFixturesCore.createPlayerPairs(3); // three pairs: [0],[1],[2]
   }
 
   private Game buildGame(String scoreStr, PlayerPair teamA, PlayerPair teamB) {
@@ -70,7 +70,7 @@ class PoolTest {
         default -> throw new IllegalArgumentException("Unexpected token in expectedRankingStr: " + token);
       }
     }
-    List<PoolRankingDetails> ranking = Pool.computeRanking(pool, round.getGames());
+    List<PoolRankingDetails> ranking = pool.computeRanking(round.getGames());
     assertEquals(expectedRanking, ranking.stream().map(PoolRankingDetails::getPlayerPair).toList());
 
     Tournament tournament = new Tournament();

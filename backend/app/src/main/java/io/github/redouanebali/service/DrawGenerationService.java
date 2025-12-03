@@ -6,15 +6,13 @@ import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.TournamentRepository;
-import io.github.redouanebali.security.SecurityProps;
+import io.github.redouanebali.security.AuthorizationService;
 import io.github.redouanebali.security.SecurityUtil;
 import jakarta.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DrawGenerationService {
 
   private final TournamentRepository tournamentRepository;
-  private final SecurityProps        securityProps;
+  private final AuthorizationService authorizationService;
   private final EntityManager        entityManager;
 
   public static List<PlayerPair> capPairsToMax(Tournament tournament) {
@@ -83,11 +81,7 @@ public class DrawGenerationService {
 
 
   private void assertCanInitialize(Tournament tournament) {
-    String      me          = SecurityUtil.currentUserId();
-    Set<String> superAdmins = securityProps.getSuperAdmins();
-    if (!superAdmins.contains(me) && !tournament.isEditableBy(me)) {
-      throw new AccessDeniedException("You are not allowed to initialize draw for this tournament");
-    }
+    authorizationService.requireTournamentEditPermission(tournament, SecurityUtil.currentUserId());
   }
 
 

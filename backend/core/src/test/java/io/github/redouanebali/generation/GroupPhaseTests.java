@@ -12,9 +12,8 @@ import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.model.format.DrawMath;
 import io.github.redouanebali.model.format.TournamentConfig;
-import io.github.redouanebali.util.TestFixtures;
+import io.github.redouanebali.util.TestFixturesCore;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -64,7 +63,7 @@ class GroupPhaseTests {
 
     // Verify total qualified count is a power of 2 (for knockout phase)
     int totalQualified = nbPools * nbQualifiedByPool;
-    assertTrue(DrawMath.isPowerOfTwo(totalQualified),
+    assertTrue(GroupPhase.isPowerOfTwo(totalQualified),
                "Total qualified (" + totalQualified + ") should be a power of 2 for knockout phase");
   }
 
@@ -87,7 +86,7 @@ class GroupPhaseTests {
     List<Round> rounds     = groupPhase.initialize(config);
     Round       groupRound = rounds.getFirst();
 
-    List<PlayerPair> teams = TestFixtures.createPlayerPairs(totalTeams);
+    List<PlayerPair> teams = TestFixturesCore.createPlayerPairs(totalTeams);
 
     // When
     groupPhase.placeRemainingTeamsRandomly(groupRound, teams);
@@ -135,7 +134,7 @@ class GroupPhaseTests {
     List<Round> rounds     = groupPhase.initialize(config);
     Round       groupRound = rounds.getFirst();
 
-    List<PlayerPair> teams = TestFixtures.createPlayerPairs(totalTeams);
+    List<PlayerPair> teams = TestFixturesCore.createPlayerPairs(totalTeams);
     // Set seeds for first nbSeeds teams
     for (int i = 0; i < nbSeeds && i < teams.size(); i++) {
       teams.get(i).setSeed(i + 1);
@@ -202,7 +201,7 @@ class GroupPhaseTests {
     List<Round> rounds     = groupPhase.initialize(config);
     Round       groupRound = rounds.getFirst();
 
-    List<PlayerPair> teams = TestFixtures.createPlayerPairs(16);
+    List<PlayerPair> teams = TestFixturesCore.createPlayerPairs(16);
 
     // When
     groupPhase.placeRemainingTeamsRandomly(groupRound, teams);

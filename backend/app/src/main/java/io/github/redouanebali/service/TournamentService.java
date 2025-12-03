@@ -7,7 +7,7 @@ import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.TournamentRepository;
-import io.github.redouanebali.security.SecurityProps;
+import io.github.redouanebali.security.AuthorizationService;
 import io.github.redouanebali.security.SecurityUtil;
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
@@ -26,10 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class TournamentService {
 
-  private final TournamentRepository tournamentRepository;
-  private final SecurityProps        securityProps;
-
+  private final TournamentRepository  tournamentRepository;
   private final DrawGenerationService drawGenerationService;
+  private final AuthorizationService  authorizationService;
 
   /**
    * Retrieves a tournament by its ID.
@@ -47,9 +46,7 @@ public class TournamentService {
    * Checks if the current user can edit the given tournament. Returns true if user is super-admin, owner, or editor.
    */
   private boolean canEditTournament(Tournament tournament) {
-    String      me          = SecurityUtil.currentUserId();
-    Set<String> superAdmins = securityProps.getSuperAdmins();
-    return superAdmins.contains(me) || tournament.isEditableBy(me);
+    return authorizationService.canEditTournament(tournament, SecurityUtil.currentUserId());
   }
 
   /**
@@ -173,15 +170,6 @@ public class TournamentService {
     return getTournamentById(id);
   }
 
-  /**
-   * Retrieves all tournaments owned by a specific user.
-   *
-   * @param ownerId the owner's user ID
-   * @return list of tournaments owned by the user
-   */
-  public List<Tournament> listByOwner(String ownerId) {
-    return tournamentRepository.findAllByOwnerId(ownerId);
-  }
 
   /**
    * Retrieves all tournaments in the system. Typically used by super admins.

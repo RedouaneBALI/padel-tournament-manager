@@ -14,6 +14,7 @@ import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.security.AuthorizationService;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
 import io.github.redouanebali.service.GameService;
@@ -25,7 +26,6 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -61,6 +61,7 @@ public class AdminTournamentController {
   private final SecurityProps                securityProps;
   private final TournamentMapper             tournamentMapper;
   private final GameScoreWebSocketController gameScoreWebSocketController;
+  private final AuthorizationService         authorizationService;
 
   /**
    * Creates a new tournament with the provided configuration. Validates the tournament structure if both format and config are provided.
@@ -289,17 +290,8 @@ public class AdminTournamentController {
    * @throws AccessDeniedException if the user lacks edit rights
    */
   private void checkOwnership(Long tournamentId) {
-    String      me           = SecurityUtil.currentUserId();
-    Tournament  tournament   = tournamentService.getTournamentById(tournamentId);
-    Set<String> superAdmins  = securityProps.getSuperAdmins();
-    boolean     isSuperAdmin = superAdmins.contains(me);
-    boolean     isEditable   = tournament.isEditableBy(me);
-    log.warn("[checkOwnership] user='{}', superAdmins={}, isSuperAdmin={}, isEditable={}, tournamentId={}, editorIds={}, owner={}",
-             me, superAdmins, isSuperAdmin, isEditable, tournamentId, tournament.getEditorIds(), tournament.getOwnerId());
-    // Check if user is super-admin, owner, or editor
-    if (!isSuperAdmin && !isEditable) {
-      throw new AccessDeniedException("You are not allowed to modify this tournament");
-    }
+    Tournament tournament = tournamentService.getTournamentById(tournamentId);
+    authorizationService.requireTournamentEditPermission(tournament, SecurityUtil.currentUserId());
   }
 
 }

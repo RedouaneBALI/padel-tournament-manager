@@ -22,7 +22,7 @@ public class GameService {
   private final TournamentService     tournamentService;
   private final DrawGenerationService drawGenerationService;
   private final TournamentMapper      tournamentMapper;
-  private final GamePointManager      gamePointManager = new GamePointManager();
+  private final GamePointManager      gamePointManager;
 
   @Transactional
   public UpdateScoreDTO updateGameScore(Long tournamentId, Long gameId, Score score) {

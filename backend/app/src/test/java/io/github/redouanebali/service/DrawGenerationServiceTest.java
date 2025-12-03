@@ -19,8 +19,10 @@ import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.TournamentConfig;
 import io.github.redouanebali.model.format.TournamentFormat;
 import io.github.redouanebali.repository.TournamentRepository;
+import io.github.redouanebali.security.AuthorizationService;
 import io.github.redouanebali.security.SecurityProps;
-import io.github.redouanebali.util.TestFixtures;
+import io.github.redouanebali.util.TestFixturesApp;
+import jakarta.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -42,11 +44,13 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 class DrawGenerationServiceTest {
 
   @Mock
-  private TournamentRepository              tournamentRepository;
+  private TournamentRepository tournamentRepository;
   @Mock
-  private SecurityProps                     securityProps;
+  private SecurityProps        securityProps;
   @Mock
-  private jakarta.persistence.EntityManager entityManager;
+  private AuthorizationService authorizationService;
+  @Mock
+  private EntityManager        entityManager;
 
   @InjectMocks
   private DrawGenerationService drawGenerationService;
@@ -62,6 +66,17 @@ class DrawGenerationServiceTest {
 
     lenient().when(securityProps.getSuperAdmins()).thenReturn(Collections.emptySet());
     lenient().when(tournamentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+    // Configure authorizationService to throw AccessDeniedException by default (can be overridden in specific tests)
+    lenient().doAnswer(inv -> {
+      Tournament t      = inv.getArgument(0);
+      String     userId = inv.getArgument(1);
+      // Allow if user is owner or in super-admins
+      if (!securityProps.getSuperAdmins().contains(userId) && !t.isEditableBy(userId)) {
+        throw new AccessDeniedException("You are not allowed to initialize draw for this tournament");
+      }
+      return null;
+    }).when(authorizationService).requireTournamentEditPermission(any(), any());
   }
 
   @AfterEach
@@ -75,7 +90,7 @@ class DrawGenerationServiceTest {
   void capPairsToMax_truncates_whenAboveLimit() {
     Tournament tournament = baseTournamentKO(32, 0);
     tournament.getPlayerPairs().clear();
-    tournament.getPlayerPairs().addAll(TestFixtures.createPlayerPairs(36));
+    tournament.getPlayerPairs().addAll(TestFixturesApp.createPlayerPairs(36));
     List<PlayerPair> result = DrawGenerationService.capPairsToMax(tournament);
     assertEquals(32, result.size());
     Assertions.assertEquals(1, result.getFirst().getSeed());
@@ -90,7 +105,7 @@ class DrawGenerationServiceTest {
 
     // Use helper method to create manual RoundRequest objects
     List<PlayerPair>   pairs        = new ArrayList<>(tournament.getPlayerPairs());
-    List<RoundRequest> manualRounds = TestFixtures.createManualRoundRequestsFromPairs(Stage.SEMIS, pairs);
+    List<RoundRequest> manualRounds = TestFixturesApp.createManualRoundRequestsFromPairs(Stage.SEMIS, pairs);
 
     Tournament updated = drawGenerationService.generateDrawManual(tournament, manualRounds);
     assertSame(tournament, updated);
@@ -112,7 +127,7 @@ class DrawGenerationServiceTest {
     Tournament tournament = baseTournamentKO(4, 0);
     tournament.setOwnerId("not.me@example.com");
     List<PlayerPair>   pairs        = new ArrayList<>(tournament.getPlayerPairs());
-    List<RoundRequest> manualRounds = TestFixtures.createManualRoundRequestsFromPairs(Stage.SEMIS, pairs);
+    List<RoundRequest> manualRounds = TestFixturesApp.createManualRoundRequestsFromPairs(Stage.SEMIS, pairs);
     assertThrows(AccessDeniedException.class,
                  () -> drawGenerationService.generateDrawManual(tournament, manualRounds));
   }
@@ -123,7 +138,7 @@ class DrawGenerationServiceTest {
     Tournament tournament = baseTournamentKO(4, 0);
     tournament.setOwnerId("someone@else");
     List<PlayerPair>   pairs        = new ArrayList<>(tournament.getPlayerPairs());
-    List<RoundRequest> manualRounds = TestFixtures.createManualRoundRequestsFromPairs(Stage.SEMIS, pairs);
+    List<RoundRequest> manualRounds = TestFixturesApp.createManualRoundRequestsFromPairs(Stage.SEMIS, pairs);
     Tournament         updated      = drawGenerationService.generateDrawManual(tournament, manualRounds);
     assertSame(tournament, updated);
   }
@@ -132,7 +147,7 @@ class DrawGenerationServiceTest {
   void generateDraw_savesTournament_once() {
     Tournament         tournament   = baseTournamentKO(4, 0);
     List<PlayerPair>   pairs        = new ArrayList<>(tournament.getPlayerPairs());
-    List<RoundRequest> manualRounds = TestFixtures.createManualRoundRequestsFromPairs(Stage.SEMIS, pairs);
+    List<RoundRequest> manualRounds = TestFixturesApp.createManualRoundRequestsFromPairs(Stage.SEMIS, pairs);
     drawGenerationService.generateDrawManual(tournament, manualRounds);
     verify(tournamentRepository, times(1)).save(tournament);
   }
@@ -157,7 +172,7 @@ class DrawGenerationServiceTest {
     tournament.setId(1L);
     tournament.setOwnerId("bali.redouane@gmail.com");
     tournament.setConfig(TournamentConfig.builder().mainDrawSize(nbPairs).nbSeeds(nbSeeds).format(TournamentFormat.KNOCKOUT).build());
-    tournament.getPlayerPairs().addAll(TestFixtures.createPlayerPairs(4));
+    tournament.getPlayerPairs().addAll(TestFixturesApp.createPlayerPairs(4));
     return tournament;
   }
 }

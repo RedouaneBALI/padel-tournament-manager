@@ -12,7 +12,7 @@ import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.DrawMode;
 import io.github.redouanebali.model.format.TournamentConfig;
 import io.github.redouanebali.model.format.TournamentFormat;
-import io.github.redouanebali.util.TestFixtures;
+import io.github.redouanebali.util.TestFixturesCore;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
@@ -308,8 +308,8 @@ class TournamentBuilderCsvTest {
       if (g.getTeamA() != null && g.getTeamB() != null &&
           !g.getTeamA().isBye() && !g.getTeamB().isBye() &&
           g.getScore() == null) {
-        g.setFormat(TestFixtures.createSimpleFormat(1));
-        g.setScore(TestFixtures.createScoreWithWinner(g, g.getTeamA()));
+        g.setFormat(TestFixturesCore.createSimpleFormat(1));
+        g.setScore(TestFixturesCore.createScoreWithWinner(g, g.getTeamA()));
         toScore--;
       }
     }

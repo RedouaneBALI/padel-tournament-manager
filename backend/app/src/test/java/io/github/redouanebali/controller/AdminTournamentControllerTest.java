@@ -49,6 +49,9 @@ public class AdminTournamentControllerTest {
   @MockBean
   private SecurityProps securityProps;
 
+  @MockBean
+  private io.github.redouanebali.security.AuthorizationService authorizationService;
+
   // newly added mocks required by controller constructor
   @MockBean
   private PlayerPairService playerPairService;

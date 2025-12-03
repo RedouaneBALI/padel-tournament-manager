@@ -10,6 +10,7 @@ import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.TournamentRepository;
+import io.github.redouanebali.security.AuthorizationService;
 import java.util.Collections;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
@@ -30,7 +31,7 @@ class MatchFormatServiceTest {
   private TournamentRepository tournamentRepository;
 
   @Mock
-  private io.github.redouanebali.security.SecurityProps securityProps;
+  private AuthorizationService authorizationService;
 
   @InjectMocks
   private MatchFormatService matchFormatService;
@@ -48,8 +49,6 @@ class MatchFormatServiceTest {
                  .build();
     JwtAuthenticationToken auth = new JwtAuthenticationToken(jwt, Collections.emptyList(), "bali.redouane@gmail.com");
     SecurityContextHolder.getContext().setAuthentication(auth);
-
-    org.mockito.Mockito.lenient().when(securityProps.getSuperAdmins()).thenReturn(Collections.emptySet());
 
     existingFormat = new MatchFormat();
     existingFormat.setNumberOfSetsToWin(2);

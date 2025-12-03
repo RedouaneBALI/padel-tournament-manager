@@ -5,7 +5,7 @@ import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.TournamentRepository;
-import io.github.redouanebali.security.SecurityProps;
+import io.github.redouanebali.security.AuthorizationService;
 import io.github.redouanebali.security.SecurityUtil;
 import java.util.List;
 import java.util.Set;
@@ -22,7 +22,7 @@ public class PlayerPairService {
 
   private static final String               TOURNAMENT_NOT_FOUND = "Tournament not found";
   private final        TournamentRepository tournamentRepository;
-  private final        SecurityProps        securityProps;
+  private final        AuthorizationService authorizationService;
   private final        TournamentMapper     tournamentMapper;
 
   /**
@@ -39,13 +39,10 @@ public class PlayerPairService {
   public Tournament addPairs(Long tournamentId, List<CreatePlayerPairRequest> requests) {
     Tournament tournament = tournamentRepository.findByIdWithLock(tournamentId)
                                                 .orElseThrow(() -> new IllegalArgumentException(TOURNAMENT_NOT_FOUND));
-    String      me          = SecurityUtil.currentUserId();
-    Set<String> superAdmins = securityProps.getSuperAdmins();
-    if (!superAdmins.contains(me) && !tournament.isEditableBy(me)) {
-      throw new AccessDeniedException("You are not allowed to modify pairs for this tournament");
-    }
 
-    log.info("Adding {} player pairs to tournament {} by user {}", requests.size(), tournamentId, me);
+    authorizationService.requireTournamentEditPermission(tournament, SecurityUtil.currentUserId());
+
+    log.info("Adding {} player pairs to tournament {} by user {}", requests.size(), tournamentId, SecurityUtil.currentUserId());
 
     tournament.getRounds().forEach(round ->
                                        round.getGames().forEach(game -> {
@@ -105,11 +102,7 @@ public class PlayerPairService {
     Tournament tournament = tournamentRepository.findByIdWithLock(tournamentId)
                                                 .orElseThrow(() -> new IllegalArgumentException(TOURNAMENT_NOT_FOUND));
 
-    String      me          = SecurityUtil.currentUserId();
-    Set<String> superAdmins = securityProps.getSuperAdmins();
-    if (!superAdmins.contains(me) && !tournament.isEditableBy(me)) {
-      throw new AccessDeniedException("You are not allowed to modify pairs for this tournament");
-    }
+    authorizationService.requireTournamentEditPermission(tournament, SecurityUtil.currentUserId());
 
     PlayerPair pair = tournament.getPlayerPairs().stream()
                                 .filter(pp -> pp.getId() != null && pp.getId().equals(pairId))
@@ -155,11 +148,7 @@ public class PlayerPairService {
     Tournament tournament = tournamentRepository.findByIdWithLock(tournamentId)
                                                 .orElseThrow(() -> new IllegalArgumentException(TOURNAMENT_NOT_FOUND));
 
-    String      me          = SecurityUtil.currentUserId();
-    Set<String> superAdmins = securityProps.getSuperAdmins();
-    if (!superAdmins.contains(me) && !tournament.isEditableBy(me)) {
-      throw new AccessDeniedException("You are not allowed to modify pairs for this tournament");
-    }
+    authorizationService.requireTournamentEditPermission(tournament, SecurityUtil.currentUserId());
 
     List<PlayerPair> currentPairs = tournament.getPlayerPairs();
 
@@ -202,7 +191,7 @@ public class PlayerPairService {
     tournamentRepository.save(tournament);
 
     log.info("Reordered {} player pairs (including BYE and QUALIFIER) for tournament {} by user {}",
-             orderedPairIds.size(), tournamentId, me);
+             orderedPairIds.size(), tournamentId, SecurityUtil.currentUserId());
   }
 
   /**

@@ -5,11 +5,9 @@ import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.repository.TournamentRepository;
-import io.github.redouanebali.security.SecurityProps;
+import io.github.redouanebali.security.AuthorizationService;
 import io.github.redouanebali.security.SecurityUtil;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,7 +15,7 @@ import org.springframework.stereotype.Service;
 public class MatchFormatService {
 
   private final TournamentRepository tournamentRepository;
-  private final SecurityProps        securityProps;
+  private final AuthorizationService authorizationService;
 
   /**
    * Retrieves the match format for a specific tournament round/stage.
@@ -45,16 +43,11 @@ public class MatchFormatService {
    * @param newFormat the new match format configuration
    * @return the updated match format
    * @throws IllegalArgumentException if tournament or stage round is not found
-   * @throws AccessDeniedException if user lacks modification rights
    */
   public MatchFormat updateMatchFormatForRound(Long tournamentId, Stage stage, MatchFormat newFormat) {
     Tournament tournament = getTournamentById(tournamentId);
 
-    String      me          = SecurityUtil.currentUserId();
-    Set<String> superAdmins = securityProps.getSuperAdmins();
-    if (!superAdmins.contains(me) && !tournament.isEditableBy(me)) {
-      throw new AccessDeniedException("You are not allowed to edit the match format for this tournament");
-    }
+    authorizationService.requireTournamentEditPermission(tournament, SecurityUtil.currentUserId());
 
     Round round = tournament.getRounds().stream()
                             .filter(r -> r.getStage() == stage)

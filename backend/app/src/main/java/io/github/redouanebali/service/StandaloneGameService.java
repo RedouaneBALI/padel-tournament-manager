@@ -34,7 +34,7 @@ public class StandaloneGameService {
   private final PlayerPairRepository  playerPairRepository;
   private final MatchFormatRepository matchFormatRepository;
   private final TournamentMapper      tournamentMapper;
-  private final GamePointManager      gamePointManager = new GamePointManager();
+  private final GamePointManager      gamePointManager;
 
   /**
    * Creates a new standalone game with two player pairs and a match format.

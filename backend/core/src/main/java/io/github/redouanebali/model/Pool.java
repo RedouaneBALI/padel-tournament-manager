@@ -42,7 +42,15 @@ public class Pool {
     }
   }
 
-  public static List<PoolRankingDetails> computeRanking(Pool pool, List<Game> allGamesOfRound) {
+  public static List<PoolRanking> getGroupRankings(Tournament tournament) {
+    return tournament.getRounds().stream()
+                     .filter(round -> round.getStage() == Stage.GROUPS)
+                     .flatMap(round -> round.getPools().stream())
+                     .map(Pool::getPoolRanking)
+                     .toList();
+  }
+
+  public List<PoolRankingDetails> computeRanking(List<Game> allGamesOfRound) {
     class SetStats {
 
       int points    = 0;
@@ -52,7 +60,7 @@ public class Pool {
 
     Map<PlayerPair, SetStats> statsMap = new HashMap<>();
 
-    for (PlayerPair pair : pool.getPairs()) {
+    for (PlayerPair pair : this.pairs) {
       statsMap.put(pair, new SetStats());
     }
 
@@ -60,7 +68,7 @@ public class Pool {
       PlayerPair teamA = game.getTeamA();
       PlayerPair teamB = game.getTeamB();
 
-      if (pool.getPairs().contains(teamA) && pool.getPairs().contains(teamB) && game.isFinished()) {
+      if (this.pairs.contains(teamA) && this.pairs.contains(teamB) && game.isFinished()) {
         TeamSide winner = game.getWinnerSide();
         if (winner == TeamSide.TEAM_A) {
           statsMap.get(teamA).points += 1;
@@ -99,16 +107,8 @@ public class Pool {
                                               .toList();
     PoolRanking poolRanking = new PoolRanking();
     poolRanking.setDetails(result);
-    pool.setPoolRanking(poolRanking); 
+    this.setPoolRanking(poolRanking);
     return result;
-  }
-
-  public static List<PoolRanking> getGroupRankings(Tournament tournament) {
-    return tournament.getRounds().stream()
-                     .filter(round -> round.getStage() == Stage.GROUPS)
-                     .flatMap(round -> round.getPools().stream())
-                     .map(Pool::getPoolRanking)
-                     .toList();
   }
 
   public void addPair(PlayerPair pair) {
@@ -127,21 +127,5 @@ public class Pool {
 
   public void initRanking() {
     pairs.forEach(pair -> poolRanking.addDetails(new PoolRankingDetails(pair, 0, 0)));
-  }
-
-  public void initPairs(final List<PlayerPair> pairs) {
-    this.pairs.clear();
-    this.poolRanking.getDetails().clear();
-    this.pairs.addAll(pairs);
-    for (PlayerPair pair : pairs) {
-      poolRanking.addDetails(new PoolRankingDetails(pair, 0, 0));
-    }
-  }
-
-  public void recalculateRanking(final List<Game> poolGames) {
-    List<PoolRankingDetails> newRanking = computeRanking(this, poolGames);
-    PoolRanking              ranking    = new PoolRanking();
-    ranking.setDetails(newRanking);
-    this.setPoolRanking(ranking);
   }
 }

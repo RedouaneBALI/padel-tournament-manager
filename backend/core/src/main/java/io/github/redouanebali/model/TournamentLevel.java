@@ -1,8 +1,10 @@
 package io.github.redouanebali.model;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 @AllArgsConstructor
+@Getter
 public enum TournamentLevel {
 
   P25("P25"),
@@ -15,6 +17,6 @@ public enum TournamentLevel {
   P2000("P2000"),
   AMATEUR("Amateur");
 
-  private String label;
+  private final String label;
 
 }

@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import io.github.redouanebali.dto.response.UpdateScoreDTO;
 import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.Game;
+import io.github.redouanebali.model.GamePoint;
 import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
@@ -20,7 +21,7 @@ import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.TournamentConfig;
 import io.github.redouanebali.model.format.TournamentFormat;
 import io.github.redouanebali.repository.TournamentRepository;
-import io.github.redouanebali.util.TestFixtures;
+import io.github.redouanebali.util.TestFixturesApp;
 import java.util.LinkedList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +38,7 @@ class GameServiceTest {
   private DrawGenerationService drawGenerationService;
   private GameService           gameService;
   private TournamentMapper      tournamentMapper;
+  private GamePointManager      gamePointManager;
 
   @BeforeEach
   void setUp() {
@@ -48,7 +50,8 @@ class GameServiceTest {
     tournamentService     = mock(TournamentService.class);
     drawGenerationService = mock(DrawGenerationService.class);
     tournamentMapper      = mock(TournamentMapper.class);
-    gameService           = new GameService(tournamentRepository, tournamentService, drawGenerationService, tournamentMapper);
+    gamePointManager      = new GamePointManager(); // Use real instance for game point logic
+    gameService           = new GameService(tournamentRepository, tournamentService, drawGenerationService, tournamentMapper, gamePointManager);
   }
 
 
@@ -65,8 +68,8 @@ class GameServiceTest {
     Long gameId       = 10L;
 
     // Real domain objects
-    MatchFormat      format = new MatchFormat();
-    List<PlayerPair> pairs  = TestFixtures.createPlayerPairs(2);
+    MatchFormat      format = TestFixturesApp.createSimpleFormat(2);
+    List<PlayerPair> pairs  = TestFixturesApp.createPlayerPairs(2);
     PlayerPair       teamA  = pairs.getFirst();
     PlayerPair       teamB  = pairs.get(1);
 
@@ -110,7 +113,7 @@ class GameServiceTest {
     Long             tournamentId = 2L;
     Long             gameId       = 20L;
     MatchFormat      format       = new MatchFormat();
-    List<PlayerPair> pairs        = TestFixtures.createPlayerPairs(2);
+    List<PlayerPair> pairs        = TestFixturesApp.createPlayerPairs(2);
     PlayerPair       teamA        = pairs.getFirst();
     PlayerPair       teamB        = pairs.get(1);
     Game             game         = new Game(format);
@@ -158,13 +161,15 @@ class GameServiceTest {
 
   @org.junit.jupiter.api.Test
   void testMixUpdateGamePointAndDirectScoreIncrement() {
-    Long             tournamentId = 5L;
-    Long             gameId       = 50L;
-    MatchFormat      format       = new MatchFormat();
-    List<PlayerPair> pairs        = TestFixtures.createPlayerPairs(2);
-    PlayerPair       teamA        = pairs.getFirst();
-    PlayerPair       teamB        = pairs.get(1);
-    Game             game         = new Game(format);
+    Long        tournamentId = 5L;
+    Long        gameId       = 50L;
+    MatchFormat format       = new MatchFormat();
+    format.setNumberOfSetsToWin(2);
+    format.setGamesPerSet(6);
+    List<PlayerPair> pairs = TestFixturesApp.createPlayerPairs(2);
+    PlayerPair       teamA = pairs.getFirst();
+    PlayerPair       teamB = pairs.get(1);
+    Game             game  = new Game(format);
     game.setId(gameId);
     game.setTeamA(teamA);
     game.setTeamB(teamB);
@@ -181,11 +186,11 @@ class GameServiceTest {
 
     // 1. Increment point by point (method 1)
     gameService.incrementGamePoint(tournamentId, gameId, TeamSide.TEAM_A); // 15-0
-    assertEquals(io.github.redouanebali.model.GamePoint.QUINZE, game.getScore().getCurrentGamePointA());
-    assertEquals(io.github.redouanebali.model.GamePoint.ZERO, game.getScore().getCurrentGamePointB());
+    assertEquals(GamePoint.QUINZE, game.getScore().getCurrentGamePointA());
+    assertEquals(GamePoint.ZERO, game.getScore().getCurrentGamePointB());
     gameService.incrementGamePoint(tournamentId, gameId, TeamSide.TEAM_A); // 30-0
-    assertEquals(io.github.redouanebali.model.GamePoint.TRENTE, game.getScore().getCurrentGamePointA());
-    assertEquals(io.github.redouanebali.model.GamePoint.ZERO, game.getScore().getCurrentGamePointB());
+    assertEquals(GamePoint.TRENTE, game.getScore().getCurrentGamePointA());
+    assertEquals(GamePoint.ZERO, game.getScore().getCurrentGamePointB());
 
     io.github.redouanebali.dto.request.UpdateGameRequest req = new io.github.redouanebali.dto.request.UpdateGameRequest();
     req.setCourt("Court 2");
@@ -206,7 +211,7 @@ class GameServiceTest {
     Long             tournamentId = 6L;
     Long             gameId       = 60L;
     MatchFormat      format       = new MatchFormat();
-    List<PlayerPair> pairs        = TestFixtures.createPlayerPairs(2);
+    List<PlayerPair> pairs        = TestFixturesApp.createPlayerPairs(2);
     PlayerPair       teamA        = pairs.getFirst();
     PlayerPair       teamB        = pairs.get(1);
     Game             game         = new Game(format);
@@ -237,8 +242,8 @@ class GameServiceTest {
     assertNull(game.getScore().getCurrentGamePointB());
 
     gameService.incrementGamePoint(tournamentId, gameId, TeamSide.TEAM_B); // 4-6 2-6, 0-15
-    assertEquals(io.github.redouanebali.model.GamePoint.QUINZE, game.getScore().getCurrentGamePointB());
-    assertEquals(io.github.redouanebali.model.GamePoint.ZERO, game.getScore().getCurrentGamePointA());
+    assertEquals(GamePoint.QUINZE, game.getScore().getCurrentGamePointB());
+    assertEquals(GamePoint.ZERO, game.getScore().getCurrentGamePointA());
     assertEquals(4, game.getScore().getSets().getFirst().getTeamAScore());
     assertEquals(6, game.getScore().getSets().getFirst().getTeamBScore());
     assertEquals(2, game.getScore().getSets().get(1).getTeamAScore());
@@ -250,7 +255,7 @@ class GameServiceTest {
     Long             tournamentId = 7L;
     Long             gameId       = 70L;
     MatchFormat      format       = new MatchFormat();
-    List<PlayerPair> pairs        = TestFixtures.createPlayerPairs(2);
+    List<PlayerPair> pairs        = TestFixturesApp.createPlayerPairs(2);
     PlayerPair       teamA        = pairs.getFirst();
     PlayerPair       teamB        = pairs.get(1);
     Game             game         = new Game(format);
@@ -295,8 +300,8 @@ class GameServiceTest {
   void testIncrementGamePoint_createsNewSetAfterSetWin() {
     Long             tournamentId = 8L;
     Long             gameId       = 80L;
-    MatchFormat      format       = new MatchFormat();
-    List<PlayerPair> pairs        = TestFixtures.createPlayerPairs(2);
+    MatchFormat      format       = TestFixturesApp.createSimpleFormat(2);
+    List<PlayerPair> pairs        = TestFixturesApp.createPlayerPairs(2);
     PlayerPair       teamA        = pairs.getFirst();
     PlayerPair       teamB        = pairs.get(1);
     Game             game         = new Game(format);
@@ -331,7 +336,7 @@ class GameServiceTest {
     for (int i = 0; i < 4; i++) {
       gameService.incrementGamePoint(tournamentId, gameId, TeamSide.TEAM_A);
     }
-    assertEquals(4, game.getScore().getSets().get(2).getTieBreakTeamA(), "Games should be added to the new set");
+    assertEquals(1, game.getScore().getSets().get(2).getTeamAScore(), "Games should be added to the new set");
     assertEquals(0, game.getScore().getSets().get(2).getTeamBScore());
   }
 }

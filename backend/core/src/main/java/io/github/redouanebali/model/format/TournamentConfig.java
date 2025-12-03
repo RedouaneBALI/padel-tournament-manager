@@ -55,7 +55,7 @@ public class TournamentConfig {
         return mainDrawSize;
       }
       case GROUPS_KO -> {
-        return nbPairsPerPool * nbPairsPerPool;
+        return nbPools * nbPairsPerPool;
       }
       case QUALIF_KO -> {
         return mainDrawSize + preQualDrawSize;

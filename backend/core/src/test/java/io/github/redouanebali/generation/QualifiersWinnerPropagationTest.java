@@ -11,7 +11,7 @@ import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.format.DrawMode;
-import io.github.redouanebali.util.TestFixtures;
+import io.github.redouanebali.util.TestFixturesCore;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +30,7 @@ class QualifiersWinnerPropagationTest {
   void testQualifierWinnerPropagation_andReplaceOnScoreModification() {
     // ============= SETUP: Create tournament with QUALIFS_KO =============
     // Tournament: 4 teams in qualif (Q1 = 2 matches for 2 qualifiers) + 8 slots main draw (6 direct + 2 qualifiers)
-    Tournament tournament = TestFixtures.makeTournament(
+    Tournament tournament = TestFixturesCore.makeTournament(
         4,              // preQualDrawSize: 4 teams in qualification
         2,              // nbQualifiers: 2 teams qualify
         8,              // mainDrawSize: 8 slots in main draw
@@ -40,7 +40,7 @@ class QualifiersWinnerPropagationTest {
     );
 
     // Create 10 teams: 4 for qualif + 6 for direct main draw
-    List<PlayerPair> allTeams    = TestFixtures.createPlayerPairs(10);
+    List<PlayerPair> allTeams    = TestFixturesCore.createPlayerPairs(10);
     List<PlayerPair> qualifTeams = allTeams.subList(0, 4);    // Teams 1-4 for qualification
     List<PlayerPair> directTeams = allTeams.subList(4, 10);   // Teams 5-10 for direct main draw
 
@@ -100,14 +100,14 @@ class QualifiersWinnerPropagationTest {
 
     // ============= TEST 1: SET WINNER IN Q1 MATCH 1 (Team 1 wins) =============
     // Set score: Team 1 beats Team 2
-    q1Match1.setScore(TestFixtures.createScoreWithWinner(q1Match1, qualifTeams.get(0)));
+    q1Match1.setScore(TestFixturesCore.createScoreWithWinner(q1Match1, qualifTeams.get(0)));
 
     // Verify Q1 Match 1 is finished and Team 1 is winner
     assertTrue(q1Match1.isFinished(), "Q1 Match 1 should be finished");
     assertEquals(qualifTeams.get(0), q1Match1.getWinner(), "Team 1 should be the winner of Q1 Match 1");
 
     // Set score for Q1 Match 2 (Team 3 wins, just to have a complete picture)
-    q1Match2.setScore(TestFixtures.createScoreWithWinner(q1Match2, qualifTeams.get(2)));
+    q1Match2.setScore(TestFixturesCore.createScoreWithWinner(q1Match2, qualifTeams.get(2)));
 
     // Propagate winners from qualifications to main draw
     TournamentBuilder.propagateWinners(tournament);
@@ -123,7 +123,7 @@ class QualifiersWinnerPropagationTest {
 
     // ============= TEST 2: MODIFY Q1 MATCH 1 SCORE (Team 2 wins instead) =============
     // Change the winner: Team 2 beats Team 1
-    q1Match1.setScore(TestFixtures.createScoreWithWinner(q1Match1, qualifTeams.get(1)));
+    q1Match1.setScore(TestFixturesCore.createScoreWithWinner(q1Match1, qualifTeams.get(1)));
 
     // Verify Q1 Match 1 is still finished but Team 2 is now winner
     assertTrue(q1Match1.isFinished(), "Q1 Match 1 should still be finished");
@@ -166,8 +166,8 @@ class QualifiersWinnerPropagationTest {
   @Test
   void testQualifierReplacementWithCacheClear_simulatesDBReload() {
     // Setup tournament (same as first test)
-    Tournament       tournament  = TestFixtures.makeTournament(4, 2, 8, 6, 0, DrawMode.MANUAL);
-    List<PlayerPair> allTeams    = TestFixtures.createPlayerPairs(10);
+    Tournament       tournament  = TestFixturesCore.makeTournament(4, 2, 8, 6, 0, DrawMode.MANUAL);
+    List<PlayerPair> allTeams    = TestFixturesCore.createPlayerPairs(10);
     List<PlayerPair> qualifTeams = allTeams.subList(0, 4);
     List<PlayerPair> directTeams = allTeams.subList(4, 10);
 
@@ -197,8 +197,8 @@ class QualifiersWinnerPropagationTest {
     mainRound.getGames().get(1).setTeamB(PlayerPair.qualifier(2));
 
     // First propagation: Team 1 wins
-    q1Match1.setScore(TestFixtures.createScoreWithWinner(q1Match1, qualifTeams.get(0)));
-    q1Match2.setScore(TestFixtures.createScoreWithWinner(q1Match2, qualifTeams.get(2)));
+    q1Match1.setScore(TestFixturesCore.createScoreWithWinner(q1Match1, qualifTeams.get(0)));
+    q1Match2.setScore(TestFixturesCore.createScoreWithWinner(q1Match2, qualifTeams.get(2)));
 
     TournamentBuilder.propagateWinners(tournament);
 
@@ -206,7 +206,7 @@ class QualifiersWinnerPropagationTest {
 
     // Second propagation: Team 2 wins (replace Team 1)
     // With stable Game IDs (like in real DB), cache keys remain valid across calls
-    q1Match1.setScore(TestFixtures.createScoreWithWinner(q1Match1, qualifTeams.get(1)));
+    q1Match1.setScore(TestFixturesCore.createScoreWithWinner(q1Match1, qualifTeams.get(1)));
 
     TournamentBuilder.propagateWinners(tournament);
 
@@ -221,7 +221,7 @@ class QualifiersWinnerPropagationTest {
   @Test
   void testMultipleQualifiersIndependence() {
     // Tournament: 4 teams in qualif (2 qualifiers) + 8 slots main draw (6 direct + 2 qualifiers)
-    Tournament tournament = TestFixtures.makeTournament(
+    Tournament tournament = TestFixturesCore.makeTournament(
         4,  // preQualDrawSize
         2,  // nbQualifiers
         8,  // mainDrawSize
@@ -230,7 +230,7 @@ class QualifiersWinnerPropagationTest {
         DrawMode.MANUAL
     );
 
-    List<PlayerPair> allTeams    = TestFixtures.createPlayerPairs(10);
+    List<PlayerPair> allTeams    = TestFixturesCore.createPlayerPairs(10);
     List<PlayerPair> qualifTeams = allTeams.subList(0, 4);
     List<PlayerPair> directTeams = allTeams.subList(4, 10);
 
@@ -261,8 +261,8 @@ class QualifiersWinnerPropagationTest {
     mainRound.getGames().get(1).setTeamB(PlayerPair.qualifier(2));
 
     // Set both qualifications
-    q1Match1.setScore(TestFixtures.createScoreWithWinner(q1Match1, qualifTeams.get(0)));
-    q1Match2.setScore(TestFixtures.createScoreWithWinner(q1Match2, qualifTeams.get(2)));
+    q1Match1.setScore(TestFixturesCore.createScoreWithWinner(q1Match1, qualifTeams.get(0)));
+    q1Match2.setScore(TestFixturesCore.createScoreWithWinner(q1Match2, qualifTeams.get(2)));
 
     TournamentBuilder.propagateWinners(tournament);
 
@@ -271,7 +271,7 @@ class QualifiersWinnerPropagationTest {
     assertEquals(qualifTeams.get(2), mainRound.getGames().get(1).getTeamB(), "Q2 should be Team 3");
 
     // Modify only Q1 Match 1 (Team 2 wins)
-    q1Match1.setScore(TestFixtures.createScoreWithWinner(q1Match1, qualifTeams.get(1)));
+    q1Match1.setScore(TestFixturesCore.createScoreWithWinner(q1Match1, qualifTeams.get(1)));
 
     TournamentBuilder.propagateWinners(tournament);
 

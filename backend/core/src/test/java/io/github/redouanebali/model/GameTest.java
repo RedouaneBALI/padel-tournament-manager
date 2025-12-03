@@ -40,29 +40,14 @@ class GameTest {
                                        int pointsPerSet,
                                        boolean superTieBreakInFinalSet,
                                        boolean expectedComplete) {
-    PlayerPair teamA = new PlayerPair(new Player(), new Player(), 1);
-    PlayerPair teamB = new PlayerPair(new Player(), new Player(), 2);
-    Game       game  = new Game(new MatchFormat(1L, numberOfSetsToWin, pointsPerSet, superTieBreakInFinalSet, false));
+    PlayerPair  teamA  = new PlayerPair(new Player(), new Player(), 1);
+    PlayerPair  teamB  = new PlayerPair(new Player(), new Player(), 2);
+    MatchFormat format = new MatchFormat(1L, numberOfSetsToWin, pointsPerSet, superTieBreakInFinalSet, false);
+    Game        game   = new Game(format);
     game.setTeamA(teamA);
     game.setTeamB(teamB);
 
-    Score    score     = new Score();
-    String[] setScores = scores.split(",");
-    for (int i = 0; i < setScores.length; i++) {
-      String   set        = setScores[i];
-      String[] parts      = set.split("-");
-      int      teamAScore = Integer.parseInt(parts[0]);
-      int      teamBScore = Integer.parseInt(parts[1]);
-      SetScore setScore   = new SetScore(teamAScore, teamBScore);
-      // If super tie-break, set tieBreakTeamA/tieBreakTeamB
-      if (superTieBreakInFinalSet && i == setScores.length - 1 && setScores.length == 3 && (teamAScore >= 7 || teamBScore >= 7)) {
-        setScore.setTieBreakTeamA(teamAScore);
-        setScore.setTieBreakTeamB(teamBScore);
-        setScore.setTeamAScore(0);
-        setScore.setTeamBScore(1); // 1 for winner, 0 for loser
-      }
-      score.getSets().add(setScore);
-    }
+    Score score = parseScoreString(scores, format);
     game.setScore(score);
     assertEquals(expectedComplete, game.isFinished());
   }
@@ -89,29 +74,14 @@ class GameTest {
                      boolean superTieBreakInFinalSet,
                      String expectedWinner) {
 
-    PlayerPair teamA = new PlayerPair(new Player("A1"), new Player("A2"), 1);
-    PlayerPair teamB = new PlayerPair(new Player("B1"), new Player("B2"), 2);
-    Game       game  = new Game(new MatchFormat(1L, numberOfSetsToWin, pointsPerSet, superTieBreakInFinalSet, false));
+    PlayerPair  teamA  = new PlayerPair(new Player("A1"), new Player("A2"), 1);
+    PlayerPair  teamB  = new PlayerPair(new Player("B1"), new Player("B2"), 2);
+    MatchFormat format = new MatchFormat(1L, numberOfSetsToWin, pointsPerSet, superTieBreakInFinalSet, false);
+    Game        game   = new Game(format);
     game.setTeamA(teamA);
     game.setTeamB(teamB);
 
-    Score    score     = new Score();
-    String[] setScores = scores.split(",");
-    for (int i = 0; i < setScores.length; i++) {
-      String   set        = setScores[i];
-      String[] parts      = set.split("-");
-      int      teamAScore = Integer.parseInt(parts[0]);
-      int      teamBScore = Integer.parseInt(parts[1]);
-      SetScore setScore   = new SetScore(teamAScore, teamBScore);
-      // If super tie-break, set tieBreakTeamA/tieBreakTeamB
-      if (superTieBreakInFinalSet && i == setScores.length - 1 && setScores.length == 3 && (teamAScore >= 7 || teamBScore >= 7)) {
-        setScore.setTieBreakTeamA(teamAScore);
-        setScore.setTieBreakTeamB(teamBScore);
-        setScore.setTeamAScore(0);
-        setScore.setTeamBScore(1); // 1 for winner, 0 for loser
-      }
-      score.getSets().add(setScore);
-    }
+    Score score = parseScoreString(scores, format);
     game.setScore(score);
 
     PlayerPair winner = game.getWinner();
@@ -182,28 +152,11 @@ class GameTest {
     format.setGamesPerSet(pointsPerSet);
     format.setSuperTieBreakInFinalSet(isSuperTieBreakInFinalSet);
 
-    Game game = new Game(createSimpleFormat());
-    game.setFormat(format);
+    Game game = new Game(format);
     game.setTeamA(new PlayerPair());
     game.setTeamB(new PlayerPair());
 
-    Score    score     = new Score();
-    String[] setScores = scoreString.split(",");
-    for (int i = 0; i < setScores.length; i++) {
-      String   set        = setScores[i].trim();
-      String[] parts      = set.split("-");
-      int      teamAScore = Integer.parseInt(parts[0]);
-      int      teamBScore = Integer.parseInt(parts[1]);
-      SetScore setScore   = new SetScore(teamAScore, teamBScore);
-      // If super tie-break, set tieBreakTeamA/tieBreakTeamB
-      if (isSuperTieBreakInFinalSet && i == setScores.length - 1 && setScores.length == 3 && (teamAScore >= 7 || teamBScore >= 7)) {
-        setScore.setTieBreakTeamA(teamAScore);
-        setScore.setTieBreakTeamB(teamBScore);
-        setScore.setTeamAScore(0);
-        setScore.setTeamBScore(1); // 1 for winner, 0 for loser
-      }
-      score.getSets().add(setScore);
-    }
+    Score score = parseScoreString(scoreString, format);
     game.setScore(score);
 
     boolean result = game.isFinished();
@@ -267,25 +220,8 @@ class GameTest {
     Game game = new Game(format);
     game.setTeamA(teamA);
     game.setTeamB(teamB);
-    game.setFormat(format);
 
-    Score    score     = new Score();
-    String[] setScores = scoreString.split(",");
-    for (int i = 0; i < setScores.length; i++) {
-      String   set        = setScores[i].trim();
-      String[] parts      = set.split("-");
-      int      teamAScore = Integer.parseInt(parts[0]);
-      int      teamBScore = Integer.parseInt(parts[1]);
-      SetScore setScore   = new SetScore(teamAScore, teamBScore);
-      // If super tie-break, set tieBreakTeamA/tieBreakTeamB
-      if (isSuperTieBreakInFinalSet && i == setScores.length - 1 && setScores.length == 3 && (teamAScore >= 7 || teamBScore >= 7)) {
-        setScore.setTieBreakTeamA(teamAScore);
-        setScore.setTieBreakTeamB(teamBScore);
-        setScore.setTeamAScore(0);
-        setScore.setTeamBScore(1); // 1 for winner, 0 for loser
-      }
-      score.getSets().add(setScore);
-    }
+    Score score = parseScoreString(scoreString, format);
     game.setScore(score);
 
     PlayerPair actual = game.getWinner();
@@ -369,6 +305,43 @@ class GameTest {
     format.setGamesPerSet(6);
     format.setSuperTieBreakInFinalSet(false);
     return format;
+  }
+
+  /**
+   * Helper method to parse score string and create Score object with proper super tie-break handling. Eliminates code duplication across test
+   * methods.
+   *
+   * @param scoreString format: "6-4,6-3" or "6-4 6-3"
+   * @param format the match format (used to determine super tie-break handling)
+   * @return populated Score object
+   */
+  private Score parseScoreString(String scoreString, MatchFormat format) {
+    Score    score     = new Score();
+    String[] setScores = scoreString.replaceAll("\\s+", ",").split(",");
+
+    boolean isSuperTieBreakEnabled = format.isSuperTieBreakInFinalSet();
+    int     expectedTotalSets      = 2 * format.getNumberOfSetsToWin() - 1;
+
+    for (int i = 0; i < setScores.length; i++) {
+      String   set        = setScores[i].trim();
+      String[] parts      = set.split("-");
+      int      teamAScore = Integer.parseInt(parts[0]);
+      int      teamBScore = Integer.parseInt(parts[1]);
+
+      SetScore setScore = new SetScore(teamAScore, teamBScore);
+
+      // Handle super tie-break in final set
+      boolean isFinalSet = (i == setScores.length - 1) && (setScores.length == expectedTotalSets);
+      if (isSuperTieBreakEnabled && isFinalSet && (teamAScore >= 7 || teamBScore >= 7)) {
+        setScore.setTieBreakTeamA(teamAScore);
+        setScore.setTieBreakTeamB(teamBScore);
+        setScore.setTeamAScore(teamAScore > teamBScore ? 1 : 0);
+        setScore.setTeamBScore(teamBScore > teamAScore ? 1 : 0);
+      }
+
+      score.getSets().add(setScore);
+    }
+    return score;
   }
 
   // ============= FORFEIT TESTS =============

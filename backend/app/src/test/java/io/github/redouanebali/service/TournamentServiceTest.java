@@ -30,10 +30,11 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 
 class TournamentServiceTest {
 
-  private TournamentService     tournamentService;
-  private SecurityProps         securityProps;
-  private TournamentRepository  tournamentRepository;
-  private DrawGenerationService drawGenerationService;
+  private TournamentService                                    tournamentService;
+  private SecurityProps                                        securityProps;
+  private TournamentRepository                                 tournamentRepository;
+  private DrawGenerationService                                drawGenerationService;
+  private io.github.redouanebali.security.AuthorizationService authorizationService;
 
   @BeforeEach
   void setUp() {
@@ -49,12 +50,19 @@ class TournamentServiceTest {
     securityProps        = mock(SecurityProps.class);
     lenient().when(securityProps.getSuperAdmins()).thenReturn(Collections.emptySet());
     drawGenerationService = mock(DrawGenerationService.class);
+    authorizationService  = mock(io.github.redouanebali.security.AuthorizationService.class);
+    // Configure authorizationService to check ownership (simulate real behavior)
+    lenient().when(authorizationService.canEditTournament(any(), any())).thenAnswer(inv -> {
+      Tournament t      = inv.getArgument(0);
+      String     userId = inv.getArgument(1);
+      return t.isEditableBy(userId);
+    });
     lenient().when(tournamentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
     tournamentService = new TournamentService(
         tournamentRepository,
-        securityProps,
-        drawGenerationService
+        drawGenerationService,
+        authorizationService
     );
   }
 
@@ -174,8 +182,8 @@ class TournamentServiceTest {
   }
 
   @Test
-  void testListByOwner_delegatesToRepository() {
-    tournamentService.listByOwner("owner");
+  void testGetTournamentsByOwner_delegatesToRepository() {
+    tournamentService.getTournamentsByOwner("owner");
     verify(tournamentRepository, times(1)).findAllByOwnerId("owner");
   }
 
