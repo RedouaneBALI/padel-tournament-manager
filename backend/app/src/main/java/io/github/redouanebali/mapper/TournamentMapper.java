@@ -35,6 +35,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface TournamentMapper {
 
+  @Mapping(target = "editable", expression = "java(isEditable(tournament))")
   TournamentDTO toDTO(Tournament tournament);
 
   List<TournamentDTO> toDTO(List<Tournament> tournaments);
