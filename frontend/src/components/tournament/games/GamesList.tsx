@@ -29,8 +29,8 @@ export default function GamesList({
   isFirstRound = false,
 }: GamesListProps) {
   const router = useRouter();
-  // overrides locaux de score quand un match a été modifié (par MatchResultCard dispatch)
-  const [overrides, setOverrides] = useState<Record<string, any>>({});
+  // overrides locaux (score + winner) quand un match a été modifié (par MatchResultCard dispatch)
+  const [overrides, setOverrides] = useState<Record<string, { score: any; winner: string | null }>>({});
   // État de tri local (time | court)
   const [sortMode, setSortMode] = useState<'time' | 'court'>('time');
 
@@ -45,7 +45,13 @@ export default function GamesList({
       try {
         const detail = (e as CustomEvent).detail;
         if (!detail || !detail.gameId) return;
-        setOverrides(prev => ({ ...prev, [String(detail.gameId)]: detail.score }));
+        setOverrides(prev => ({
+          ...prev,
+          [String(detail.gameId)]: {
+            score: detail.score,
+            winner: detail.winner ?? null
+          }
+        }));
       } catch (err) {
         // ignore
       }
@@ -137,13 +143,12 @@ export default function GamesList({
       </div>
 
       {orderedGames.map((game) => {
-        const winnerIndex = game.finished
-          ? game.winnerSide === 'TEAM_A'
-            ? 0
-            : game.winnerSide === 'TEAM_B'
-              ? 1
-              : undefined
-          : undefined;
+        const override = overrides[String(game.id)];
+
+        // Utiliser le winner de l'API si disponible dans les overrides, sinon utiliser game.winnerSide
+        const winner = override?.winner !== undefined ? override.winner : (game.finished ? game.winnerSide : null);
+
+        const winnerIndex = winner === 'TEAM_A' ? 0 : winner === 'TEAM_B' ? 1 : undefined;
 
         // Récupérer l'index d'origine du match de façon déterministe via sortedIds
         const originalIndex = Math.max(0, sortedIds.indexOf(game.id));
@@ -157,7 +162,7 @@ export default function GamesList({
               <MatchResultCard
                 teamA={game.teamA}
                 teamB={game.teamB}
-                score={overrides[String(game.id)] ?? game.score}
+                score={override?.score ?? game.score}
                 gameId={String(game.id)}
                 tournamentId={tournamentId}
                 editable={editable}
@@ -170,7 +175,7 @@ export default function GamesList({
                 stage={stage}
                 pool={(game as any).pool}
                 setsToWin={setsToWin}
-                finished={game.finished}
+                finished={winner !== null}
                 matchIndex={originalIndex}
                 totalMatches={totalMatches}
                 isFirstRound={isFirstRound}

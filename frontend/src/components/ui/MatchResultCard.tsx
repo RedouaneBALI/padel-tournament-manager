@@ -293,7 +293,7 @@ export default function MatchResultCard({
           prevScoreSerializedRef.current = JSON.stringify(apiScore || null);
           try {
             if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('game-updated', { detail: { gameId, score: apiScore } }));
+              window.dispatchEvent(new CustomEvent('game-updated', { detail: { gameId, score: apiScore, winner: result.winner } }));
             }
           } catch (e) { /* ignore */ }
         } catch (e) {
@@ -326,7 +326,7 @@ export default function MatchResultCard({
           setForfeitedBy(payloadScore.forfeitedBy || null);
           prevScoreSerializedRef.current = JSON.stringify(payloadScore || null);
           if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('game-updated', { detail: { gameId, score: payloadScore } }));
+            window.dispatchEvent(new CustomEvent('game-updated', { detail: { gameId, score: payloadScore, winner: result.winner } }));
           }
         } catch (e) { /* ignore */ }
        }
