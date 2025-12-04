@@ -3,6 +3,7 @@ package io.github.redouanebali.generation;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.redouanebali.model.Game;
@@ -280,6 +281,93 @@ class QualifiersWinnerPropagationTest {
 
     // Q2 should remain unchanged (Team 3)
     assertEquals(qualifTeams.get(2), mainRound.getGames().get(1).getTeamB(), "Q2 should still be Team 3");
+  }
+
+  /**
+   * Test optimized propagation: propagateWinnersFromGame should only propagate from the round containing the modified game onwards. Scenario: -
+   * Create simple 8-team knockout (R16, QF, SF, F) - Set winners in R16 to fill QF - Modify one R16 game using propagateWinnersFromGame - Verify only
+   * affected games are updated - Verify performance (only 2 rounds processed instead of all 4)
+   */
+  @Test
+  void testPropagateWinnersFromGame_onlyProcessesAffectedRounds() {
+    // Create simple 8-team knockout tournament
+    Tournament tournament = TestFixturesCore.makeTournament(
+        0,              // preQualDrawSize: no qualification
+        0,              // nbQualifiers: no qualifiers
+        8,              // mainDrawSize: 8 teams
+        8,              // nbSeeds: all teams are seeded
+        0,              // nbSeedsQualify: no seeds in qualification
+        io.github.redouanebali.model.format.DrawMode.MANUAL
+    );
+    List<PlayerPair> teams = TestFixturesCore.createPlayerPairs(8);
+
+    // Initialize empty rounds structure
+    TournamentBuilder.initializeEmptyRounds(tournament);
+
+    // Place teams in R8 (4 matches)
+    Round r8Round = tournament.getRounds().get(0);
+    assertEquals(Stage.QUARTERS, r8Round.getStage(), "First round should be R8");
+    List<Game> r8Games = r8Round.getGames();
+    assertEquals(4, r8Games.size(), "R8 should have 4 games");
+
+    for (int i = 0; i < 8; i++) {
+      teams.get(i).setSeed(i + 1);
+    }
+
+    // Manually place teams in QUARTERS
+    r8Games.get(0).setTeamA(teams.get(0)); // Match 1: Team 1 vs Team 2
+    r8Games.get(0).setTeamB(teams.get(1));
+    r8Games.get(1).setTeamA(teams.get(2)); // Match 2: Team 3 vs Team 4
+    r8Games.get(1).setTeamB(teams.get(3));
+    r8Games.get(2).setTeamA(teams.get(4)); // Match 3: Team 5 vs Team 6
+    r8Games.get(2).setTeamB(teams.get(5));
+    r8Games.get(3).setTeamA(teams.get(6)); // Match 4: Team 7 vs Team 8
+    r8Games.get(3).setTeamB(teams.get(7));
+
+    // Set winners for all QUARTERS matches
+    r8Games.get(0).setScore(TestFixturesCore.createScoreWithWinner(r8Games.get(0), teams.get(0))); // Team 1 wins
+    r8Games.get(1).setScore(TestFixturesCore.createScoreWithWinner(r8Games.get(1), teams.get(2))); // Team 3 wins
+    r8Games.get(2).setScore(TestFixturesCore.createScoreWithWinner(r8Games.get(2), teams.get(4))); // Team 5 wins
+    r8Games.get(3).setScore(TestFixturesCore.createScoreWithWinner(r8Games.get(3), teams.get(6))); // Team 7 wins
+
+    // Full propagation to fill all rounds
+    TournamentBuilder.propagateWinners(tournament);
+
+    // Verify SEMIS (second round) is filled correctly
+    Round sfRound = tournament.getRounds().get(1);
+    assertEquals(Stage.SEMIS, sfRound.getStage(), "Second round should be SEMIS");
+    List<Game> sfGames = sfRound.getGames();
+    assertEquals(teams.get(0), sfGames.get(0).getTeamA(), "SF Match 1 TeamA should be Team 1");
+    assertEquals(teams.get(2), sfGames.get(0).getTeamB(), "SF Match 1 TeamB should be Team 3");
+    assertEquals(teams.get(4), sfGames.get(1).getTeamA(), "SF Match 2 TeamA should be Team 5");
+    assertEquals(teams.get(6), sfGames.get(1).getTeamB(), "SF Match 2 TeamB should be Team 7");
+
+    // Now modify QUARTERS Match 1: Team 2 wins instead of Team 1
+    Game modifiedGame = r8Games.get(0);
+    modifiedGame.setScore(TestFixturesCore.createScoreWithWinner(modifiedGame, teams.get(1))); // Team 2 wins now
+    assertEquals(teams.get(1), modifiedGame.getWinner(), "Modified game winner should be Team 2");
+
+    // Use optimized propagation from this specific game
+    TournamentBuilder.propagateWinnersFromGame(tournament, modifiedGame);
+
+    // Verify SF Match 1 is updated (Team 2 replaces Team 1)
+    assertEquals(teams.get(1), sfGames.get(0).getTeamA(), "SF Match 1 TeamA should now be Team 2 (updated)");
+    assertEquals(teams.get(2), sfGames.get(0).getTeamB(), "SF Match 1 TeamB should remain Team 3");
+
+    // Verify SF Match 2 is unchanged (not affected by QUARTERS Match 1)
+    assertEquals(teams.get(4), sfGames.get(1).getTeamA(), "SF Match 2 TeamA should remain Team 5");
+    assertEquals(teams.get(6), sfGames.get(1).getTeamB(), "SF Match 2 TeamB should remain Team 7");
+
+    // Test removing winner (setting match as not finished)
+    modifiedGame.setScore(TestFixturesCore.createUnfinishedScore());
+    assertFalse(modifiedGame.isFinished(), "Modified game should not be finished");
+
+    // Propagate again
+    TournamentBuilder.propagateWinnersFromGame(tournament, modifiedGame);
+
+    // Verify Team 2 is removed from SF
+    assertNull(sfGames.get(0).getTeamA(), "SF Match 1 TeamA should be null (winner removed)");
+    assertEquals(teams.get(2), sfGames.get(0).getTeamB(), "SF Match 1 TeamB should still be Team 3");
   }
 }
 

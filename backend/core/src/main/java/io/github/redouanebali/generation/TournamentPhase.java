@@ -1,5 +1,6 @@
 package io.github.redouanebali.generation;
 
+import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
@@ -62,6 +63,18 @@ public interface TournamentPhase {
    * @param tournament the tournament whose winners should be advanced to subsequent rounds
    */
   void propagateWinners(Tournament tournament);
+
+  /**
+   * Optimized propagation: only propagate from the round containing the given game onwards. This avoids reprocessing all rounds when only one game
+   * changes.
+   *
+   * @param tournament the tournament to update
+   * @param game the game that was modified
+   */
+  default void propagateWinnersFromGame(Tournament tournament, Game game) {
+    // Default implementation: fallback to full propagation
+    propagateWinners(tournament);
+  }
 
   /**
    * Gets the initial stage of this phase where players enter the tournament. For example: Q1 for qualifications, R64/R32/R16 for main draw, GROUPS

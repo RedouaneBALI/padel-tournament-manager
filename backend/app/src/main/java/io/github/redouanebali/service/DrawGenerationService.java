@@ -2,6 +2,7 @@ package io.github.redouanebali.service;
 
 import io.github.redouanebali.dto.request.RoundRequest;
 import io.github.redouanebali.generation.TournamentBuilder;
+import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
@@ -77,6 +78,13 @@ public class DrawGenerationService {
     // Ensure changes are flushed to database
     entityManager.flush();
     log.debug("Propagated and flushed winners for tournament {}", tournament.getId());
+  }
+
+  @Transactional
+  public void propagateWinnersFromGame(Tournament tournament, Game game) {
+    TournamentBuilder.propagateWinnersFromGame(tournament, game);
+    entityManager.flush();
+    log.debug("Propagated and flushed winners from game {} for tournament {}", game.getId(), tournament.getId());
   }
 
 

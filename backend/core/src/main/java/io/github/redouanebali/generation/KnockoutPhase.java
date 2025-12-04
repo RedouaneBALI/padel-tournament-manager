@@ -132,6 +132,11 @@ public class KnockoutPhase implements TournamentPhase {
   }
 
   @Override
+  public void propagateWinnersFromGame(final Tournament tournament, final Game game) {
+    winnerPropagationUtil.propagateWinnersFromGame(tournament, game);
+  }
+
+  @Override
   public Stage getInitialStage() {
     return switch (phaseType) {
       case QUALIFS -> Stage.Q1;

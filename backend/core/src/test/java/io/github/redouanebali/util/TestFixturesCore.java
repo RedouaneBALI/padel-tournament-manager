@@ -105,6 +105,18 @@ public final class TestFixturesCore {
   }
 
   /**
+   * Creates an unfinished score (e.g., 3-2 in first set).
+   */
+  public static Score createUnfinishedScore() {
+    Score    score = new Score();
+    SetScore set   = new SetScore();
+    set.setTeamAScore(3);
+    set.setTeamBScore(2);
+    score.setSets(List.of(set));
+    return score;
+  }
+
+  /**
    * Checks if a game contains both given pairs.
    */
   public static boolean gameContainsBoth(Game g, PlayerPair p, PlayerPair q) {

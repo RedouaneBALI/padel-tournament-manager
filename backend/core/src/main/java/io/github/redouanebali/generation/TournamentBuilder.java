@@ -31,6 +31,21 @@ public final class TournamentBuilder {
     }
   }
 
+  /**
+   * Optimized propagation: only propagate from the round containing the given game onwards. This avoids reprocessing all rounds when only one game
+   * changes.
+   */
+  public static void propagateWinnersFromGame(Tournament tournament, Game game) {
+    if (tournament == null || game == null) {
+      return;
+    }
+    List<TournamentPhase> phases = buildPhases(tournament.getConfig());
+    if (phases.isEmpty()) {
+      return;
+    }
+    phases.getFirst().propagateWinnersFromGame(tournament, game);
+  }
+
   public static List<String> validate(Tournament tournament) {
     List<String> errors = new ArrayList<>();
     if (tournament == null) {

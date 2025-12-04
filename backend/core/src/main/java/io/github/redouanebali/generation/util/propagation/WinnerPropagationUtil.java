@@ -40,6 +40,42 @@ public class WinnerPropagationUtil {
   }
 
   /**
+   * Optimized propagation: only propagate from the round containing the given game onwards. Finds the round index of the game, then propagates from
+   * that round to the end.
+   */
+  public void propagateWinnersFromGame(Tournament tournament, Game game) {
+    if (tournament == null || game == null || tournament.getRounds() == null || tournament.getRounds().size() < 2) {
+      return;
+    }
+
+    qualifierStrategy.resetCache();
+
+    final List<Round> rounds     = tournament.getRounds();
+    int               startIndex = findRoundIndexContainingGame(rounds, game);
+    if (startIndex == -1) {
+      return; // Game not found, nothing to propagate
+    }
+
+    // Propagate from the found round onwards
+    for (int i = startIndex; i < rounds.size() - 1; i++) {
+      propagateFromRoundToNext(rounds.get(i), rounds.get(i + 1));
+    }
+  }
+
+  /**
+   * Find the index of the round containing the given game
+   */
+  private int findRoundIndexContainingGame(List<Round> rounds, Game game) {
+    for (int i = 0; i < rounds.size(); i++) {
+      Round round = rounds.get(i);
+      if (round.getGames() != null && round.getGames().contains(game)) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  /**
    * Propagate winners from one round to the next Réinitialise d'abord les slots dépendants, puis propage les vainqueurs.
    */
   private void propagateFromRoundToNext(Round currentRound, Round nextRound) {

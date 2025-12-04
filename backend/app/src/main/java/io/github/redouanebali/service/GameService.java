@@ -60,9 +60,12 @@ public class GameService {
       var sets = currentScore.getSets();
       if (!sets.isEmpty()) {
         SetScore lastSet = sets.get(sets.size() - 1);
-        if (isSetWin(lastSet.getTeamAScore(), lastSet.getTeamBScore())) {
+
+        // Only add a new set if the last set is won AND the match is not finished
+        if (isSetWin(lastSet.getTeamAScore(), lastSet.getTeamBScore()) && !game.isFinished()) {
           sets.add(new SetScore(0, 0));
         }
+
         // Synchronize tie-break points at root with last set if in tie-break
         if (lastSet.getTieBreakTeamA() != null || lastSet.getTieBreakTeamB() != null) {
           currentScore.setTieBreakPointA(lastSet.getTieBreakTeamA());
@@ -81,9 +84,11 @@ public class GameService {
     try {
       game.setScore(score);
 
+      // Optimized: only propagate from the round containing this game onwards
+      drawGenerationService.propagateWinnersFromGame(tournament, game);
+
       TeamSide winner = null;
       if (game.isFinished()) {
-        drawGenerationService.propagateWinners(tournament);
         winner = game.getWinner().equals(game.getTeamA()) ? TeamSide.TEAM_A : TeamSide.TEAM_B;
       }
 
@@ -110,11 +115,7 @@ public class GameService {
     Game       game       = findGameInTournament(tournamentId, gameId);
     Tournament tournament = tournamentService.getTournamentById(tournamentId);
     gamePointManager.updateGamePoint(game, teamSide);
-    // Force winnerSide update
-    game.setScore(game.getScore());
-    tournamentRepository.save(tournament);
-    ScoreDTO scoreDTO = tournamentMapper.toDTO(game.getScore());
-    return new UpdateScoreDTO(true, game.getWinnerSide(), scoreDTO);
+    return updateScoreAndPropagate(game, tournament, game.getScore());
   }
 
   @Transactional
@@ -122,11 +123,7 @@ public class GameService {
     Game       game       = findGameInTournament(tournamentId, gameId);
     Tournament tournament = tournamentService.getTournamentById(tournamentId);
     gamePointManager.undoGamePoint(game);
-    // Force winnerSide update
-    game.setScore(game.getScore());
-    tournamentRepository.save(tournament);
-    ScoreDTO scoreDTO = tournamentMapper.toDTO(game.getScore());
-    return new UpdateScoreDTO(true, game.getWinnerSide(), scoreDTO);
+    return updateScoreAndPropagate(game, tournament, game.getScore());
   }
 
   // Utilitaire local pour éviter la dépendance circulaire

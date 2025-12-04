@@ -1,8 +1,10 @@
 package io.github.redouanebali.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -297,7 +299,7 @@ class GameServiceTest {
   }
 
   @org.junit.jupiter.api.Test
-  void testIncrementGamePoint_createsNewSetAfterSetWin() {
+  void testIncrementGamePoint_completesMatchAndSetsWinner_thenUndoRemovesWinner() {
     Long             tournamentId = 8L;
     Long             gameId       = 80L;
     MatchFormat      format       = TestFixturesApp.createSimpleFormat(2);
@@ -309,34 +311,103 @@ class GameServiceTest {
     game.setTeamA(teamA);
     game.setTeamB(teamB);
     Score initialScore = new Score();
-    // Set 1: 6-2, Set 2: 2-5
+    // Set 1: 6-2, Set 2: 5-3 (TEAM_A is leading)
     initialScore.setSets(new LinkedList<>(List.of(
         new SetScore(6, 2),
-        new SetScore(2, 5)
+        new SetScore(5, 3)
     )));
     game.setScore(initialScore);
+
     Round round = new Round();
     round.addGames(List.of(game));
+
     Tournament tournament = new Tournament();
     tournament.setId(tournamentId);
     tournament.getRounds().add(round);
     tournament.setConfig(TournamentConfig.builder().mainDrawSize(4).nbSeeds(0).format(TournamentFormat.KNOCKOUT).build());
     when(tournamentService.getTournamentById(tournamentId)).thenReturn(tournament);
 
-    // Incrémente pour faire passer le 2e set à 2-6 (TEAM_B gagne le set)
-    for (int i = 0; i < 4; i++) {
-      gameService.incrementGamePoint(tournamentId, gameId, TeamSide.TEAM_B);
-    }
-    // After set win, a 3rd empty set should be created
-    assertEquals(3, game.getScore().getSets().size(), "A new set should be created after set win");
-    assertEquals(0, game.getScore().getSets().get(2).getTeamAScore());
-    assertEquals(0, game.getScore().getSets().get(2).getTeamBScore());
+    // Verify no winner yet
+    assertNull(game.getWinnerSide(), "Match should not have a winner yet");
 
-    // Continue incrementing, games should be added to the new set
+    // Increment 4 times to finish the match at 6-2, 6-3
     for (int i = 0; i < 4; i++) {
       gameService.incrementGamePoint(tournamentId, gameId, TeamSide.TEAM_A);
     }
-    assertEquals(1, game.getScore().getSets().get(2).getTeamAScore(), "Games should be added to the new set");
-    assertEquals(0, game.getScore().getSets().get(2).getTeamBScore());
+
+    // Verify match is finished with TEAM_A as winner
+    assertEquals(2, game.getScore().getSets().size(), "Should have 2 sets");
+    assertEquals(6, game.getScore().getSets().get(0).getTeamAScore());
+    assertEquals(2, game.getScore().getSets().get(0).getTeamBScore());
+    assertEquals(6, game.getScore().getSets().get(1).getTeamAScore());
+    assertEquals(3, game.getScore().getSets().get(1).getTeamBScore());
+    assertEquals(TeamSide.TEAM_A, game.getWinnerSide(), "TEAM_A should be the winner");
+
+    // Undo the last point
+    gameService.undoGamePoint(tournamentId, gameId);
+
+    // Verify winner is removed and match is not finished
+    assertEquals(5, game.getScore().getSets().get(1).getTeamAScore(), "Score should be back to 6-2, 5-3");
+    assertEquals(3, game.getScore().getSets().get(1).getTeamBScore());
+    assertNull(game.getWinnerSide(), "Winner should be removed after undo");
+  }
+
+  @org.junit.jupiter.api.Test
+  void testUpdateGame_noExtraSetCreatedWhenModifyingFinishedMatch() {
+    Long             tournamentId = 9L;
+    Long             gameId       = 90L;
+    MatchFormat      format       = TestFixturesApp.createSimpleFormat(2);
+    List<PlayerPair> pairs        = TestFixturesApp.createPlayerPairs(2);
+    PlayerPair       teamA        = pairs.getFirst();
+    PlayerPair       teamB        = pairs.get(1);
+    Game             game         = new Game(format);
+    game.setId(gameId);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+
+    // Create a finished match (6-3, 6-2)
+    Score finishedScore = new Score();
+    finishedScore.setSets(new LinkedList<>(List.of(
+        new SetScore(6, 3),
+        new SetScore(6, 2)
+    )));
+    game.setScore(finishedScore);
+
+    Round round = new Round();
+    round.addGames(List.of(game));
+
+    Tournament tournament = new Tournament();
+    tournament.setId(tournamentId);
+    tournament.getRounds().add(round);
+    tournament.setConfig(TournamentConfig.builder().mainDrawSize(4).nbSeeds(0).format(TournamentFormat.KNOCKOUT).build());
+    when(tournamentService.getTournamentById(tournamentId)).thenReturn(tournament);
+
+    // Verify match is finished
+    assertTrue(game.isFinished(), "Match should be finished with score 6-3, 6-2");
+    assertEquals(TeamSide.TEAM_A, game.getWinnerSide(), "TEAM_A should be the winner");
+    assertEquals(2, game.getScore().getSets().size(), "Should have 2 sets");
+
+    // Modify the score: change 6-2 to 5-2 (match no longer finished)
+    io.github.redouanebali.dto.request.UpdateGameRequest req = new io.github.redouanebali.dto.request.UpdateGameRequest();
+    req.setCourt("Court 1");
+    Score modifiedScore = new Score();
+    modifiedScore.setSets(List.of(
+        new SetScore(6, 3),
+        new SetScore(5, 2)
+    ));
+    req.setScore(modifiedScore);
+
+    UpdateScoreDTO result = gameService.updateGame(tournamentId, gameId, req);
+
+    // Verify no extra set was created
+    assertEquals(2, game.getScore().getSets().size(), "Should still have only 2 sets (no extra set created)");
+    assertEquals(6, game.getScore().getSets().get(0).getTeamAScore());
+    assertEquals(3, game.getScore().getSets().get(0).getTeamBScore());
+    assertEquals(5, game.getScore().getSets().get(1).getTeamAScore());
+    assertEquals(2, game.getScore().getSets().get(1).getTeamBScore());
+
+    // Verify match is no longer finished
+    assertFalse(game.isFinished(), "Match should not be finished anymore");
+    assertNull(result.getWinner(), "Should have no winner");
   }
 }
