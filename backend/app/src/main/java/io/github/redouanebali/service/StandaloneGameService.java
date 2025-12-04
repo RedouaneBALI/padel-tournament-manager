@@ -98,7 +98,7 @@ public class StandaloneGameService {
   @Transactional
   public UpdateScoreDTO incrementGamePoint(Long gameId, TeamSide teamSide) {
     Game game = getGameById(gameId);
-    gamePointManager.updateGamePoint(game, teamSide);
+    gamePointManager.incrementGamePoint(game, teamSide);
     game.setScore(game.getScore()); // refresh winner side when a game finishes
     gameRepository.save(game);
     ScoreDTO scoreDTO = tournamentMapper.toDTO(game, game.getScore());

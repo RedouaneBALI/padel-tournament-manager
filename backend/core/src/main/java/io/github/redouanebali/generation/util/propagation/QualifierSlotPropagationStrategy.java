@@ -86,56 +86,54 @@ public class QualifierSlotPropagationStrategy implements PropagationStrategy {
   private java.util.Map<Integer, QualifierSlot> buildPositionCache(List<Game> nextGames) {
     java.util.Map<Integer, QualifierSlot> cache = new java.util.HashMap<>();
 
-    // FIRST: Scan for all current qualifier placeholders (HIGHEST PRIORITY)
-    // This ensures we always use fresh positions when qualifiers are present
-    for (int gameIdx = 0; gameIdx < nextGames.size(); gameIdx++) {
-      Game game = nextGames.get(gameIdx);
-
-      // Check teamA
-      if (game.getTeamA() != null && game.getTeamA().isQualifier()) {
-        Integer qualNum = game.getTeamA().getQualifierIndex();
-        if (qualNum != null) {
-          cache.put(qualNum, new QualifierSlot(gameIdx, true));
-          // Update global cache with this fresh position
-          String key = buildCacheKey(nextGames, gameIdx, true);
-          GLOBAL_QUALIFIER_POSITION_CACHE.put(key, qualNum);
-          log.debug("[QualifierSlotPropagationStrategy] Found fresh Q{} at Game[{}].teamA", qualNum, gameIdx);
-        }
-      }
-
-      // Check teamB
-      if (game.getTeamB() != null && game.getTeamB().isQualifier()) {
-        Integer qualNum = game.getTeamB().getQualifierIndex();
-        if (qualNum != null) {
-          cache.put(qualNum, new QualifierSlot(gameIdx, false));
-          // Update global cache with this fresh position
-          String key = buildCacheKey(nextGames, gameIdx, false);
-          GLOBAL_QUALIFIER_POSITION_CACHE.put(key, qualNum);
-          log.debug("[QualifierSlotPropagationStrategy] Found fresh Q{} at Game[{}].teamB", qualNum, gameIdx);
-        }
-      }
-    }
-
-    // SECOND: For qualifiers not found above (already replaced), restore from global cache
-    for (int gameIdx = 0; gameIdx < nextGames.size(); gameIdx++) {
-      String  keyA     = buildCacheKey(nextGames, gameIdx, true);
-      Integer qualNumA = GLOBAL_QUALIFIER_POSITION_CACHE.get(keyA);
-      if (qualNumA != null && !cache.containsKey(qualNumA)) {
-        cache.put(qualNumA, new QualifierSlot(gameIdx, true));
-        log.debug("[QualifierSlotPropagationStrategy] Restored Q{} from cache at Game[{}].teamA", qualNumA, gameIdx);
-      }
-
-      String  keyB     = buildCacheKey(nextGames, gameIdx, false);
-      Integer qualNumB = GLOBAL_QUALIFIER_POSITION_CACHE.get(keyB);
-      if (qualNumB != null && !cache.containsKey(qualNumB)) {
-        cache.put(qualNumB, new QualifierSlot(gameIdx, false));
-        log.debug("[QualifierSlotPropagationStrategy] Restored Q{} from cache at Game[{}].teamB", qualNumB, gameIdx);
-      }
-    }
+    scanFreshQualifiers(nextGames, cache);
+    restoreFromGlobalCache(nextGames, cache);
 
     log.debug("[QualifierSlotPropagationStrategy] Built position cache with {} qualifier positions (global cache size: {})",
               cache.size(), GLOBAL_QUALIFIER_POSITION_CACHE.size());
     return cache;
+  }
+
+  private void scanFreshQualifiers(List<Game> nextGames, java.util.Map<Integer, QualifierSlot> cache) {
+    for (int gameIdx = 0; gameIdx < nextGames.size(); gameIdx++) {
+      Game game = nextGames.get(gameIdx);
+      processTeamQualifier(game.getTeamA(), gameIdx, true, nextGames, cache);
+      processTeamQualifier(game.getTeamB(), gameIdx, false, nextGames, cache);
+    }
+  }
+
+  private void processTeamQualifier(PlayerPair team,
+                                    int gameIdx,
+                                    boolean isTeamA,
+                                    List<Game> nextGames,
+                                    java.util.Map<Integer, QualifierSlot> cache) {
+    if (team != null && team.isQualifier()) {
+      Integer qualNum = team.getQualifierIndex();
+      if (qualNum != null) {
+        cache.put(qualNum, new QualifierSlot(gameIdx, isTeamA));
+        String key = buildCacheKey(nextGames, gameIdx, isTeamA);
+        GLOBAL_QUALIFIER_POSITION_CACHE.put(key, qualNum);
+        log.debug("[QualifierSlotPropagationStrategy] Found fresh Q{} at Game[{}].{}",
+                  qualNum, gameIdx, isTeamA ? "teamA" : "teamB");
+      }
+    }
+  }
+
+  private void restoreFromGlobalCache(List<Game> nextGames, java.util.Map<Integer, QualifierSlot> cache) {
+    for (int gameIdx = 0; gameIdx < nextGames.size(); gameIdx++) {
+      restoreSideFromGlobalCache(nextGames, gameIdx, true, cache);
+      restoreSideFromGlobalCache(nextGames, gameIdx, false, cache);
+    }
+  }
+
+  private void restoreSideFromGlobalCache(List<Game> nextGames, int gameIdx, boolean isTeamA, java.util.Map<Integer, QualifierSlot> cache) {
+    String  key     = buildCacheKey(nextGames, gameIdx, isTeamA);
+    Integer qualNum = GLOBAL_QUALIFIER_POSITION_CACHE.get(key);
+    if (qualNum != null && !cache.containsKey(qualNum)) {
+      cache.put(qualNum, new QualifierSlot(gameIdx, isTeamA));
+      log.debug("[QualifierSlotPropagationStrategy] Restored Q{} from cache at Game[{}].{}",
+                qualNum, gameIdx, isTeamA ? "teamA" : "teamB");
+    }
   }
 
   /**

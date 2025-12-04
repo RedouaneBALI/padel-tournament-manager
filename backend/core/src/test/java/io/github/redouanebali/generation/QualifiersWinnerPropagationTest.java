@@ -369,5 +369,42 @@ class QualifiersWinnerPropagationTest {
     assertNull(sfGames.get(0).getTeamA(), "SF Match 1 TeamA should be null (winner removed)");
     assertEquals(teams.get(2), sfGames.get(0).getTeamB(), "SF Match 1 TeamB should still be Team 3");
   }
-}
 
+  /**
+   * Vérifie que si un match terminé est modifié pour ne plus l'être, l'équipe propagée au round suivant est retirée.
+   */
+  @Test
+  void testPropagatedWinnerIsRemovedIfMatchIsNoLongerFinished() {
+    // SETUP tournoi sans qualifications, uniquement tableau principal
+    Tournament tournament = TestFixturesCore.makeTournament(
+        0, 0, 8, 2, 0, DrawMode.MANUAL
+    );
+    List<PlayerPair> allTeams = TestFixturesCore.createPlayerPairs(8);
+    List<PlayerPair> teams    = allTeams.subList(0, 8);
+    for (int i = 0; i < teams.size(); i++) {
+      teams.get(i).setSeed(i + 1);
+    }
+    TournamentBuilder.initializeEmptyRounds(tournament);
+    Round mainRound = tournament.getRoundByStage(Stage.QUARTERS);
+    Game  match     = mainRound.getGames().get(0);
+    match.setTeamA(teams.get(0));
+    match.setTeamB(teams.get(1));
+    // Match terminé : Team 1 gagne
+    match.setScore(TestFixturesCore.createScoreWithWinner(match, teams.get(0)));
+    assertTrue(match.isFinished(), "Le match doit être terminé");
+    // Propagation
+    TournamentBuilder.propagateWinners(tournament);
+    Round      nextRound  = tournament.getRoundByStage(Stage.SEMIS);
+    PlayerPair propagated = nextRound.getGames().get(0).getTeamA();
+    assertEquals(teams.get(0), propagated, "L'équipe gagnante doit être propagée au round suivant");
+    // MODIFICATION : le match n'est plus terminé (score incomplet)
+    match.setScore(TestFixturesCore.createUnfinishedScore());
+    assertFalse(match.isFinished(), "Le match ne doit plus être terminé");
+    // Propagation
+    TournamentBuilder.propagateWinnersFromGame(tournament, match);
+    // Vérifier que l'équipe n'est plus propagée
+    assertTrue(nextRound.getGames().get(0).getTeamA() == null || nextRound.getGames().get(0).getTeamA().isQualifier(),
+               "L'équipe propagée doit être retirée si le match n'est plus terminé");
+  }
+
+}

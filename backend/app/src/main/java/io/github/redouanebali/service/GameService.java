@@ -114,7 +114,7 @@ public class GameService {
   public UpdateScoreDTO incrementGamePoint(Long tournamentId, Long gameId, TeamSide teamSide) {
     Game       game       = findGameInTournament(tournamentId, gameId);
     Tournament tournament = tournamentService.getTournamentById(tournamentId);
-    gamePointManager.updateGamePoint(game, teamSide);
+    gamePointManager.incrementGamePoint(game, teamSide);
     return updateScoreAndPropagate(game, tournament, game.getScore());
   }
 

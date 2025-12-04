@@ -105,36 +105,51 @@ public class Game {
   }
 
   private int[] calculateSetsWon() {
-    int     teamAWonSets      = 0;
-    int     teamBWonSets      = 0;
-    int     setsToWin         = format.getNumberOfSetsToWin();
-    int     pointsPerSet      = format.getGamesPerSet();
-    boolean superTie          = format.isSuperTieBreakInFinalSet();
-    int     lastSetIndex      = score.getSets().size() - 1;
-    int     expectedTotalSets = 2 * setsToWin - 1;
+    SetCounter counter           = new SetCounter();
+    int        setsToWin         = format.getNumberOfSetsToWin();
+    int        pointsPerSet      = format.getGamesPerSet();
+    boolean    superTie          = format.isSuperTieBreakInFinalSet();
+    int        lastSetIndex      = score.getSets().size() - 1;
+    int        expectedTotalSets = 2 * setsToWin - 1;
+
     for (int i = 0; i < score.getSets().size(); i++) {
       SetScore set        = score.getSets().get(i);
       boolean  isFinalSet = (i == lastSetIndex) && superTie && (score.getSets().size() == expectedTotalSets);
+
       if (isFinalSet) {
-        Integer tieA = set.getTieBreakTeamA();
-        Integer tieB = set.getTieBreakTeamB();
-        if (tieA != null && tieB != null && (tieA >= 10 || tieB >= 10) && Math.abs(tieA - tieB) >= 2) {
-          if (tieA > tieB) {
-            teamAWonSets++;
-          } else if (tieB > tieA) {
-            teamBWonSets++;
-          }
-        }
-        continue;
-      }
-      int winner = evaluateRegularSet(set, pointsPerSet);
-      if (winner == 1) {
-        teamAWonSets++;
-      } else if (winner == 2) {
-        teamBWonSets++;
+        evaluateFinalSet(set, counter);
+      } else {
+        evaluateSetWinner(set, pointsPerSet, counter);
       }
     }
-    return new int[]{teamAWonSets, teamBWonSets};
+
+    return new int[]{counter.teamAWonSets, counter.teamBWonSets};
+  }
+
+  private void evaluateFinalSet(SetScore set, SetCounter counter) {
+    Integer tieA = set.getTieBreakTeamA();
+    Integer tieB = set.getTieBreakTeamB();
+
+    if (tieA != null && tieB != null && isSuperTieBreakWon(tieA, tieB)) {
+      if (tieA > tieB) {
+        counter.teamAWonSets++;
+      } else {
+        counter.teamBWonSets++;
+      }
+    }
+  }
+
+  private boolean isSuperTieBreakWon(int tieA, int tieB) {
+    return (tieA >= 10 || tieB >= 10) && Math.abs(tieA - tieB) >= 2;
+  }
+
+  private void evaluateSetWinner(SetScore set, int pointsPerSet, SetCounter counter) {
+    int winner = evaluateRegularSet(set, pointsPerSet);
+    if (winner == 1) {
+      counter.teamAWonSets++;
+    } else if (winner == 2) {
+      counter.teamBWonSets++;
+    }
   }
 
   private int evaluateRegularSet(SetScore set, int pointsPerSet) {
@@ -181,7 +196,6 @@ public class Game {
     // Otherwise, classic victory: having reached maxPointsPerSet with 2 games difference
     return (teamScore - opponentScore) >= 2;
   }
-
 
   public PlayerPair getWinner() {
     PlayerPair byeWinner = resolveByeWinner();
@@ -263,6 +277,12 @@ public class Game {
         teamA != null ? teamA.toString() : "?",
         teamB != null ? teamB.toString() : "?"
     );
+  }
+
+  private static class SetCounter {
+
+    int teamAWonSets = 0;
+    int teamBWonSets = 0;
   }
 
 }

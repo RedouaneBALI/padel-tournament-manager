@@ -54,23 +54,23 @@ public class GamePointManagerTest {
 
   @ParameterizedTest
   @CsvFileSource(resources = "/game_point_transitions.csv", numLinesToSkip = 1)
-  void testUpdateGamePointTransitionsCsv(String currentA,
-                                         String currentB,
-                                         String teamSide,
-                                         boolean withAdvantage,
-                                         boolean withTieBreak,
-                                         boolean withSuperTieBreak,
-                                         int startGamesA,
-                                         int startGamesB,
-                                         String startTieBreakA,
-                                         String startTieBreakB,
-                                         String expectedGamesA,
-                                         String expectedGamesB,
-                                         String expectedTieBreakA,
-                                         String expectedTieBreakB,
-                                         String expectedPointA,
-                                         String expectedPointB,
-                                         String description) {
+  void testIncrementGamePointTransitionsCsv(String currentA,
+                                            String currentB,
+                                            String teamSide,
+                                            boolean withAdvantage,
+                                            boolean withTieBreak,
+                                            boolean withSuperTieBreak,
+                                            int startGamesA,
+                                            int startGamesB,
+                                            String startTieBreakA,
+                                            String startTieBreakB,
+                                            String expectedGamesA,
+                                            String expectedGamesB,
+                                            String expectedTieBreakA,
+                                            String expectedTieBreakB,
+                                            String expectedPointA,
+                                            String expectedPointB,
+                                            String description) {
     // Nettoyage des entrées CSV
     currentA          = (currentA == null || currentA.trim().isEmpty()) ? null : currentA.trim();
     currentB          = (currentB == null || currentB.trim().isEmpty()) ? null : currentB.trim();
@@ -103,7 +103,7 @@ public class GamePointManagerTest {
     }
     game.setScore(score);
     // Appel métier
-    gamePointManager.updateGamePoint(game, TeamSide.valueOf(teamSide));
+    gamePointManager.incrementGamePoint(game, TeamSide.valueOf(teamSide));
     // Vérification du set à comparer
     int setIndex;
     int lastIdx = game.getScore().getSets().size() - 1;
@@ -178,10 +178,10 @@ public class GamePointManagerTest {
     game.setScore(score);
 
     // Simulate a full game (4 points to win without advantage)
-    manager.updateGamePoint(game, TeamSide.TEAM_A); // 15-0
-    manager.updateGamePoint(game, TeamSide.TEAM_A); // 30-0
-    manager.updateGamePoint(game, TeamSide.TEAM_A); // 40-0
-    manager.updateGamePoint(game, TeamSide.TEAM_A); // Game win -> 1-0
+    manager.incrementGamePoint(game, TeamSide.TEAM_A); // 15-0
+    manager.incrementGamePoint(game, TeamSide.TEAM_A); // 30-0
+    manager.incrementGamePoint(game, TeamSide.TEAM_A); // 40-0
+    manager.incrementGamePoint(game, TeamSide.TEAM_A); // Game win -> 1-0
 
     // Now undo should restore to 40-0
     manager.undoGamePoint(game);
@@ -207,12 +207,12 @@ public class GamePointManagerTest {
     // Simulate Team B winning 6 games (1-6)
     // First, Team A wins 1 game
     for (int p = 0; p < 4; p++) {
-      manager.updateGamePoint(game, TeamSide.TEAM_A);
+      manager.incrementGamePoint(game, TeamSide.TEAM_A);
     }
     // Then Team B wins 6 games
     for (int g = 0; g < 6; g++) {
       for (int p = 0; p < 4; p++) {
-        manager.updateGamePoint(game, TeamSide.TEAM_B);
+        manager.incrementGamePoint(game, TeamSide.TEAM_B);
       }
     }
 
@@ -300,13 +300,13 @@ public class GamePointManagerTest {
     game.setScore(score);
 
     // 1er point
-    manager.updateGamePoint(game, TeamSide.TEAM_A);
+    manager.incrementGamePoint(game, TeamSide.TEAM_A);
     Score afterFirst = game.getScore().deepCopy();
     // 2e point
-    manager.updateGamePoint(game, TeamSide.TEAM_A);
+    manager.incrementGamePoint(game, TeamSide.TEAM_A);
     Score afterSecond = game.getScore().deepCopy();
     // 3e point
-    manager.updateGamePoint(game, TeamSide.TEAM_B);
+    manager.incrementGamePoint(game, TeamSide.TEAM_B);
     Score afterThird = game.getScore().deepCopy();
 
     // On vérifie que previousScore n'est pas null après chaque update
@@ -344,13 +344,13 @@ public class GamePointManagerTest {
 
     for (int i = 0; i < 6; i++) {
       for (int p = 0; p < 4; p++) {
-        manager.updateGamePoint(game, TeamSide.TEAM_A);
+        manager.incrementGamePoint(game, TeamSide.TEAM_A);
       }
     }
-    manager.updateGamePoint(game, TeamSide.TEAM_A); // 15
-    manager.updateGamePoint(game, TeamSide.TEAM_A); // 30
-    manager.updateGamePoint(game, TeamSide.TEAM_A); // 40
-    manager.updateGamePoint(game, TeamSide.TEAM_A); // point
+    manager.incrementGamePoint(game, TeamSide.TEAM_A); // 15
+    manager.incrementGamePoint(game, TeamSide.TEAM_A); // 30
+    manager.incrementGamePoint(game, TeamSide.TEAM_A); // 40
+    manager.incrementGamePoint(game, TeamSide.TEAM_A); // point
 
     assertEquals(2, game.getScore().getSets().size(), "A new set should be created after the first set is won");
     assertEquals(1, game.getScore().getSets().get(1).getTeamAScore(), "Team A should have 1 point in the new set");
