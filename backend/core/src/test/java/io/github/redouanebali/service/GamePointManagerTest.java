@@ -356,4 +356,81 @@ public class GamePointManagerTest {
     assertEquals(1, game.getScore().getSets().get(1).getTeamAScore(), "Team A should have 1 point in the new set");
     assertEquals(0, game.getScore().getSets().get(1).getTeamBScore(), "Team B should have 0 point in the new set");
   }
+
+
+  @Test
+  void testSwitchModeRemovesExtraEmptySets() {
+    Score score = new Score();
+    score.getSets().add(new SetScore(0, 0));
+    score.getSets().add(new SetScore(0, 0));
+    Game        game   = new Game();
+    MatchFormat format = new MatchFormat();
+    format.setNumberOfSetsToWin(2);
+    game.setFormat(format);
+    game.setScore(score);
+    GamePointManager manager = new GamePointManager();
+    manager.incrementGamePoint(game, TeamSide.TEAM_A);
+    long emptySets = game.getScore().getSets().stream().filter(s -> s.getTeamAScore() == 0 && s.getTeamBScore() == 0).count();
+    assertEquals(1, emptySets, "Switching mode should remove extra empty sets");
+  }
+
+  @Test
+  void shouldIncrementFirstUnfinishedSetNotLastSet() {
+    GamePointManager manager = new GamePointManager();
+    Game             game    = new Game();
+    MatchFormat      format  = new MatchFormat();
+    format.setNumberOfSetsToWin(2);
+    format.setGamesPerSet(6);
+    format.setAdvantage(true);
+    game.setFormat(format);
+
+    Score score = new Score();
+    score.getSets().add(new SetScore(2, 1));
+    score.getSets().add(new SetScore(0, 0));
+    score.setCurrentGamePointA(GamePoint.ZERO);
+    score.setCurrentGamePointB(GamePoint.ZERO);
+    game.setScore(score);
+
+    // Add a point to TEAM_A - should increment first set (2-1) -> (3-1), not second set
+    manager.incrementGamePoint(game, TeamSide.TEAM_A);
+    manager.incrementGamePoint(game, TeamSide.TEAM_A);
+    manager.incrementGamePoint(game, TeamSide.TEAM_A);
+    manager.incrementGamePoint(game, TeamSide.TEAM_A);
+
+    assertEquals(3, game.getScore().getSets().get(0).getTeamAScore(), "First set should be incremented to 3-1");
+    assertEquals(1, game.getScore().getSets().get(0).getTeamBScore(), "First set B score should stay 1");
+    assertEquals(0, game.getScore().getSets().get(1).getTeamAScore(), "Second set should stay 0-0");
+    assertEquals(0, game.getScore().getSets().get(1).getTeamBScore(), "Second set should stay 0-0");
+  }
+
+  @Test
+  void shouldIncrementFirstUnfinishedSetWhenMultipleSetsExist() {
+    GamePointManager manager = new GamePointManager();
+    Game             game    = new Game();
+    MatchFormat      format  = new MatchFormat();
+    format.setNumberOfSetsToWin(2);
+    format.setGamesPerSet(6);
+    format.setAdvantage(true);
+    game.setFormat(format);
+
+    Score score = new Score();
+    score.getSets().add(new SetScore(2, 1));
+    score.getSets().add(new SetScore(0, 0));
+    score.setCurrentGamePointA(GamePoint.ZERO);
+    score.setCurrentGamePointB(GamePoint.ZERO);
+    game.setScore(score);
+
+    // Add multiple points - they should all go to the first set
+    manager.incrementGamePoint(game, TeamSide.TEAM_A); // 0-0 -> 15-0 in set 1
+    manager.incrementGamePoint(game, TeamSide.TEAM_A); // 15-0 -> 30-0
+    manager.incrementGamePoint(game, TeamSide.TEAM_B); // 30-0 -> 30-15
+
+    assertEquals(2, game.getScore().getSets().get(0).getTeamAScore(), "First set games should stay 2");
+    assertEquals(1, game.getScore().getSets().get(0).getTeamBScore(), "First set games should stay 1");
+    assertEquals(GamePoint.TRENTE, game.getScore().getCurrentGamePointA(), "Game point A should be 30");
+    assertEquals(GamePoint.QUINZE, game.getScore().getCurrentGamePointB(), "Game point B should be 15");
+    assertEquals(0, game.getScore().getSets().get(1).getTeamAScore(), "Second set should stay 0-0");
+    assertEquals(0, game.getScore().getSets().get(1).getTeamBScore(), "Second set should stay 0-0");
+  }
+
 }

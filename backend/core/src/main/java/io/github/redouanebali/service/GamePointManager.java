@@ -19,7 +19,7 @@ public class GamePointManager {
     score.saveToHistory();
 
     ensureActiveSetExists(game, score);
-    SetScore activeSet = getActiveSet(score);
+    SetScore activeSet = getActiveSet(game, score);
 
     GamePlayMode mode = determineGamePlayMode(game, score, activeSet);
     handleGamePointBasedOnMode(game, score, activeSet, teamSide, mode);
@@ -60,7 +60,7 @@ public class GamePointManager {
   private void handleStandardGameMode(Game game, Score score, SetScore activeSet, TeamSide teamSide, boolean withAdvantage) {
     if (isSetFinished(game, activeSet)) {
       checkAndAddNewSet(game, score);
-      activeSet = getActiveSet(score);
+      activeSet = getActiveSet(game, score);
     }
     handleStandardGame(game, score, activeSet, teamSide, withAdvantage);
   }
@@ -80,8 +80,11 @@ public class GamePointManager {
     }
   }
 
-  private SetScore getActiveSet(Score score) {
-    return score.getSets().get(score.getSets().size() - 1);
+  private SetScore getActiveSet(Game game, Score score) {
+    return score.getSets().stream()
+                .filter(set -> !isSetFinished(game, set))
+                .findFirst()
+                .orElseGet(() -> score.getSets().get(score.getSets().size() - 1));
   }
 
   private void checkAndAddNewSet(Game game, Score score) {
