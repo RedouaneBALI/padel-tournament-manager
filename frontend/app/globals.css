@@ -107,4 +107,9 @@
   .btn-secondary {
     @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground;
   }
+
+  .force-html2canvas-colors {
+    background: #1b2d5e !important;
+    color: #fff !important;
+  }
 }

@@ -5,6 +5,18 @@
   },
   "hosting": {
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "redirects": [
+      {
+        "source": "/calculateur-points",
+        "destination": "/frmt/calculateur-points",
+        "type": 301
+      },
+      {
+        "source": "**/calculateur-points",
+        "destination": "/frmt/calculateurs-points",
+        "type": 301
+      }
+    ],
     "rewrites": [
       {
         "source": "**",

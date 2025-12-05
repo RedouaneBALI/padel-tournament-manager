@@ -12,7 +12,7 @@ interface PointsCalculatorButtonProps {
 
 export default function PointsCalculatorButton({ onClick }: PointsCalculatorButtonProps) {
   return (
-    <Link href="/calculateur-points" className={navBtn} onClick={onClick as any}>
+    <Link href="/frmt/calculateur-points" className={navBtn} onClick={onClick as any}>
       <span className={icon20}>
         <Calculator size={20} className="text-foreground" aria-hidden />
       </span>

@@ -91,7 +91,6 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
 
   // Quand MatchResultCard notifie d'un changement de court/heure, mettre à jour l'état local
   const handleGameUpdated = useCallback((gameId: string, changes: { scheduledTime?: string; court?: string }) => {
-    console.debug('[handleGameUpdated]', gameId, changes);
     setRounds((currentRounds) => currentRounds.map((round) => ({
       ...round,
       games: round.games.map((g) => (String(g.id) === String(gameId) ? { ...g, ...(changes.scheduledTime !== undefined ? { scheduledTime: changes.scheduledTime } : {}), ...(changes.court !== undefined ? { court: changes.court } : {}) } : g)),
