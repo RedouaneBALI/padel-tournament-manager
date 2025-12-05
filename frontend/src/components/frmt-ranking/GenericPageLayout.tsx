@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react'
 import DataPageLayout from './DataPageLayout'
-import FilterButton from './filters/FilterButton'
 import FilterPanel from './filters/FilterPanel'
 
 type UseDataHookResult<TData, TFilters, TSortKey extends keyof TData | string = string> = {
@@ -80,7 +79,7 @@ export default function GenericPageLayout<TData, TFilters, TSortKey extends keyo
     setCurrentPage(1);
   };
 
-  const filterControls = renderFilterContent ? <FilterButton onClick={() => setFilterPanelOpen(true)} /> : null;
+  const hasActiveFilters = JSON.stringify(activeFilters) !== JSON.stringify(initialFilters);
 
   return (
     <>
@@ -93,7 +92,8 @@ export default function GenericPageLayout<TData, TFilters, TSortKey extends keyo
         totalResults={totalResults}
         onPageChange={(page) => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: 'instant' }); }}
         scrapedAt={scrapedAt}
-        controls={filterControls}
+        onFilterClick={renderFilterContent ? () => setFilterPanelOpen(true) : undefined}
+        hasActiveFilters={hasActiveFilters}
         renderFooterContent={renderFooterContent}
       >
         {renderTable({ data, sortKey, sortOrder, onSort: handleSort })}

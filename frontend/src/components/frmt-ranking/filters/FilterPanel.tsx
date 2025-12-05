@@ -1,5 +1,4 @@
 // Fichier : /components/FilterPanel.tsx
-
 'use client'
 
 import React, { useState, useEffect } from 'react'
@@ -39,46 +38,60 @@ export default function FilterPanel<T>({
     setDraftFilters(initialFilters);
   };
 
-  const panelClasses = isOpen ? 'translate-x-0' : 'translate-x-full'
+  const panelClasses = isOpen ? 'translate-y-0' : 'translate-y-full'
 
   return (
     <>
+      {/* --- BACKDROP (Fond sombre) --- */}
       <div
-        className={`fixed inset-0 bg-transparent z-40 transition-opacity duration-300 ease-in-out ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 z-40 transition-opacity duration-300 ease-in-out ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
         onClick={onClose}
         aria-hidden="true"
       />
+
+      {/* --- PANEL (Conteneur Principal) --- */}
       <div
-        className={`fixed top-0 right-0 h-full w-full max-w-sm bg-white shadow-xl z-50 transform transition-transform ease-in-out duration-300 ${panelClasses}`}
+        // 1. On applique flex et flex-col directement ici
+        // 2. max-h-[80vh] limite la hauteur totale
+        // 3. Le footer restera collé en bas grâce à la structure flex
+        className={`fixed bottom-0 left-0 right-0 z-50 flex flex-col max-h-[85vh] bg-white rounded-t-2xl transform transition-transform ease-in-out duration-300 ${panelClasses}`}
+        style={{ boxShadow: '0px -4px 20px rgba(0,0,0,0.15)' }}
         role="dialog"
       >
-        <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-4 border-b">
-            <h2 className="text-lg font-semibold text-primary">Filtres</h2>
-            <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200">
-              <X size={24} />
-            </button>
-          </div>
 
-          <div className="flex-grow p-4 overflow-y-auto space-y-6">
-            {children(draftFilters, setDraftFilters)}
-          </div>
+        {/* --- HEADER (Fixe) --- */}
+        <div className="flex-none flex items-center justify-between p-4 border-b">
+          <h2 className="text-lg font-semibold text-primary">Filtres</h2>
+          <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200">
+            <X size={24} />
+          </button>
+        </div>
 
-          <div className="p-4 border-t bg-gray-50 flex items-center gap-3">
-            <button
-              onClick={handleResetClick}
-              className="flex-1 px-4 py-2 font-semibold text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 flex items-center justify-center gap-2"
-            >
-              <RotateCcw size={16} />
-              Réinitialiser
-            </button>
-            <button
-              onClick={handleApplyClick}
-              className="flex-1 px-4 py-2 font-semibold text-white bg-primary rounded-md hover:bg-opacity-90"
-            >
-              Appliquer
-            </button>
-          </div>
+        {/* --- CONTENT (Scrollable) --- */}
+        {/* flex-1 : prend tout l'espace disponible restant */}
+        {/* overflow-y-auto : active le scroll uniquement ici */}
+        {/* min-h-0 : crucial pour que le scroll flexbox fonctionne bien sur Firefox/Chrome */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-6 min-h-0">
+          {children(draftFilters, setDraftFilters)}
+        </div>
+
+        {/* --- FOOTER (Fixe) --- */}
+        {/* flex-none : empêche le footer de s'écraser */}
+        <div className="flex-none p-4 border-t bg-gray-50 flex items-center gap-3 safe-area-bottom">
+          <button
+            onClick={handleResetClick}
+            className="flex-1 px-2 py-2 font-semibold text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 flex items-center justify-center gap-1"
+          >
+            <RotateCcw size={14} />
+            Réinitialiser
+          </button>
+          <button
+            onClick={handleApplyClick}
+            className="flex-1 px-4 py-2 font-semibold text-white bg-primary rounded-md hover:bg-opacity-90 flex items-center justify-center"
+          >
+            Voir les résultats
+          </button>
         </div>
       </div>
     </>

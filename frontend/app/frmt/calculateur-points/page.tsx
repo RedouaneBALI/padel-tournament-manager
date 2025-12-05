@@ -1,9 +1,6 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
-import BottomNav from '@/src/components/ui/BottomNav';
-import { getDefaultBottomItems } from '@/src/components/ui/bottomNavPresets';
 import {
   BAREMES,
   TOURNAMENT_LEVELS,
@@ -25,9 +22,6 @@ export default function PointsCalculatorPage() {
   const [ranking, setRanking] = useState<string>('');
   const [top100TeamsCount, setTop100TeamsCount] = useState<string>('');
   const [gender, setGender] = useState<'M' | 'F'>('M');
-
-  const pathname = usePathname() ?? '';
-  const bottomItems = getDefaultBottomItems();
 
   const showTop100Selection = useMemo(() => {
     return requiresTop100Selection(tournamentLevel);
@@ -356,7 +350,7 @@ export default function PointsCalculatorPage() {
         </div>
       </div>
 
-      <BottomNav items={bottomItems} pathname={pathname} />
+      {/* <BottomNav items={bottomItems} pathname={pathname} /> */}
     </>
   );
 }

@@ -151,7 +151,7 @@ export default function PlayerDetailModal({ player, onClose }: Props) {
           <div className="text-xs text-white/40 mb-2">
             {player.club} • {player.birth_year}
           </div>
-          <div className="text-sm font-medium text-white/20">padelrounds.com</div>
+          <div className="text-lg font-semibold text-white/70 drop-shadow-lg">padelrounds.com</div>
         </div>
       </div>
     </div>

@@ -8,10 +8,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Classement National Padel Hommes Maroc',
     description: 'Classement officiel des joueurs de padel masculins au Maroc.',
-    url: 'https://www.padelrounds.com/frmt/classement/hommes',
+    url: 'https://www.padelrounds.com/frmt/classement/femmes',
   }
 };
 
 export default function MenRankingPage() {
-  return <RankingPageLayout jsonUrl="ranking-men.json" />;
+  return <RankingPageLayout jsonUrl="ranking-women.json" />;
 }

@@ -13,6 +13,7 @@ import ContactButton from '@/src/components/ui/buttons/ContactButton';
 import GoogleLoginButton from '@/src/components/ui/buttons/GoogleLoginButton';
 import PricingButton from '@/src/components/ui/buttons/PricingButton';
 import PointsCalculatorButton from '@/src/components/ui/buttons/PointsCalculatorButton';
+import RankingButton from '@/src/components/ui/buttons/RankingButton';
 
 export type BottomNavItem = {
   href: string;
@@ -120,24 +121,39 @@ export default function BottomNav({ items, pathname, className, fixed = true, on
                 </svg>
               </button>
 
-              <div className="flex flex-col gap-2">
-                <CreateTournamentButton href={hrefCreateTournament} onClick={onMoreClick ?? closeMore} />
-                <CreateGameButton href={hrefCreateGame} onClick={onMoreClick ?? closeMore} />
-                <MyTournamentsButton href={hrefMy} onClick={onMoreClick ?? closeMore} />
-                <MyGamesButton href={hrefMy.replace('tournaments','games')} onClick={onMoreClick ?? closeMore} />
-                <PointsCalculatorButton onClick={onMoreClick ?? closeMore} />
-                <PricingButton onClick={onMoreClick ?? closeMore} />
-                <ContactButton onClick={onMoreClick ?? closeMore} />
-                <div role="none">
-                  {status === 'authenticated' ? (
-                    <div onClick={onMoreClick ?? closeMore}>
-                      <LogoutButton>
-                        <span className="text-sm">Déconnexion</span>
-                      </LogoutButton>
-                    </div>
-                  ) : (
-                    <GoogleLoginButton onBeforeSignIn={onMoreClick ?? closeMore} />
-                  )}
+              <div className="flex flex-col">
+                <h3 className="text-sm font-semibold text-muted-foreground mt-4 mb-1 first:mt-0">Administration</h3>
+                <hr className="border-t border-border my-1" />
+                <div className="flex flex-col gap-2">
+                  <CreateTournamentButton href={hrefCreateTournament} onClick={onMoreClick ?? closeMore} />
+                  <CreateGameButton href={hrefCreateGame} onClick={onMoreClick ?? closeMore} />
+                  <MyTournamentsButton href={hrefMy} onClick={onMoreClick ?? closeMore} />
+                  <MyGamesButton href={hrefMy.replace('tournaments','games')} onClick={onMoreClick ?? closeMore} />
+                </div>
+
+                <h3 className="text-sm font-semibold text-muted-foreground mt-4 mb-1">FRMT</h3>
+                <hr className="border-t border-border my-1" />
+                <div className="flex flex-col gap-2">
+                  <PointsCalculatorButton onClick={onMoreClick ?? closeMore} />
+                  <RankingButton onClick={onMoreClick ?? closeMore} />
+                </div>
+
+                <h3 className="text-sm font-semibold text-muted-foreground mt-4 mb-1">Général</h3>
+                <hr className="border-t border-border my-1" />
+                <div className="flex flex-col gap-2">
+                  <PricingButton onClick={onMoreClick ?? closeMore} />
+                  <ContactButton onClick={onMoreClick ?? closeMore} />
+                  <div role="none">
+                    {status === 'authenticated' ? (
+                      <div onClick={onMoreClick ?? closeMore}>
+                        <LogoutButton>
+                          <span className="text-sm">Déconnexion</span>
+                        </LogoutButton>
+                      </div>
+                    ) : (
+                      <GoogleLoginButton onBeforeSignIn={onMoreClick ?? closeMore} />
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
