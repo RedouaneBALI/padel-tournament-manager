@@ -8,6 +8,7 @@ import ClubFilter from './filters/ClubFilter';
 import AgeFilter from './filters/AgeFilter';
 import { getUniqueNationalities, getUniqueClubs } from './utils/playerUtils'
 import { usePlayerData } from './hooks/usePlayerData';
+import { Player, PlayerFilters } from './PlayerDetailModal';
 
 
 type Props = {

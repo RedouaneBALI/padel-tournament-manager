@@ -14,6 +14,7 @@ import GoogleLoginButton from '@/src/components/ui/buttons/GoogleLoginButton';
 import PricingButton from '@/src/components/ui/buttons/PricingButton';
 import PointsCalculatorButton from '@/src/components/ui/buttons/PointsCalculatorButton';
 import RankingButton from '@/src/components/ui/buttons/RankingButton';
+import MyAccountButton from '@/src/components/ui/buttons/MyAccountButton';
 
 export type BottomNavItem = {
   href: string;
@@ -143,6 +144,7 @@ export default function BottomNav({ items, pathname, className, fixed = true, on
                 <div className="flex flex-col gap-2">
                   <PricingButton onClick={onMoreClick ?? closeMore} />
                   <ContactButton onClick={onMoreClick ?? closeMore} />
+                  {status === 'authenticated' && <MyAccountButton onClick={onMoreClick ?? closeMore} />}
                   <div role="none">
                     {status === 'authenticated' ? (
                       <div onClick={onMoreClick ?? closeMore}>

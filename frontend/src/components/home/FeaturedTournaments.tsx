@@ -55,7 +55,7 @@ export default function FeaturedTournaments({ items, loading }: FeaturedTourname
             {visibleFeatured.map((t) => (
               <Link
                 key={t.id}
-                href={`/tournament/${t.id}`}
+                href={`/tournament/${t.id}/games`}
                 aria-label={`Voir le tournoi ${t.name}`}
                 className="block py-4 px-6 border border-border rounded-2xl bg-card shadow-md hover:shadow-lg transition-transform transform hover:-translate-y-1"
               >

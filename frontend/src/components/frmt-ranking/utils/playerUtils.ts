@@ -1,4 +1,4 @@
-import { Player } from '@/app/types/Player'
+import { Player } from '../PlayerDetailModal'
 
 export function getUniqueNationalities(players: Player[]): string[] {
   const nationalities = players.map(p => p.nationality).filter(Boolean)

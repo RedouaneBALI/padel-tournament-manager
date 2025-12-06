@@ -1,7 +1,7 @@
 // /hooks/usePlayerData.ts
 
 import { useEffect, useState, useMemo } from 'react'
-import { Player, PlayerFilters } from '@/app/types/Player'
+import { Player, PlayerFilters } from '../PlayerDetailModal'
 
 export type PlayerSortableColumn = keyof Player;
 

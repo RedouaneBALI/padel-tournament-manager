@@ -3,7 +3,7 @@ import { toBlob } from 'html-to-image';
 import { getFlagEmoji } from './utils/flags';
 
 // Types
-interface Player {
+export interface Player {
   name: string;
   ranking: number;
   points: number;
@@ -12,6 +12,14 @@ interface Player {
   birth_year: number;
   evolution?: number;
   point_diff?: number;
+}
+
+export interface PlayerFilters {
+  nationalities: string[];
+  clubs: string[];
+  rankingRange: { min: number | null; max: number | null };
+  pointsRange: { min: number | null; max: number | null };
+  ageRange: { min: number | null; max: number | null };
 }
 
 interface Props {
@@ -57,15 +65,8 @@ export default function PlayerDetailModal({ player, onClose }: Props) {
         }
       }
 
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      setTimeout(() => URL.revokeObjectURL(url), 100);
+      // If sharing is not supported, show a message instead of downloading
+      console.error('Le partage n\'est pas pris en charge sur cet appareil.');
 
     } catch (error) {
       console.error('Erreur lors de la création de l\'image:', error);
@@ -109,7 +110,7 @@ export default function PlayerDetailModal({ player, onClose }: Props) {
         {/* --- Contenu de la carte --- */}
 
         {/* Header: Nom & Nationalité */}
-        <div className="px-6 pt-8 pb-4 text-center">
+        <div className="px-6 pt-14 pb-4 text-center">
           <h2 className="text-2xl font-bold text-white tracking-tight">{player.name}</h2>
           <div className="mt-2 flex items-center justify-center gap-2">
             <span className="text-2xl">{getFlagEmoji(player.nationality)}</span>
@@ -126,7 +127,7 @@ export default function PlayerDetailModal({ player, onClose }: Props) {
             <div className="text-sm font-semibold text-accent-foreground/70 uppercase tracking-widest mt-2">
               Classement National 🇲🇦
             </div>
-            <div className="text-xs text-accent-foreground/50 mt-1">
+            <div className="text-xs text-accent-foreground/50 mt-2">
               <div className="flex items-center justify-center gap-1">
                 {(() => {
                   const dateStr = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' }).format(new Date());

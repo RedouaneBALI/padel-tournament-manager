@@ -9,6 +9,7 @@ import type { Score } from '@/src/types/score';
 import { fetchWithAuth } from "./fetchWithAuth";
 import type { InitializeDrawRequest } from '@/src/types/api/InitializeDrawRequest';
 import type { Game } from '@/src/types/game';
+import type { User } from '@/src/types/user';
 
 // Utiliser directement l'URL du backend depuis les variables d'environnement
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
@@ -452,6 +453,53 @@ export async function undoStandaloneGamePoint(gameId: string | number) {
     undefined,
     'Erreur lors de l\'annulation du point (match standalone).'
   );
+}
+
+/**
+ * Fetches the current user's profile.
+ */
+export async function fetchUserProfile(): Promise<User> {
+  const response = await fetchWithAuth(api('/user/profile'), {
+    method: 'GET',
+  });
+
+  if (response.status === 401) {
+    throw new Error('UNAUTHORIZED');
+  }
+  if (response.status === 403) {
+    throw new Error('FORBIDDEN');
+  }
+  if (response.status === 404) {
+    // Profil inexistant - c'est normal pour les nouveaux utilisateurs
+    throw new Error('PROFILE_NOT_FOUND');
+  }
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    toast.error('Erreur lors du chargement du profil.');
+    throw new Error(`Erreur lors du chargement du profil (${response.status}) ${text}`);
+  }
+
+  return await response.json();
+}
+
+/**
+ * Updates the current user's profile.
+ * @param payload Partial update payload excluding id and email
+ */
+export async function updateUserProfile(payload: Partial<Omit<User, 'id' | 'email'>>): Promise<User> {
+  const response = await fetchWithAuth(api('/user/profile'), {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    toast.error('Erreur lors de la mise à jour du profil.');
+    throw new Error(`Erreur lors de la mise à jour du profil (${response.status}) ${text}`);
+  }
+
+  toast.success('Profil mis à jour avec succès !');
+  return await response.json();
 }
 
 // Internal helper to avoid code duplication

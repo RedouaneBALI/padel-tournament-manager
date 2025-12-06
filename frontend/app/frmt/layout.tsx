@@ -12,7 +12,7 @@ const navItems: BottomNavItem[] = [
 ];
 
 export default function FRMTLayout({ children }: { children: React.ReactNode }) {
-	const pathname = usePathname();
+	const pathname = usePathname() ?? '';
 
 	return (
 		<>

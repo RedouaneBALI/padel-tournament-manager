@@ -1,7 +1,7 @@
 'use client'
 
 import { getFlagEmoji } from './utils/flags'
-import { Player } from './types/Player'
+import { Player } from './PlayerDetailModal'
 import DataTable, { ColumnDefinition } from './DataTable'
 import { ArrowUp, ArrowDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'

@@ -1,735 +1,800 @@
 {
   "data" : [ {
     "ranking" : 1,
-    "evolution" : 1,
     "nationality" : "MAR",
     "name" : "EL HOUARI ZAINAB",
     "club" : "COC",
-    "points" : 6050.0,
+    "points" : 6068.0,
     "birth_year" : 1998,
-    "point_diff" : 1750
+    "point_diff" : 18
   }, {
     "ranking" : 2,
-    "evolution" : -1,
     "nationality" : "MAR",
     "name" : "ATIK RITA",
     "club" : "IND",
-    "points" : 5800.0,
+    "points" : 5918.0,
     "birth_year" : 1997,
-    "point_diff" : 1400
+    "point_diff" : 118
   }, {
     "ranking" : 3,
     "nationality" : "MAR",
     "name" : "AZIZ OUMAIMA",
     "club" : "IND",
-    "points" : 5498.0,
+    "points" : 5743.0,
     "birth_year" : 2001,
-    "point_diff" : 1473
+    "point_diff" : 245
   }, {
     "ranking" : 4,
     "nationality" : "MAR",
     "name" : "BENABDELJALIL CAMELIA",
     "club" : "TCMT",
-    "points" : 5225.0,
+    "points" : 5443.0,
     "birth_year" : 1993,
-    "point_diff" : 1500
+    "point_diff" : 218
   }, {
     "ranking" : 5,
+    "evolution" : 1,
     "nationality" : "MAR",
-    "name" : "LAHLOU MERIAM",
+    "name" : "AZIZ LAMIAE",
     "club" : "IND",
-    "points" : 4533.0,
-    "birth_year" : 1984,
-    "point_diff" : 1113
+    "points" : 4752.0,
+    "birth_year" : 1997,
+    "point_diff" : 250
   }, {
     "ranking" : 5,
     "nationality" : "MAR",
     "name" : "MAJDOUBI NADA",
     "club" : "PFA",
-    "points" : 4533.0,
+    "points" : 4752.0,
     "birth_year" : 1993
   }, {
     "ranking" : 6,
+    "evolution" : -1,
     "nationality" : "MAR",
-    "name" : "AZIZ LAMIAE",
+    "name" : "LAHLOU MERIAM",
     "club" : "IND",
-    "points" : 4502.0,
-    "birth_year" : 1997,
-    "point_diff" : 1133
+    "points" : 4738.0,
+    "birth_year" : 1984,
+    "point_diff" : 205
   }, {
     "ranking" : 7,
     "nationality" : "MAR",
     "name" : "EL KADRI ABLA",
     "club" : "IND",
-    "points" : 4223.0,
+    "points" : 4358.0,
     "birth_year" : 2000,
-    "point_diff" : 1138
+    "point_diff" : 135
   }, {
     "ranking" : 8,
     "nationality" : "MAR",
     "name" : "CHAOUKI ZAHRA",
     "club" : "RTCMO",
-    "points" : 4219.0,
+    "points" : 4296.0,
     "birth_year" : 2000,
-    "point_diff" : 1295
+    "point_diff" : 77
   }, {
     "ranking" : 9,
-    "evolution" : 2,
-    "nationality" : "MAR",
-    "name" : "BOUAMAMA DINA",
-    "club" : "TCMT",
-    "points" : 3267.0,
-    "birth_year" : 2003,
-    "point_diff" : 834
-  }, {
-    "ranking" : 10,
-    "evolution" : 3,
+    "evolution" : 1,
     "nationality" : "MAR",
     "name" : "HADAB LILYA",
     "club" : "IND",
-    "points" : 3253.0,
+    "points" : 3527.0,
     "birth_year" : 1999,
-    "point_diff" : 936
+    "point_diff" : 274
+  }, {
+    "ranking" : 10,
+    "evolution" : 2,
+    "nationality" : "MAR",
+    "name" : "SAADAOUI LINA",
+    "club" : "CAFC",
+    "points" : 3425.0,
+    "birth_year" : 1980,
+    "point_diff" : 319
   }, {
     "ranking" : 11,
-    "evolution" : 3,
+    "evolution" : -2,
+    "nationality" : "MAR",
+    "name" : "BOUAMAMA DINA",
+    "club" : "TCMT",
+    "points" : 3317.0,
+    "birth_year" : 2003,
+    "point_diff" : 50
+  }, {
+    "ranking" : 12,
+    "evolution" : -1,
     "nationality" : "MAR",
     "name" : "BELLAMINE HOUDA",
     "club" : "IND",
     "points" : 3218.0,
-    "birth_year" : 1992,
-    "point_diff" : 982
-  }, {
-    "ranking" : 12,
-    "nationality" : "MAR",
-    "name" : "SAADAOUI LINA",
-    "club" : "CAFC",
-    "points" : 3106.0,
-    "birth_year" : 1980,
-    "point_diff" : 745
+    "birth_year" : 1992
   }, {
     "ranking" : 13,
+    "evolution" : 2,
+    "nationality" : "MAR",
+    "name" : "IDLKADI MOUNA",
+    "club" : "WIFAQ",
+    "points" : 3176.0,
+    "birth_year" : 1999,
+    "point_diff" : 322
+  }, {
+    "ranking" : 14,
+    "evolution" : 2,
+    "nationality" : "MAR",
+    "name" : "MOUHTASSINE BAHIA",
+    "club" : "IND",
+    "points" : 3023.0,
+    "birth_year" : 1979,
+    "point_diff" : 212
+  }, {
+    "ranking" : 15,
+    "evolution" : 2,
+    "nationality" : "MAR",
+    "name" : "BENBOUBKER FATI",
+    "club" : "CAFC",
+    "points" : 2873.0,
+    "birth_year" : 1985,
+    "point_diff" : 160
+  }, {
+    "ranking" : 16,
     "evolution" : -3,
     "nationality" : "MAR",
     "name" : "LAIMOUNY HIND",
     "club" : "CAFC",
-    "points" : 2952.0,
+    "points" : 2858.0,
     "birth_year" : 1983,
-    "point_diff" : 493
+    "point_diff" : -94
   }, {
-    "ranking" : 14,
+    "ranking" : 17,
+    "evolution" : 1,
+    "nationality" : "MAR",
+    "name" : "M&apos;RABET KHADIJA",
+    "club" : "IND",
+    "points" : 2817.0,
+    "birth_year" : 1996,
+    "point_diff" : 223
+  }, {
+    "ranking" : 18,
+    "evolution" : 2,
+    "nationality" : "MAR",
+    "name" : "LALAMI LAAROUSSI RADIA",
+    "club" : "IND",
+    "points" : 2558.0,
+    "birth_year" : 1999,
+    "point_diff" : 235
+  }, {
+    "ranking" : 19,
     "evolution" : -5,
     "nationality" : "MAR",
     "name" : "HSISEN SAMYA",
     "club" : "IND",
-    "points" : 2892.0,
+    "points" : 2542.0,
     "birth_year" : 1993,
-    "point_diff" : 367
+    "point_diff" : -350
   }, {
-    "ranking" : 15,
-    "nationality" : "MAR",
-    "name" : "IDLKADI MOUNA",
-    "club" : "WIFAQ",
-    "points" : 2854.0,
-    "birth_year" : 1999,
-    "point_diff" : 696
-  }, {
-    "ranking" : 16,
-    "nationality" : "MAR",
-    "name" : "MOUHTASSINE BAHIA",
-    "club" : "IND",
-    "points" : 2811.0,
-    "birth_year" : 1979,
-    "point_diff" : 677
-  }, {
-    "ranking" : 17,
+    "ranking" : 20,
     "evolution" : -1,
-    "nationality" : "MAR",
-    "name" : "BENBOUBKER FATI",
-    "club" : "CAFC",
-    "points" : 2713.0,
-    "birth_year" : 1985,
-    "point_diff" : 579
-  }, {
-    "ranking" : 18,
-    "nationality" : "MAR",
-    "name" : "M&apos;RABET KHADIJA",
-    "club" : "IND",
-    "points" : 2594.0,
-    "birth_year" : 1996,
-    "point_diff" : 670
-  }, {
-    "ranking" : 19,
-    "evolution" : 3,
     "nationality" : "MAR",
     "name" : "BERRADA YASMINE",
     "club" : "IND",
-    "points" : 2325.0,
+    "points" : 2495.0,
     "birth_year" : 1994,
-    "point_diff" : 690
-  }, {
-    "ranking" : 20,
-    "evolution" : 4,
-    "nationality" : "MAR",
-    "name" : "LALAMI LAAROUSSI RADIA",
-    "club" : "IND",
-    "points" : 2323.0,
-    "birth_year" : 1999,
-    "point_diff" : 796
+    "point_diff" : 170
   }, {
     "ranking" : 21,
-    "evolution" : 2,
     "nationality" : "MAR",
     "name" : "CHAMI MOUNA",
     "club" : "IND",
-    "points" : 2208.0,
+    "points" : 2425.0,
     "birth_year" : 1974,
-    "point_diff" : 661
+    "point_diff" : 217
   }, {
     "ranking" : 22,
+    "evolution" : 1,
+    "nationality" : "MAR",
+    "name" : "ALLAOUI KHAWLA",
+    "club" : "IND",
+    "points" : 2376.0,
+    "birth_year" : 1993,
+    "point_diff" : 290
+  }, {
+    "ranking" : 23,
     "evolution" : -1,
     "nationality" : "MAR",
     "name" : "LAIMOUNY SALIMA",
     "club" : "CAFC",
-    "points" : 2182.0,
+    "points" : 2290.0,
     "birth_year" : 1988,
-    "point_diff" : 483
-  }, {
-    "ranking" : 23,
-    "evolution" : -4,
-    "nationality" : "MAR",
-    "name" : "ALLAOUI KHAWLA",
-    "club" : "IND",
-    "points" : 2086.0,
-    "birth_year" : 1993,
-    "point_diff" : 201
+    "point_diff" : 108
   }, {
     "ranking" : 24,
-    "evolution" : -4,
+    "evolution" : 2,
     "nationality" : "MAR",
-    "name" : "BELMEJDOUB ISLEME",
-    "club" : "PFA",
-    "points" : 1977.0,
-    "birth_year" : 1995,
-    "point_diff" : 244
+    "name" : "ALAOUI MDAGHRI LOUBABA",
+    "club" : "IND",
+    "points" : 2185.0,
+    "birth_year" : 1981,
+    "point_diff" : 311
   }, {
     "ranking" : 25,
+    "evolution" : 2,
+    "nationality" : "MAR",
+    "name" : "EL FAHRY EL FASSI ILHAM",
+    "club" : "WIFAQ",
+    "points" : 2165.0,
+    "birth_year" : 1984,
+    "point_diff" : 311
+  }, {
+    "ranking" : 26,
+    "evolution" : -1,
     "nationality" : "MAR",
     "name" : "RHALLAB SARA",
     "club" : "IND",
     "points" : 1938.0,
-    "birth_year" : 2003,
-    "point_diff" : 446
-  }, {
-    "ranking" : 26,
-    "evolution" : 1,
-    "nationality" : "MAR",
-    "name" : "ALAOUI MDAGHRI LOUBABA",
-    "club" : "IND",
-    "points" : 1874.0,
-    "birth_year" : 1981,
-    "point_diff" : 515
+    "birth_year" : 2003
   }, {
     "ranking" : 27,
-    "evolution" : 1,
+    "evolution" : -3,
     "nationality" : "MAR",
-    "name" : "EL FAHRY EL FASSI ILHAM",
-    "club" : "WIFAQ",
-    "points" : 1854.0,
-    "birth_year" : 1984,
-    "point_diff" : 515
+    "name" : "BELMEJDOUB ISLEME",
+    "club" : "PFA",
+    "points" : 1907.0,
+    "birth_year" : 1995,
+    "point_diff" : -70
   }, {
     "ranking" : 28,
-    "evolution" : 1,
     "nationality" : "MAR",
     "name" : "BELHOUSSINE DRISSI GHIZLAINE",
     "club" : "PFA",
-    "points" : 1782.0,
+    "points" : 1867.0,
     "birth_year" : 1978,
-    "point_diff" : 524
+    "point_diff" : 85
   }, {
     "ranking" : 29,
-    "evolution" : 2,
+    "evolution" : 6,
     "nationality" : "MAR",
-    "name" : "BENNANI MERIEM",
-    "club" : "WIFAQ",
-    "points" : 1524.0,
-    "birth_year" : 1981,
-    "point_diff" : 353
+    "name" : "BENKIRANE MARIA",
+    "club" : "IND",
+    "points" : 1754.0,
+    "birth_year" : 1993,
+    "point_diff" : 370
   }, {
     "ranking" : 30,
-    "evolution" : 10,
     "nationality" : "MAR",
     "name" : "AMAZGHAR ZAINEB",
     "club" : "IND",
-    "points" : 1523.0,
+    "points" : 1629.0,
     "birth_year" : 1993,
-    "point_diff" : 591
+    "point_diff" : 106
   }, {
     "ranking" : 31,
-    "evolution" : -1,
+    "evolution" : -2,
     "nationality" : "MAR",
-    "name" : "ADLOUNI LAMIA",
-    "club" : "IND",
-    "points" : 1455.0,
-    "birth_year" : 1984,
-    "point_diff" : 280
+    "name" : "BENNANI MERIEM",
+    "club" : "WIFAQ",
+    "points" : 1582.0,
+    "birth_year" : 1981,
+    "point_diff" : 58
   }, {
     "ranking" : 32,
-    "evolution" : 5,
+    "evolution" : 8,
+    "nationality" : "MAR",
+    "name" : "MELSA LAMIAA",
+    "club" : "IND",
+    "points" : 1496.0,
+    "birth_year" : 1987,
+    "point_diff" : 303
+  }, {
+    "ranking" : 33,
+    "evolution" : -1,
     "nationality" : "MAR",
     "name" : "FATHI EL IDRISSI FATIMA ZAHRA",
     "club" : "CAFC",
-    "points" : 1447.0,
+    "points" : 1468.0,
     "birth_year" : 1979,
-    "point_diff" : 411
+    "point_diff" : 21
   }, {
-    "ranking" : 33,
-    "evolution" : -7,
+    "ranking" : 34,
+    "nationality" : "MAR",
+    "name" : "CHRAIBI NAWALE",
+    "club" : "RUC",
+    "points" : 1451.0,
+    "birth_year" : 1982,
+    "point_diff" : 28
+  }, {
+    "ranking" : 35,
+    "evolution" : -2,
     "nationality" : "MAR",
     "name" : "AJDAINI KAOUTAR",
     "club" : "IND",
     "points" : 1441.0,
     "birth_year" : 1995
   }, {
-    "ranking" : 34,
-    "evolution" : -1,
-    "nationality" : "MAR",
-    "name" : "CHRAIBI NAWALE",
-    "club" : "RUC",
-    "points" : 1423.0,
-    "birth_year" : 1982,
-    "point_diff" : 273
-  }, {
-    "ranking" : 35,
-    "nationality" : "MAR",
-    "name" : "BENKIRANE MARIA",
-    "club" : "IND",
-    "points" : 1384.0,
-    "birth_year" : 1993,
-    "point_diff" : 291
-  }, {
     "ranking" : 36,
-    "evolution" : -2,
     "nationality" : "MAR",
     "name" : "YIDAR GHITA",
     "club" : "CAFC",
-    "points" : 1284.0,
+    "points" : 1439.0,
     "birth_year" : 1983,
-    "point_diff" : 167
+    "point_diff" : 155
   }, {
     "ranking" : 37,
-    "evolution" : 1,
+    "evolution" : -6,
+    "nationality" : "MAR",
+    "name" : "ADLOUNI LAMIA",
+    "club" : "IND",
+    "points" : 1430.0,
+    "birth_year" : 1984,
+    "point_diff" : -25
+  }, {
+    "ranking" : 38,
+    "evolution" : 6,
+    "nationality" : "MAR",
+    "name" : "BENMOUSSA HAJAR",
+    "club" : "IND",
+    "points" : 1402.0,
+    "birth_year" : 1997,
+    "point_diff" : 485
+  }, {
+    "ranking" : 39,
+    "evolution" : -1,
+    "nationality" : "MAR",
+    "name" : "TAZI RITA",
+    "club" : "IND",
+    "points" : 1334.0,
+    "birth_year" : 1992,
+    "point_diff" : 113
+  }, {
+    "ranking" : 40,
+    "evolution" : 3,
+    "nationality" : "MAR",
+    "name" : "LYAZIDI ZINEB",
+    "club" : "IND",
+    "points" : 1311.0,
+    "birth_year" : 1982,
+    "point_diff" : 303
+  }, {
+    "ranking" : 41,
+    "evolution" : -4,
     "nationality" : "MAR",
     "name" : "ID-ZZAOUIT ZOUBIDA",
     "club" : "PFA",
     "points" : 1269.0,
-    "birth_year" : 1986,
-    "point_diff" : 302
+    "birth_year" : 1986
   }, {
-    "ranking" : 38,
-    "evolution" : -6,
-    "nationality" : "MAR",
-    "name" : "TAZI RITA",
-    "club" : "IND",
-    "points" : 1221.0,
-    "birth_year" : 1992,
-    "point_diff" : 65
-  }, {
-    "ranking" : 39,
-    "nationality" : "MAR",
-    "name" : "HAJJI SAFAA",
-    "club" : "IND",
-    "points" : 1206.0,
-    "birth_year" : 1990,
-    "point_diff" : 250
-  }, {
-    "ranking" : 40,
-    "evolution" : -4,
-    "nationality" : "MAR",
-    "name" : "MELSA LAMIAA",
-    "club" : "IND",
-    "points" : 1193.0,
-    "birth_year" : 1987,
-    "point_diff" : 120
-  }, {
-    "ranking" : 41,
-    "evolution" : 1,
+    "ranking" : 42,
+    "evolution" : -1,
     "nationality" : "MAR",
     "name" : "FADILI HAJAR",
     "club" : "IND",
-    "points" : 1057.0,
+    "points" : 1207.0,
     "birth_year" : 1987,
-    "point_diff" : 220
+    "point_diff" : 150
   }, {
-    "ranking" : 42,
-    "evolution" : 2,
+    "ranking" : 43,
+    "evolution" : -1,
     "nationality" : "MAR",
     "name" : "ZANDAR NAWAL",
     "club" : "PFA",
-    "points" : 1040.0,
+    "points" : 1180.0,
     "birth_year" : 1982,
-    "point_diff" : 228
-  }, {
-    "ranking" : 43,
-    "nationality" : "MAR",
-    "name" : "LYAZIDI ZINEB",
-    "club" : "IND",
-    "points" : 1008.0,
-    "birth_year" : 1982,
-    "point_diff" : 190
+    "point_diff" : 140
   }, {
     "ranking" : 44,
-    "evolution" : 12,
+    "evolution" : -5,
     "nationality" : "MAR",
-    "name" : "BENMOUSSA HAJAR",
+    "name" : "HAJJI SAFAA",
     "club" : "IND",
-    "points" : 917.0,
-    "birth_year" : 1997,
-    "point_diff" : 344
+    "points" : 1112.0,
+    "birth_year" : 1990,
+    "point_diff" : -94
   }, {
     "ranking" : 45,
-    "evolution" : -4,
+    "evolution" : 3,
     "nationality" : "MAR",
-    "name" : "BENNAGHMOUCH SARAH",
-    "club" : "PFA",
-    "points" : 908.0,
-    "birth_year" : 1988,
-    "point_diff" : -9
+    "name" : "DAHOUNI YASMINA",
+    "club" : "IND",
+    "points" : 1102.0,
+    "birth_year" : 1987,
+    "point_diff" : 277
   }, {
     "ranking" : 46,
     "evolution" : -1,
     "nationality" : "MAR",
-    "name" : "EL HADDOUTI FOUZIA",
-    "club" : "UPM",
-    "points" : 877.0,
-    "birth_year" : 1984,
-    "point_diff" : 73
+    "name" : "BENNAGHMOUCH SARAH",
+    "club" : "PFA",
+    "points" : 990.0,
+    "birth_year" : 1988,
+    "point_diff" : 82
   }, {
     "ranking" : 47,
-    "evolution" : 6,
     "nationality" : "MAR",
     "name" : "SABOUR LAMYA",
     "club" : "RTCA",
-    "points" : 852.0,
+    "points" : 912.0,
     "birth_year" : 1989,
-    "point_diff" : 241
+    "point_diff" : 60
   }, {
     "ranking" : 48,
-    "evolution" : 6,
-    "nationality" : "MAR",
-    "name" : "DAHOUNI YASMINA",
-    "club" : "IND",
-    "points" : 825.0,
-    "birth_year" : 1987,
-    "point_diff" : 220
-  }, {
-    "ranking" : 49,
-    "evolution" : 2,
+    "evolution" : 1,
     "nationality" : "MAR",
     "name" : "ACHAFI ZINEB",
     "club" : "PFA",
-    "points" : 824.0,
+    "points" : 902.0,
     "birth_year" : 1999,
-    "point_diff" : 200
+    "point_diff" : 78
+  }, {
+    "ranking" : 49,
+    "evolution" : -3,
+    "nationality" : "MAR",
+    "name" : "EL HADDOUTI FOUZIA",
+    "club" : "UPM",
+    "points" : 875.0,
+    "birth_year" : 1984,
+    "point_diff" : -2
   }, {
     "ranking" : 50,
     "evolution" : 5,
     "nationality" : "MAR",
-    "name" : "ALAMI GHIZLANE",
+    "name" : "RIAH NASMA",
     "club" : "IND",
-    "points" : 744.0,
-    "birth_year" : 1983,
-    "point_diff" : 170
+    "points" : 865.0,
+    "birth_year" : 1981,
+    "point_diff" : 207
   }, {
     "ranking" : 51,
-    "evolution" : 6,
     "nationality" : "MAR",
     "name" : "FENJIRO SARAH",
     "club" : "IND",
-    "points" : 739.0,
+    "points" : 863.0,
     "birth_year" : 1992,
-    "point_diff" : 172
+    "point_diff" : 124
   }, {
     "ranking" : 52,
-    "evolution" : -6,
+    "evolution" : 54,
     "nationality" : "MAR",
-    "name" : "ALAOUI SARA",
+    "name" : "ABDELLAOUI MAANE SELMA",
     "club" : "IND",
-    "points" : 711.0,
-    "birth_year" : 2004
+    "points" : 778.0,
+    "birth_year" : 2006,
+    "point_diff" : 533
   }, {
     "ranking" : 53,
-    "evolution" : -1,
     "nationality" : "MAR",
     "name" : "ROSSI NEZHA",
     "club" : "RTCA",
-    "points" : 710.0,
+    "points" : 770.0,
     "birth_year" : 1987,
-    "point_diff" : 98
+    "point_diff" : 60
   }, {
     "ranking" : 54,
-    "evolution" : -7,
-    "nationality" : "MAR",
-    "name" : "BENNANI LINA",
-    "club" : "RUC",
-    "points" : 688.0,
-    "birth_year" : 1991
+    "evolution" : 4,
+    "nationality" : "FRA",
+    "name" : "NERAUD SANDRA",
+    "club" : "ATMA",
+    "points" : 727.0,
+    "birth_year" : 1981,
+    "point_diff" : 100
   }, {
     "ranking" : 55,
-    "evolution" : -7,
+    "evolution" : 15,
     "nationality" : "MAR",
-    "name" : "RIAH NASMA",
+    "name" : "BENNANI ALIA",
     "club" : "IND",
-    "points" : 658.0,
-    "birth_year" : 1981
+    "points" : 726.0,
+    "birth_year" : 1982,
+    "point_diff" : 195
   }, {
     "ranking" : 56,
-    "evolution" : 2,
+    "evolution" : 38,
     "nationality" : "MAR",
-    "name" : "EL HADOUTI SOUAD",
-    "club" : "UPM",
-    "points" : 653.0,
-    "birth_year" : 1984,
-    "point_diff" : 95
+    "name" : "ELHADDAD MERYEM",
+    "club" : "IND",
+    "points" : 723.0,
+    "birth_year" : 1980,
+    "point_diff" : 423
   }, {
     "ranking" : 57,
-    "evolution" : 18,
+    "evolution" : -7,
+    "nationality" : "MAR",
+    "name" : "ALAMI GHIZLANE",
+    "club" : "IND",
+    "points" : 706.0,
+    "birth_year" : 1983,
+    "point_diff" : -38
+  }, {
+    "ranking" : 57,
+    "evolution" : 6,
+    "nationality" : "MAR",
+    "name" : "IBNOUSSINA ZAINAB",
+    "club" : "IND",
+    "points" : 706.0,
+    "birth_year" : 2002,
+    "point_diff" : 119
+  }, {
+    "ranking" : 59,
+    "evolution" : -7,
+    "nationality" : "MAR",
+    "name" : "ALAOUI SARA",
+    "club" : "IND",
+    "points" : 699.0,
+    "birth_year" : 2004,
+    "point_diff" : -12
+  }, {
+    "ranking" : 60,
+    "evolution" : 25,
+    "nationality" : "MAR",
+    "name" : "SAKKAT KENZA",
+    "club" : "IND",
+    "points" : 673.0,
+    "birth_year" : 2000,
+    "point_diff" : 302
+  }, {
+    "ranking" : 61,
+    "evolution" : 5,
+    "nationality" : "MAR",
+    "name" : "NGADI SARAH",
+    "club" : "IND",
+    "points" : 663.0,
+    "birth_year" : 1990,
+    "point_diff" : 93
+  }, {
+    "ranking" : 62,
+    "evolution" : 6,
+    "nationality" : "MAR",
+    "name" : "BENZAOUIA AMINA",
+    "club" : "IND",
+    "points" : 662.0,
+    "birth_year" : 1984,
+    "point_diff" : 113
+  }, {
+    "ranking" : 63,
+    "evolution" : -6,
     "nationality" : "MAR",
     "name" : "TAHERI HIND",
     "club" : "IND",
-    "points" : 634.0,
+    "points" : 642.0,
     "birth_year" : 1986,
-    "point_diff" : 231
+    "point_diff" : 8
   }, {
-    "ranking" : 58,
-    "evolution" : -9,
+    "ranking" : 64,
+    "evolution" : -2,
+    "nationality" : "MAR",
+    "name" : "JAIDI HASNAA",
+    "club" : "IND",
+    "points" : 640.0,
+    "birth_year" : 1981,
+    "point_diff" : 44
+  }, {
+    "ranking" : 65,
+    "evolution" : 2,
+    "nationality" : "MAR",
+    "name" : "ELLOUZI AYA",
+    "club" : "COC",
+    "points" : 638.0,
+    "birth_year" : 2006,
+    "point_diff" : 75
+  }, {
+    "ranking" : 66,
+    "evolution" : -8,
     "nationality" : "MAR",
     "name" : "AIT CHAYEB GHIZLANE",
     "club" : "IND",
     "points" : 627.0,
     "birth_year" : 1989
   }, {
-    "ranking" : 58,
-    "evolution" : -9,
-    "nationality" : "FRA",
-    "name" : "NERAUD SANDRA",
-    "club" : "ATMA",
-    "points" : 627.0,
-    "birth_year" : 1981
-  }, {
-    "ranking" : 60,
-    "evolution" : 6,
-    "nationality" : "MAR",
-    "name" : "AZERIAH RANIA",
-    "club" : "IND",
-    "points" : 602.0,
-    "birth_year" : 1994,
-    "point_diff" : 158
-  }, {
-    "ranking" : 61,
+    "ranking" : 66,
     "evolution" : 7,
+    "nationality" : "MAR",
+    "name" : "ZALLAG FOUZIA",
+    "club" : "ASB",
+    "points" : 627.0,
+    "birth_year" : 1980,
+    "point_diff" : 145
+  }, {
+    "ranking" : 68,
+    "evolution" : 7,
+    "nationality" : "MAR",
+    "name" : "JEDYANE LEBIED IMANE",
+    "club" : "CMK",
+    "points" : 618.0,
+    "birth_year" : 1999,
+    "point_diff" : 157
+  }, {
+    "ranking" : 69,
+    "evolution" : -4,
+    "nationality" : "MAR",
+    "name" : "BENMOUSSA KAWTAR",
+    "club" : "IND",
+    "points" : 616.0,
+    "birth_year" : 1997,
+    "point_diff" : 45
+  }, {
+    "ranking" : 70,
+    "evolution" : 9,
+    "nationality" : "MAR",
+    "name" : "FAIZ LINA",
+    "club" : "IND",
+    "points" : 608.0,
+    "birth_year" : 2000,
+    "point_diff" : 201
+  }, {
+    "ranking" : 71,
+    "evolution" : -15,
+    "nationality" : "MAR",
+    "name" : "EL HADOUTI SOUAD",
+    "club" : "UPM",
+    "points" : 603.0,
+    "birth_year" : 1984,
+    "point_diff" : -50
+  }, {
+    "ranking" : 72,
+    "evolution" : -11,
     "nationality" : "MAR",
     "name" : "LEBBAR IMANE",
     "club" : "IND",
     "points" : 598.0,
-    "birth_year" : 1984,
-    "point_diff" : 170
+    "birth_year" : 1984
   }, {
-    "ranking" : 62,
-    "evolution" : 2,
+    "ranking" : 73,
+    "evolution" : -13,
     "nationality" : "MAR",
-    "name" : "JAIDI HASNAA",
+    "name" : "AZERIAH RANIA",
     "club" : "IND",
-    "points" : 596.0,
-    "birth_year" : 1981,
-    "point_diff" : 95
+    "points" : 590.0,
+    "birth_year" : 1994,
+    "point_diff" : -12
   }, {
-    "ranking" : 63,
-    "evolution" : 26,
-    "nationality" : "MAR",
-    "name" : "IBNOUSSINA ZAINAB",
-    "club" : "IND",
-    "points" : 587.0,
-    "birth_year" : 2002,
-    "point_diff" : 334
-  }, {
-    "ranking" : 64,
-    "evolution" : 21,
+    "ranking" : 74,
+    "evolution" : -10,
     "nationality" : "MAR",
     "name" : "FRADIN SELMA",
     "club" : "ATMA",
     "points" : 578.0,
-    "birth_year" : 1975,
-    "point_diff" : 288
+    "birth_year" : 1975
   }, {
-    "ranking" : 65,
-    "evolution" : -3,
-    "nationality" : "MAR",
-    "name" : "BENMOUSSA KAWTAR",
-    "club" : "IND",
-    "points" : 571.0,
-    "birth_year" : 1997,
-    "point_diff" : 53
-  }, {
-    "ranking" : 66,
-    "evolution" : 6,
-    "nationality" : "MAR",
-    "name" : "NGADI SARAH",
-    "club" : "IND",
-    "points" : 570.0,
-    "birth_year" : 1990,
-    "point_diff" : 149
-  }, {
-    "ranking" : 67,
-    "evolution" : 38,
-    "nationality" : "MAR",
-    "name" : "ELLOUZI AYA",
-    "club" : "COC",
-    "points" : 563.0,
-    "birth_year" : 2006,
-    "point_diff" : 365
-  }, {
-    "ranking" : 68,
-    "evolution" : -9,
-    "nationality" : "MAR",
-    "name" : "BENZAOUIA AMINA",
-    "club" : "IND",
-    "points" : 549.0,
-    "birth_year" : 1984,
-    "point_diff" : 5
-  }, {
-    "ranking" : 69,
-    "evolution" : 2,
+    "ranking" : 75,
+    "evolution" : -6,
     "nationality" : "MAR",
     "name" : "EL BROJI MYRIEM",
     "club" : "IND",
-    "points" : 538.0,
+    "points" : 567.0,
     "birth_year" : 1978,
-    "point_diff" : 116
+    "point_diff" : 29
   }, {
-    "ranking" : 70,
-    "evolution" : -10,
+    "ranking" : 76,
+    "evolution" : 7,
     "nationality" : "MAR",
-    "name" : "BENNANI ALIA",
+    "name" : "MOUCHREK LINA",
     "club" : "IND",
-    "points" : 531.0,
-    "birth_year" : 1982
+    "points" : 543.0,
+    "birth_year" : 2009,
+    "point_diff" : 158
   }, {
-    "ranking" : 71,
-    "evolution" : -6,
+    "ranking" : 77,
+    "evolution" : 17,
+    "nationality" : "MAR",
+    "name" : "BENKIRANE LINA",
+    "club" : "IND",
+    "points" : 520.0,
+    "birth_year" : 1987,
+    "point_diff" : 220
+  }, {
+    "ranking" : 78,
+    "evolution" : -4,
+    "nationality" : "MAR",
+    "name" : "BOULMANI HIBA",
+    "club" : "RTCA",
+    "points" : 514.0,
+    "birth_year" : 1999,
+    "point_diff" : 41
+  }, {
+    "ranking" : 79,
+    "evolution" : 14,
+    "nationality" : "MAR",
+    "name" : "RACHID IMANE",
+    "club" : "IND",
+    "points" : 501.0,
+    "birth_year" : 1990,
+    "point_diff" : 177
+  }, {
+    "ranking" : 80,
+    "evolution" : -2,
+    "nationality" : "MAR",
+    "name" : "BOUGRINE ZOHRA",
+    "club" : "RTCA",
+    "points" : 482.0,
+    "birth_year" : 1987,
+    "point_diff" : 70
+  }, {
+    "ranking" : 81,
+    "evolution" : -10,
     "nationality" : "MAR",
     "name" : "THAMI INÈS",
     "club" : "PFA",
-    "points" : 511.0,
+    "points" : 481.0,
     "birth_year" : 1998,
-    "point_diff" : 15
+    "point_diff" : -30
   }, {
-    "ranking" : 72,
-    "evolution" : -9,
+    "ranking" : 82,
+    "evolution" : 23,
+    "nationality" : "MAR",
+    "name" : "MAHBOUB MALAK",
+    "club" : "IND",
+    "points" : 470.0,
+    "birth_year" : 2005,
+    "point_diff" : 215
+  }, {
+    "ranking" : 83,
+    "evolution" : -2,
+    "nationality" : "MAR",
+    "name" : "MOUFTI CHAYMA",
+    "club" : "RTCA",
+    "points" : 465.0,
+    "birth_year" : 1997,
+    "point_diff" : 70
+  }, {
+    "ranking" : 84,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "ABDALLAH CAMELIA",
     "club" : "WIFAQ",
-    "points" : 503.0,
-    "birth_year" : 1993
+    "points" : 453.0,
+    "birth_year" : 1993,
+    "point_diff" : -50
   }, {
-    "ranking" : 73,
-    "evolution" : 14,
+    "ranking" : 85,
+    "evolution" : 3,
     "nationality" : "MAR",
-    "name" : "ZALLAG FOUZIA",
-    "club" : "ASB",
-    "points" : 482.0,
-    "birth_year" : 1980,
-    "point_diff" : 223
+    "name" : "ZEMRANI YASMINE",
+    "club" : "TSCM",
+    "points" : 450.0,
+    "birth_year" : 1993,
+    "point_diff" : 96
   }, {
-    "ranking" : 74,
-    "evolution" : -6,
+    "ranking" : 86,
+    "evolution" : 10,
     "nationality" : "MAR",
-    "name" : "BOULMANI HIBA",
+    "name" : "TAZI SOPHIA",
     "club" : "IND",
-    "points" : 473.0,
-    "birth_year" : 1999,
-    "point_diff" : 45
+    "points" : 447.0,
+    "birth_year" : 1988,
+    "point_diff" : 153
   }, {
-    "ranking" : 75,
-    "evolution" : 89,
-    "nationality" : "MAR",
-    "name" : "JEDYANE LEBIED IMANE",
-    "club" : "CMK",
-    "points" : 461.0,
-    "birth_year" : 1999,
-    "point_diff" : 391
-  }, {
-    "ranking" : 76,
-    "evolution" : -15,
+    "ranking" : 87,
+    "evolution" : -11,
     "nationality" : "MAR",
     "name" : "BOUSLIKHANE ZINEB",
     "club" : "PFA",
-    "points" : 453.0,
+    "points" : 436.0,
     "birth_year" : 2001,
-    "point_diff" : -75
+    "point_diff" : -17
   }, {
-    "ranking" : 77,
-    "evolution" : -7,
+    "ranking" : 88,
+    "evolution" : -11,
     "nationality" : "MAR",
     "name" : "BENAMEUR SAFAA",
     "club" : "WIFAQ",
     "points" : 425.0,
     "birth_year" : 1982
   }, {
-    "ranking" : 78,
-    "evolution" : 10,
+    "ranking" : 88,
+    "evolution" : -34,
     "nationality" : "MAR",
-    "name" : "BOUGRINE ZOHRA",
-    "club" : "RTCA",
-    "points" : 412.0,
-    "birth_year" : 1987,
-    "point_diff" : 155
+    "name" : "BENNANI LINA",
+    "club" : "RUC",
+    "points" : 425.0,
+    "birth_year" : 1991,
+    "point_diff" : -263
   }, {
-    "ranking" : 79,
-    "evolution" : 125,
-    "nationality" : "MAR",
-    "name" : "FAIZ LINA",
-    "club" : "IND",
-    "points" : 407.0,
-    "birth_year" : 2000,
-    "point_diff" : 364
-  }, {
-    "ranking" : 80,
-    "evolution" : -6,
+    "ranking" : 90,
+    "evolution" : -10,
     "nationality" : "MAR",
     "name" : "BAADI GHALIA",
     "club" : "IND",
     "points" : 405.0,
     "birth_year" : 1992
   }, {
-    "ranking" : 81,
-    "evolution" : -5,
-    "nationality" : "MAR",
-    "name" : "BENABDELJALIL SARAH",
-    "club" : "IND",
-    "points" : 395.0,
-    "birth_year" : 1993
-  }, {
-    "ranking" : 81,
-    "evolution" : 2,
-    "nationality" : "MAR",
-    "name" : "MOUFTI CHAYMA",
-    "club" : "RTCA",
-    "points" : 395.0,
-    "birth_year" : 1997,
-    "point_diff" : 94
-  }, {
-    "ranking" : 83,
-    "evolution" : 172,
-    "nationality" : "MAR",
-    "name" : "MOUCHREK LINA",
-    "club" : "IND",
-    "points" : 385.0,
-    "birth_year" : 2009,
-    "point_diff" : 365
-  }, {
-    "ranking" : 84,
+    "ranking" : 91,
     "evolution" : -7,
     "nationality" : "MAR",
     "name" : "YANS CATHERINE",
@@ -737,148 +802,84 @@
     "points" : 378.0,
     "birth_year" : 1971
   }, {
-    "ranking" : 85,
-    "evolution" : 128,
-    "nationality" : "MAR",
-    "name" : "SAKKAT KENZA",
+    "ranking" : 92,
+    "evolution" : 22,
+    "nationality" : "FRA",
+    "name" : "ZIAR CHAHRAZAD",
     "club" : "IND",
-    "points" : 371.0,
-    "birth_year" : 2000,
-    "point_diff" : 334
+    "points" : 370.0,
+    "birth_year" : 1999,
+    "point_diff" : 153
   }, {
-    "ranking" : 86,
-    "evolution" : -19,
-    "nationality" : "MAR",
-    "name" : "SRAIRI SELMA",
-    "club" : "PFA",
-    "points" : 368.0,
-    "birth_year" : 1962,
-    "point_diff" : -75
-  }, {
-    "ranking" : 87,
-    "evolution" : -8,
+    "ranking" : 93,
+    "evolution" : -6,
     "nationality" : "MAR",
     "name" : "EL BAROUDI SAMIA",
     "club" : "IND",
     "points" : 361.0,
     "birth_year" : 1997
   }, {
-    "ranking" : 88,
-    "evolution" : 45,
+    "ranking" : 94,
+    "evolution" : -8,
     "nationality" : "MAR",
-    "name" : "ZEMRANI YASMINE",
-    "club" : "TSCM",
-    "points" : 354.0,
-    "birth_year" : 1993,
-    "point_diff" : 245
+    "name" : "SRAIRI SELMA",
+    "club" : "PFA",
+    "points" : 351.0,
+    "birth_year" : 1962,
+    "point_diff" : -17
   }, {
-    "ranking" : 89,
-    "evolution" : 13,
+    "ranking" : 95,
+    "evolution" : -6,
     "nationality" : "MAR",
     "name" : "LARINI ABLA",
     "club" : "IND",
     "points" : 350.0,
-    "birth_year" : 1998,
-    "point_diff" : 150
+    "birth_year" : 1998
   }, {
-    "ranking" : 90,
-    "evolution" : -10,
+    "ranking" : 96,
+    "evolution" : -6,
     "nationality" : "MAR",
     "name" : "TIBOURKA MARIA",
     "club" : "IND",
     "points" : 343.0,
     "birth_year" : 2004
   }, {
-    "ranking" : 91,
-    "evolution" : -10,
-    "nationality" : "MAR",
-    "name" : "BOURAQQADI SARA",
-    "club" : "IND",
-    "points" : 340.0,
-    "birth_year" : 1995
-  }, {
-    "ranking" : 92,
-    "evolution" : -19,
+    "ranking" : 97,
+    "evolution" : -5,
     "nationality" : "MAR",
     "name" : "RAY INTISSAR",
     "club" : "IND",
     "points" : 325.0,
-    "birth_year" : 1980,
-    "point_diff" : -88
-  }, {
-    "ranking" : 93,
-    "evolution" : 2,
-    "nationality" : "MAR",
-    "name" : "RACHID IMANE",
-    "club" : "IND",
-    "points" : 324.0,
-    "birth_year" : 1990,
-    "point_diff" : 95
-  }, {
-    "ranking" : 94,
-    "evolution" : -10,
-    "nationality" : "MAR",
-    "name" : "BENKIRANE LINA",
-    "club" : "IND",
-    "points" : 300.0,
-    "birth_year" : 1987
-  }, {
-    "ranking" : 94,
-    "evolution" : 41,
-    "nationality" : "MAR",
-    "name" : "ELHADDAD MERYEM",
-    "club" : "IND",
-    "points" : 300.0,
-    "birth_year" : 1980,
-    "point_diff" : 200
-  }, {
-    "ranking" : 96,
-    "evolution" : 66,
-    "nationality" : "MAR",
-    "name" : "TAZI SOPHIA",
-    "club" : "IND",
-    "points" : 294.0,
-    "birth_year" : 1988,
-    "point_diff" : 220
-  }, {
-    "ranking" : 97,
-    "evolution" : -15,
-    "nationality" : "MAR",
-    "name" : "ABBAD EL ANDALOUSSI DEYAA",
-    "club" : "IND",
-    "points" : 293.0,
-    "birth_year" : 1984,
-    "point_diff" : -16
+    "birth_year" : 1980
   }, {
     "ranking" : 98,
-    "evolution" : -5,
+    "evolution" : -7,
     "nationality" : "MAR",
-    "name" : "ALAOUI IBTISSAM",
+    "name" : "BOURAQQADI SARA",
     "club" : "IND",
-    "points" : 292.0,
-    "birth_year" : 1994,
-    "point_diff" : 60
+    "points" : 319.0,
+    "birth_year" : 1995,
+    "point_diff" : -21
   }, {
-    "ranking" : 98,
-    "evolution" : -5,
-    "nationality" : "MAR",
-    "name" : "ALAOUI SOFIA",
-    "club" : "IND",
-    "points" : 292.0,
-    "birth_year" : 1994,
-    "point_diff" : 60
-  }, {
-    "ranking" : 100,
-    "evolution" : -4,
+    "ranking" : 99,
+    "evolution" : 1,
     "nationality" : "MAR",
     "name" : "MSALHI SARAH",
-    "club" : "PFA",
-    "points" : 272.0,
+    "club" : "RTCA",
+    "points" : 305.0,
     "birth_year" : 1993,
-    "point_diff" : 45
+    "point_diff" : 33
+  }, {
+    "ranking" : 100,
+    "evolution" : 8,
+    "nationality" : "MAR",
+    "name" : "HAMMADI GHYZLANE",
+    "club" : "IND",
+    "points" : 294.0,
+    "birth_year" : 1995,
+    "point_diff" : 58
   }, {
     "ranking" : 101,
-    "evolution" : -15,
     "nationality" : "MAR",
     "name" : "BELLEMLIH AIDA",
     "club" : "IND",
@@ -886,581 +887,623 @@
     "birth_year" : 2000
   }, {
     "ranking" : 101,
-    "evolution" : -23,
     "nationality" : "BIH",
     "name" : "ZOVKO AINA",
     "club" : "IND",
     "points" : 270.0,
-    "birth_year" : 1990,
-    "point_diff" : -107
+    "birth_year" : 1990
   }, {
     "ranking" : 103,
-    "evolution" : 10,
     "nationality" : "MAR",
     "name" : "BEN-TAHIR NOUHAD",
     "club" : "IND",
     "points" : 267.0,
-    "birth_year" : 1992,
-    "point_diff" : 106
+    "birth_year" : 1992
   }, {
     "ranking" : 104,
-    "evolution" : -12,
+    "evolution" : -7,
     "nationality" : "MAR",
-    "name" : "CHYATE IBTISSAM",
+    "name" : "ABBAD EL ANDALOUSSI DEYAA",
     "club" : "IND",
-    "points" : 265.0,
+    "points" : 262.0,
+    "birth_year" : 1984,
+    "point_diff" : -31
+  }, {
+    "ranking" : 104,
+    "evolution" : -6,
+    "nationality" : "MAR",
+    "name" : "ALAOUI IBTISSAM",
+    "club" : "IND",
+    "points" : 262.0,
     "birth_year" : 1994,
-    "point_diff" : 27
+    "point_diff" : -30
   }, {
-    "ranking" : 105,
-    "evolution" : -5,
+    "ranking" : 104,
+    "evolution" : -6,
     "nationality" : "MAR",
-    "name" : "MAHBOUB MALAK",
+    "name" : "ALAOUI SOFIA",
     "club" : "IND",
-    "points" : 255.0,
-    "birth_year" : 2005,
-    "point_diff" : 45
+    "points" : 262.0,
+    "birth_year" : 1994,
+    "point_diff" : -30
   }, {
-    "ranking" : 106,
-    "evolution" : 12,
+    "ranking" : 107,
+    "evolution" : 28,
     "nationality" : "MAR",
-    "name" : "ABDELLAOUI MAANE SELMA",
+    "name" : "EL FAHIMI ABIR",
+    "club" : "IND",
+    "points" : 260.0,
+    "birth_year" : 1995,
+    "point_diff" : 105
+  }, {
+    "ranking" : 108,
+    "evolution" : -27,
+    "nationality" : "MAR",
+    "name" : "BENABDELJALIL SARAH",
     "club" : "IND",
     "points" : 245.0,
-    "birth_year" : 2006,
-    "point_diff" : 100
+    "birth_year" : 1993,
+    "point_diff" : -150
   }, {
-    "ranking" : 106,
-    "evolution" : -16,
+    "ranking" : 108,
+    "evolution" : 9,
+    "nationality" : "MAR",
+    "name" : "OBBAD NOHA",
+    "club" : "IND",
+    "points" : 245.0,
+    "birth_year" : 2001,
+    "point_diff" : 39
+  }, {
+    "ranking" : 108,
+    "evolution" : -2,
     "nationality" : "MAR",
     "name" : "SLAOUI HONEGGER LEILA",
     "club" : "COC",
     "points" : 245.0,
     "birth_year" : 1981
   }, {
-    "ranking" : 108,
-    "evolution" : -1,
-    "nationality" : "MAR",
-    "name" : "HAMMADI GHYZLANE",
-    "club" : "IND",
-    "points" : 236.0,
-    "birth_year" : 1995,
-    "point_diff" : 50
-  }, {
-    "ranking" : 109,
-    "evolution" : -11,
+    "ranking" : 111,
+    "evolution" : -2,
     "nationality" : "MAR",
     "name" : "AIOUCHE YASMINE",
     "club" : "IND",
-    "points" : 234.0,
+    "points" : 244.0,
     "birth_year" : 2000,
-    "point_diff" : 15
+    "point_diff" : 10
   }, {
-    "ranking" : 110,
-    "evolution" : 2,
+    "ranking" : 112,
+    "evolution" : 76,
+    "nationality" : "MAR",
+    "name" : "BENABDALLAH SELMA",
+    "club" : "IND",
+    "points" : 233.0,
+    "birth_year" : 1999,
+    "point_diff" : 158
+  }, {
+    "ranking" : 113,
+    "evolution" : 19,
+    "nationality" : "MAR",
+    "name" : "ZIZI FARAH",
+    "club" : "IND",
+    "points" : 230.0,
+    "birth_year" : 2001,
+    "point_diff" : 65
+  }, {
+    "ranking" : 114,
+    "evolution" : -4,
     "nationality" : "MAR",
     "name" : "BENNANI KENZA",
     "club" : "IND",
     "points" : 227.0,
-    "birth_year" : 1986,
-    "point_diff" : 65
+    "birth_year" : 1986
   }, {
-    "ranking" : 111,
-    "evolution" : 70,
+    "ranking" : 114,
+    "evolution" : -10,
+    "nationality" : "MAR",
+    "name" : "CHYATE IBTISSAM",
+    "club" : "IND",
+    "points" : 227.0,
+    "birth_year" : 1994,
+    "point_diff" : -38
+  }, {
+    "ranking" : 116,
+    "evolution" : 1,
+    "nationality" : "MAR",
+    "name" : "HADDAM YASMINA",
+    "club" : "IND",
+    "points" : 224.0,
+    "birth_year" : 1999,
+    "point_diff" : 18
+  }, {
+    "ranking" : 116,
+    "evolution" : -4,
+    "nationality" : "MAR",
+    "name" : "ZEGHARI FATIM ZAHRA",
+    "club" : "IND",
+    "points" : 224.0,
+    "birth_year" : 1985,
+    "point_diff" : 4
+  }, {
+    "ranking" : 118,
+    "evolution" : 5,
+    "nationality" : "MAR",
+    "name" : "LAHLOU IHSSANE",
+    "club" : "IND",
+    "points" : 223.0,
+    "birth_year" : 1997,
+    "point_diff" : 25
+  }, {
+    "ranking" : 118,
+    "evolution" : -7,
     "nationality" : "MAR",
     "name" : "SAYAGH YACOUT RANIA",
     "club" : "IND",
     "points" : 223.0,
-    "birth_year" : 2001,
-    "point_diff" : 166
+    "birth_year" : 2001
   }, {
-    "ranking" : 112,
-    "evolution" : -15,
+    "ranking" : 120,
+    "evolution" : 31,
+    "nationality" : "MAR",
+    "name" : "MASROUR RITA",
+    "club" : "CAFC",
+    "points" : 220.0,
+    "birth_year" : 1983,
+    "point_diff" : 100
+  }, {
+    "ranking" : 120,
+    "evolution" : -8,
     "nationality" : "BEL",
     "name" : "YANS LARA",
     "club" : "IND",
     "points" : 220.0,
     "birth_year" : 1996
   }, {
-    "ranking" : 112,
-    "evolution" : 12,
+    "ranking" : 122,
+    "evolution" : 13,
     "nationality" : "MAR",
-    "name" : "ZEGHARI FATIM ZAHRA",
+    "name" : "FAOUZI LAMIA",
     "club" : "IND",
-    "points" : 220.0,
-    "birth_year" : 1985,
-    "point_diff" : 93
+    "points" : 218.0,
+    "birth_year" : 1972,
+    "point_diff" : 63
   }, {
-    "ranking" : 114,
-    "evolution" : 159,
-    "nationality" : "FRA",
-    "name" : "ZIAR CHAHRAZAD",
-    "club" : "IND",
-    "points" : 217.0,
-    "birth_year" : 1999,
-    "point_diff" : 203
-  }, {
-    "ranking" : 115,
-    "evolution" : -16,
+    "ranking" : 123,
+    "evolution" : 23,
     "nationality" : "MAR",
-    "name" : "EL ABBOUNI KENZA",
-    "club" : "IND",
-    "points" : 215.0,
-    "birth_year" : 2001
+    "name" : "NABET HAMDAN IMANE",
+    "club" : "CMK",
+    "points" : 216.0,
+    "birth_year" : 1998,
+    "point_diff" : 83
   }, {
-    "ranking" : 115,
-    "evolution" : -14,
+    "ranking" : 124,
+    "evolution" : 1,
     "nationality" : "MAR",
-    "name" : "LAHLOU MARIAM",
+    "name" : "ELKHAYER KAOUTAR",
     "club" : "IND",
-    "points" : 215.0,
-    "birth_year" : 1981,
-    "point_diff" : 13
+    "points" : 207.0,
+    "birth_year" : 1992,
+    "point_diff" : 18
   }, {
-    "ranking" : 117,
-    "evolution" : -26,
-    "nationality" : "MAR",
-    "name" : "BENANI DAKHAMA FATIM ZAHRA",
-    "club" : "IND",
-    "points" : 206.0,
-    "birth_year" : 1988,
-    "point_diff" : -38
-  }, {
-    "ranking" : 117,
-    "evolution" : 40,
-    "nationality" : "MAR",
-    "name" : "HADDAM YASMINA",
-    "club" : "IND",
-    "points" : 206.0,
-    "birth_year" : 1999,
-    "point_diff" : 126
-  }, {
-    "ranking" : 117,
-    "evolution" : 37,
-    "nationality" : "MAR",
-    "name" : "OBBAD NOHA",
-    "club" : "IND",
-    "points" : 206.0,
-    "birth_year" : 2001,
-    "point_diff" : 125
-  }, {
-    "ranking" : 120,
-    "evolution" : 88,
+    "ranking" : 125,
+    "evolution" : -5,
     "nationality" : "MAR",
     "name" : "SELASSI NARJISS",
     "club" : "IND",
     "points" : 202.0,
-    "birth_year" : 1979,
-    "point_diff" : 162
+    "birth_year" : 1979
   }, {
-    "ranking" : 121,
-    "evolution" : -19,
+    "ranking" : 126,
+    "evolution" : 17,
+    "nationality" : "MAR",
+    "name" : "BOUDOU RAWYA",
+    "club" : "IND",
+    "points" : 200.0,
+    "birth_year" : 1988,
+    "point_diff" : 65
+  }, {
+    "ranking" : 126,
+    "evolution" : -5,
     "nationality" : "MAR",
     "name" : "ENNACIRI MANAL",
     "club" : "IND",
     "points" : 200.0,
     "birth_year" : 2005
   }, {
-    "ranking" : 121,
-    "evolution" : -19,
+    "ranking" : 126,
+    "evolution" : -5,
     "nationality" : "ESP",
     "name" : "MARTINEZ BRINGAS ANGELA",
     "club" : "IND",
     "points" : 200.0,
     "birth_year" : 2000
   }, {
-    "ranking" : 123,
-    "evolution" : 61,
-    "nationality" : "MAR",
-    "name" : "LAHLOU IHSSANE",
-    "club" : "IND",
-    "points" : 198.0,
-    "birth_year" : 1997,
-    "point_diff" : 143
-  }, {
-    "ranking" : 124,
-    "evolution" : 7,
+    "ranking" : 129,
+    "evolution" : -5,
     "nationality" : "MAR",
     "name" : "SAKKAT MALAK",
     "club" : "IND",
     "points" : 194.0,
-    "birth_year" : 2005,
-    "point_diff" : 81
-  }, {
-    "ranking" : 125,
-    "evolution" : -16,
-    "nationality" : "MAR",
-    "name" : "ELKHAYER KAOUTAR",
-    "club" : "IND",
-    "points" : 189.0,
-    "birth_year" : 1992,
-    "point_diff" : 21
-  }, {
-    "ranking" : 126,
-    "evolution" : 19,
-    "nationality" : "MAR",
-    "name" : "DOUIH ASMA",
-    "club" : "PFA",
-    "points" : 181.0,
-    "birth_year" : 1993,
-    "point_diff" : 89
-  }, {
-    "ranking" : 127,
-    "evolution" : 30,
-    "nationality" : "MAR",
-    "name" : "BENHADI RIM",
-    "club" : "IND",
-    "points" : 180.0,
-    "birth_year" : 2001,
-    "point_diff" : 100
-  }, {
-    "ranking" : 127,
-    "evolution" : 49,
-    "nationality" : "MAR",
-    "name" : "ROMEO MERIEM",
-    "club" : "IND",
-    "points" : 180.0,
-    "birth_year" : 1986,
-    "point_diff" : 120
-  }, {
-    "ranking" : 129,
-    "evolution" : -6,
-    "nationality" : "MAR",
-    "name" : "SABOUR ADILA OUM EL IZZ",
-    "club" : "IND",
-    "points" : 175.0,
-    "birth_year" : 1997,
-    "point_diff" : 45
+    "birth_year" : 2005
   }, {
     "ranking" : 130,
-    "evolution" : -22,
+    "evolution" : 33,
     "nationality" : "MAR",
-    "name" : "BOUSSADEN AMAL",
-    "club" : "PFA",
-    "points" : 174.0,
-    "birth_year" : 1987
+    "name" : "TADILI ZINEB",
+    "club" : "IND",
+    "points" : 191.0,
+    "birth_year" : 1983,
+    "point_diff" : 86
   }, {
     "ranking" : 131,
-    "evolution" : -5,
+    "evolution" : 7,
     "nationality" : "MAR",
-    "name" : "MOUSSAYIR KENZA",
-    "club" : "IND",
-    "points" : 168.0,
-    "birth_year" : 2000,
-    "point_diff" : 45
+    "name" : "BAKRI OUIDAD",
+    "club" : "PFA",
+    "points" : 188.0,
+    "birth_year" : 1994,
+    "point_diff" : 43
   }, {
     "ranking" : 132,
-    "evolution" : 32,
+    "evolution" : 7,
     "nationality" : "MAR",
-    "name" : "ZIZI FARAH",
-    "club" : "CMK",
-    "points" : 165.0,
-    "birth_year" : 2001,
-    "point_diff" : 95
+    "name" : "BENZEKRI JIHANE",
+    "club" : "PFA",
+    "points" : 185.0,
+    "birth_year" : 1990,
+    "point_diff" : 43
   }, {
     "ranking" : 133,
     "evolution" : -18,
     "nationality" : "MAR",
-    "name" : "BOUFTAS YOUSRA",
+    "name" : "LAHLOU MARIAM",
     "club" : "IND",
-    "points" : 164.0,
-    "birth_year" : 1994,
-    "point_diff" : 10
+    "points" : 184.0,
+    "birth_year" : 1981,
+    "point_diff" : -31
   }, {
     "ranking" : 134,
-    "evolution" : -20,
+    "evolution" : -8,
     "nationality" : "MAR",
-    "name" : "AMOUZOUNE LINA",
-    "club" : "IND",
-    "points" : 160.0,
-    "birth_year" : 1994
+    "name" : "DOUIH ASMA",
+    "club" : "PFA",
+    "points" : 181.0,
+    "birth_year" : 1993
   }, {
     "ranking" : 135,
-    "evolution" : 49,
+    "evolution" : -8,
     "nationality" : "MAR",
-    "name" : "EL FAHIMI ABIR",
+    "name" : "BENHADI RIM",
     "club" : "IND",
-    "points" : 155.0,
-    "birth_year" : 1995,
-    "point_diff" : 100
+    "points" : 180.0,
+    "birth_year" : 2001
   }, {
     "ranking" : 135,
-    "evolution" : -10,
+    "evolution" : -8,
     "nationality" : "MAR",
-    "name" : "FAOUZI LAMIA",
+    "name" : "ROMEO MERIEM",
     "club" : "IND",
-    "points" : 155.0,
-    "birth_year" : 1972,
-    "point_diff" : 30
+    "points" : 180.0,
+    "birth_year" : 1986
   }, {
     "ranking" : 137,
     "evolution" : -20,
+    "nationality" : "MAR",
+    "name" : "BENANI DAKHAMA FATIM ZAHRA",
+    "club" : "IND",
+    "points" : 175.0,
+    "birth_year" : 1988,
+    "point_diff" : -31
+  }, {
+    "ranking" : 137,
+    "evolution" : -8,
+    "nationality" : "MAR",
+    "name" : "SABOUR ADILA OUM EL IZZ",
+    "club" : "IND",
+    "points" : 175.0,
+    "birth_year" : 1997
+  }, {
+    "ranking" : 139,
+    "evolution" : -24,
+    "nationality" : "MAR",
+    "name" : "EL ABBOUNI KENZA",
+    "club" : "IND",
+    "points" : 173.0,
+    "birth_year" : 2001,
+    "point_diff" : -42
+  }, {
+    "ranking" : 140,
+    "evolution" : -9,
+    "nationality" : "MAR",
+    "name" : "MOUSSAYIR KENZA",
+    "club" : "IND",
+    "points" : 168.0,
+    "birth_year" : 2000
+  }, {
+    "ranking" : 141,
+    "evolution" : -8,
+    "nationality" : "MAR",
+    "name" : "BOUFTAS YOUSRA",
+    "club" : "IND",
+    "points" : 164.0,
+    "birth_year" : 1994
+  }, {
+    "ranking" : 142,
+    "evolution" : 1,
+    "nationality" : "USA",
+    "name" : "BENZIANE ISABELLE",
+    "club" : "IND",
+    "points" : 160.0,
+    "birth_year" : 1981,
+    "point_diff" : 25
+  }, {
+    "ranking" : 142,
+    "evolution" : -12,
+    "nationality" : "MAR",
+    "name" : "BOUSSADEN AMAL",
+    "club" : "RTCA",
+    "points" : 160.0,
+    "birth_year" : 1987,
+    "point_diff" : -14
+  }, {
+    "ranking" : 144,
+    "evolution" : 25,
+    "nationality" : "MAR",
+    "name" : "AZMI HOUDA",
+    "club" : "RTCA",
+    "points" : 153.0,
+    "birth_year" : 1993,
+    "point_diff" : 55
+  }, {
+    "ranking" : 144,
+    "evolution" : 31,
+    "nationality" : "MAR",
+    "name" : "NGADI AMAL",
+    "club" : "IND",
+    "points" : 153.0,
+    "birth_year" : 1980,
+    "point_diff" : 63
+  }, {
+    "ranking" : 146,
+    "evolution" : 46,
+    "nationality" : "FRA",
+    "name" : "GRASSET CAROLE",
+    "club" : "ATMA",
+    "points" : 151.0,
+    "birth_year" : 1982,
+    "point_diff" : 83
+  }, {
+    "ranking" : 147,
+    "evolution" : 57,
+    "nationality" : "MAR",
+    "name" : "GUESSOUS YASSMINA",
+    "club" : "CAFC",
+    "points" : 148.0,
+    "birth_year" : 1979,
+    "point_diff" : 87
+  }, {
+    "ranking" : 147,
+    "evolution" : 1,
+    "nationality" : "MAR",
+    "name" : "SAJID AICHA",
+    "club" : "IND",
+    "points" : 148.0,
+    "birth_year" : 1983,
+    "point_diff" : 18
+  }, {
+    "ranking" : 149,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "BELMAMOUN LAMIA",
     "club" : "WIFAQ",
     "points" : 146.0,
     "birth_year" : 1979
   }, {
-    "ranking" : 138,
-    "evolution" : 44,
+    "ranking" : 150,
+    "evolution" : 28,
     "nationality" : "MAR",
-    "name" : "BAKRI OUIDAD",
-    "club" : "PFA",
-    "points" : 145.0,
-    "birth_year" : 1994,
-    "point_diff" : 89
+    "name" : "BERRADA IMANE",
+    "club" : "IND",
+    "points" : 144.0,
+    "birth_year" : 1991,
+    "point_diff" : 58
   }, {
-    "ranking" : 139,
-    "evolution" : -28,
+    "ranking" : 151,
+    "evolution" : -4,
     "nationality" : "MAR",
-    "name" : "BENZEKRI JIHANE",
-    "club" : "PFA",
-    "points" : 142.0,
-    "birth_year" : 1990,
-    "point_diff" : -21
-  }, {
-    "ranking" : 139,
-    "evolution" : 8,
-    "nationality" : "MAR",
-    "name" : "LAABOUDI MAGDA",
+    "name" : "SADANI ZINEB",
     "club" : "IND",
     "points" : 142.0,
-    "birth_year" : 1986,
-    "point_diff" : 55
+    "birth_year" : 1983,
+    "point_diff" : 10
   }, {
-    "ranking" : 141,
-    "evolution" : -22,
+    "ranking" : 152,
+    "evolution" : -11,
     "nationality" : "MAR",
     "name" : "DERAOUI SOUKAINA",
     "club" : "IND",
     "points" : 140.0,
     "birth_year" : 1991
   }, {
-    "ranking" : 142,
-    "evolution" : 142,
+    "ranking" : 153,
+    "evolution" : 18,
+    "nationality" : "MAR",
+    "name" : "BOUALLALA SOUHAIR",
+    "club" : "IND",
+    "points" : 138.0,
+    "birth_year" : 1989,
+    "point_diff" : 41
+  }, {
+    "ranking" : 153,
+    "evolution" : -11,
     "nationality" : "MAR",
     "name" : "EL HASNAOUI YASMINA",
     "club" : "IND",
     "points" : 138.0,
-    "birth_year" : 1990,
-    "point_diff" : 138
+    "birth_year" : 1990
   }, {
-    "ranking" : 143,
-    "evolution" : 62,
-    "nationality" : "USA",
-    "name" : "BENZIANE ISABELLE",
-    "club" : "IND",
-    "points" : 135.0,
-    "birth_year" : 1981,
-    "point_diff" : 93
-  }, {
-    "ranking" : 143,
-    "evolution" : -37,
+    "ranking" : 155,
+    "evolution" : -6,
     "nationality" : "MAR",
-    "name" : "BOUDOU RAWYA",
+    "name" : "AFKIR KAOUTAR",
     "club" : "IND",
     "points" : 135.0,
-    "birth_year" : 1988,
-    "point_diff" : -53
+    "birth_year" : 1975,
+    "point_diff" : 9
   }, {
-    "ranking" : 143,
-    "evolution" : -22,
+    "ranking" : 155,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "CHRIMITE NAJLAE",
     "club" : "IND",
     "points" : 135.0,
     "birth_year" : 2003
   }, {
-    "ranking" : 146,
-    "evolution" : 146,
+    "ranking" : 157,
+    "evolution" : 24,
     "nationality" : "MAR",
-    "name" : "NABET HAMDAN IMANE",
-    "club" : "CMK",
-    "points" : 133.0,
-    "birth_year" : 1998,
-    "point_diff" : 133
-  }, {
-    "ranking" : 147,
-    "evolution" : -25,
-    "nationality" : "MAR",
-    "name" : "SADANI ZINEB",
+    "name" : "KASSAB ASMAE",
     "club" : "IND",
-    "points" : 132.0,
-    "birth_year" : 1983
+    "points" : 134.0,
+    "birth_year" : 1990,
+    "point_diff" : 52
   }, {
-    "ranking" : 148,
-    "evolution" : 148,
+    "ranking" : 158,
+    "evolution" : 24,
     "nationality" : "MAR",
-    "name" : "SAJID AICHA",
+    "name" : "CHAWAD RANIA",
+    "club" : "IND",
+    "points" : 131.0,
+    "birth_year" : 1991,
+    "point_diff" : 50
+  }, {
+    "ranking" : 159,
+    "evolution" : 1,
+    "nationality" : "MAR",
+    "name" : "EL ANZOULE DOUNIA",
     "club" : "IND",
     "points" : 130.0,
-    "birth_year" : 1983,
-    "point_diff" : 130
+    "birth_year" : 1989,
+    "point_diff" : 18
   }, {
-    "ranking" : 149,
-    "evolution" : -33,
+    "ranking" : 160,
+    "evolution" : -21,
     "nationality" : "MAR",
-    "name" : "AFKIR KAOUTAR",
+    "name" : "LAABOUDI MAGDA",
     "club" : "IND",
-    "points" : 126.0,
-    "birth_year" : 1975,
-    "point_diff" : -21
+    "points" : 128.0,
+    "birth_year" : 1986,
+    "point_diff" : -14
   }, {
-    "ranking" : 150,
-    "evolution" : -40,
+    "ranking" : 161,
+    "evolution" : -11,
     "nationality" : "MAR",
     "name" : "BADAOUI KAWTAR",
     "club" : "PFA",
     "points" : 123.0,
-    "birth_year" : 1996,
-    "point_diff" : -42
+    "birth_year" : 1996
   }, {
-    "ranking" : 151,
-    "evolution" : -24,
-    "nationality" : "MAR",
-    "name" : "MASROUR RITA",
-    "club" : "CAFC",
-    "points" : 120.0,
-    "birth_year" : 1983
-  }, {
-    "ranking" : 151,
-    "evolution" : -24,
+    "ranking" : 162,
+    "evolution" : -11,
     "nationality" : "MAR",
     "name" : "MASROUR ZINEB",
     "club" : "CAFC",
     "points" : 120.0,
     "birth_year" : 1981
   }, {
-    "ranking" : 153,
-    "evolution" : 63,
-    "nationality" : "MAR",
-    "name" : "HUSSEIN FARAH",
-    "club" : "IND",
-    "points" : 117.0,
-    "birth_year" : 1983,
-    "point_diff" : 81
-  }, {
-    "ranking" : 154,
-    "evolution" : 111,
+    "ranking" : 163,
+    "evolution" : -9,
     "nationality" : "MAR",
     "name" : "BALAFREJ KENZA",
     "club" : "TCF",
     "points" : 116.0,
-    "birth_year" : 1990,
-    "point_diff" : 100
+    "birth_year" : 1990
   }, {
-    "ranking" : 154,
-    "evolution" : -25,
-    "nationality" : "MAR",
-    "name" : "PEREZ LOPEZ MARINA",
-    "club" : "IND",
-    "points" : 116.0,
-    "birth_year" : 1996
-  }, {
-    "ranking" : 156,
-    "evolution" : 77,
+    "ranking" : 164,
+    "evolution" : -8,
     "nationality" : "MAR",
     "name" : "NADEIF CHAIMAE",
     "club" : "IND",
     "points" : 115.0,
-    "birth_year" : 1996,
-    "point_diff" : 90
+    "birth_year" : 1996
   }, {
-    "ranking" : 156,
-    "evolution" : 77,
+    "ranking" : 164,
+    "evolution" : -8,
     "nationality" : "MAR",
     "name" : "ZAROUALI BASMA",
     "club" : "IND",
     "points" : 115.0,
-    "birth_year" : 2005,
-    "point_diff" : 90
+    "birth_year" : 2005
   }, {
-    "ranking" : 158,
-    "evolution" : -28,
+    "ranking" : 166,
+    "evolution" : 23,
     "nationality" : "MAR",
-    "name" : "EL KASSIMI NIAMA",
-    "club" : "IND",
-    "points" : 114.0,
-    "birth_year" : 1985
-  }, {
-    "ranking" : 159,
-    "evolution" : -28,
-    "nationality" : "MAR",
-    "name" : "ELWARARI MERIEM",
-    "club" : "IND",
+    "name" : "MEKOUAR HODA",
+    "club" : "CAFC",
     "points" : 113.0,
-    "birth_year" : 1989
+    "birth_year" : 1983,
+    "point_diff" : 42
   }, {
-    "ranking" : 160,
-    "evolution" : 6,
-    "nationality" : "MAR",
-    "name" : "EL ANZOULE DOUNIA",
-    "club" : "IND",
-    "points" : 112.0,
-    "birth_year" : 1989,
-    "point_diff" : 43
-  }, {
-    "ranking" : 161,
-    "evolution" : 30,
+    "ranking" : 167,
+    "evolution" : -6,
     "nationality" : "MAR",
     "name" : "BENHADI GHITA",
     "club" : "IND",
     "points" : 110.0,
-    "birth_year" : 1998,
-    "point_diff" : 60
+    "birth_year" : 1998
   }, {
-    "ranking" : 162,
-    "evolution" : -28,
+    "ranking" : 168,
+    "evolution" : -6,
     "nationality" : "MAR",
     "name" : "BARBOUCH ZINEB",
     "club" : "IND",
-    "points" : 106.0,
-    "birth_year" : 1994
+    "points" : 101.0,
+    "birth_year" : 1994,
+    "point_diff" : -5
   }, {
-    "ranking" : 163,
-    "evolution" : -16,
-    "nationality" : "MAR",
-    "name" : "TADILI ZINEB",
-    "club" : "IND",
-    "points" : 105.0,
-    "birth_year" : 1983,
-    "point_diff" : 18
-  }, {
-    "ranking" : 164,
-    "evolution" : -29,
+    "ranking" : 169,
+    "evolution" : -5,
     "nationality" : "MAR",
     "name" : "BOUSSERGHINE ZINEB",
     "club" : "PFA",
     "points" : 100.0,
     "birth_year" : 2006
   }, {
-    "ranking" : 164,
-    "evolution" : -29,
+    "ranking" : 169,
+    "evolution" : -5,
     "nationality" : "MAR",
     "name" : "ELAKILI KENZA",
     "club" : "IND",
     "points" : 100.0,
     "birth_year" : 2007
   }, {
-    "ranking" : 164,
-    "evolution" : 164,
+    "ranking" : 169,
+    "evolution" : -5,
     "nationality" : "MAR",
     "name" : "ES-SMAKI RIME",
     "club" : "IND",
     "points" : 100.0,
-    "birth_year" : 1996,
-    "point_diff" : 100
+    "birth_year" : 1996
   }, {
-    "ranking" : 164,
-    "evolution" : -29,
+    "ranking" : 169,
+    "evolution" : -5,
     "nationality" : "MAR",
     "name" : "ESSAOUDI SARA",
     "club" : "RTCMO",
     "points" : 100.0,
     "birth_year" : 2008
   }, {
-    "ranking" : 164,
-    "evolution" : -29,
+    "ranking" : 169,
+    "evolution" : 169,
+    "nationality" : "MEX",
+    "name" : "KUPERSTEIN BLASCO GINA SOFIA",
+    "club" : "ATMA",
+    "points" : 100.0,
+    "birth_year" : 1991,
+    "point_diff" : 100
+  }, {
+    "ranking" : 169,
+    "evolution" : -5,
     "nationality" : "MAR",
     "name" : "LEBRIGUI ZINEB",
     "club" : "IND",
@@ -1468,1507 +1511,1589 @@
     "birth_year" : 2003
   }, {
     "ranking" : 169,
-    "evolution" : -29,
+    "evolution" : 169,
     "nationality" : "MAR",
-    "name" : "AZMI HOUDA",
+    "name" : "STOLL MIA",
     "club" : "IND",
-    "points" : 98.0,
-    "birth_year" : 1993
+    "points" : 100.0,
+    "birth_year" : 2010,
+    "point_diff" : 100
   }, {
-    "ranking" : 169,
-    "evolution" : -29,
+    "ranking" : 176,
+    "evolution" : 34,
     "nationality" : "MAR",
-    "name" : "BEN MIMOUN LINA",
+    "name" : "DARKAOUI RABIAA",
+    "club" : "PFA",
+    "points" : 99.0,
+    "birth_year" : 1981,
+    "point_diff" : 43
+  }, {
+    "ranking" : 177,
+    "evolution" : 66,
+    "nationality" : "FRA",
+    "name" : "TIKANOUINE MARIE",
     "club" : "IND",
-    "points" : 98.0,
-    "birth_year" : 2005
+    "points" : 96.0,
+    "birth_year" : 1976,
+    "point_diff" : 63
   }, {
-    "ranking" : 171,
-    "evolution" : -29,
-    "nationality" : "MAR",
-    "name" : "BOUALLALA SOUHAIR",
-    "club" : "IND",
-    "points" : 97.0,
-    "birth_year" : 1989
-  }, {
-    "ranking" : 172,
-    "evolution" : -29,
-    "nationality" : "MAR",
-    "name" : "LAMARTI ZINEB",
-    "club" : "CAFC",
-    "points" : 94.0,
-    "birth_year" : 1984
-  }, {
-    "ranking" : 173,
-    "evolution" : 11,
+    "ranking" : 178,
+    "evolution" : -5,
     "nationality" : "MAR",
     "name" : "AL BIKRI SOUKAINA",
     "club" : "IND",
     "points" : 93.0,
-    "birth_year" : 1993,
-    "point_diff" : 38
+    "birth_year" : 1993
   }, {
-    "ranking" : 173,
-    "evolution" : -29,
+    "ranking" : 178,
+    "evolution" : -44,
+    "nationality" : "MAR",
+    "name" : "AMOUZOUNE LINA",
+    "club" : "IND",
+    "points" : 93.0,
+    "birth_year" : 1994,
+    "point_diff" : -67
+  }, {
+    "ranking" : 178,
+    "evolution" : -5,
     "nationality" : "FRA",
     "name" : "SAVARIT MAUD",
     "club" : "IND",
     "points" : 93.0,
     "birth_year" : 1996
   }, {
-    "ranking" : 175,
-    "evolution" : 16,
+    "ranking" : 181,
+    "evolution" : 14,
     "nationality" : "MAR",
-    "name" : "NGADI AMAL",
+    "name" : "BENABDELJALIL MYA",
     "club" : "IND",
-    "points" : 90.0,
-    "birth_year" : 1980,
-    "point_diff" : 40
+    "points" : 92.0,
+    "birth_year" : 2005,
+    "point_diff" : 25
   }, {
-    "ranking" : 176,
-    "evolution" : -30,
+    "ranking" : 182,
+    "evolution" : -13,
     "nationality" : "MAR",
-    "name" : "ALAOUI NOUHAILA",
+    "name" : "BEN MIMOUN LINA",
+    "club" : "IND",
+    "points" : 91.0,
+    "birth_year" : 2005,
+    "point_diff" : -7
+  }, {
+    "ranking" : 183,
+    "evolution" : 77,
+    "nationality" : "MAR",
+    "name" : "HAZZAZ ABOUAMAL ZINEB",
     "club" : "IND",
     "points" : 88.0,
-    "birth_year" : 2001
+    "birth_year" : 1980,
+    "point_diff" : 63
   }, {
-    "ranking" : 177,
-    "evolution" : 36,
+    "ranking" : 184,
+    "evolution" : -7,
     "nationality" : "MAR",
     "name" : "TAZI MERYEM",
     "club" : "TCF",
     "points" : 87.0,
-    "birth_year" : 1991,
-    "point_diff" : 50
+    "birth_year" : 1991
   }, {
-    "ranking" : 178,
-    "evolution" : 116,
+    "ranking" : 185,
+    "evolution" : -7,
     "nationality" : "MAR",
     "name" : "ABOULHOUDA KAWTAR",
     "club" : "IND",
     "points" : 86.0,
-    "birth_year" : 1985,
-    "point_diff" : 81
+    "birth_year" : 1985
   }, {
-    "ranking" : 178,
-    "evolution" : -29,
+    "ranking" : 185,
+    "evolution" : -32,
     "nationality" : "MAR",
-    "name" : "BERRADA IMANE",
+    "name" : "HUSSEIN FARAH",
     "club" : "IND",
     "points" : 86.0,
-    "birth_year" : 1991
+    "birth_year" : 1983,
+    "point_diff" : -31
   }, {
-    "ranking" : 178,
-    "evolution" : 81,
+    "ranking" : 185,
+    "evolution" : -7,
     "nationality" : "MAR",
     "name" : "MANSOURI MAJDA",
     "club" : "IND",
     "points" : 86.0,
-    "birth_year" : 1995,
-    "point_diff" : 68
+    "birth_year" : 1995
   }, {
-    "ranking" : 181,
-    "evolution" : -62,
+    "ranking" : 188,
+    "evolution" : -12,
     "nationality" : "MAR",
-    "name" : "KASSAB ASMAE",
-    "club" : "IND",
-    "points" : 82.0,
-    "birth_year" : 1990,
-    "point_diff" : -58
-  }, {
-    "ranking" : 182,
-    "evolution" : -28,
-    "nationality" : "MAR",
-    "name" : "CHAWAD RANIA",
+    "name" : "ALAOUI NOUHAILA",
     "club" : "IND",
     "points" : 81.0,
-    "birth_year" : 1991
+    "birth_year" : 2001,
+    "point_diff" : -7
   }, {
-    "ranking" : 182,
-    "evolution" : -28,
+    "ranking" : 188,
+    "evolution" : -6,
     "nationality" : "IRL",
     "name" : "SHEEHAN DALAL",
     "club" : "IND",
     "points" : 81.0,
     "birth_year" : 1999
   }, {
-    "ranking" : 184,
-    "evolution" : 184,
+    "ranking" : 190,
+    "evolution" : -32,
+    "nationality" : "MAR",
+    "name" : "EL KASSIMI NIAMA",
+    "club" : "IND",
+    "points" : 80.0,
+    "birth_year" : 1985,
+    "point_diff" : -34
+  }, {
+    "ranking" : 191,
+    "evolution" : -7,
     "nationality" : "MAR",
     "name" : "DJAIDI RIMEL",
     "club" : "IND",
     "points" : 79.0,
-    "birth_year" : 1997,
-    "point_diff" : 79
+    "birth_year" : 1997
   }, {
-    "ranking" : 184,
-    "evolution" : 184,
+    "ranking" : 191,
+    "evolution" : -7,
     "nationality" : "MAR",
     "name" : "SAMI MOUNIA",
     "club" : "IND",
     "points" : 79.0,
-    "birth_year" : 1994,
-    "point_diff" : 79
+    "birth_year" : 1994
   }, {
-    "ranking" : 186,
-    "evolution" : -27,
-    "nationality" : "MAR",
-    "name" : "AITSGHEIR JAMILA",
-    "club" : "IND",
-    "points" : 78.0,
-    "birth_year" : 1987
-  }, {
-    "ranking" : 187,
-    "evolution" : -27,
-    "nationality" : "MAR",
-    "name" : "LAHLOU SANAA",
-    "club" : "CAFC",
-    "points" : 77.0,
-    "birth_year" : 1967
-  }, {
-    "ranking" : 188,
-    "evolution" : -27,
-    "nationality" : "MAR",
-    "name" : "BENABDALLAH SELMA",
-    "club" : "IND",
-    "points" : 75.0,
-    "birth_year" : 1999
-  }, {
-    "ranking" : 189,
-    "evolution" : -26,
-    "nationality" : "MAR",
-    "name" : "MEKOUAR HODA",
-    "club" : "CAFC",
-    "points" : 71.0,
-    "birth_year" : 1983
-  }, {
-    "ranking" : 190,
-    "evolution" : 10,
+    "ranking" : 193,
+    "evolution" : -3,
     "nationality" : "MAR",
     "name" : "ELBLIDI RIM",
     "club" : "IND",
-    "points" : 70.0,
+    "points" : 75.0,
     "birth_year" : 1985,
-    "point_diff" : 25
+    "point_diff" : 5
   }, {
-    "ranking" : 190,
-    "evolution" : 10,
+    "ranking" : 193,
+    "evolution" : -34,
+    "nationality" : "MAR",
+    "name" : "ELWARARI MERIEM",
+    "club" : "IND",
+    "points" : 75.0,
+    "birth_year" : 1989,
+    "point_diff" : -38
+  }, {
+    "ranking" : 195,
+    "evolution" : 2,
+    "nationality" : "MAR",
+    "name" : "LOURAOUI MERYEM",
+    "club" : "IND",
+    "points" : 71.0,
+    "birth_year" : 1984,
+    "point_diff" : 5
+  }, {
+    "ranking" : 196,
+    "evolution" : -6,
     "nationality" : "MAR",
     "name" : "RTABI LYNA RITA",
     "club" : "IND",
     "points" : 70.0,
-    "birth_year" : 1999,
-    "point_diff" : 25
+    "birth_year" : 1999
   }, {
-    "ranking" : 192,
-    "evolution" : -25,
+    "ranking" : 197,
+    "evolution" : -10,
+    "nationality" : "MAR",
+    "name" : "LAHLOU SANAA",
+    "club" : "CAFC",
+    "points" : 69.0,
+    "birth_year" : 1967,
+    "point_diff" : -8
+  }, {
+    "ranking" : 197,
+    "evolution" : 19,
+    "nationality" : "MAR",
+    "name" : "OPPAB SOPHIA",
+    "club" : "IND",
+    "points" : 69.0,
+    "birth_year" : 1994,
+    "point_diff" : 19
+  }, {
+    "ranking" : 199,
+    "evolution" : -13,
+    "nationality" : "MAR",
+    "name" : "AITSGHEIR JAMILA",
+    "club" : "IND",
+    "points" : 68.0,
+    "birth_year" : 1987,
+    "point_diff" : -10
+  }, {
+    "ranking" : 199,
+    "evolution" : -7,
     "nationality" : "MAR",
     "name" : "BERRADA HIND",
     "club" : "IND",
     "points" : 68.0,
     "birth_year" : 1989
   }, {
-    "ranking" : 192,
-    "evolution" : 192,
-    "nationality" : "FRA",
-    "name" : "GRASSET CAROLE",
-    "club" : "IND",
-    "points" : 68.0,
-    "birth_year" : 1982,
-    "point_diff" : 68
-  }, {
-    "ranking" : 192,
-    "evolution" : -25,
+    "ranking" : 199,
+    "evolution" : -7,
     "nationality" : "MAR",
     "name" : "TACHFINE YASMINE",
     "club" : "IND",
     "points" : 68.0,
     "birth_year" : 2003
   }, {
-    "ranking" : 195,
-    "evolution" : 33,
-    "nationality" : "MAR",
-    "name" : "BENABDELJALIL MYA",
-    "club" : "IND",
-    "points" : 67.0,
-    "birth_year" : 2005,
-    "point_diff" : 39
-  }, {
-    "ranking" : 195,
-    "evolution" : -26,
+    "ranking" : 202,
+    "evolution" : -7,
     "nationality" : "MAR",
     "name" : "PUBILL RAMIREZ VERONICA",
     "club" : "ASB",
     "points" : 67.0,
     "birth_year" : 1983
   }, {
-    "ranking" : 197,
-    "evolution" : -7,
+    "ranking" : 203,
+    "evolution" : 50,
     "nationality" : "MAR",
-    "name" : "BOUKHENNOU HOUDA",
+    "name" : "BENJELLOUN SALMA",
     "club" : "IND",
     "points" : 66.0,
-    "birth_year" : 1996,
-    "point_diff" : 14
+    "birth_year" : 1998,
+    "point_diff" : 38
   }, {
-    "ranking" : 197,
-    "evolution" : 68,
+    "ranking" : 203,
+    "evolution" : -6,
     "nationality" : "MAR",
     "name" : "IBN MAJDOUB SOUKAINA",
     "club" : "TCF",
     "points" : 66.0,
-    "birth_year" : 1987,
-    "point_diff" : 50
+    "birth_year" : 1987
   }, {
-    "ranking" : 197,
-    "evolution" : 10,
+    "ranking" : 203,
+    "evolution" : 50,
     "nationality" : "MAR",
-    "name" : "LOURAOUI MERYEM",
+    "name" : "MAJID ASMAE",
     "club" : "IND",
     "points" : 66.0,
-    "birth_year" : 1984,
-    "point_diff" : 25
+    "birth_year" : 1988,
+    "point_diff" : 38
   }, {
-    "ranking" : 197,
-    "evolution" : 33,
+    "ranking" : 203,
+    "evolution" : -6,
     "nationality" : "MAR",
     "name" : "MRABTI SALMA",
     "club" : "TCF",
     "points" : 66.0,
-    "birth_year" : 1981,
-    "point_diff" : 40
+    "birth_year" : 1981
   }, {
-    "ranking" : 201,
-    "evolution" : -29,
+    "ranking" : 207,
+    "evolution" : -6,
     "nationality" : "MAR",
     "name" : "SALIME YASMINE",
     "club" : "IND",
     "points" : 65.0,
     "birth_year" : 2002
   }, {
-    "ranking" : 202,
-    "evolution" : -29,
+    "ranking" : 208,
+    "evolution" : -6,
     "nationality" : "MAR",
     "name" : "BOUANANI SOUKAINA",
     "club" : "IND",
     "points" : 63.0,
     "birth_year" : 1989
   }, {
-    "ranking" : 202,
-    "evolution" : 31,
+    "ranking" : 208,
+    "evolution" : -6,
     "nationality" : "MAR",
     "name" : "EL KHATTABI YASMINE",
     "club" : "IND",
     "points" : 63.0,
-    "birth_year" : 1992,
-    "point_diff" : 38
+    "birth_year" : 1992
   }, {
-    "ranking" : 204,
-    "evolution" : -30,
+    "ranking" : 210,
+    "evolution" : 3,
     "nationality" : "MAR",
-    "name" : "GUESSOUS YASSMINA",
-    "club" : "CAFC",
-    "points" : 61.0,
-    "birth_year" : 1979
-  }, {
-    "ranking" : 205,
-    "evolution" : -29,
-    "nationality" : "MAR",
-    "name" : "IBN GHAZALA FATIMA AZZAHRA",
+    "name" : "BENCHAKROUN ALIA",
     "club" : "IND",
     "points" : 60.0,
-    "birth_year" : 1984
+    "birth_year" : 1999,
+    "point_diff" : 5
   }, {
-    "ranking" : 205,
-    "evolution" : 205,
+    "ranking" : 210,
+    "evolution" : 210,
+    "nationality" : "FRA",
+    "name" : "BRUN KARINE",
+    "club" : "IND",
+    "points" : 60.0,
+    "birth_year" : 1974,
+    "point_diff" : 60
+  }, {
+    "ranking" : 210,
+    "evolution" : -5,
     "nationality" : "MAR",
     "name" : "SEBTI AIDA",
     "club" : "IND",
     "points" : 60.0,
-    "birth_year" : 1995,
-    "point_diff" : 60
+    "birth_year" : 1995
   }, {
-    "ranking" : 205,
-    "evolution" : -29,
+    "ranking" : 210,
+    "evolution" : -5,
     "nationality" : "MAR",
     "name" : "SLIGHOUA ABLA",
     "club" : "TCF",
     "points" : 60.0,
     "birth_year" : 2001
   }, {
-    "ranking" : 208,
-    "evolution" : -29,
+    "ranking" : 214,
+    "evolution" : -6,
     "nationality" : "MAR",
     "name" : "EL ALLAMI FATIMAZAHRAE",
     "club" : "SOC",
     "points" : 58.0,
     "birth_year" : 1989
   }, {
-    "ranking" : 208,
-    "evolution" : -29,
+    "ranking" : 214,
+    "evolution" : -6,
     "nationality" : "MAR",
     "name" : "EL ALLAMI MALAK",
     "club" : "SOC",
     "points" : 58.0,
     "birth_year" : 2006
   }, {
-    "ranking" : 210,
-    "evolution" : -28,
+    "ranking" : 216,
+    "evolution" : 216,
+    "nationality" : "BEL",
+    "name" : "GUENFOUDI SANAE",
+    "club" : "IND",
+    "points" : 57.0,
+    "birth_year" : 1955,
+    "point_diff" : 57
+  }, {
+    "ranking" : 217,
+    "evolution" : -7,
     "nationality" : "MAR",
     "name" : "BENDAHMANE SAMIA",
     "club" : "IND",
     "points" : 56.0,
     "birth_year" : 1992
   }, {
-    "ranking" : 210,
-    "evolution" : -14,
+    "ranking" : 218,
+    "evolution" : -21,
     "nationality" : "MAR",
-    "name" : "DARKAOUI RABIAA",
-    "club" : "PFA",
-    "points" : 56.0,
-    "birth_year" : 1981,
-    "point_diff" : 8
+    "name" : "BOUKHENNOU HOUDA",
+    "club" : "IND",
+    "points" : 52.0,
+    "birth_year" : 1996,
+    "point_diff" : -14
   }, {
-    "ranking" : 210,
-    "evolution" : -40,
+    "ranking" : 219,
+    "evolution" : 2,
+    "nationality" : "MAR",
+    "name" : "BENKIRANE HOUDA",
+    "club" : "WIFAQ",
+    "points" : 51.0,
+    "birth_year" : 1983,
+    "point_diff" : 5
+  }, {
+    "ranking" : 219,
+    "evolution" : -9,
     "nationality" : "MAR",
     "name" : "OUAJJOU GHITA",
     "club" : "IND",
-    "points" : 56.0,
+    "points" : 51.0,
     "birth_year" : 1978,
-    "point_diff" : -10
+    "point_diff" : -5
   }, {
-    "ranking" : 213,
-    "evolution" : -29,
+    "ranking" : 221,
+    "evolution" : 104,
     "nationality" : "MAR",
-    "name" : "BENCHAKROUN ALIA",
+    "name" : "BOUSHRA AIT EL GABBAS",
     "club" : "IND",
-    "points" : 55.0,
-    "birth_year" : 1999
+    "points" : 50.0,
+    "birth_year" : 1973,
+    "point_diff" : 43
   }, {
-    "ranking" : 213,
-    "evolution" : -29,
+    "ranking" : 221,
+    "evolution" : 221,
     "nationality" : "MAR",
-    "name" : "SNAIBA AOLAIA",
+    "name" : "EL ANANI DOHA",
     "club" : "IND",
-    "points" : 55.0,
-    "birth_year" : 1987
+    "points" : 50.0,
+    "birth_year" : 2003,
+    "point_diff" : 50
   }, {
-    "ranking" : 215,
-    "evolution" : -26,
-    "nationality" : "MAR",
-    "name" : "ALAMI CHAMSI",
-    "club" : "RUC",
-    "points" : 53.0,
-    "birth_year" : 1979
-  }, {
-    "ranking" : 216,
-    "evolution" : -25,
+    "ranking" : 221,
+    "evolution" : -5,
     "nationality" : "MAR",
     "name" : "HJIEJ LINA",
     "club" : "IND",
     "points" : 50.0,
     "birth_year" : 1993
   }, {
-    "ranking" : 216,
-    "evolution" : 216,
-    "nationality" : "MAR",
-    "name" : "OPPAB SOPHIA",
-    "club" : "IND",
-    "points" : 50.0,
-    "birth_year" : 1994,
-    "point_diff" : 50
-  }, {
-    "ranking" : 216,
-    "evolution" : -25,
+    "ranking" : 221,
+    "evolution" : -5,
     "nationality" : "MAR",
     "name" : "RHISSASSI SALMA",
     "club" : "IND",
     "points" : 50.0,
     "birth_year" : 1998
   }, {
-    "ranking" : 216,
-    "evolution" : 17,
+    "ranking" : 221,
+    "evolution" : -5,
     "nationality" : "MAR",
     "name" : "SRIBI GHITA",
     "club" : "IND",
     "points" : 50.0,
-    "birth_year" : 1987,
-    "point_diff" : 25
+    "birth_year" : 1987
   }, {
-    "ranking" : 216,
-    "evolution" : -25,
+    "ranking" : 221,
+    "evolution" : -5,
     "nationality" : "MAR",
     "name" : "TOUZI IMANE",
     "club" : "IND",
     "points" : 50.0,
     "birth_year" : 1992
   }, {
-    "ranking" : 221,
-    "evolution" : -71,
+    "ranking" : 227,
+    "evolution" : 23,
     "nationality" : "MAR",
-    "name" : "BEN ESSALAH YASMINE",
+    "name" : "BADRI IKRAM",
+    "club" : "RTCA",
+    "points" : 47.0,
+    "birth_year" : 2000,
+    "point_diff" : 18
+  }, {
+    "ranking" : 227,
+    "evolution" : 64,
+    "nationality" : "MAR",
+    "name" : "BENNANI SAFAE",
     "club" : "IND",
-    "points" : 46.0,
-    "birth_year" : 1990,
-    "point_diff" : -38
+    "points" : 47.0,
+    "birth_year" : 1985,
+    "point_diff" : 29
   }, {
-    "ranking" : 221,
-    "evolution" : 221,
-    "nationality" : "MAR",
-    "name" : "BENKIRANE HOUDA",
-    "club" : "WIFAQ",
-    "points" : 46.0,
-    "birth_year" : 1983,
-    "point_diff" : 46
-  }, {
-    "ranking" : 221,
-    "evolution" : -24,
+    "ranking" : 229,
+    "evolution" : -8,
     "nationality" : "MAR",
     "name" : "BOUI LAILA",
     "club" : "IND",
     "points" : 46.0,
     "birth_year" : 1991
   }, {
-    "ranking" : 221,
-    "evolution" : 34,
+    "ranking" : 229,
+    "evolution" : -8,
     "nationality" : "MAR",
     "name" : "EL KHALIFI MARIA",
     "club" : "IND",
     "points" : 46.0,
-    "birth_year" : 2000,
-    "point_diff" : 26
+    "birth_year" : 2000
   }, {
-    "ranking" : 221,
-    "evolution" : 29,
+    "ranking" : 229,
+    "evolution" : -8,
     "nationality" : "MAR",
     "name" : "GAIZI NOURE",
     "club" : "IND",
     "points" : 46.0,
-    "birth_year" : 1990,
-    "point_diff" : 25
+    "birth_year" : 1990
   }, {
-    "ranking" : 221,
-    "evolution" : -24,
-    "nationality" : "MAR",
-    "name" : "HAJOUI FATIMA",
-    "club" : "IND",
-    "points" : 46.0,
-    "birth_year" : 1992
-  }, {
-    "ranking" : 221,
-    "evolution" : -24,
+    "ranking" : 229,
+    "evolution" : -8,
     "nationality" : "MAR",
     "name" : "SEMLALI NOUHAD",
     "club" : "IND",
     "points" : 46.0,
     "birth_year" : 1970
   }, {
-    "ranking" : 228,
-    "evolution" : -28,
+    "ranking" : 233,
+    "evolution" : -5,
     "nationality" : "FRA",
     "name" : "BARRACO CLAIRE",
     "club" : "IND",
     "points" : 45.0,
     "birth_year" : 1978
   }, {
-    "ranking" : 228,
-    "evolution" : -28,
+    "ranking" : 233,
+    "evolution" : -5,
     "nationality" : "FRA",
     "name" : "VIELLARD CAROLINE",
     "club" : "IND",
     "points" : 45.0,
     "birth_year" : 1976
   }, {
-    "ranking" : 230,
-    "evolution" : 230,
+    "ranking" : 235,
+    "evolution" : 7,
+    "nationality" : "MAR",
+    "name" : "EL AMRANI GHITA",
+    "club" : "IND",
+    "points" : 44.0,
+    "birth_year" : 1998,
+    "point_diff" : 10
+  }, {
+    "ranking" : 235,
+    "evolution" : 235,
+    "nationality" : "MAR",
+    "name" : "EL MOKHTARI YASMINA",
+    "club" : "IND",
+    "points" : 44.0,
+    "birth_year" : 1990,
+    "point_diff" : 44
+  }, {
+    "ranking" : 237,
+    "evolution" : 28,
+    "nationality" : "MAR",
+    "name" : "JOUNDY LINA",
+    "club" : "IND",
+    "points" : 43.0,
+    "birth_year" : 1990,
+    "point_diff" : 19
+  }, {
+    "ranking" : 237,
+    "evolution" : -7,
     "nationality" : "MAR",
     "name" : "LAHLOU IMANE",
     "club" : "MSALLAH",
     "points" : 43.0,
-    "birth_year" : 1997,
-    "point_diff" : 43
+    "birth_year" : 1997
   }, {
-    "ranking" : 231,
-    "evolution" : -26,
-    "nationality" : "MAR",
-    "name" : "BEN AMELE LINA",
-    "club" : "IND",
-    "points" : 42.0,
-    "birth_year" : 1989
-  }, {
-    "ranking" : 231,
-    "evolution" : 231,
+    "ranking" : 239,
+    "evolution" : -8,
     "nationality" : "MAR",
     "name" : "LASRY YASMINE",
     "club" : "IND",
     "points" : 42.0,
-    "birth_year" : 1999,
-    "point_diff" : 42
+    "birth_year" : 1999
   }, {
-    "ranking" : 233,
-    "evolution" : 32,
+    "ranking" : 240,
+    "evolution" : -7,
     "nationality" : "MAR",
     "name" : "BERRADA MERYEM",
     "club" : "TCF",
     "points" : 41.0,
-    "birth_year" : 1985,
-    "point_diff" : 25
+    "birth_year" : 1985
   }, {
-    "ranking" : 234,
-    "evolution" : -14,
+    "ranking" : 241,
+    "evolution" : -7,
     "nationality" : "MAR",
     "name" : "BENNANI MYRIAM",
     "club" : "IND",
     "points" : 40.0,
-    "birth_year" : 1983,
-    "point_diff" : 10
+    "birth_year" : 1983
   }, {
-    "ranking" : 234,
-    "evolution" : -26,
+    "ranking" : 241,
+    "evolution" : -7,
     "nationality" : "MAR",
     "name" : "BIKHOBRY GHYSLANE",
     "club" : "IND",
     "points" : 40.0,
     "birth_year" : 1986
   }, {
-    "ranking" : 234,
-    "evolution" : -26,
+    "ranking" : 241,
+    "evolution" : 241,
+    "nationality" : "MAR",
+    "name" : "EL MERNISSI HALIMA",
+    "club" : "IND",
+    "points" : 40.0,
+    "birth_year" : 1985,
+    "point_diff" : 40
+  }, {
+    "ranking" : 241,
+    "evolution" : 241,
+    "nationality" : "MAR",
+    "name" : "NGADI ASMAE",
+    "club" : "IND",
+    "points" : 40.0,
+    "birth_year" : 1982,
+    "point_diff" : 40
+  }, {
+    "ranking" : 241,
+    "evolution" : -7,
     "nationality" : "MAR",
     "name" : "TAZI NAOUAL",
     "club" : "IND",
     "points" : 40.0,
     "birth_year" : 1977
   }, {
-    "ranking" : 237,
-    "evolution" : -24,
+    "ranking" : 246,
+    "evolution" : 98,
+    "nationality" : "MAR",
+    "name" : "AQILI SARA",
+    "club" : "IND",
+    "points" : 39.0,
+    "birth_year" : 1991,
+    "point_diff" : 38
+  }, {
+    "ranking" : 246,
+    "evolution" : 30,
+    "nationality" : "FRA",
+    "name" : "BELLAMY ANTONELLA",
+    "club" : "IND",
+    "points" : 39.0,
+    "birth_year" : 1991,
+    "point_diff" : 18
+  }, {
+    "ranking" : 246,
+    "evolution" : 55,
+    "nationality" : "MAR",
+    "name" : "GUENDOUZ LINA",
+    "club" : "IND",
+    "points" : 39.0,
+    "birth_year" : 2006,
+    "point_diff" : 25
+  }, {
+    "ranking" : 246,
+    "evolution" : 30,
+    "nationality" : "MAR",
+    "name" : "TOULBA NAJAT",
+    "club" : "RTCA",
+    "points" : 39.0,
+    "birth_year" : 1989,
+    "point_diff" : 18
+  }, {
+    "ranking" : 250,
+    "evolution" : -13,
     "nationality" : "MAR",
     "name" : "LAZRAK ACHAIMAE",
     "club" : "TCF",
     "points" : 38.0,
-    "birth_year" : 1989,
-    "point_diff" : 1
+    "birth_year" : 1989
   }, {
-    "ranking" : 237,
-    "evolution" : 237,
+    "ranking" : 250,
+    "evolution" : 250,
+    "nationality" : "MAR",
+    "name" : "MIARA MARIAM",
+    "club" : "IND",
+    "points" : 38.0,
+    "birth_year" : 1997,
+    "point_diff" : 38
+  }, {
+    "ranking" : 250,
+    "evolution" : -13,
     "nationality" : "MAR",
     "name" : "ZAOUADI SOPHIA",
     "club" : "IND",
     "points" : 38.0,
-    "birth_year" : 1991,
-    "point_diff" : 38
+    "birth_year" : 1991
   }, {
-    "ranking" : 239,
-    "evolution" : -9,
+    "ranking" : 253,
+    "evolution" : -14,
     "nationality" : "MAR",
     "name" : "BENNANI ASSIA",
     "club" : "TCF",
     "points" : 36.0,
-    "birth_year" : 1989,
-    "point_diff" : 10
+    "birth_year" : 1989
   }, {
-    "ranking" : 239,
-    "evolution" : -23,
-    "nationality" : "MAR",
-    "name" : "BENQLILOU HIND",
-    "club" : "IND",
-    "points" : 36.0,
-    "birth_year" : 1997
-  }, {
-    "ranking" : 241,
-    "evolution" : 9,
+    "ranking" : 254,
+    "evolution" : -13,
     "nationality" : "MAR",
     "name" : "SLAOUI NAJWA",
     "club" : "IND",
     "points" : 35.0,
-    "birth_year" : 1981,
-    "point_diff" : 14
+    "birth_year" : 1981
   }, {
-    "ranking" : 242,
-    "evolution" : 58,
+    "ranking" : 255,
+    "evolution" : 44,
     "nationality" : "MAR",
-    "name" : "EL AMRANI GHITA",
+    "name" : "ZAHROUBANE SALMA",
     "club" : "IND",
     "points" : 34.0,
-    "birth_year" : 1998,
-    "point_diff" : 30
+    "birth_year" : 1987,
+    "point_diff" : 19
   }, {
-    "ranking" : 243,
-    "evolution" : 58,
-    "nationality" : "FRA",
-    "name" : "TIKANOUINE MARIE",
-    "club" : "IND",
-    "points" : 33.0,
-    "birth_year" : 1976,
-    "point_diff" : 30
-  }, {
-    "ranking" : 244,
-    "evolution" : -25,
+    "ranking" : 256,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "BENZEKRI IMANE",
     "club" : "IND",
     "points" : 32.0,
     "birth_year" : 2007
   }, {
-    "ranking" : 244,
-    "evolution" : 49,
+    "ranking" : 256,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "KOTOUB RANIM",
     "club" : "IND",
     "points" : 32.0,
-    "birth_year" : 2003,
-    "point_diff" : 26
+    "birth_year" : 2003
   }, {
-    "ranking" : 246,
-    "evolution" : -26,
+    "ranking" : 258,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "AZRAN LAURA",
     "club" : "IND",
     "points" : 30.0,
     "birth_year" : 1990
   }, {
-    "ranking" : 246,
-    "evolution" : -26,
+    "ranking" : 258,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "BENGEBARA YASMINE",
     "club" : "TCF",
     "points" : 30.0,
     "birth_year" : 2000
   }, {
-    "ranking" : 246,
-    "evolution" : 246,
+    "ranking" : 258,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "OUDRHIRI KAOUTAR",
     "club" : "IND",
     "points" : 30.0,
-    "birth_year" : 1989,
-    "point_diff" : 30
+    "birth_year" : 1989
   }, {
-    "ranking" : 246,
-    "evolution" : -26,
-    "nationality" : "MAR",
-    "name" : "SAIDI YASMINE",
-    "club" : "UPM",
-    "points" : 30.0,
-    "birth_year" : 1987
-  }, {
-    "ranking" : 250,
-    "evolution" : -24,
-    "nationality" : "MAR",
-    "name" : "BADRI IKRAM",
-    "club" : "RTCA",
-    "points" : 29.0,
-    "birth_year" : 2000
-  }, {
-    "ranking" : 250,
-    "evolution" : -24,
+    "ranking" : 261,
+    "evolution" : -11,
     "nationality" : "MAR",
     "name" : "OUBYA GHOZLENE",
     "club" : "IND",
     "points" : 29.0,
     "birth_year" : 1982
   }, {
-    "ranking" : 250,
-    "evolution" : 38,
+    "ranking" : 261,
+    "evolution" : -11,
     "nationality" : "MAR",
     "name" : "ZBAIR YASMINE",
     "club" : "IND",
     "points" : 29.0,
-    "birth_year" : 2000,
-    "point_diff" : 21
+    "birth_year" : 2000
   }, {
-    "ranking" : 253,
-    "evolution" : 17,
+    "ranking" : 263,
+    "evolution" : -32,
     "nationality" : "MAR",
-    "name" : "BENJELLOUN SALMA",
+    "name" : "BEN AMELE LINA",
     "club" : "IND",
     "points" : 28.0,
-    "birth_year" : 1998,
-    "point_diff" : 13
+    "birth_year" : 1989,
+    "point_diff" : -14
   }, {
-    "ranking" : 253,
-    "evolution" : 17,
+    "ranking" : 263,
+    "evolution" : 28,
     "nationality" : "MAR",
-    "name" : "MAJID ASMAE",
+    "name" : "EL MOBARIK MANAL",
     "club" : "IND",
     "points" : 28.0,
     "birth_year" : 1988,
-    "point_diff" : 13
+    "point_diff" : 10
   }, {
-    "ranking" : 255,
-    "evolution" : -104,
+    "ranking" : 263,
+    "evolution" : 28,
+    "nationality" : "MAR",
+    "name" : "EL MOBARIK MOUNIA",
+    "club" : "IND",
+    "points" : 28.0,
+    "birth_year" : 1988,
+    "point_diff" : 10
+  }, {
+    "ranking" : 266,
+    "evolution" : -11,
     "nationality" : "MAR",
     "name" : "CHRAIBI CHAMA",
     "club" : "IND",
     "points" : 27.0,
-    "birth_year" : 1994,
-    "point_diff" : -55
+    "birth_year" : 1994
   }, {
-    "ranking" : 256,
-    "evolution" : -26,
+    "ranking" : 267,
+    "evolution" : -11,
     "nationality" : "MAR",
     "name" : "AYAD OUMAIMA",
     "club" : "IND",
     "points" : 26.0,
     "birth_year" : 1993
   }, {
-    "ranking" : 256,
-    "evolution" : 256,
+    "ranking" : 267,
+    "evolution" : -11,
     "nationality" : "UMI",
     "name" : "DEBORAH MIKESELL",
     "club" : "IND",
     "points" : 26.0,
-    "birth_year" : 1970,
-    "point_diff" : 26
+    "birth_year" : 1970
   }, {
-    "ranking" : 256,
-    "evolution" : -45,
+    "ranking" : 267,
+    "evolution" : -11,
     "nationality" : "MAR",
     "name" : "GUENNED NISRINE",
     "club" : "MSALLAH",
     "points" : 26.0,
-    "birth_year" : 1990,
-    "point_diff" : -12
+    "birth_year" : 1990
   }, {
-    "ranking" : 256,
-    "evolution" : -10,
+    "ranking" : 267,
+    "evolution" : -11,
     "nationality" : "MAR",
     "name" : "MESMOUDI HASNA",
     "club" : "IND",
     "points" : 26.0,
-    "birth_year" : 1987,
-    "point_diff" : 3
+    "birth_year" : 1987
   }, {
-    "ranking" : 260,
-    "evolution" : -27,
+    "ranking" : 271,
+    "evolution" : 271,
+    "nationality" : "MAR",
+    "name" : "ABDALLAOUI KAMELIA",
+    "club" : "IND",
+    "points" : 25.0,
+    "birth_year" : 1989,
+    "point_diff" : 25
+  }, {
+    "ranking" : 271,
+    "evolution" : -11,
     "nationality" : "MAR",
     "name" : "AFQUIR IMANE",
     "club" : "IND",
     "points" : 25.0,
     "birth_year" : 1985
   }, {
-    "ranking" : 260,
-    "evolution" : -27,
+    "ranking" : 271,
+    "evolution" : -11,
     "nationality" : "MAR",
     "name" : "CHIGUER LOUBNA",
     "club" : "IND",
     "points" : 25.0,
     "birth_year" : 1982
   }, {
-    "ranking" : 260,
-    "evolution" : -27,
+    "ranking" : 271,
+    "evolution" : -11,
     "nationality" : "MAR",
     "name" : "EL BOUNAAMANI ASMAA",
     "club" : "IND",
     "points" : 25.0,
     "birth_year" : 1986
   }, {
-    "ranking" : 260,
-    "evolution" : -27,
+    "ranking" : 271,
+    "evolution" : -11,
     "nationality" : "MAR",
     "name" : "EL KHATTABI SARA",
     "club" : "IND",
     "points" : 25.0,
     "birth_year" : 1987
   }, {
-    "ranking" : 260,
-    "evolution" : 260,
+    "ranking" : 271,
+    "evolution" : 271,
     "nationality" : "MAR",
-    "name" : "HAZZAZ ABOUAMAL ZINEB",
+    "name" : "NAIDJA LAILA",
     "club" : "IND",
     "points" : 25.0,
-    "birth_year" : 1980,
+    "birth_year" : 1987,
     "point_diff" : 25
   }, {
-    "ranking" : 265,
-    "evolution" : -24,
+    "ranking" : 277,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "BERRADA NAWAL",
     "club" : "IND",
     "points" : 24.0,
     "birth_year" : 1981
   }, {
-    "ranking" : 265,
-    "evolution" : 265,
+    "ranking" : 277,
+    "evolution" : -12,
     "nationality" : "TUN",
     "name" : "CHARRADI SENDA",
     "club" : "IND",
     "points" : 24.0,
-    "birth_year" : 1975,
-    "point_diff" : 24
+    "birth_year" : 1975
   }, {
-    "ranking" : 265,
-    "evolution" : -24,
+    "ranking" : 277,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "IDRISSI KHAMLICH KENZA",
     "club" : "UPM",
     "points" : 24.0,
     "birth_year" : 1981
   }, {
-    "ranking" : 265,
-    "evolution" : -24,
-    "nationality" : "MAR",
-    "name" : "JOUNDY LINA",
-    "club" : "IND",
-    "points" : 24.0,
-    "birth_year" : 1990
-  }, {
-    "ranking" : 265,
-    "evolution" : -24,
+    "ranking" : 277,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "NARIMI SOUKAINA",
     "club" : "PFA",
     "points" : 24.0,
     "birth_year" : 1990
   }, {
-    "ranking" : 265,
-    "evolution" : 36,
+    "ranking" : 277,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "REINHART CAMELIA",
     "club" : "IND",
     "points" : 24.0,
-    "birth_year" : 1999,
-    "point_diff" : 21
+    "birth_year" : 1999
   }, {
-    "ranking" : 265,
-    "evolution" : -95,
+    "ranking" : 277,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "SEFIAT FARAH",
     "club" : "PFA",
     "points" : 24.0,
-    "birth_year" : 1992,
-    "point_diff" : -42
+    "birth_year" : 1992
   }, {
-    "ranking" : 265,
-    "evolution" : -24,
+    "ranking" : 277,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "SELMA HIDASS",
     "club" : "IND",
     "points" : 24.0,
     "birth_year" : 1989
   }, {
-    "ranking" : 273,
-    "evolution" : -27,
+    "ranking" : 284,
+    "evolution" : -11,
     "nationality" : "MAR",
     "name" : "AL TURAIHI EENAS",
     "club" : "IND",
     "points" : 23.0,
     "birth_year" : 1987
   }, {
-    "ranking" : 273,
-    "evolution" : -27,
+    "ranking" : 284,
+    "evolution" : -11,
     "nationality" : "MAR",
     "name" : "BEGHIEL LOUBNA",
     "club" : "IND",
     "points" : 23.0,
     "birth_year" : 1976
   }, {
-    "ranking" : 275,
-    "evolution" : -26,
+    "ranking" : 284,
+    "evolution" : 42,
+    "nationality" : "MAR",
+    "name" : "OTRY NADIA",
+    "club" : "RTCA",
+    "points" : 23.0,
+    "birth_year" : 1991,
+    "point_diff" : 18
+  }, {
+    "ranking" : 287,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "OUALI FATIMA ZAHRA",
     "club" : "IND",
     "points" : 22.0,
     "birth_year" : 1987
   }, {
-    "ranking" : 276,
-    "evolution" : 276,
+    "ranking" : 288,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "ADOUNIS SOUKAINA",
     "club" : "IND",
     "points" : 21.0,
-    "birth_year" : 1989,
-    "point_diff" : 21
+    "birth_year" : 1989
   }, {
-    "ranking" : 276,
-    "evolution" : -125,
+    "ranking" : 288,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "AICH MANAL",
     "club" : "IND",
     "points" : 21.0,
-    "birth_year" : 1999,
-    "point_diff" : -61
+    "birth_year" : 1999
   }, {
-    "ranking" : 276,
-    "evolution" : 276,
+    "ranking" : 288,
+    "evolution" : -12,
     "nationality" : "FRA",
     "name" : "AMEUR TELLIA",
     "club" : "IND",
     "points" : 21.0,
-    "birth_year" : 1982,
-    "point_diff" : 21
+    "birth_year" : 1982
   }, {
-    "ranking" : 276,
-    "evolution" : 276,
-    "nationality" : "FRA",
-    "name" : "BELLAMY ANTONELLA",
+    "ranking" : 288,
+    "evolution" : -67,
+    "nationality" : "MAR",
+    "name" : "BEN ESSALAH YASMINE",
     "club" : "IND",
     "points" : 21.0,
-    "birth_year" : 1991,
-    "point_diff" : 21
+    "birth_year" : 1990,
+    "point_diff" : -25
   }, {
-    "ranking" : 276,
-    "evolution" : -26,
+    "ranking" : 288,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "BENJELLOUN GHITA",
     "club" : "ASB",
     "points" : 21.0,
     "birth_year" : 1994
   }, {
-    "ranking" : 276,
-    "evolution" : -26,
+    "ranking" : 288,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "CHAMI DINA",
     "club" : "TCF",
     "points" : 21.0,
     "birth_year" : 2010
   }, {
-    "ranking" : 276,
-    "evolution" : 276,
+    "ranking" : 288,
+    "evolution" : -67,
+    "nationality" : "MAR",
+    "name" : "HAJOUI FATIMA",
+    "club" : "IND",
+    "points" : 21.0,
+    "birth_year" : 1992,
+    "point_diff" : -25
+  }, {
+    "ranking" : 288,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "LAHLOU ZINEB",
     "club" : "IND",
     "points" : 21.0,
-    "birth_year" : 1974,
-    "point_diff" : 21
+    "birth_year" : 1974
   }, {
-    "ranking" : 276,
-    "evolution" : -125,
+    "ranking" : 288,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "MOAMAH IMANE",
     "club" : "IND",
     "points" : 21.0,
-    "birth_year" : 1978,
-    "point_diff" : -61
+    "birth_year" : 1978
   }, {
-    "ranking" : 276,
-    "evolution" : -26,
+    "ranking" : 288,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "MOHIEDDINE MAYSSEME",
     "club" : "TCF",
     "points" : 21.0,
     "birth_year" : 2009
   }, {
-    "ranking" : 276,
-    "evolution" : -11,
+    "ranking" : 288,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "TADLAOUI IMANE",
     "club" : "TCF",
     "points" : 21.0,
-    "birth_year" : 1987,
-    "point_diff" : 5
+    "birth_year" : 1987
   }, {
-    "ranking" : 276,
-    "evolution" : 276,
-    "nationality" : "MAR",
-    "name" : "TOULBA NAJAT",
-    "club" : "RTCA",
-    "points" : 21.0,
-    "birth_year" : 1989,
-    "point_diff" : 21
-  }, {
-    "ranking" : 287,
-    "evolution" : -32,
+    "ranking" : 299,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "BENNANI SARA",
     "club" : "IND",
     "points" : 20.0,
     "birth_year" : 1995
   }, {
-    "ranking" : 287,
-    "evolution" : -32,
+    "ranking" : 299,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "ELMOKHLIS LEILA",
     "club" : "IND",
     "points" : 20.0,
     "birth_year" : 1994
   }, {
-    "ranking" : 287,
-    "evolution" : -69,
+    "ranking" : 299,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "MRADMI WAFAA",
     "club" : "PFA",
     "points" : 20.0,
-    "birth_year" : 1973,
-    "point_diff" : -13
+    "birth_year" : 1973
   }, {
-    "ranking" : 290,
-    "evolution" : 4,
+    "ranking" : 302,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "EL COHEN HIND",
     "club" : "IND",
     "points" : 19.0,
-    "birth_year" : 1999,
-    "point_diff" : 14
+    "birth_year" : 1999
   }, {
-    "ranking" : 291,
-    "evolution" : -3,
+    "ranking" : 303,
+    "evolution" : 303,
     "nationality" : "MAR",
-    "name" : "BENNANI SAFAE",
-    "club" : "IND",
+    "name" : "BERGHAZI YASMINE",
+    "club" : "RTCA",
     "points" : 18.0,
-    "birth_year" : 1985,
-    "point_diff" : 10
-  }, {
-    "ranking" : 291,
-    "evolution" : 291,
-    "nationality" : "MAR",
-    "name" : "EL MOBARIK MANAL",
-    "club" : "IND",
-    "points" : 18.0,
-    "birth_year" : 1988,
+    "birth_year" : 2000,
     "point_diff" : 18
   }, {
-    "ranking" : 291,
-    "evolution" : 291,
+    "ranking" : 303,
+    "evolution" : 303,
     "nationality" : "MAR",
-    "name" : "EL MOBARIK MOUNIA",
+    "name" : "BESRI RANIA",
     "club" : "IND",
     "points" : 18.0,
-    "birth_year" : 1988,
+    "birth_year" : 2000,
     "point_diff" : 18
   }, {
-    "ranking" : 291,
-    "evolution" : -32,
+    "ranking" : 303,
+    "evolution" : 303,
+    "nationality" : "MAR",
+    "name" : "BOUZAG CHAIMA",
+    "club" : "RTCA",
+    "points" : 18.0,
+    "birth_year" : 1998,
+    "point_diff" : 18
+  }, {
+    "ranking" : 303,
+    "evolution" : 303,
+    "nationality" : "MAR",
+    "name" : "EL AZZOUZI SARA",
+    "club" : "RTCA",
+    "points" : 18.0,
+    "birth_year" : 1992,
+    "point_diff" : 18
+  }, {
+    "ranking" : 303,
+    "evolution" : 303,
+    "nationality" : "MAR",
+    "name" : "KHELLOUT FARAH",
+    "club" : "RTCA",
+    "points" : 18.0,
+    "birth_year" : 1992,
+    "point_diff" : 18
+  }, {
+    "ranking" : 303,
+    "evolution" : -12,
     "nationality" : "MAR",
     "name" : "MOUKHLIS MOUNA",
     "club" : "IND",
     "points" : 18.0,
     "birth_year" : 1997
   }, {
-    "ranking" : 295,
-    "evolution" : -34,
+    "ranking" : 303,
+    "evolution" : 303,
+    "nationality" : "MAR",
+    "name" : "OUTALEB SALIMA",
+    "club" : "RTCA",
+    "points" : 18.0,
+    "birth_year" : 1996,
+    "point_diff" : 18
+  }, {
+    "ranking" : 310,
+    "evolution" : -15,
     "nationality" : "MAR",
     "name" : "BENYOUSSEF KENZA",
     "club" : "IND",
     "points" : 17.0,
     "birth_year" : 1985
   }, {
-    "ranking" : 295,
-    "evolution" : -34,
+    "ranking" : 310,
+    "evolution" : -15,
     "nationality" : "MAR",
     "name" : "GHAMIRI ZINEB",
     "club" : "IND",
     "points" : 17.0,
     "birth_year" : 1986
   }, {
-    "ranking" : 295,
-    "evolution" : -34,
+    "ranking" : 310,
+    "evolution" : -15,
     "nationality" : "MAR",
     "name" : "SAOUD SIHAM",
     "club" : "IND",
     "points" : 17.0,
     "birth_year" : 1984
   }, {
-    "ranking" : 298,
-    "evolution" : -33,
+    "ranking" : 313,
+    "evolution" : -15,
     "nationality" : "MAR",
     "name" : "KHATTABI OUMSALAMA",
     "club" : "IND",
     "points" : 16.0,
     "birth_year" : 1991
   }, {
-    "ranking" : 299,
-    "evolution" : -29,
+    "ranking" : 314,
+    "evolution" : -15,
     "nationality" : "MAR",
     "name" : "OUHBI HANANE",
     "club" : "IND",
     "points" : 15.0,
     "birth_year" : 1986
   }, {
-    "ranking" : 299,
-    "evolution" : 299,
-    "nationality" : "MAR",
-    "name" : "ZAHROUBANE SALMA",
-    "club" : "IND",
-    "points" : 15.0,
-    "birth_year" : 1987,
-    "point_diff" : 15
-  }, {
-    "ranking" : 301,
-    "evolution" : -28,
-    "nationality" : "MAR",
-    "name" : "ABOUDAFIR MARIAM",
-    "club" : "IND",
-    "points" : 14.0,
-    "birth_year" : 1988
-  }, {
-    "ranking" : 301,
-    "evolution" : -28,
-    "nationality" : "MAR",
-    "name" : "BENCHEKROUN RANYA",
-    "club" : "IND",
-    "points" : 14.0,
-    "birth_year" : 2003
-  }, {
-    "ranking" : 301,
-    "evolution" : 301,
+    "ranking" : 315,
+    "evolution" : -14,
     "nationality" : "MAR",
     "name" : "EL FAHRY EL FASSI MERYEM",
     "club" : "IND",
     "points" : 14.0,
-    "birth_year" : 1982,
-    "point_diff" : 14
+    "birth_year" : 1982
   }, {
-    "ranking" : 301,
-    "evolution" : -28,
-    "nationality" : "MAR",
-    "name" : "ESSEDDIKI HANAE",
-    "club" : "IND",
-    "points" : 14.0,
-    "birth_year" : 1989
-  }, {
-    "ranking" : 301,
-    "evolution" : 301,
-    "nationality" : "MAR",
-    "name" : "GUENDOUZ LINA",
-    "club" : "IND",
-    "points" : 14.0,
-    "birth_year" : 2006,
-    "point_diff" : 14
-  }, {
-    "ranking" : 306,
-    "evolution" : -29,
+    "ranking" : 316,
+    "evolution" : -10,
     "nationality" : "MAR",
     "name" : "BARBOUCH RIHAM",
     "club" : "IND",
     "points" : 12.0,
     "birth_year" : 1990
   }, {
-    "ranking" : 306,
-    "evolution" : -29,
+    "ranking" : 316,
+    "evolution" : -10,
     "nationality" : "MAR",
     "name" : "KITANE GHITA",
     "club" : "IND",
     "points" : 12.0,
     "birth_year" : 2001
   }, {
-    "ranking" : 306,
-    "evolution" : -29,
+    "ranking" : 316,
+    "evolution" : -10,
     "nationality" : "MAR",
     "name" : "SKALLI ZAYNAB",
     "club" : "IND",
     "points" : 12.0,
     "birth_year" : 1999
   }, {
-    "ranking" : 309,
-    "evolution" : -29,
+    "ranking" : 319,
+    "evolution" : -10,
     "nationality" : "MAR",
     "name" : "MISSOUR SALIMA",
     "club" : "IND",
     "points" : 11.0,
     "birth_year" : 1982
   }, {
-    "ranking" : 310,
-    "evolution" : -29,
+    "ranking" : 320,
+    "evolution" : -10,
     "nationality" : "MAR",
     "name" : "ABBOU AYA",
     "club" : "IND",
     "points" : 10.0,
     "birth_year" : 2001
   }, {
-    "ranking" : 310,
-    "evolution" : 310,
+    "ranking" : 320,
+    "evolution" : -10,
     "nationality" : "MAR",
     "name" : "AMRI ASMAE",
     "club" : "TCF",
     "points" : 10.0,
-    "birth_year" : 1982,
+    "birth_year" : 1982
+  }, {
+    "ranking" : 320,
+    "evolution" : -81,
+    "nationality" : "MAR",
+    "name" : "BENQLILOU HIND",
+    "club" : "IND",
+    "points" : 10.0,
+    "birth_year" : 1997,
+    "point_diff" : -26
+  }, {
+    "ranking" : 320,
+    "evolution" : 320,
+    "nationality" : "FRA",
+    "name" : "DARAI ANOUK",
+    "club" : "ATMA",
+    "points" : 10.0,
+    "birth_year" : 1975,
     "point_diff" : 10
   }, {
-    "ranking" : 310,
-    "evolution" : 310,
+    "ranking" : 320,
+    "evolution" : -10,
     "nationality" : "MAR",
     "name" : "EL FARDI CHAIMAE",
     "club" : "IND",
     "points" : 10.0,
-    "birth_year" : 1999,
-    "point_diff" : 10
+    "birth_year" : 1999
   }, {
-    "ranking" : 310,
-    "evolution" : -29,
+    "ranking" : 320,
+    "evolution" : -10,
     "nationality" : "MAR",
     "name" : "EL HANKOUR YOUSSRA",
     "club" : "IND",
     "points" : 10.0,
     "birth_year" : 1990
   }, {
-    "ranking" : 310,
-    "evolution" : -29,
+    "ranking" : 320,
+    "evolution" : -10,
     "nationality" : "MWI",
     "name" : "EL YACOUBI YASMINE",
     "club" : "IND",
     "points" : 10.0,
     "birth_year" : 1989
   }, {
-    "ranking" : 310,
-    "evolution" : -29,
+    "ranking" : 320,
+    "evolution" : -10,
     "nationality" : "MAR",
     "name" : "ELLOUZI AMIRA",
     "club" : "COC",
     "points" : 10.0,
     "birth_year" : 2004
   }, {
-    "ranking" : 310,
-    "evolution" : 310,
+    "ranking" : 320,
+    "evolution" : 320,
+    "nationality" : "MAR",
+    "name" : "FATMI YASMIN",
+    "club" : "IND",
+    "points" : 10.0,
+    "birth_year" : 1996,
+    "point_diff" : 10
+  }, {
+    "ranking" : 320,
+    "evolution" : -10,
     "nationality" : "MAR",
     "name" : "FILLALI SALIMA",
     "club" : "IND",
     "points" : 10.0,
-    "birth_year" : 1984,
-    "point_diff" : 10
+    "birth_year" : 1984
   }, {
-    "ranking" : 310,
-    "evolution" : -29,
+    "ranking" : 320,
+    "evolution" : -10,
     "nationality" : "MAR",
     "name" : "GUENNIOUI OMAIMA",
     "club" : "IND",
     "points" : 10.0,
     "birth_year" : 1992
   }, {
-    "ranking" : 310,
-    "evolution" : -29,
+    "ranking" : 320,
+    "evolution" : -10,
     "nationality" : "MAR",
     "name" : "KADIRI ZOUBIDA",
     "club" : "IND",
     "points" : 10.0,
     "birth_year" : 2002
   }, {
-    "ranking" : 310,
-    "evolution" : -29,
+    "ranking" : 320,
+    "evolution" : -10,
     "nationality" : "MAR",
     "name" : "LOUKILI KENZA",
     "club" : "IND",
     "points" : 10.0,
     "birth_year" : 1998
   }, {
-    "ranking" : 310,
-    "evolution" : -81,
+    "ranking" : 320,
+    "evolution" : 320,
+    "nationality" : "MAR",
+    "name" : "MARHRAOUI SARA",
+    "club" : "IND",
+    "points" : 10.0,
+    "birth_year" : 1995,
+    "point_diff" : 10
+  }, {
+    "ranking" : 320,
+    "evolution" : -10,
     "nationality" : "MAR",
     "name" : "OUAJJOU MERYEM",
     "club" : "IND",
     "points" : 10.0,
-    "birth_year" : 1983,
-    "point_diff" : -17
+    "birth_year" : 1983
   }, {
-    "ranking" : 321,
-    "evolution" : 321,
+    "ranking" : 320,
+    "evolution" : 320,
+    "nationality" : "FRA",
+    "name" : "PENDINO CANDICE",
+    "club" : "ATMA",
+    "points" : 10.0,
+    "birth_year" : 1983,
+    "point_diff" : 10
+  }, {
+    "ranking" : 336,
+    "evolution" : -15,
     "nationality" : "MAR",
     "name" : "ESAOUITI GHITA SABRA",
     "club" : "IND",
     "points" : 9.0,
-    "birth_year" : 1984,
-    "point_diff" : 9
+    "birth_year" : 1984
   }, {
-    "ranking" : 321,
-    "evolution" : 321,
+    "ranking" : 336,
+    "evolution" : -15,
     "nationality" : "MAR",
     "name" : "MABROUK HIBA",
     "club" : "IND",
     "points" : 9.0,
-    "birth_year" : 1988,
-    "point_diff" : 9
+    "birth_year" : 1988
   }, {
-    "ranking" : 323,
-    "evolution" : -35,
+    "ranking" : 338,
+    "evolution" : -15,
     "nationality" : "MAR",
     "name" : "AMEJOUD ZINEB SIHAM",
     "club" : "IND",
     "points" : 8.0,
     "birth_year" : 1989
   }, {
-    "ranking" : 323,
-    "evolution" : -35,
+    "ranking" : 338,
+    "evolution" : -15,
     "nationality" : "MAR",
     "name" : "GUESSOUS ANBAR",
     "club" : "IND",
     "points" : 8.0,
     "birth_year" : 1987
   }, {
-    "ranking" : 325,
-    "evolution" : -33,
-    "nationality" : "MAR",
-    "name" : "BOUSHRA AIT EL GABBAS",
-    "club" : "IND",
-    "points" : 7.0,
-    "birth_year" : 1973
-  }, {
-    "ranking" : 326,
-    "evolution" : -32,
+    "ranking" : 340,
+    "evolution" : -14,
     "nationality" : "MAR",
     "name" : "ALAMI TALBI SANAE",
     "club" : "IND",
     "points" : 5.0,
     "birth_year" : 1988
   }, {
-    "ranking" : 326,
-    "evolution" : -106,
+    "ranking" : 340,
+    "evolution" : 340,
+    "nationality" : "MAR",
+    "name" : "ALAOUI DOUIRI DEYAE",
+    "club" : "IND",
+    "points" : 5.0,
+    "birth_year" : 2004,
+    "point_diff" : 5
+  }, {
+    "ranking" : 340,
+    "evolution" : -14,
     "nationality" : "MAR",
     "name" : "ARHDA RIM",
     "club" : "RTCA",
     "points" : 5.0,
-    "birth_year" : 1982,
-    "point_diff" : -25
+    "birth_year" : 1982
   }, {
-    "ranking" : 326,
-    "evolution" : -32,
-    "nationality" : "MAR",
-    "name" : "BERRADA SAMIA",
+    "ranking" : 340,
+    "evolution" : 340,
+    "nationality" : "FRA",
+    "name" : "BITAM SANDRA",
     "club" : "IND",
     "points" : 5.0,
-    "birth_year" : 1977
+    "birth_year" : 1987,
+    "point_diff" : 5
   }, {
-    "ranking" : 326,
-    "evolution" : -32,
+    "ranking" : 340,
+    "evolution" : 340,
+    "nationality" : "MAR",
+    "name" : "EL YASSINI HAJAR",
+    "club" : "IND",
+    "points" : 5.0,
+    "birth_year" : 1998,
+    "point_diff" : 5
+  }, {
+    "ranking" : 340,
+    "evolution" : 340,
+    "nationality" : "MAR",
+    "name" : "ELEULDJ SOUKAINA",
+    "club" : "IND",
+    "points" : 5.0,
+    "birth_year" : 1988,
+    "point_diff" : 5
+  }, {
+    "ranking" : 340,
+    "evolution" : -14,
     "nationality" : "MAR",
     "name" : "HAFIDI SARA",
     "club" : "IND",
     "points" : 5.0,
     "birth_year" : 1989
   }, {
-    "ranking" : 326,
-    "evolution" : 326,
+    "ranking" : 340,
+    "evolution" : 340,
+    "nationality" : "MAR",
+    "name" : "HANACHI RIZLENE",
+    "club" : "IND",
+    "points" : 5.0,
+    "birth_year" : 1989,
+    "point_diff" : 5
+  }, {
+    "ranking" : 340,
+    "evolution" : -14,
     "nationality" : "MAR",
     "name" : "LMRABIH HAFSA",
     "club" : "IND",
     "points" : 5.0,
-    "birth_year" : 1998,
-    "point_diff" : 5
+    "birth_year" : 1998
   }, {
-    "ranking" : 326,
-    "evolution" : 326,
+    "ranking" : 340,
+    "evolution" : -14,
     "nationality" : "MAR",
     "name" : "M ZABIRI YOSRA",
     "club" : "IND",
     "points" : 5.0,
-    "birth_year" : 1997,
-    "point_diff" : 5
+    "birth_year" : 1997
   }, {
-    "ranking" : 326,
-    "evolution" : -106,
-    "nationality" : "MAR",
-    "name" : "OTRY NADIA",
-    "club" : "RTCA",
-    "points" : 5.0,
-    "birth_year" : 1991,
-    "point_diff" : -25
-  }, {
-    "ranking" : 326,
-    "evolution" : 326,
+    "ranking" : 340,
+    "evolution" : -14,
     "nationality" : "MAR",
     "name" : "SEKKATE RANIA",
     "club" : "TCF",
     "points" : 5.0,
-    "birth_year" : 1999,
+    "birth_year" : 1999
+  }, {
+    "ranking" : 340,
+    "evolution" : 340,
+    "nationality" : "MAR",
+    "name" : "SOUFIANI YASMINE",
+    "club" : "IND",
+    "points" : 5.0,
+    "birth_year" : 1984,
     "point_diff" : 5
   }, {
-    "ranking" : 326,
-    "evolution" : -32,
+    "ranking" : 340,
+    "evolution" : -14,
     "nationality" : "MAR",
     "name" : "TOULB NAJAT",
     "club" : "IND",
     "points" : 5.0,
     "birth_year" : 1989
   }, {
-    "ranking" : 335,
-    "evolution" : -34,
+    "ranking" : 353,
+    "evolution" : -18,
     "nationality" : "MAR",
     "name" : "BENCHEKROUN FATINE",
     "club" : "KOM",
     "points" : 3.0,
     "birth_year" : 2002
   }, {
-    "ranking" : 335,
-    "evolution" : -34,
+    "ranking" : 353,
+    "evolution" : -18,
     "nationality" : "MAR",
     "name" : "BENKHALED SAMIA",
     "club" : "KOM",
     "points" : 3.0,
     "birth_year" : 2002
   }, {
-    "ranking" : 335,
-    "evolution" : -34,
+    "ranking" : 353,
+    "evolution" : -18,
     "nationality" : "FRA",
     "name" : "CADEAU MARIE",
     "club" : "IND",
     "points" : 3.0,
     "birth_year" : 1970
   }, {
-    "ranking" : 335,
-    "evolution" : -34,
+    "ranking" : 353,
+    "evolution" : -18,
     "nationality" : "MAR",
     "name" : "CHEBIHI HASNA",
     "club" : "IND",
     "points" : 3.0,
     "birth_year" : 1992
   }, {
-    "ranking" : 335,
-    "evolution" : -34,
+    "ranking" : 353,
+    "evolution" : -18,
     "nationality" : "MAR",
     "name" : "EL ARABI BATOUL",
     "club" : "KOM",
     "points" : 3.0,
     "birth_year" : 2002
   }, {
-    "ranking" : 335,
-    "evolution" : -34,
+    "ranking" : 353,
+    "evolution" : -18,
     "nationality" : "MAR",
     "name" : "EL BAKKOURI MERYEM",
     "club" : "IND",
     "points" : 3.0,
     "birth_year" : 1983
   }, {
-    "ranking" : 335,
-    "evolution" : -34,
+    "ranking" : 353,
+    "evolution" : -18,
     "nationality" : "MAR",
     "name" : "LAHLOU GHITA",
     "club" : "KOM",
     "points" : 3.0,
     "birth_year" : 2000
   }, {
-    "ranking" : 342,
-    "evolution" : -32,
+    "ranking" : 360,
+    "evolution" : -18,
     "nationality" : "MAR",
     "name" : "HAZAN ILANA",
     "club" : "IND",
     "points" : 2.0,
     "birth_year" : 1999
   }, {
-    "ranking" : 342,
-    "evolution" : -32,
+    "ranking" : 360,
+    "evolution" : -18,
     "nationality" : "FRA",
     "name" : "MAZOYER DORRA",
     "club" : "IND",
     "points" : 2.0,
     "birth_year" : 1999
   }, {
-    "ranking" : 344,
-    "evolution" : 344,
-    "nationality" : "MAR",
-    "name" : "AQILI SARA",
-    "club" : "IND",
-    "points" : 1.0,
-    "birth_year" : 1991,
-    "point_diff" : 1
-  }, {
-    "ranking" : 344,
-    "evolution" : 344,
+    "ranking" : 362,
+    "evolution" : -18,
     "nationality" : "MAR",
     "name" : "BARRAMOU OLA",
     "club" : "IND",
     "points" : 1.0,
-    "birth_year" : 1993,
+    "birth_year" : 1993
+  }, {
+    "ranking" : 362,
+    "evolution" : 362,
+    "nationality" : "MAR",
+    "name" : "DEBBOUZE ATIKA",
+    "club" : "UPM",
+    "points" : 1.0,
+    "birth_year" : 1978,
     "point_diff" : 1
   }, {
-    "ranking" : 344,
-    "evolution" : 344,
+    "ranking" : 362,
+    "evolution" : -18,
     "nationality" : "MAR",
     "name" : "EL HAOUARI CAMELYA",
     "club" : "TCF",
     "points" : 1.0,
-    "birth_year" : 2008,
-    "point_diff" : 1
+    "birth_year" : 2008
   } ],
-  "scraped_at" : "2025-11-08T19:38:20.883688"
+  "scraped_at" : "2025-12-06T10:10:38.191018"
 }

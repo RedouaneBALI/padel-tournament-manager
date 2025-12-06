@@ -21,7 +21,7 @@ export default function GoogleLoginButton({
         try {
           onBeforeSignIn?.();
         } finally {
-          signIn('google', { redirect: true, callbackUrl });
+          signIn('google', { redirect: true, callbackUrl: `/auth/check-profile?callbackUrl=${encodeURIComponent(callbackUrl)}` });
         }
       }}
       className={className}
