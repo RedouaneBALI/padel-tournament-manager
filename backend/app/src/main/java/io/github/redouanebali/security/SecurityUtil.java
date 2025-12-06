@@ -11,6 +11,8 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 
 public final class SecurityUtil {
 
+  private static final String EMAIL_CLAIM = "email";
+
   private static UserService userService; // Inject via setter
 
   private SecurityUtil() {
@@ -28,7 +30,7 @@ public final class SecurityUtil {
       // Covers null, anonymous, or any non-JWT authentication
       return null;
     }
-    return jwtAuth.getToken().getClaimAsString("email");
+    return jwtAuth.getToken().getClaimAsString(EMAIL_CLAIM);
   }
 
   public static boolean isSuperAdmin(Set<String> superAdmins) {
@@ -58,9 +60,9 @@ public final class SecurityUtil {
       return Map.of();
     }
     Map<String, Object> claims = new HashMap<>();
-    String              email  = jwtAuth.getToken().getClaimAsString("email");
+    String              email  = jwtAuth.getToken().getClaimAsString(EMAIL_CLAIM);
     if (email != null) {
-      claims.put("email", email);
+      claims.put(EMAIL_CLAIM, email);
     }
     String name = jwtAuth.getToken().getClaimAsString("name");
     if (name != null) {

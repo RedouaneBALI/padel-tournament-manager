@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserService {
 
+  private static final String LOCALE_CLAIM = "locale";
+
   private final UserRepository userRepository;
 
   @Transactional
@@ -24,14 +26,14 @@ public class UserService {
       if (claims.containsKey("name")) {
         user.setName((String) claims.get("name"));
       }
-      if (claims.containsKey("locale")) {
-        user.setLocale((String) claims.get("locale"));
+      if (claims.containsKey(LOCALE_CLAIM)) {
+        user.setLocale((String) claims.get(LOCALE_CLAIM));
       }
       return userRepository.save(user);
     } else {
       return userRepository.save(new User(email,
                                           (String) claims.get("name"),
-                                          (String) claims.get("locale")));
+                                          (String) claims.get(LOCALE_CLAIM)));
     }
   }
 

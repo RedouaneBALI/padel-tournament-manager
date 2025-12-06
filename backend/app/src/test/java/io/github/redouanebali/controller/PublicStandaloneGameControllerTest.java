@@ -1,7 +1,6 @@
 package io.github.redouanebali.controller;
 
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -26,6 +25,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.server.ResponseStatusException;
 
 @WebMvcTest(controllers = PublicStandaloneGameController.class)
@@ -88,7 +88,7 @@ public class PublicStandaloneGameControllerTest {
     when(tournamentMapper.toDTO(g1)).thenReturn(sampleGameDTO());
     when(authorizationService.canEditGame(g1, "user1")).thenReturn(false);
 
-    mockMvc.perform(get("/games/{id}", g1.getId()).accept(MediaType.APPLICATION_JSON))
+    mockMvc.perform(MockMvcRequestBuilders.get("/games/{id}", g1.getId()).accept(MediaType.APPLICATION_JSON))
            .andExpect(status().isOk())
            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
   }
@@ -105,7 +105,7 @@ public class PublicStandaloneGameControllerTest {
     when(tournamentMapper.toDTO(g1)).thenReturn(dto);
     when(authorizationService.canEditGame(g1, "user1")).thenReturn(false);
 
-    String response = mockMvc.perform(get("/games/{id}", g1.getId()).accept(MediaType.APPLICATION_JSON))
+    String response = mockMvc.perform(MockMvcRequestBuilders.get("/games/{id}", g1.getId()).accept(MediaType.APPLICATION_JSON))
                              .andExpect(status().isOk())
                              .andReturn()
                              .getResponse()
@@ -126,7 +126,7 @@ public class PublicStandaloneGameControllerTest {
     when(tournamentMapper.toDTO(g1)).thenReturn(dto);
     when(authorizationService.canEditGame(g1, "user1")).thenReturn(true);
 
-    String response = mockMvc.perform(get("/games/{id}", g1.getId()).accept(MediaType.APPLICATION_JSON))
+    String response = mockMvc.perform(MockMvcRequestBuilders.get("/games/{id}", g1.getId()).accept(MediaType.APPLICATION_JSON))
                              .andExpect(status().isOk())
                              .andReturn()
                              .getResponse()
@@ -141,7 +141,7 @@ public class PublicStandaloneGameControllerTest {
     when(standaloneGameService.getGameById(missingId)).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND,
                                                                                              "Game not found with ID: " + missingId));
 
-    mockMvc.perform(get("/games/{id}", missingId).accept(MediaType.APPLICATION_JSON))
+    mockMvc.perform(MockMvcRequestBuilders.get("/games/{id}", missingId).accept(MediaType.APPLICATION_JSON))
            .andExpect(result -> {
              int sc = result.getResponse().getStatus();
              if (!(sc >= 400 && sc < 600)) {

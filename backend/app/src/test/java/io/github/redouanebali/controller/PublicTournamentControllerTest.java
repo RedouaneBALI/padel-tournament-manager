@@ -1,7 +1,6 @@
 package io.github.redouanebali.controller;
 
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.github.redouanebali.dto.response.TournamentDTO;
@@ -23,6 +22,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @WebMvcTest(controllers = PublicTournamentController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -73,7 +73,7 @@ public class PublicTournamentControllerTest {
     when(tournamentMapper.toDTO(t)).thenReturn(dto);
     when(authorizationService.canEditTournament(t, "user1")).thenReturn(false);
 
-    mockMvc.perform(get("/tournaments/{id}", 5L).accept(MediaType.APPLICATION_JSON))
+    mockMvc.perform(MockMvcRequestBuilders.get("/tournaments/{id}", 5L).accept(MediaType.APPLICATION_JSON))
            .andExpect(status().isOk());
   }
 
@@ -91,7 +91,7 @@ public class PublicTournamentControllerTest {
     when(tournamentMapper.toDTO(t)).thenReturn(dto);
     when(authorizationService.canEditTournament(t, "user1")).thenReturn(false);
 
-    String response = mockMvc.perform(get("/tournaments/{id}", 10L).accept(MediaType.APPLICATION_JSON))
+    String response = mockMvc.perform(MockMvcRequestBuilders.get("/tournaments/{id}", 10L).accept(MediaType.APPLICATION_JSON))
                              .andExpect(status().isOk())
                              .andReturn()
                              .getResponse()
@@ -114,7 +114,7 @@ public class PublicTournamentControllerTest {
     when(tournamentMapper.toDTO(t)).thenReturn(dto);
     when(authorizationService.canEditTournament(t, "user1")).thenReturn(true);
 
-    String response = mockMvc.perform(get("/tournaments/{id}", 11L).accept(MediaType.APPLICATION_JSON))
+    String response = mockMvc.perform(MockMvcRequestBuilders.get("/tournaments/{id}", 11L).accept(MediaType.APPLICATION_JSON))
                              .andExpect(status().isOk())
                              .andReturn()
                              .getResponse()
@@ -129,7 +129,7 @@ public class PublicTournamentControllerTest {
     t.setId(6L);
     when(tournamentService.getTournamentById(6L)).thenReturn(t);
 
-    mockMvc.perform(get("/tournaments/{tournamentId}/games/{gameId}", 6L, 999L).accept(MediaType.APPLICATION_JSON))
+    mockMvc.perform(MockMvcRequestBuilders.get("/tournaments/{tournamentId}/games/{gameId}", 6L, 999L).accept(MediaType.APPLICATION_JSON))
            .andExpect(status().isNotFound());
   }
 

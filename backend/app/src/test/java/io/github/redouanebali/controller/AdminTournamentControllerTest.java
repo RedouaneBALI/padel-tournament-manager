@@ -1,8 +1,6 @@
 package io.github.redouanebali.controller;
 
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,6 +27,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @WebMvcTest(controllers = AdminTournamentController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -99,9 +98,9 @@ public class AdminTournamentControllerTest {
     when(tournamentService.createTournament(t)).thenReturn(t);
     when(tournamentMapper.toDTO(t)).thenReturn(new TournamentDTO());
 
-    mockMvc.perform(post("/admin/tournaments")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req)))
+    mockMvc.perform(MockMvcRequestBuilders.post("/admin/tournaments")
+                                          .contentType(MediaType.APPLICATION_JSON)
+                                          .content(objectMapper.writeValueAsString(req)))
            .andExpect(status().isCreated());
   }
 
@@ -111,7 +110,7 @@ public class AdminTournamentControllerTest {
     when(tournamentService.listByOwnerOrEditor("user1")).thenReturn(List.of());
     when(tournamentMapper.toDTO(java.util.Collections.emptyList())).thenReturn(List.of());
 
-    mockMvc.perform(get("/admin/tournaments").accept(MediaType.APPLICATION_JSON))
+    mockMvc.perform(MockMvcRequestBuilders.get("/admin/tournaments").accept(MediaType.APPLICATION_JSON))
            .andExpect(status().isOk());
   }
 

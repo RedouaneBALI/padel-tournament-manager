@@ -4,10 +4,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,6 +35,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 
 @WebMvcTest(controllers = AdminStandaloneGameController.class)
@@ -118,7 +115,7 @@ public class AdminStandaloneGameControllerTest {
     when(standaloneGameService.getStandaloneGamesByOwner("user1")).thenReturn(List.of(g1));
     when(tournamentMapper.toDTOGameList(List.of(g1))).thenReturn(List.of(new GameDTO()));
 
-    mockMvc.perform(get("/admin/games?scope=mine").accept(MediaType.APPLICATION_JSON))
+    mockMvc.perform(MockMvcRequestBuilders.get("/admin/games?scope=mine").accept(MediaType.APPLICATION_JSON))
            .andExpect(status().isOk());
   }
 
@@ -130,7 +127,7 @@ public class AdminStandaloneGameControllerTest {
     when(standaloneGameService.getAllStandaloneGames()).thenReturn(List.of(g1, g2));
     when(tournamentMapper.toDTOGameList(List.of(g1, g2))).thenReturn(List.of(new GameDTO(), new GameDTO()));
 
-    mockMvc.perform(get("/admin/games?scope=all").accept(MediaType.APPLICATION_JSON))
+    mockMvc.perform(MockMvcRequestBuilders.get("/admin/games?scope=all").accept(MediaType.APPLICATION_JSON))
            .andExpect(status().isOk());
   }
 
@@ -148,9 +145,9 @@ public class AdminStandaloneGameControllerTest {
     when(standaloneGameService.createStandaloneGame(any(CreateStandaloneGameRequest.class))).thenReturn(created);
     when(tournamentMapper.toDTO(created)).thenReturn(new GameDTO());
 
-    mockMvc.perform(post("/admin/games")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req)))
+    mockMvc.perform(MockMvcRequestBuilders.post("/admin/games")
+                                          .contentType(MediaType.APPLICATION_JSON)
+                                          .content(objectMapper.writeValueAsString(req)))
            .andExpect(status().isCreated());
   }
 
@@ -164,7 +161,7 @@ public class AdminStandaloneGameControllerTest {
     when(standaloneGameService.getGameById(id)).thenReturn(game);
     doNothing().when(standaloneGameService).deleteGame(id);
 
-    mockMvc.perform(delete("/admin/games/{id}", id))
+    mockMvc.perform(MockMvcRequestBuilders.delete("/admin/games/{id}", id))
            .andExpect(status().isNoContent());
   }
 
@@ -180,7 +177,7 @@ public class AdminStandaloneGameControllerTest {
 
     org.junit.jupiter.api.Assertions.assertThrows(jakarta.servlet.ServletException.class, () -> {
       try {
-        mockMvc.perform(delete("/admin/games/{id}", id)).andReturn();
+        mockMvc.perform(MockMvcRequestBuilders.delete("/admin/games/{id}", id)).andReturn();
       } catch (Exception e) {
         throw e;
       }
@@ -198,8 +195,8 @@ public class AdminStandaloneGameControllerTest {
     when(standaloneGameService.getGameById(id)).thenReturn(game);
     when(standaloneGameService.incrementGamePoint(id, TeamSide.TEAM_A)).thenReturn(dto);
 
-    mockMvc.perform(patch("/admin/games/{id}/game-point", id)
-                        .param("teamSide", TeamSide.TEAM_A.name()))
+    mockMvc.perform(MockMvcRequestBuilders.patch("/admin/games/{id}/game-point", id)
+                                          .param("teamSide", TeamSide.TEAM_A.name()))
            .andExpect(status().isOk());
 
     verify(standaloneGameService).incrementGamePoint(id, TeamSide.TEAM_A);
@@ -216,7 +213,7 @@ public class AdminStandaloneGameControllerTest {
     when(standaloneGameService.getGameById(id)).thenReturn(game);
     when(standaloneGameService.undoGamePoint(id)).thenReturn(dto);
 
-    mockMvc.perform(patch("/admin/games/{id}/undo-game-point", id))
+    mockMvc.perform(MockMvcRequestBuilders.patch("/admin/games/{id}/undo-game-point", id))
            .andExpect(status().isOk());
 
     verify(standaloneGameService).undoGamePoint(id);

@@ -262,7 +262,7 @@ class ScoreTest {
     score.setCurrentGamePointB(GamePoint.QUARANTE);
     // Next point wins the game (no advantage)
     boolean   withAdvantage = format.isAdvantage();
-    GamePoint nextA         = nextGamePoint(score.getCurrentGamePointA(), score.getCurrentGamePointB(), withAdvantage);
+    GamePoint nextA         = nextGamePoint(score.getCurrentGamePointA(), withAdvantage);
     assertEquals(GamePoint.QUARANTE, nextA, "No-ad: should stay at 40, next point triggers game win logic");
   }
 
@@ -274,7 +274,7 @@ class ScoreTest {
     score.setCurrentGamePointA(GamePoint.QUARANTE);
     score.setCurrentGamePointB(GamePoint.QUARANTE);
     boolean   withAdvantage = format.isAdvantage();
-    GamePoint nextA         = nextGamePoint(score.getCurrentGamePointA(), score.getCurrentGamePointB(), withAdvantage);
+    GamePoint nextA         = nextGamePoint(score.getCurrentGamePointA(), withAdvantage);
     assertEquals(GamePoint.AVANTAGE, nextA, "With advantage: should go to AVANTAGE");
   }
 
@@ -399,7 +399,7 @@ class ScoreTest {
   }
 
   // Helpers (copied from GameService for test purpose)
-  private GamePoint nextGamePoint(GamePoint current, GamePoint opponent, boolean withAdvantage) {
+  private GamePoint nextGamePoint(GamePoint current, boolean withAdvantage) {
     if (withAdvantage) {
       switch (current) {
         case ZERO:

@@ -45,14 +45,14 @@ public interface TournamentMapper {
 
   default List<TournamentDTO> toDTO(List<Tournament> tournaments) {
     if (tournaments == null) {
-      return null;
+      return new ArrayList<>();
     }
     return tournaments.stream().map(this::toDTO).toList();
   }
 
   default Set<TournamentDTO> toDTO(Set<Tournament> tournaments) {
     if (tournaments == null) {
-      return null;
+      return Set.of();
     }
     return tournaments.stream().map(this::toDTO).collect(java.util.stream.Collectors.toSet());
   }
