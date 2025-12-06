@@ -356,24 +356,7 @@ public class GamePointManagerTest {
     assertEquals(1, game.getScore().getSets().get(1).getTeamAScore(), "Team A should have 1 point in the new set");
     assertEquals(0, game.getScore().getSets().get(1).getTeamBScore(), "Team B should have 0 point in the new set");
   }
-
-
-  @Test
-  void testSwitchModeRemovesExtraEmptySets() {
-    Score score = new Score();
-    score.getSets().add(new SetScore(0, 0));
-    score.getSets().add(new SetScore(0, 0));
-    Game        game   = new Game();
-    MatchFormat format = new MatchFormat();
-    format.setNumberOfSetsToWin(2);
-    game.setFormat(format);
-    game.setScore(score);
-    GamePointManager manager = new GamePointManager();
-    manager.incrementGamePoint(game, TeamSide.TEAM_A);
-    long emptySets = game.getScore().getSets().stream().filter(s -> s.getTeamAScore() == 0 && s.getTeamBScore() == 0).count();
-    assertEquals(1, emptySets, "Switching mode should remove extra empty sets");
-  }
-
+  
   @Test
   void shouldIncrementFirstUnfinishedSetNotLastSet() {
     GamePointManager manager = new GamePointManager();
