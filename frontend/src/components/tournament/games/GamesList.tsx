@@ -33,6 +33,7 @@ export default function GamesList({
   const [overrides, setOverrides] = useState<Record<string, { score: any; winner: string | null }>>({});
   // État de tri local (time | court)
   const [sortMode, setSortMode] = useState<'time' | 'court'>('time');
+  const [showOnlyInProgress, setShowOnlyInProgress] = useState(false);
 
   const handleGameClick = (gameId: string) => {
     const basePath = editable ? '/admin/tournament' : '/tournament';
@@ -91,24 +92,35 @@ export default function GamesList({
       return a.scheduledTime.localeCompare(b.scheduledTime);
     };
 
+    let sortedGames: Game[];
     if (sortMode === 'time') {
-      return [...games].sort((a, b) => compareTime(a, b));
+      sortedGames = [...games].sort((a, b) => compareTime(a, b));
+    } else {
+      // sortMode === 'court' : trier par court (locale, numérique), puis par heure
+      sortedGames = [...games].sort((a, b) => {
+        const ca = (a.court || '').trim();
+        const cb = (b.court || '').trim();
+
+        if (!ca && !cb) return compareTime(a, b);
+        if (!ca) return 1; // without court -> place after
+        if (!cb) return -1;
+
+        const courtCmp = ca.localeCompare(cb, 'fr', { numeric: true });
+        if (courtCmp !== 0) return courtCmp;
+        return compareTime(a, b);
+      });
     }
 
-    // sortMode === 'court' : trier par court (locale, numérique), puis par heure
-    return [...games].sort((a, b) => {
-      const ca = (a.court || '').trim();
-      const cb = (b.court || '').trim();
+    // Filtrer si nécessaire
+    if (showOnlyInProgress) {
+      sortedGames = sortedGames.filter(game => {
+        const isInProgress = !game.finished && (game.score?.sets?.some(set => set.teamAScore || set.teamBScore) || false);
+        return isInProgress;
+      });
+    }
 
-      if (!ca && !cb) return compareTime(a, b);
-      if (!ca) return 1; // without court -> place after
-      if (!cb) return -1;
-
-      const courtCmp = ca.localeCompare(cb, 'fr', { numeric: true });
-      if (courtCmp !== 0) return courtCmp;
-      return compareTime(a, b);
-    });
-  }, [games, sortMode]);
+    return sortedGames;
+  }, [games, sortMode, showOnlyInProgress]);
 
   return (
     <div className="flex flex-col gap-4 w-full items-center mb-4">
@@ -139,6 +151,13 @@ export default function GamesList({
           >
             Par court
           </button>
+          <button
+            type="button"
+            title={showOnlyInProgress ? "Afficher tous les matchs" : "Afficher uniquement les matchs en cours"}
+            onClick={() => setShowOnlyInProgress(!showOnlyInProgress)}
+            className={`w-6 h-6 rounded-full ml-2 transition-colors ${showOnlyInProgress ? 'bg-red-500' : 'border-2 border-red-500 bg-transparent'}`}
+          ></button>
+                 <span className="text-sm text-muted-foreground">Live</span>
         </div>
       </div>
 

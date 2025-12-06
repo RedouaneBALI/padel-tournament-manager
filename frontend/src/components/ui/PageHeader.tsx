@@ -11,7 +11,7 @@ type Props = {
 
 export default function PageHeader({ title, right, loading = false, className = '' }: Props) {
   return (
-    <div className={`flex items-center justify-between mb-4 ${className}`}>
+    <div className={`flex items-center justify-between ${className}`}>
       <h1 className="flex items-center gap-3">
         <div className="w-1 h-10 bg-primary rounded" />
         {loading ? (
