@@ -59,7 +59,7 @@ export default function DataPageLayout({
       </div>
 
       {/* Sticky Footer */}
-      <div className="sticky bottom-16 z-20 bg-background border-t border-border px-4 py-0 space-y-0 shadow-sm">
+      <div className="sticky bottom-16 z-20 bg-background border-t border-border px-4 py-0 space-y-0">
         <div className="flex flex-col items-center gap-1">
           <Pagination
             currentPage={currentPage}
@@ -71,7 +71,7 @@ export default function DataPageLayout({
           </div>
         </div>
 
-        <footer className="text-center text-xs text-gray-500 mb-2">
+        <footer className="text-center text-xs text-gray-500">
           {renderFooterContent}
           Last update : {scrapedAt ? new Date(scrapedAt).toLocaleString('fr-FR') : 'Non disponible'}
         </footer>

@@ -115,10 +115,10 @@ export default function Home() {
                     Créer un tournoi 🎾
                   </Link>
                   <Link
-                    href="/admin/tournaments"
+                    href="/frmt/classement/hommes"
                     className="flex-1 text-center px-5 py-3 rounded-lg bg-primary text-on-primary font-semibold hover:bg-primary-hover transition"
                   >
-                    Mes tournois 🔎
+                    Classement FRMT 🔎
                   </Link>
                 </div>
               ) : (
@@ -130,6 +130,12 @@ export default function Home() {
                       className="w-full text-center px-5 py-3 rounded-lg bg-gradient-to-r from-primary to-primary-hover text-on-primary font-semibold text-lg shadow-md hover:shadow-lg hover:scale-105 transform transition"
                     >
                       Voir l'exemple 🔎
+                    </Link>
+                    <Link
+                      href="/frmt/classement/hommes"
+                      className="w-full text-center px-5 py-3 rounded-lg bg-background text-on-secondary font-semibold hover:bg-primary-hover transition"
+                    >
+                      Classement FRMT
                     </Link>
                     <button
                       onClick={() =>
