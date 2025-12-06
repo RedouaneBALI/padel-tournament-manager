@@ -21,9 +21,9 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.server.ResponseStatusException;
@@ -35,16 +35,16 @@ public class PublicStandaloneGameControllerTest {
   @Autowired
   private MockMvc mockMvc;
 
-  @MockBean
+  @MockitoBean
   private StandaloneGameService standaloneGameService;
 
-  @MockBean
+  @MockitoBean
   private TournamentMapper tournamentMapper;
 
-  @MockBean
+  @MockitoBean
   private SecurityProps securityProps;
 
-  @MockBean
+  @MockitoBean
   private io.github.redouanebali.security.AuthorizationService authorizationService;
 
   private MockedStatic<SecurityUtil> secMock;

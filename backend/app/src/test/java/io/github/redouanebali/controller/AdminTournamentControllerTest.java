@@ -24,8 +24,8 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -39,32 +39,32 @@ public class AdminTournamentControllerTest {
   @Autowired
   private ObjectMapper objectMapper;
 
-  @MockBean
+  @MockitoBean
   private TournamentService tournamentService;
 
-  @MockBean
+  @MockitoBean
   private TournamentMapper tournamentMapper;
 
-  @MockBean
+  @MockitoBean
   private SecurityProps securityProps;
 
-  @MockBean
+  @MockitoBean
   private io.github.redouanebali.security.AuthorizationService authorizationService;
 
   // newly added mocks required by controller constructor
-  @MockBean
+  @MockitoBean
   private PlayerPairService playerPairService;
 
-  @MockBean
+  @MockitoBean
   private GameService gameService;
 
-  @MockBean
+  @MockitoBean
   private MatchFormatService matchFormatService;
 
-  @MockBean
+  @MockitoBean
   private GameScoreWebSocketController gameScoreWebSocketController;
 
-  @MockBean
+  @MockitoBean
   private io.github.redouanebali.service.UserService userService;
 
   private MockedStatic<SecurityUtil> secMock;
