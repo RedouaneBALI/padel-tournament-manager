@@ -21,4 +21,5 @@ export interface Tournament {
   currentRoundStage: Stage;
   config: TournamentFormatConfig;
   editorIds: string[];
+  organizerName?: string;
 }

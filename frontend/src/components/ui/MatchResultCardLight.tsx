@@ -18,9 +18,10 @@ interface Props {
   matchIndex?: number;
   totalMatches?: number;
   stage?: string | Stage;
+  scheduledTime?: string;
 }
 
-export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, pool, finished = true, matchIndex, totalMatches, stage }: Props) {
+export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, pool, finished = true, matchIndex, totalMatches, stage, scheduledTime }: Props) {
   const [scores] = useState<string[][]>(() => [
     Array.from({ length: 3 }, (_, i) => score?.sets[i]?.teamAScore?.toString() || ''),
     Array.from({ length: 3 }, (_, i) => score?.sets[i]?.teamBScore?.toString() || ''),
@@ -36,6 +37,7 @@ export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, 
 
   const group = normalizeGroup(pool?.name);
   const isInProgress = !finished && (score?.sets?.some(set => set.teamAScore || set.teamBScore) || false);
+  const notStarted = !finished && !isInProgress;
   // determine if this round is the final
   const isFinalStage = (() => {
     try {
@@ -95,6 +97,11 @@ export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, 
           />
         </div>
       </div>
+      {notStarted && scheduledTime && (
+        <div className="absolute bottom-2 right-2 text-xs text-muted-foreground bg-background/80 px-1 py-0.5 rounded">
+          {scheduledTime}
+        </div>
+      )}
     </div>
   );
 }

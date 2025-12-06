@@ -29,6 +29,7 @@ public class TournamentDTO {
   private LocalDate           endDate;
   private Set<String>         editorIds;
   private Boolean             isEditable;
+  private String              organizerName;
 
   public Stage getCurrentRoundStage() {
     if (rounds == null || rounds.isEmpty()) {

@@ -42,6 +42,21 @@ export default function TournamentOverviewTab({ tournament }: TournamentOverview
           </div>
         </div>
 
+        {/* Organisateur (full width) */}
+        <div className="sm:col-span-2 rounded-lg border bg-card/50 p-4 relative">
+          <div className="absolute -top-2 left-3 bg-card px-1 text-xs uppercase tracking-wide text-muted-foreground">
+            Organisateur
+          </div>
+          <div className="flex items-center gap-3">
+            <Building2 className="h-5 w-5 text-muted-foreground" aria-hidden />
+            <div className="min-w-0">
+              <div className="text-sm leading-relaxed break-words">
+                {tournament.organizerName || '—'}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Localisation (Club + Ville) */}
         <div className="rounded-lg border bg-card/50 p-4 relative">
           <div className="absolute -top-2 left-3 bg-card px-1 text-xs uppercase tracking-wide text-muted-foreground">

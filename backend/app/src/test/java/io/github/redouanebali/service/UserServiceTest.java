@@ -90,4 +90,21 @@ public class UserServiceTest {
     User user = userService.getUserIfExists(email);
     assertThat(user).isNull();
   }
+
+  @Test
+  void testGetUserNameByEmail() {
+    String email = "test@example.com";
+    String name  = "Test User";
+    when(userRepository.findByEmail(email)).thenReturn(Optional.of(new User(email, name, "en")));
+    String result = userService.getUserNameByEmail(email);
+    assertThat(result).isEqualTo(name);
+  }
+
+  @Test
+  void testGetUserNameByEmailNotFound() {
+    String email = "notfound@example.com";
+    when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+    String result = userService.getUserNameByEmail(email);
+    assertThat(result).isNull();
+  }
 }

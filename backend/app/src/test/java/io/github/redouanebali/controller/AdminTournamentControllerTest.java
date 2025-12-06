@@ -65,12 +65,16 @@ public class AdminTournamentControllerTest {
   @MockBean
   private GameScoreWebSocketController gameScoreWebSocketController;
 
+  @MockBean
+  private io.github.redouanebali.service.UserService userService;
+
   private MockedStatic<SecurityUtil> secMock;
 
   @BeforeEach
   public void setUp() {
     secMock = Mockito.mockStatic(SecurityUtil.class);
     secMock.when(SecurityUtil::currentUserId).thenReturn("user1");
+    when(userService.getUserNameByEmail("user1")).thenReturn("User One");
   }
 
   @AfterEach

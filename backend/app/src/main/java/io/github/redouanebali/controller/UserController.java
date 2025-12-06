@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,5 +37,15 @@ public class UserController {
     String email   = SecurityUtil.currentUserId();
     User   updated = userService.updateProfile(email, request.name(), request.locale(), request.profileType(), request.city(), request.country());
     return ResponseEntity.ok(updated);
+  }
+
+  @GetMapping("/{email}/name")
+  @PreAuthorize("permitAll()")
+  public ResponseEntity<String> getUserName(@PathVariable String email) {
+    String name = userService.getUserNameByEmail(email);
+    if (name == null) {
+      return ResponseEntity.notFound().build();
+    }
+    return ResponseEntity.ok(name);
   }
 }

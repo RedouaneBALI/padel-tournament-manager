@@ -1,0 +1,3 @@
+ALTER TABLE score ADD COLUMN IF NOT EXISTS tie_break_point_a INTEGER;
+ALTER TABLE score ADD COLUMN IF NOT EXISTS tie_break_point_b INTEGER;
+

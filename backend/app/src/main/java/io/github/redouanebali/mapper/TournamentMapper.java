@@ -35,11 +35,27 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface TournamentMapper {
 
-  TournamentDTO toDTO(Tournament tournament);
+  @Mapping(target = "organizerName", ignore = true)
+  @Mapping(target = "editorIds", source = "editorIds")
+  TournamentDTO toDTOBase(Tournament tournament);
 
-  List<TournamentDTO> toDTO(List<Tournament> tournaments);
+  default TournamentDTO toDTO(Tournament tournament) {
+    return toDTOBase(tournament);
+  }
 
-  Set<TournamentDTO> toDTO(Set<Tournament> tournaments);
+  default List<TournamentDTO> toDTO(List<Tournament> tournaments) {
+    if (tournaments == null) {
+      return null;
+    }
+    return tournaments.stream().map(this::toDTO).toList();
+  }
+
+  default Set<TournamentDTO> toDTO(Set<Tournament> tournaments) {
+    if (tournaments == null) {
+      return null;
+    }
+    return tournaments.stream().map(this::toDTO).collect(java.util.stream.Collectors.toSet());
+  }
 
   /**
    * Converts a Tournament to TournamentDTO with isEditable flag based on user permissions. Uses AuthorizationService to determine edit rights (owner,

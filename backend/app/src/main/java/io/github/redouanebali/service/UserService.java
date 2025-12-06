@@ -59,4 +59,9 @@ public class UserService {
     user.setCountry(country);
     return userRepository.save(user);
   }
+
+  public String getUserNameByEmail(String email) {
+    User user = userRepository.findByEmail(email).orElse(null);
+    return user != null ? user.getName() : null;
+  }
 }
