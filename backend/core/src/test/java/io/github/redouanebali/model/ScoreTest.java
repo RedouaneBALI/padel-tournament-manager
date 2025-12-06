@@ -281,8 +281,7 @@ class ScoreTest {
   @Test
   void testTieBreakAtCustomGamesPerSet_4() {
     // Format : set en 4 jeux, tie-break à 4-4
-    MatchFormat format = new MatchFormat(1L, 1, 4, false, true, 4);
-    Score       score  = new Score();
+    Score score = new Score();
     score.addSetScore(4, 4); // On atteint le tie-break
     score.setTieBreakPointA(2);
     score.setTieBreakPointB(4);
@@ -293,8 +292,7 @@ class ScoreTest {
   @Test
   void testTieBreakAtCustomGamesPerSet_9() {
     // Format : set en 9 jeux, tie-break à 9-9
-    MatchFormat format = new MatchFormat(1L, 1, 9, false, true, 9);
-    Score       score  = new Score();
+    Score score = new Score();
     score.addSetScore(9, 9); // On atteint le tie-break
     score.setTieBreakPointA(7);
     score.setTieBreakPointB(5);

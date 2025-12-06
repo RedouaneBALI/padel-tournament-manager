@@ -299,13 +299,6 @@ class GameTest {
     assertThrows(IllegalArgumentException.class, () -> format.setTieBreakAt(10));
   }
 
-  private MatchFormat createSimpleFormat() {
-    MatchFormat format = new MatchFormat();
-    format.setNumberOfSetsToWin(1);
-    format.setGamesPerSet(6);
-    format.setSuperTieBreakInFinalSet(false);
-    return format;
-  }
 
   /**
    * Helper method to parse score string and create Score object with proper super tie-break handling. Eliminates code duplication across test

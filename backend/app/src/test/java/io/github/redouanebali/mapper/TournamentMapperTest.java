@@ -506,8 +506,8 @@ class TournamentMapperTest {
     score.setTieBreakPointA(5);
     score.setTieBreakPointB(4);
     game.setScore(score);
-    TournamentMapper mapper = new TournamentMapperImpl();
-    ScoreDTO         dto    = mapper.toDTO(game, score);
+    TournamentMapper testMapper = new TournamentMapperImpl();
+    ScoreDTO         dto        = testMapper.toDTO(game, score);
     assertEquals(0, dto.getSets().get(0).getTieBreakTeamA());
     assertEquals(0, dto.getSets().get(0).getTieBreakTeamB());
   }
@@ -529,8 +529,8 @@ class TournamentMapperTest {
     score.setTieBreakPointA(7);
     score.setTieBreakPointB(8);
     game.setScore(score);
-    TournamentMapper mapper = new TournamentMapperImpl();
-    ScoreDTO         dto    = mapper.toDTO(game, score);
+    TournamentMapper testMapper = new TournamentMapperImpl();
+    ScoreDTO         dto        = testMapper.toDTO(game, score);
     // Tie-break points should be injected in last set
     assertEquals(7, dto.getSets().get(2).getTieBreakTeamA());
     assertEquals(8, dto.getSets().get(2).getTieBreakTeamB());
@@ -553,8 +553,8 @@ class TournamentMapperTest {
     score.setTieBreakPointA(3);
     score.setTieBreakPointB(2);
     game.setScore(score);
-    TournamentMapper mapper = new TournamentMapperImpl();
-    ScoreDTO         dto    = mapper.toDTO(game, score);
+    TournamentMapper testMapper = new TournamentMapperImpl();
+    ScoreDTO         dto        = testMapper.toDTO(game, score);
     // Tie-break points should NOT be injected in last set
     assertNull(dto.getSets().get(2).getTieBreakTeamA());
     assertNull(dto.getSets().get(2).getTieBreakTeamB());

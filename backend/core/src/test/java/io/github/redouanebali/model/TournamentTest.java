@@ -121,14 +121,12 @@ class TournamentTest {
   }
 
   @Test
-  void onUpdate_shouldUpdateTimestamp() throws InterruptedException {
+  void onUpdate_shouldUpdateTimestamp() {
     Tournament tournament = new Tournament();
     tournament.setOwnerId("owner123");
     tournament.setName("Test Tournament");
 
     java.time.Instant beforeUpdate = tournament.getUpdatedAt();
-
-    Thread.sleep(10); // Small delay to ensure timestamp changes
 
     tournament.onUpdate();
 
@@ -148,4 +146,3 @@ class TournamentTest {
     assertTrue(tournament.getEditorIds().isEmpty());
   }
 }
-

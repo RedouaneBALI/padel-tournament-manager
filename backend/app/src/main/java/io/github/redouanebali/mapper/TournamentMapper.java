@@ -89,7 +89,7 @@ public interface TournamentMapper {
       io.github.redouanebali.security.AuthorizationService authService
   ) {
     if (tournaments == null) {
-      return null;
+      return new ArrayList<>();
     }
     List<TournamentDTO> dtos = new ArrayList<>();
     for (Tournament t : tournaments) {
@@ -344,7 +344,7 @@ public interface TournamentMapper {
 
   default List<SetScoreDTO> toDTOSets(List<SetScore> sets) {
     if (sets == null) {
-      return null;
+      return new ArrayList<>();
     }
     List<SetScoreDTO> result = new ArrayList<>();
     for (SetScore set : sets) {

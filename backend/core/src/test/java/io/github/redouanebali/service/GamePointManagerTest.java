@@ -23,35 +23,6 @@ public class GamePointManagerTest {
     gamePointManager = new GamePointManager();
   }
 
-  private Game createGameWithScoreAndFormat(int gamesA,
-                                            int gamesB,
-                                            GamePoint pointA,
-                                            GamePoint pointB,
-                                            String startTieBreakA,
-                                            String startTieBreakB,
-                                            boolean withSuperTieBreak) {
-    Game        game   = new Game();
-    MatchFormat format = new MatchFormat();
-    format.setNumberOfSetsToWin(2);
-    format.setGamesPerSet(6);
-    if (withSuperTieBreak) {
-      format.setSuperTieBreakInFinalSet(true);
-    }
-    game.setFormat(format);
-    Score score = new Score();
-    score.getSets().add(new SetScore(gamesA, gamesB));
-    score.setCurrentGamePointA(pointA);
-    score.setCurrentGamePointB(pointB);
-    if (startTieBreakA != null && !startTieBreakA.isBlank()) {
-      score.setTieBreakPointA(Integer.parseInt(startTieBreakA));
-    }
-    if (startTieBreakB != null && !startTieBreakB.isBlank()) {
-      score.setTieBreakPointB(Integer.parseInt(startTieBreakB));
-    }
-    game.setScore(score);
-    return game;
-  }
-
   @ParameterizedTest
   @CsvFileSource(resources = "/game_point_transitions.csv", numLinesToSkip = 1)
   void testIncrementGamePointTransitionsCsv(String currentA,
@@ -356,7 +327,7 @@ public class GamePointManagerTest {
     assertEquals(1, game.getScore().getSets().get(1).getTeamAScore(), "Team A should have 1 point in the new set");
     assertEquals(0, game.getScore().getSets().get(1).getTeamBScore(), "Team B should have 0 point in the new set");
   }
-  
+
   @Test
   void shouldIncrementFirstUnfinishedSetNotLastSet() {
     GamePointManager manager = new GamePointManager();

@@ -226,12 +226,10 @@ public class GamePointManager {
   }
 
   private boolean isSetFinished(Game game, SetScore set) {
-    if (game.getFormat() != null && game.getFormat().isSuperTieBreakInFinalSet()) {
-      if ((set.getTeamAScore() == 1 && set.getTeamBScore() == 0) || (set.getTeamAScore() == 0 && set.getTeamBScore() == 1)) {
-        if (isSuperTieBreakSetContext(game, set)) {
-          return true;
-        }
-      }
+    if (game.getFormat() != null && game.getFormat().isSuperTieBreakInFinalSet() &&
+        ((set.getTeamAScore() == 1 && set.getTeamBScore() == 0) || (set.getTeamAScore() == 0 && set.getTeamBScore() == 1)) &&
+        isSuperTieBreakSetContext(game, set)) {
+      return true;
     }
 
     return isSetWin(set.getTeamAScore(), set.getTeamBScore()) || isSetWin(set.getTeamBScore(), set.getTeamAScore());

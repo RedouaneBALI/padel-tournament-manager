@@ -105,9 +105,9 @@ public class Pool {
                                                   entry.getValue().gamesWon - entry.getValue().gamesLost
                                               ))
                                               .toList();
-    PoolRanking poolRanking = new PoolRanking();
-    poolRanking.setDetails(result);
-    this.setPoolRanking(poolRanking);
+    PoolRanking ranking = new PoolRanking();
+    ranking.setDetails(result);
+    this.setPoolRanking(ranking);
     return result;
   }
 

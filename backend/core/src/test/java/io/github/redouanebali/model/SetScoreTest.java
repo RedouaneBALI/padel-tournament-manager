@@ -66,7 +66,7 @@ class SetScoreTest {
   void equals_differentClass_shouldReturnFalse() {
     SetScore score = new SetScore(6, 4);
 
-    assertNotEquals(score, "6-4");
+    assertNotEquals("6-4", score);
   }
 
   @Test
@@ -115,4 +115,3 @@ class SetScoreTest {
     assertEquals(tieB, score.getTieBreakTeamB());
   }
 }
-

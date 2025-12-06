@@ -96,8 +96,8 @@ public class GameService {
       ScoreDTO scoreDTO = tournamentMapper.toDTO(game.getScore());
       return new UpdateScoreDTO(game.isFinished(), winner, scoreDTO);
     } catch (Exception e) {
-      throw new RuntimeException("Failed to update game score for tournament " + tournament.getId() +
-                                 ", game " + game.getId() + ": " + e.getMessage(), e);
+      throw new IllegalStateException("Failed to update game score for tournament " + tournament.getId() +
+                                      ", game " + game.getId() + ": " + e.getMessage(), e);
     }
   }
 
