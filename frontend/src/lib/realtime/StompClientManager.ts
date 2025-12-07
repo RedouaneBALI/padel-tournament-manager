@@ -57,11 +57,6 @@ export class StompClientManager {
       reconnectDelay: this.config.reconnectDelay,
       heartbeatIncoming: this.config.heartbeatIncoming,
       heartbeatOutgoing: this.config.heartbeatOutgoing,
-      debug: (msg: string) => {
-        if (process.env.NODE_ENV !== 'production') {
-          console.debug('[STOMP]', msg);
-        }
-      },
       webSocketFactory: () => new SockJS(this.config.baseUrl, undefined, { transports: ['websocket', 'xhr-streaming', 'xhr-polling'] }),
       connectHeaders: await this.buildAuthHeaders(),
       onConnect: () => {
@@ -124,4 +119,3 @@ export class StompClientManager {
     }
   }
 }
-

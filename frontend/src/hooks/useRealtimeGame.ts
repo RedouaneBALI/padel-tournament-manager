@@ -18,7 +18,7 @@ interface UseRealtimeGameOptions {
 // Global singleton instance
 let globalStompManager: StompClientManager | null = null;
 
-function getStompManager(session: any): StompClientManager {
+export function getStompManager(session: any): StompClientManager {
   if (!globalStompManager) {
     globalStompManager = new StompClientManager({
       authTokenProvider: async () => {

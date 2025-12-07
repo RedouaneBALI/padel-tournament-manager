@@ -80,74 +80,78 @@ export default function MonComptePage() {
 
   return (
     <>
-      <div className="max-w-lg mx-auto mt-10 p-6 bg-card rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold mb-6 text-center text-card-foreground">Complétez votre profil</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-foreground">
-              Nom
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
-              placeholder="Votre nom"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-3">
-              Type de profil
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div
-                className={`p-4 border rounded-lg cursor-pointer transition ${
-                  formData.profileType === ProfileType.SPECTATOR
-                    ? 'border-primary bg-primary/10'
-                    : 'border-border hover:border-primary'
-                }`}
-                onClick={() => setFormData({ ...formData, profileType: ProfileType.SPECTATOR })}
-              >
-                <Eye className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                <h3 className="text-center font-bold">Spectateur</h3>
-                <p className="text-center text-sm text-muted-foreground">Regardez les matchs</p>
-              </div>
-              <div
-                className={`p-4 border rounded-lg cursor-pointer transition ${
-                  formData.profileType === ProfileType.PLAYER
-                    ? 'border-primary bg-primary/10'
-                    : 'border-border hover:border-primary'
-                }`}
-                onClick={() => setFormData({ ...formData, profileType: ProfileType.PLAYER })}
-              >
-                <UserIcon className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                <h3 className="text-center font-bold">Joueur</h3>
-                <p className="text-center text-sm text-muted-foreground">Participez aux tournois</p>
-              </div>
-              <div
-                className={`p-4 border rounded-lg cursor-pointer transition ${
-                  formData.profileType === ProfileType.ORGANIZER
-                    ? 'border-primary bg-primary/10'
-                    : 'border-border hover:border-primary'
-                }`}
-                onClick={() => setFormData({ ...formData, profileType: ProfileType.ORGANIZER })}
-              >
-                <Trophy className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                <h3 className="text-center font-bold">Organisateur</h3>
-                <p className="text-center text-sm text-muted-foreground">Créez et gérez des tournois</p>
+      <div className="fixed inset-x-0 bottom-0 z-40 bg-card" style={{height: 'env(safe-area-inset-bottom, 64px)'}}></div>
+      <div className="flex flex-col bg-card min-h-0 h-full">
+        <div className="max-w-lg w-full mx-auto p-6 rounded-lg shadow-md">
+          <h1 className="text-2xl font-bold mb-6 text-center text-card-foreground">Complétez votre profil</h1>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-foreground">
+                Nom
+              </label>
+              <input
+                type="text"
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                placeholder="Votre nom"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-3">
+                Type de profil
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div
+                  className={`p-4 border rounded-lg cursor-pointer transition ${
+                    formData.profileType === ProfileType.SPECTATOR
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border hover:border-primary'
+                  }`}
+                  onClick={() => setFormData({ ...formData, profileType: ProfileType.SPECTATOR })}
+                >
+                  <Eye className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                  <h3 className="text-center font-bold">Spectateur</h3>
+                  <p className="text-center text-sm text-muted-foreground">Regardez les matchs</p>
+                </div>
+                <div
+                  className={`p-4 border rounded-lg cursor-pointer transition ${
+                    formData.profileType === ProfileType.PLAYER
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border hover:border-primary'
+                  }`}
+                  onClick={() => setFormData({ ...formData, profileType: ProfileType.PLAYER })}
+                >
+                  <UserIcon className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                  <h3 className="text-center font-bold">Joueur</h3>
+                  <p className="text-center text-sm text-muted-foreground">Participez aux tournois</p>
+                </div>
+                <div
+                  className={`p-4 border rounded-lg cursor-pointer transition ${
+                    formData.profileType === ProfileType.ORGANIZER
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border hover:border-primary'
+                  }`}
+                  onClick={() => setFormData({ ...formData, profileType: ProfileType.ORGANIZER })}
+                >
+                  <Trophy className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                  <h3 className="text-center font-bold">Organisateur</h3>
+                  <p className="text-center text-sm text-muted-foreground">Créez et gérez des tournois</p>
+                </div>
               </div>
             </div>
-          </div>
-          <Button
-            type="submit"
-            disabled={saving}
-            className="w-full"
-          >
-            {saving ? 'Sauvegarde...' : 'Sauvegarder et continuer'}
-          </Button>
-        </form>
+            <Button
+              type="submit"
+              disabled={saving}
+              className="w-full"
+            >
+              {saving ? 'Sauvegarde...' : 'Sauvegarder et continuer'}
+            </Button>
+          </form>
+        </div>
+        <div className="h-16" />
       </div>
       {user && <BottomNav items={bottomItems} pathname={pathname} />}
     </>

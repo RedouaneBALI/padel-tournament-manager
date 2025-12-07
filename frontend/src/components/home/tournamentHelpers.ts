@@ -53,26 +53,19 @@ export const filterActiveTournaments = (list: any[]) => {
   const now = new Date();
   const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
   const dayAfterTomorrow = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
-  console.log('Filtering active tournaments. Now:', now, 'Yesterday:', yesterday, 'Day after tomorrow:', dayAfterTomorrow);
-  console.log('Total tournaments received:', list.length);
   const filtered = list.filter((t: any) => {
     if (!t) {
-      console.log('Tournament is null/undefined');
       return false;
     }
     if (!t.endDate) {
-      console.log('Tournament has no endDate:', t.name || t.id);
       return false;
     }
     const de = new Date(t.endDate);
     if (isNaN(de.getTime())) {
-      console.log('Invalid endDate for tournament:', t.name || t.id, 'endDate:', t.endDate);
       return false;
     }
     const included = de >= yesterday && de <= dayAfterTomorrow;
-    console.log('Tournament:', t.name || t.id, 'endDate:', t.endDate, 'de:', de.toDateString(), 'included:', included);
     return included;
   });
-  console.log('Filtered tournaments count:', filtered.length);
   return filtered;
 };

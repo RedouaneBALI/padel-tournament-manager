@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import MatchResultCard from '@/src/components/ui/MatchResultCard';
 import type { Game } from '@/src/types/game';
+import { useRealtimeGames } from '@/src/hooks/useRealtimeGames';
 
 interface GamesListProps {
   games: Game[];
@@ -80,6 +81,38 @@ export default function GamesList({
 
   const totalMatches = games.length;
 
+  // IDs des matchs non terminés pour les abonnements WebSocket
+  const liveGameIds = useMemo(() => {
+    return games.filter(g => !g.finished).map(g => String(g.id));
+  }, [games]);
+
+  // Real-time WebSocket updates for all non-finished games
+  const handleRealtimeUpdate = useCallback((gameId: string, dto: { score: any; winner: string | null }) => {
+    setOverrides(prev => ({
+      ...prev,
+      [gameId]: {
+        score: dto.score,
+        winner: dto.winner
+      }
+    }));
+  }, []);
+
+  useRealtimeGames({
+    gameIds: liveGameIds,
+    onScoreUpdate: handleRealtimeUpdate,
+    enabled: liveGameIds.length > 0,
+  });
+
+  // Calculer s'il y a au moins un match en cours (live) - prend en compte les overrides
+  const hasLiveMatches = useMemo(() => {
+    return games.some(game => {
+      const override = overrides[String(game.id)];
+      const effectiveScore = override?.score ?? game.score;
+      const isFinished = override?.winner ? true : game.finished;
+      return !isFinished && (effectiveScore?.sets?.some((set: any) => set.teamAScore || set.teamBScore) || false);
+    });
+  }, [games, overrides]);
+
   // Liste triée en UI selon le mode sélectionné
   const orderedGames = useMemo(() => {
     if (!games || games.length === 0) return [] as Game[];
@@ -151,13 +184,17 @@ export default function GamesList({
           >
             Par court
           </button>
-          <button
-            type="button"
-            title={showOnlyInProgress ? "Afficher tous les matchs" : "Afficher uniquement les matchs en cours"}
-            onClick={() => setShowOnlyInProgress(!showOnlyInProgress)}
-            className={`w-6 h-6 rounded-full ml-2 transition-colors ${showOnlyInProgress ? 'bg-red-500' : 'border-2 border-red-500 bg-transparent'}`}
-          ></button>
-                 <span className="text-sm text-muted-foreground">Live</span>
+          {hasLiveMatches && (
+            <>
+              <button
+                type="button"
+                title={showOnlyInProgress ? "Afficher tous les matchs" : "Afficher uniquement les matchs en cours"}
+                onClick={() => setShowOnlyInProgress(!showOnlyInProgress)}
+                className={`w-6 h-6 rounded-full ml-2 transition-colors ${showOnlyInProgress ? 'bg-red-500' : 'border-2 border-red-500 bg-transparent'}`}
+              ></button>
+              <span className="text-sm text-muted-foreground ml-1 px-1">Live</span>
+            </>
+          )}
         </div>
       </div>
 
