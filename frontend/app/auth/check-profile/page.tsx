@@ -22,19 +22,15 @@ export default function CheckProfilePage() {
     const checkProfile = async () => {
       try {
         const user = await fetchUserProfile();
-        console.log('User profile fetched:', user);
-
-        // Si le profil existe mais que le nom n'est pas défini, considérer comme profil incomplet
-        if (!user.name || user.name.trim() === '') {
-          console.log("cas 1");
+        // Si le profil est nouveau (profileType null), rediriger vers mon-compte
+        if (!user.profileType) {
           router.push('/mon-compte');
         } else {
-          console.log("cas 2");
           router.push(callbackUrl);
         }
       } catch (error: any) {
         console.log('Profile check error:', error.message);
-        // Profil inexistant ou autre erreur - rediriger vers mon-compte
+        // En cas d'erreur, rediriger vers mon-compte
         router.push('/mon-compte');
       }
     };

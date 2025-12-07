@@ -11,10 +11,12 @@ import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.Pool;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.security.AuthorizationService;
 import io.github.redouanebali.security.SecurityUtil;
 import io.github.redouanebali.service.MatchFormatService;
 import io.github.redouanebali.service.PlayerPairService;
 import io.github.redouanebali.service.TournamentService;
+import io.github.redouanebali.service.UserService;
 import jakarta.annotation.security.PermitAll;
 import java.util.Comparator;
 import java.util.List;
@@ -47,11 +49,12 @@ import org.springframework.web.server.ResponseStatusException;
 @Slf4j
 public class PublicTournamentController {
 
-  private final TournamentService                                    tournamentService;
-  private final PlayerPairService                                    playerPairService;
-  private final MatchFormatService                                   matchFormatService;
-  private final TournamentMapper                                     tournamentMapper;
-  private final io.github.redouanebali.security.AuthorizationService authorizationService;
+  private final TournamentService    tournamentService;
+  private final PlayerPairService    playerPairService;
+  private final MatchFormatService   matchFormatService;
+  private final TournamentMapper     tournamentMapper;
+  private final AuthorizationService authorizationService;
+  private final UserService          userService;
 
   /**
    * Retrieves complete tournament information by ID. Returns all tournament details including configuration, dates, and metadata. If user is
@@ -68,6 +71,7 @@ public class PublicTournamentController {
     String        userId     = SecurityUtil.currentUserId();
     boolean       canEdit    = authorizationService.canEditTournament(tournament, userId);
     dto.setIsEditable(canEdit);
+    dto.setOrganizerName(userService.getUserNameByEmail(dto.getOwnerId()));
     return ResponseEntity.ok(dto);
   }
 

@@ -25,7 +25,7 @@ public class UserController {
 
   @GetMapping("/profile")
   public ResponseEntity<User> getProfile() {
-    User user = SecurityUtil.getExistingUser();
+    User user = SecurityUtil.getCurrentUser();
     if (user == null) {
       return ResponseEntity.notFound().build();
     }

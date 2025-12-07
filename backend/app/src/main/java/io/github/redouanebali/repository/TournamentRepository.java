@@ -32,9 +32,9 @@ public interface TournamentRepository extends JpaRepository<Tournament, Long> {
   // Find tournaments active on the given date and having at least one game with a non-null team
   @Query(
       "SELECT DISTINCT t FROM Tournament t "
-      + "WHERE t.startDate <= :today AND (t.endDate IS NULL OR t.endDate >= :today) "
+      + "WHERE t.startDate <= :end AND (t.endDate IS NULL OR t.endDate >= :start) "
       + "AND EXISTS (SELECT g FROM Round r JOIN r.games g WHERE r MEMBER OF t.rounds AND (g.teamA IS NOT NULL OR g.teamB IS NOT NULL))")
-  List<Tournament> findActiveWithNonNullGames(@Param("today") LocalDate today);
+  List<Tournament> findActiveWithNonNullGames(@Param("start") LocalDate start, @Param("end") LocalDate end);
 
   // Find tournaments owned by or editable by (editor in) a specific user
   @Query(

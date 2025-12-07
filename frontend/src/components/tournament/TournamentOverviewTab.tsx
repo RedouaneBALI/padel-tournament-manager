@@ -28,6 +28,7 @@ export default function TournamentOverviewTab({ tournament }: TournamentOverview
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Description (full width) */}
+        {tournament.description && (
         <div className="sm:col-span-2 rounded-lg border bg-card/50 p-4 relative">
           <div className="absolute -top-2 left-3 bg-card px-1 text-xs uppercase tracking-wide text-muted-foreground">
             Description
@@ -36,13 +37,15 @@ export default function TournamentOverviewTab({ tournament }: TournamentOverview
             <Info className="h-5 w-5 text-muted-foreground" aria-hidden />
             <div className="min-w-0">
               <div className="text-sm leading-relaxed break-words">
-                {tournament.description || '—'}
+                {tournament.description}
               </div>
             </div>
           </div>
         </div>
+        )}
 
         {/* Organisateur (full width) */}
+        {tournament.organizerName && (
         <div className="sm:col-span-2 rounded-lg border bg-card/50 p-4 relative">
           <div className="absolute -top-2 left-3 bg-card px-1 text-xs uppercase tracking-wide text-muted-foreground">
             Organisateur
@@ -51,13 +54,15 @@ export default function TournamentOverviewTab({ tournament }: TournamentOverview
             <Building2 className="h-5 w-5 text-muted-foreground" aria-hidden />
             <div className="min-w-0">
               <div className="text-sm leading-relaxed break-words">
-                {tournament.organizerName || '—'}
+                {tournament.organizerName}
               </div>
             </div>
           </div>
         </div>
+        )}
 
         {/* Localisation (Club + Ville) */}
+        {(tournament.club || tournament.city) && (
         <div className="rounded-lg border bg-card/50 p-4 relative">
           <div className="absolute -top-2 left-3 bg-card px-1 text-xs uppercase tracking-wide text-muted-foreground">
             Localisation
@@ -66,13 +71,15 @@ export default function TournamentOverviewTab({ tournament }: TournamentOverview
             <MapPin className="h-5 w-5 text-muted-foreground" aria-hidden />
             <div className="min-w-0 w-full">
               <div className="text-sm font-medium truncate">
-                {(tournament.club || '—') + (tournament.city ? ` (${tournament.city})` : '')}
+                {(tournament.club || '') + (tournament.city ? ` (${tournament.city})` : '')}
               </div>
             </div>
           </div>
         </div>
+        )}
 
         {/* Catégorie (Genre - Niveau) */}
+        {(tournament.gender || tournament.level) && (
         <div className="rounded-lg border bg-card/50 p-4 relative">
           <div className="absolute -top-2 left-3 bg-card px-1 text-xs uppercase tracking-wide text-muted-foreground">
             Catégorie
@@ -81,13 +88,15 @@ export default function TournamentOverviewTab({ tournament }: TournamentOverview
             <Users2 className="h-5 w-5 text-muted-foreground" aria-hidden />
             <div className="min-w-0 w-full">
               <div className="text-sm font-medium">
-                {(tournament.gender || '—') + ' - ' + (tournament.level || '—')}
+                {(tournament.gender || '') + ' - ' + (tournament.level || '')}
               </div>
             </div>
           </div>
         </div>
+        )}
 
         {/* Format + Têtes de série */}
+        {(tournament.config?.format || tournament.config?.nbSeeds) && (
         <div className="rounded-lg border bg-card/50 p-4 relative">
           <div className="absolute -top-2 left-3 bg-card px-1 text-xs uppercase tracking-wide text-muted-foreground">
             FORMAT DU TOURNOI
@@ -96,13 +105,15 @@ export default function TournamentOverviewTab({ tournament }: TournamentOverview
             <Layers className="h-5 w-5 text-muted-foreground" aria-hidden />
             <div className="min-w-0 w-full">
               <div className="text-sm font-medium">
-                {`${tournament.config?.format ?? '—'}${tournament.config?.nbSeeds ? ` - ${tournament.config.nbSeeds} têtes de série` : ''}`}
+                {`${tournament.config?.format ?? ''}${tournament.config?.nbSeeds ? ` - ${tournament.config.nbSeeds} têtes de série` : ''}`}
               </div>
             </div>
           </div>
         </div>
+        )}
 
         {/* Date (Début — Fin) */}
+        {(tournament.startDate && tournament.endDate) && (
         <div className="rounded-lg border bg-card/50 p-4 relative">
           <div className="absolute -top-2 left-3 bg-card px-1 text-xs uppercase tracking-wide text-muted-foreground">
             Date
@@ -111,13 +122,12 @@ export default function TournamentOverviewTab({ tournament }: TournamentOverview
             <CalendarDays className="h-5 w-5 text-muted-foreground" aria-hidden />
             <div className="min-w-0 w-full">
               <div className="text-sm font-medium">
-                {tournament.startDate && tournament.endDate
-                  ? `${new Date(tournament.startDate).toLocaleDateString('fr-FR')} — ${new Date(tournament.endDate).toLocaleDateString('fr-FR')}`
-                  : '—'}
+                {`${new Date(tournament.startDate).toLocaleDateString('fr-FR')} — ${new Date(tournament.endDate).toLocaleDateString('fr-FR')}`}
               </div>
             </div>
           </div>
         </div>
+        )}
       </div>
 
       {/* Divider & section header */}

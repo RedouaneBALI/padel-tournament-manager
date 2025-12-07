@@ -11,6 +11,7 @@ import io.github.redouanebali.security.SecurityUtil;
 import io.github.redouanebali.service.MatchFormatService;
 import io.github.redouanebali.service.PlayerPairService;
 import io.github.redouanebali.service.TournamentService;
+import io.github.redouanebali.service.UserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,9 @@ public class PublicTournamentControllerTest {
   @MockitoBean
   private AuthorizationService authorizationService;
 
+  @MockitoBean
+  private UserService userService;
+
   private MockedStatic<SecurityUtil> secMock;
 
   @BeforeEach
@@ -67,11 +71,13 @@ public class PublicTournamentControllerTest {
 
     TournamentDTO dto = new TournamentDTO();
     dto.setId(5L);
+    dto.setOwnerId("owner@example.com");
 
     secMock.when(SecurityUtil::currentUserId).thenReturn("user1");
     when(tournamentService.getTournamentById(5L)).thenReturn(t);
     when(tournamentMapper.toDTO(t)).thenReturn(dto);
     when(authorizationService.canEditTournament(t, "user1")).thenReturn(false);
+    when(userService.getUserNameByEmail("owner@example.com")).thenReturn("Organizer Name");
 
     mockMvc.perform(MockMvcRequestBuilders.get("/tournaments/{id}", 5L).accept(MediaType.APPLICATION_JSON))
            .andExpect(status().isOk());
@@ -85,11 +91,13 @@ public class PublicTournamentControllerTest {
 
     TournamentDTO dto = new TournamentDTO();
     dto.setId(10L);
+    dto.setOwnerId("otherUser");
 
     secMock.when(SecurityUtil::currentUserId).thenReturn("user1");
     when(tournamentService.getTournamentById(10L)).thenReturn(t);
     when(tournamentMapper.toDTO(t)).thenReturn(dto);
     when(authorizationService.canEditTournament(t, "user1")).thenReturn(false);
+    when(userService.getUserNameByEmail("otherUser")).thenReturn("Other Organizer");
 
     String response = mockMvc.perform(MockMvcRequestBuilders.get("/tournaments/{id}", 10L).accept(MediaType.APPLICATION_JSON))
                              .andExpect(status().isOk())
@@ -108,11 +116,13 @@ public class PublicTournamentControllerTest {
 
     TournamentDTO dto = new TournamentDTO();
     dto.setId(11L);
+    dto.setOwnerId("user1");
 
     secMock.when(SecurityUtil::currentUserId).thenReturn("user1");
     when(tournamentService.getTournamentById(11L)).thenReturn(t);
     when(tournamentMapper.toDTO(t)).thenReturn(dto);
     when(authorizationService.canEditTournament(t, "user1")).thenReturn(true);
+    when(userService.getUserNameByEmail("user1")).thenReturn("User One");
 
     String response = mockMvc.perform(MockMvcRequestBuilders.get("/tournaments/{id}", 11L).accept(MediaType.APPLICATION_JSON))
                              .andExpect(status().isOk())

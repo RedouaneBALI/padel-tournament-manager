@@ -1,6 +1,6 @@
-import type { ParsedTournamentForm } from '@/src/validation/tournament';
-// src/components/admin/AdminTournamentForm.tsx
 'use client';
+
+import type { ParsedTournamentForm } from '@/src/validation/tournament';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';

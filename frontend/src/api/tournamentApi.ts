@@ -469,10 +469,6 @@ export async function fetchUserProfile(): Promise<User> {
   if (response.status === 403) {
     throw new Error('FORBIDDEN');
   }
-  if (response.status === 404) {
-    // Profil inexistant - c'est normal pour les nouveaux utilisateurs
-    throw new Error('PROFILE_NOT_FOUND');
-  }
   if (!response.ok) {
     const text = await response.text().catch(() => '');
     toast.error('Erreur lors du chargement du profil.');

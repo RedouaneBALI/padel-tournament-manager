@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import io.github.redouanebali.PadelTournamentManagerApplication;
 import io.github.redouanebali.dto.request.CreatePlayerPairRequest;
 import io.github.redouanebali.model.Game;
+import io.github.redouanebali.model.MatchFormat;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
@@ -124,12 +125,12 @@ class TournamentIntegrationTest {
     t.setConfig(TournamentConfig.builder().mainDrawSize(4).nbSeeds(0).format(TournamentFormat.KNOCKOUT).build());
 
     // Create and persist a default match format for games
-    io.github.redouanebali.model.MatchFormat defaultFormat = new io.github.redouanebali.model.MatchFormat();
+    MatchFormat defaultFormat = new MatchFormat();
     defaultFormat.setNumberOfSetsToWin(2);
     defaultFormat.setGamesPerSet(6);
     defaultFormat.setSuperTieBreakInFinalSet(false);
     defaultFormat = matchFormatRepository.save(defaultFormat); // Persist to avoid TransientPropertyValueException
-    final io.github.redouanebali.model.MatchFormat finalFormat = defaultFormat; // Make it effectively final for lambdas
+    final MatchFormat finalFormat = defaultFormat; // Make it effectively final for lambdas
 
     // Create a round with a real game (teamA assigned)
     Round      round = new Round(Stage.R32);
@@ -146,8 +147,8 @@ class TournamentIntegrationTest {
     Tournament futureT = new Tournament();
     futureT.setOwnerId("io.github.redouanebali.api.integration@test.com");
     futureT.setName("Future Cup");
-    futureT.setStartDate(LocalDate.now().plusDays(2));
-    futureT.setEndDate(LocalDate.now().plusDays(3));
+    futureT.setStartDate(LocalDate.now().plusDays(3));
+    futureT.setEndDate(LocalDate.now().plusDays(4));
     Round futRound = new Round(Stage.R32);
     futRound.addGame(new PlayerPair("F1", "F2", 0), new PlayerPair("F3", "F4", 0));
     futRound.getGames().forEach(g -> g.setFormat(finalFormat));
@@ -159,7 +160,7 @@ class TournamentIntegrationTest {
     pastT.setOwnerId("io.github.redouanebali.api.integration@test.com");
     pastT.setName("Past Cup");
     pastT.setStartDate(LocalDate.now().minusDays(10));
-    pastT.setEndDate(LocalDate.now().minusDays(1));
+    pastT.setEndDate(LocalDate.now().minusDays(2));
     Round pastRound = new Round(Stage.R32);
     pastRound.addGame(new PlayerPair("P1", "P2", 0), new PlayerPair("P3", "P4", 0));
     pastRound.getGames().forEach(g -> g.setFormat(finalFormat));

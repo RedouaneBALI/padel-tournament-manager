@@ -205,6 +205,6 @@ public class TournamentService {
    */
   @Cacheable(cacheNames = "activeTournaments")
   public List<Tournament> getActiveTournaments() {
-    return tournamentRepository.findActiveWithNonNullGames(LocalDate.now());
+    return tournamentRepository.findActiveWithNonNullGames(LocalDate.now().minusDays(1), LocalDate.now().plusDays(2));
   }
 }

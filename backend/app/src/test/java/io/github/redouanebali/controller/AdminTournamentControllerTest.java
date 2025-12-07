@@ -8,6 +8,7 @@ import io.github.redouanebali.dto.request.CreateTournamentRequest;
 import io.github.redouanebali.dto.response.TournamentDTO;
 import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.User;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
 import io.github.redouanebali.service.GameService;
@@ -94,9 +95,15 @@ public class AdminTournamentControllerTest {
     t.setOwnerId("user1");
     t.setId(10L);
 
+    TournamentDTO dto = new TournamentDTO();
+    dto.setOwnerId("user1");
+
     when(tournamentMapper.toEntity(req)).thenReturn(t);
     when(tournamentService.createTournament(t)).thenReturn(t);
-    when(tournamentMapper.toDTO(t)).thenReturn(new TournamentDTO());
+    when(tournamentMapper.toDTO(t)).thenReturn(dto);
+
+    secMock.when(SecurityUtil::currentUserId).thenReturn("user1");
+    secMock.when(SecurityUtil::getCurrentUser).thenReturn(new User("user1", "User Name", "en"));
 
     mockMvc.perform(MockMvcRequestBuilders.post("/admin/tournaments")
                                           .contentType(MediaType.APPLICATION_JSON)

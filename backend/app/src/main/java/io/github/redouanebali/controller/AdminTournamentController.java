@@ -14,6 +14,7 @@ import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.User;
 import io.github.redouanebali.security.AuthorizationService;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
@@ -74,10 +75,11 @@ public class AdminTournamentController {
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<TournamentDTO> createTournament(@RequestBody @Valid CreateTournamentRequest request) {
     log.info("Creating tournament '{}' for user: {}", request.getName(), SecurityUtil.currentUserId());
-    Tournament    tournament = tournamentMapper.toEntity(request);
-    Tournament    saved      = tournamentService.createTournament(tournament);
-    TournamentDTO body       = tournamentMapper.toDTO(saved);
-    body.setOrganizerName(userService.getUserNameByEmail(body.getOwnerId()));
+    Tournament    tournament  = tournamentMapper.toEntity(request);
+    Tournament    saved       = tournamentService.createTournament(tournament);
+    TournamentDTO body        = tournamentMapper.toDTO(saved);
+    User          currentUser = SecurityUtil.getCurrentUser();
+    body.setOrganizerName(currentUser != null ? currentUser.getName() : null);
     return ResponseEntity
         .created(URI.create("/admin/tournaments/" + saved.getId()))
         .body(body);

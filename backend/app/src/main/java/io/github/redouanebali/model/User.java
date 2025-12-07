@@ -25,9 +25,8 @@ public class User {
   private              String      email;
   private              String      name;
   private              String      locale;
-  // Nouveaux champs pour enrichissement
   @Enumerated(EnumType.STRING)
-  private              ProfileType profileType    = ProfileType.SPECTATOR; // Valeur par défaut
+  private              ProfileType profileType;
 
   private String city;
   private String country;

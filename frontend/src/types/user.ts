@@ -9,7 +9,7 @@ export interface User {
   email: string;
   name: string;
   locale: string;
-  profileType: ProfileType;
+  profileType?: ProfileType;
   city?: string;
   country?: string;
 }
