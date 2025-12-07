@@ -134,7 +134,7 @@ export default function Home() {
                     </Link>
                     <Link
                       href="/frmt/classement/hommes"
-                      className="w-full text-center px-5 py-3 rounded-lg bg-background text-on-secondary font-semibold hover:bg-primary-hover transition"
+                      className="w-full text-center px-5 py-3 rounded-lg bg-background text-on-secondary font-semibold hover:bg-primary-hover transition border border-border"
                     >
                       Classement FRMT
                     </Link>

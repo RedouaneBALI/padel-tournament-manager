@@ -15,6 +15,7 @@ import PricingButton from '@/src/components/ui/buttons/PricingButton';
 import PointsCalculatorButton from '@/src/components/ui/buttons/PointsCalculatorButton';
 import RankingButton from '@/src/components/ui/buttons/RankingButton';
 import MyAccountButton from '@/src/components/ui/buttons/MyAccountButton';
+import LatestTournamentsButton from '@/src/components/ui/buttons/LatestTournamentsButton';
 
 export type BottomNavItem = {
   href: string;
@@ -109,7 +110,7 @@ export default function BottomNav({ items, pathname, className, fixed = true, on
       {(isMoreOpen ?? moreOpen) && (
         <>
           <div className="fixed inset-0 bg-black/50 z-[60]" onClick={onMoreClick ?? closeMore} />
-          <div className="fixed inset-x-0 bottom-0 z-[70] bg-background rounded-t-2xl border-t border-border shadow-2xl max-h-[70vh] overflow-y-auto">
+          <div className="fixed inset-x-0 bottom-0 z-[70] bg-background rounded-t-2xl border-t border-border shadow-2xl max-h-[90vh]">
             <div className="max-w-screen-sm mx-auto p-4 pt-3 relative">
               {/* Croix flottante dans le coin supérieur droit */}
               <button
@@ -142,6 +143,7 @@ export default function BottomNav({ items, pathname, className, fixed = true, on
                 <h3 className="text-sm font-semibold text-muted-foreground mt-4 mb-1">Général</h3>
                 <hr className="border-t border-border my-1" />
                 <div className="flex flex-col gap-2">
+                  <LatestTournamentsButton onClick={onMoreClick ?? closeMore} />
                   <PricingButton onClick={onMoreClick ?? closeMore} />
                   <ContactButton onClick={onMoreClick ?? closeMore} />
                   {status === 'authenticated' && <MyAccountButton onClick={onMoreClick ?? closeMore} />}

@@ -5,6 +5,8 @@ import { INSTAGRAM_EMBEDS } from '@/src/data/instagramPosts'
 import BackButton from '@/src/components/ui/buttons/BackButton'
 import { usePathname } from 'next/navigation';
 import BottomNav, { BottomNavItem } from '@/src/components/ui/BottomNav';
+import { ExternalLink } from 'lucide-react';
+import Link from 'next/link';
 
 export default function OrganisateursInstagramPage() {
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -42,17 +44,32 @@ export default function OrganisateursInstagramPage() {
 
   return (
     <>
-      <main className="container mx-auto py-8 px-4 pb-24">
-        <BackButton className="mb-6" />
-        <h1 className="text-3xl font-bold mb-4">Ils parlent de nous</h1>
-        <p className="text-gray-600 mb-6">Une sélection de publications d'organisateurs qui utilisent PadelRounds</p>
+      <main className="min-h-screen bg-background">
+        <div className="container mx-auto py-6 px-4 pb-24">
+          <BackButton className="mb-4" />
+          <div className="mb-4 space-y-3">
+            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">Ils parlent de nous</h1>
+            <p className="text-lg text-muted-foreground max-w-2xl">Nos derniers tournois</p>
+          </div>
 
-        <div ref={containerRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {INSTAGRAM_EMBEDS.map((html, idx) => (
-            <div key={idx} className="bg-card border border-border rounded-md p-4">
-              <div dangerouslySetInnerHTML={{ __html: html }} />
-            </div>
-          ))}
+          <div ref={containerRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {INSTAGRAM_EMBEDS.map(({ title, club, tournamentId, html }, idx) => (
+              <div key={idx} className="group bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-primary/50 transition-all duration-300 hover:scale-105">
+                <div className="p-5 bg-gradient-to-br from-card to-card/80 border-b border-border/50">
+                  <div className="flex items-center justify-between mb-1">
+                    <h2 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">{title}</h2>
+                    <Link href={`/tournament/${tournamentId}/bracket`} className="text-primary hover:text-primary-hover transition-colors">
+                      <ExternalLink className="h-5 w-5" />
+                    </Link>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{club}</p>
+                </div>
+                <div className="p-4">
+                  <div dangerouslySetInnerHTML={{ __html: html }} />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </main>
       <BottomNav items={items} pathname={pathname} />
