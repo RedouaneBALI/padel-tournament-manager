@@ -52,7 +52,7 @@ export const filterActiveTournaments = (list: any[]) => {
   if (!list || !Array.isArray(list)) return [];
   const now = new Date();
   const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-  const dayAfterTomorrow = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
+  const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
   const filtered = list.filter((t: any) => {
     if (!t) {
       return false;
@@ -64,7 +64,7 @@ export const filterActiveTournaments = (list: any[]) => {
     if (isNaN(de.getTime())) {
       return false;
     }
-    const included = de >= yesterday && de <= dayAfterTomorrow;
+    const included = de >= yesterday && de <= nextWeek;
     return included;
   });
   return filtered;

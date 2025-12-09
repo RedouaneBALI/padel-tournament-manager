@@ -47,7 +47,7 @@ export default function TournamentResultsTab({ tournamentId }: TournamentResults
 
   const hasMatchesInFinalPhase = useMemo(() => {
     if (!tournament?.rounds) return false;
-    const finalPhaseStages = Object.values(Stage).filter(s => s !== Stage.Q1 && s !== Stage.Q2 && s !== Stage.Q3 && s !== Stage.GROUPS);
+    const finalPhaseStages = [Stage.R64, Stage.R32, Stage.R16, Stage.QUARTERS, Stage.SEMIS, Stage.FINAL, Stage.WINNER];
     return tournament.rounds.some(round =>
       finalPhaseStages.includes(round.stage) &&
       round.games?.some(game => game.score !== null)

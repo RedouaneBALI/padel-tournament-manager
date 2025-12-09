@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { fetchActiveTournaments } from '@/src/api/tournamentApi';
-import { formatDate, formatDateRange, levelEmoji, genderEmoji, genderLabel, filterActiveTournaments } from './tournamentHelpers';
+import { formatDate, formatDateRange, levelEmoji, genderEmoji, genderLabel } from './tournamentHelpers';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
 
 type FeaturedTournamentsProps = {
@@ -13,13 +13,13 @@ type FeaturedTournamentsProps = {
 
 export default function FeaturedTournaments({ items, loading }: FeaturedTournamentsProps = {}) {
   // If parent provides items, use them; otherwise fetch locally.
-  const [featured, setFeatured] = useState<any[]>(items ? filterActiveTournaments(items) : []);
+  const [featured, setFeatured] = useState<any[]>(items ? items : []);
   const [loadingFeatured, setLoadingFeatured] = useState<boolean>(loading ?? false);
 
   useEffect(() => {
     // If parent provided items, reflect changes and skip fetching
     if (items) {
-      setFeatured(filterActiveTournaments(items));
+      setFeatured(items);
       setLoadingFeatured(loading ?? false);
       return;
     }
@@ -28,7 +28,7 @@ export default function FeaturedTournaments({ items, loading }: FeaturedTourname
     setLoadingFeatured(true);
     fetchActiveTournaments()
       .then((list) => {
-        if (mounted) setFeatured(filterActiveTournaments(list));
+        if (mounted) setFeatured(list);
       })
       .catch(() => {})
       .finally(() => mounted && setLoadingFeatured(false));

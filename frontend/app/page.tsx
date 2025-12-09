@@ -13,7 +13,7 @@ import ImageSlider from '@/src/components/ui/ImageSlider';
 import { useEffect, useState } from 'react';
 import FeaturedTournaments from '@/src/components/home/FeaturedTournaments';
 import { fetchActiveTournaments } from '@/src/api/tournamentApi';
-import { formatDate, formatDateRange, levelEmoji, genderEmoji, genderLabel, filterActiveTournaments } from '@/src/components/home/tournamentHelpers';
+import { formatDate, formatDateRange, levelEmoji, genderEmoji, genderLabel } from '@/src/components/home/tournamentHelpers';
 
 export default function Home() {
   const { status } = useSession();
@@ -30,7 +30,7 @@ export default function Home() {
     fetchActiveTournaments()
       .then((list) => {
         console.log('Fetched list from API:', list);
-        if (mounted) setFeatured(filterActiveTournaments(list));
+        if (mounted) setFeatured(list);
       })
       .catch(() => {})
       .finally(() => mounted && setLoadingFeatured(false));
@@ -79,7 +79,7 @@ export default function Home() {
           <div className="text-center space-y-6 mb-6">
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-            {!loadingFeatured && <FeaturedTournaments items={featured} loading={false} />}
+            <FeaturedTournaments items={featured} loading={loadingFeatured} />
 
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">
               VIS TES TOURNOIS INTENSÉMENT <span role="img" aria-label="flamme">🔥</span>
