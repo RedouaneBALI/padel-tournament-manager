@@ -47,6 +47,10 @@
     --team-score-ab-slot-width-rem: 1.15rem;
   }
 
+  html {
+    background-color: #f9fafb;
+  }
+
   body {
     /* @apply fonctionne toujours, mais on utilise les vars du thème */
     @apply bg-background text-foreground;

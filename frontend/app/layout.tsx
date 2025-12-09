@@ -118,9 +118,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <meta name="apple-mobile-web-app-title" content="PadelRounds" />
         {/* permettant le mode standalone sur iOS */}
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         {/* couleur de la barre d'outils sur Android/Chrome */}
-        <meta name="theme-color" content="#ffffff" />
+        <meta name="theme-color" content="#f9fafb" />
         {/* lien manifest (déjà référencé via metadata mais présent ici pour robustesse) */}
         <link rel="manifest" href="/site.webmanifest" />
       </head>
