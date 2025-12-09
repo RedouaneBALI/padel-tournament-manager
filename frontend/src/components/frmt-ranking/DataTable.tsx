@@ -1,7 +1,7 @@
 // DataTable.tsx
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 
 export interface ColumnDefinition<T> {
   key: (keyof T & string) | string
@@ -12,6 +12,7 @@ export interface ColumnDefinition<T> {
   headerStyle?: React.CSSProperties
   cellStyle?: React.CSSProperties
   mobileWidth?: string // Nouvelle prop pour la largeur mobile
+  desktopWidth?: string // Nouvelle prop pour la largeur bureau
 }
 
 interface DataTableProps<T> {
@@ -33,10 +34,22 @@ export default function DataTable<T>({
   getUniqueKey,
   onRowClick,
 }: DataTableProps<T>) {
+  const [isDesktop, setIsDesktop] = useState(false)
+
+  useEffect(() => {
+    const checkIsDesktop = () => setIsDesktop(window.innerWidth >= 768)
+    checkIsDesktop()
+    window.addEventListener('resize', checkIsDesktop)
+    return () => window.removeEventListener('resize', checkIsDesktop)
+  }, [])
+
+  const getWidth = (col: ColumnDefinition<T>) => {
+    return isDesktop ? col.desktopWidth || col.mobileWidth : col.mobileWidth
+  }
 
   return (
     <div className="overflow-x-auto">
-      <table className="text-left border-collapse" style={{ width: 'max-content', tableLayout: 'fixed', minWidth: '100%' }}>
+      <table className="text-left border-collapse" style={{ width: isDesktop ? '100%' : 'max-content', tableLayout: isDesktop ? 'auto' : 'fixed', minWidth: '100%' }}>
         <thead className="sticky top-0 bg-primary text-white z-10">
           <tr className="bg-primary text-white font-bold text-lg">
             {columns.map((col) => (
@@ -45,7 +58,7 @@ export default function DataTable<T>({
                 className={`p-3 cursor-pointer text-center ${col.headerClassName || ''}`}
                 style={{
                   ...col.headerStyle,
-                  width: col.mobileWidth || col.headerStyle?.width
+                  width: getWidth(col)
                 }}
                 onClick={() => onSort(col.key)}
               >
@@ -76,7 +89,7 @@ export default function DataTable<T>({
                   className={`p-3 ${col.cellClassName || ''}`}
                   style={{
                     ...col.cellStyle,
-                    width: col.mobileWidth || col.cellStyle?.width
+                    width: getWidth(col)
                   }}
                 >
                   {col.renderCell(item)}
