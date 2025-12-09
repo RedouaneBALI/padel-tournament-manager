@@ -20,8 +20,9 @@ const playerColumns: ColumnDefinition<Player>[] = [
   {
     key: 'ranking',
     header: '#',
-    headerClassName: 'text-center w-12',
-    cellClassName: 'text-center font-semibold text-primary truncate',
+    headerClassName: 'text-center',
+    cellClassName: 'text-center font-semibold text-primary',
+    mobileWidth: '15vw',
     renderCell: (player) => (
       <div className="flex flex-col items-center">
         <span>{player.ranking}</span>
@@ -49,15 +50,17 @@ const playerColumns: ColumnDefinition<Player>[] = [
   {
     key: 'name',
     header: 'Joueur',
-    headerClassName: 'text-center max-w-[250px] w-[200px]',
+    headerClassName: 'text-center',
     cellClassName: 'text-center font-semibold text-primary whitespace-normal break-words',
+    mobileWidth: '45vw',
     renderCell: (player) => player.name,
   },
   {
     key: 'points',
     header: 'Points',
-    headerClassName: 'text-center w-20',
-    cellClassName: 'text-center font-semibold text-primary truncate',
+    headerClassName: 'text-center',
+    cellClassName: 'text-center font-semibold text-primary',
+    mobileWidth: '20vw',
     renderCell: (player) => (
       <div className="flex flex-col items-center">
         <span>{player.points}</span>
@@ -76,22 +79,27 @@ const playerColumns: ColumnDefinition<Player>[] = [
   {
     key: 'birth_year',
     header: 'Année',
-    headerClassName: 'text-center w-20',
-    cellClassName: 'text-center text-primary truncate',
+    headerClassName: 'text-center',
+    cellClassName: 'text-center text-primary',
+    mobileWidth: '20vw',
     renderCell: (player) => player.birth_year,
   },
   {
     key: 'nationality',
     header: 'Nat.',
-    headerClassName: 'text-center w-20',
-    cellClassName: 'text-center truncate',
+    headerClassName: 'text-center',
+    cellClassName: 'text-center',
+    headerStyle: { width: '80px' },
+    cellStyle: { width: '80px' },
     renderCell: (player) => `${getFlagEmoji(player.nationality)} ${player.nationality}`,
   },
   {
     key: 'club',
     header: 'Club',
-    headerClassName: 'text-center w-25',
+    headerClassName: 'text-center',
     cellClassName: 'text-center whitespace-nowrap',
+    headerStyle: { width: '100px' },
+    cellStyle: { width: '100px' },
     renderCell: (player) => player.club,
   },
 ]
@@ -99,7 +107,6 @@ const playerColumns: ColumnDefinition<Player>[] = [
 export default function PlayerTable({ players, onSort, sortKey, sortOrder }: Props) {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const router = useRouter()
-
 
   const handleRowClick = (player: Player) => {
     setSelectedPlayer(player);

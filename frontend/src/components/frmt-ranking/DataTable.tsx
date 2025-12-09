@@ -9,6 +9,9 @@ export interface ColumnDefinition<T> {
   renderCell: (item: T) => React.ReactNode
   headerClassName?: string
   cellClassName?: string
+  headerStyle?: React.CSSProperties
+  cellStyle?: React.CSSProperties
+  mobileWidth?: string // Nouvelle prop pour la largeur mobile
 }
 
 interface DataTableProps<T> {
@@ -32,14 +35,18 @@ export default function DataTable<T>({
 }: DataTableProps<T>) {
 
   return (
-    <div>
-      <table className="w-full text-left border-collapse min-w-0">
+    <div className="overflow-x-auto">
+      <table className="text-left border-collapse" style={{ width: 'max-content', tableLayout: 'fixed', minWidth: '100%' }}>
         <thead className="sticky top-0 bg-primary text-white z-10">
           <tr className="bg-primary text-white font-bold text-lg">
             {columns.map((col) => (
               <th
                 key={col.key}
                 className={`p-3 cursor-pointer text-center ${col.headerClassName || ''}`}
+                style={{
+                  ...col.headerStyle,
+                  width: col.mobileWidth || col.headerStyle?.width
+                }}
                 onClick={() => onSort(col.key)}
               >
                 <span className="inline-flex items-center justify-center">
@@ -67,6 +74,10 @@ export default function DataTable<T>({
                 <td
                   key={`${getUniqueKey(item)}-${col.key}`}
                   className={`p-3 ${col.cellClassName || ''}`}
+                  style={{
+                    ...col.cellStyle,
+                    width: col.mobileWidth || col.cellStyle?.width
+                  }}
                 >
                   {col.renderCell(item)}
                 </td>
