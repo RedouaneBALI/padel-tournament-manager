@@ -52,19 +52,12 @@ export default function PointsCalculatorPage() {
   }, [tournamentLevel, teamRange, availableTeamRanges]);
 
   useEffect(() => {
-    if (!showTop100Selection || !top100Config) {
+    if (showTop100Selection && top100Config && top100Config.options && top100Config.options.length > 0) {
+      setTop100TeamsCount(String(top100Config.options[0].value));
+    } else {
       setTop100TeamsCount('');
-      return;
     }
-
-    const first = top100Config.options?.[0]?.value;
-    if (first == null) return;
-
-    const hasCurrent = top100Config.options.some((o) => String(o.value) === String(top100TeamsCount));
-    if (!top100TeamsCount || !hasCurrent) {
-      setTop100TeamsCount(String(first));
-    }
-  }, [showTop100Selection, top100Config, top100TeamsCount]);
+  }, [showTop100Selection, top100Config, tournamentLevel]);
 
   const calculatedPoints = useMemo(() => {
     if (!tournamentLevel || !teamRange || !ranking) {
