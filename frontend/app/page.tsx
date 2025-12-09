@@ -79,7 +79,7 @@ export default function Home() {
           <div className="text-center space-y-6 mb-6">
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-            <FeaturedTournaments items={featured} loading={loadingFeatured} />
+            {!loadingFeatured && <FeaturedTournaments items={featured} loading={false} />}
 
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">
               VIS TES TOURNOIS INTENSÉMENT <span role="img" aria-label="flamme">🔥</span>
