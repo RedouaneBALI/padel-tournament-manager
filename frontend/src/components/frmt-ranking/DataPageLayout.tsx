@@ -37,7 +37,7 @@ export default function DataPageLayout({
   hasActiveFilters
 }: DataPageLayoutProps) {
   return (
-    <div className="flex flex-col h-[calc(100vh-56px)] bg-background overflow-hidden">
+    <div className="flex flex-col h-screen bg-background overflow-hidden">
       {/* Sticky Header */}
       <div className="sticky top-0 z-20 bg-background border-b border-border px-4 py-4 shadow-sm">
         <div className="flex gap-4 items-center">
@@ -54,12 +54,12 @@ export default function DataPageLayout({
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-auto">
         {children}
       </div>
 
       {/* Sticky Footer */}
-      <div className="sticky bottom-16 z-20 bg-background border-t border-border px-4 py-0 space-y-0">
+      <div className="sticky bottom-14 z-20 bg-background border-t border-border px-4 py-2 space-y-0">
         <div className="flex flex-col items-center gap-1">
           <Pagination
             currentPage={currentPage}

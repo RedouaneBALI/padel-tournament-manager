@@ -30,20 +30,21 @@ export default function DataTable<T>({
   getUniqueKey,
   onRowClick,
 }: DataTableProps<T>) {
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left border-collapse table-fixed min-w-0">
-        <thead>
+    <div>
+      <table className="w-full text-left border-collapse min-w-0">
+        <thead className="sticky top-0 bg-primary text-white z-10">
           <tr className="bg-primary text-white font-bold text-lg">
             {columns.map((col) => (
               <th
                 key={col.key}
-                className={`p-3 cursor-pointer ${col.headerClassName || 'text-center'}`}
+                className={`p-3 cursor-pointer text-center ${col.headerClassName || ''}`}
                 onClick={() => onSort(col.key)}
               >
-                <span className="inline-flex items-center justify-center gap-1">
+                <span className="inline-flex items-center justify-center">
                   {col.header}
-                  <span className="inline-block w-3">
+                  <span className="inline-block ml-1">
                     {sortKey === col.key ? (sortOrder === 'asc' ? '↑' : '↓') : ''}
                   </span>
                 </span>

@@ -82,8 +82,8 @@ const playerColumns: ColumnDefinition<Player>[] = [
   },
   {
     key: 'nationality',
-    header: 'Nationalité',
-    headerClassName: 'text-center w-32',
+    header: 'Nat.',
+    headerClassName: 'text-center w-20',
     cellClassName: 'text-center truncate',
     renderCell: (player) => `${getFlagEmoji(player.nationality)} ${player.nationality}`,
   },
@@ -99,6 +99,8 @@ const playerColumns: ColumnDefinition<Player>[] = [
 export default function PlayerTable({ players, onSort, sortKey, sortOrder }: Props) {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const router = useRouter()
+
+
   const handleRowClick = (player: Player) => {
     setSelectedPlayer(player);
   }
