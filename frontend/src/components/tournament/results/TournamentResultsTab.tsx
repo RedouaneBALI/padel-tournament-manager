@@ -45,6 +45,15 @@ export default function TournamentResultsTab({ tournamentId }: TournamentResults
   const isGroupStageFormat = tournament?.config?.format === 'GROUPS_KO';
   const isQualifStageFormat = tournament?.config?.format === 'QUALIF_KO';
 
+  const hasMatchesInFinalPhase = useMemo(() => {
+    if (!tournament?.rounds) return false;
+    const finalPhaseStages = Object.values(Stage).filter(s => s !== Stage.Q1 && s !== Stage.Q2 && s !== Stage.Q3 && s !== Stage.GROUPS);
+    return tournament.rounds.some(round =>
+      finalPhaseStages.includes(round.stage) &&
+      round.games?.some(game => game.score !== null)
+    );
+  }, [tournament]);
+
   const currentStage = tournament?.currentRoundStage;
   const defaultView =
     isGroupStageFormat && currentStage !== Stage.GROUPS
@@ -52,7 +61,7 @@ export default function TournamentResultsTab({ tournamentId }: TournamentResults
       : isGroupStageFormat
       ? VIEW_CLASSEMENT
       : isQualifStageFormat
-      ? VIEW_QUALIF
+      ? (hasMatchesInFinalPhase ? VIEW_PHASE_FINALE : VIEW_QUALIF)
       : VIEW_PHASE_FINALE;
 
   const queryView = searchParams?.get('view');
@@ -66,6 +75,12 @@ export default function TournamentResultsTab({ tournamentId }: TournamentResults
     params.set('view', view);
     router.replace(`${pathname}?${params.toString()}`);
   };
+
+  useEffect(() => {
+    if (!isLoading && tournament && !queryView) {
+      setView(defaultView);
+    }
+  }, [isLoading, tournament, queryView, defaultView, setView]);
 
   // Register export function based on active view
   useEffect(() => {
