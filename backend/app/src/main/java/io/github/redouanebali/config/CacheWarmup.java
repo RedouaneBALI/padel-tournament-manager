@@ -26,7 +26,7 @@ public class CacheWarmup {
     new Thread(() -> {
       try {
         log.info("Cache warmup: loading activeTournaments into cache");
-        tournamentService.getActiveTournaments();
+        tournamentService.getActiveTournaments(null, null);
         log.info("Cache warmup: done");
       } catch (Exception e) {
         log.warn("Cache warmup failed", e);

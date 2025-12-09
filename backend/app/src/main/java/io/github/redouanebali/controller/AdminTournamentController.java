@@ -217,7 +217,9 @@ public class AdminTournamentController {
                                                     @PathVariable Long gameId,
                                                     @RequestBody @Valid Score score) {
     checkOwnership(tournamentId);
-    return ResponseEntity.ok(gameService.updateGameScore(tournamentId, gameId, score));
+    UpdateScoreDTO dto = gameService.updateGameScore(tournamentId, gameId, score);
+    gameScoreWebSocketController.broadcastScoreUpdate(gameId, dto);
+    return ResponseEntity.ok(dto);
   }
 
   /**
@@ -233,7 +235,9 @@ public class AdminTournamentController {
                                                    @PathVariable Long gameId,
                                                    @RequestBody @Valid UpdateGameRequest request) {
     checkOwnership(tournamentId);
-    return ResponseEntity.ok(gameService.updateGame(tournamentId, gameId, request));
+    UpdateScoreDTO dto = gameService.updateGame(tournamentId, gameId, request);
+    gameScoreWebSocketController.broadcastScoreUpdate(gameId, dto);
+    return ResponseEntity.ok(dto);
   }
 
   /**

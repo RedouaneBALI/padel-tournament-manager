@@ -201,10 +201,17 @@ public class TournamentService {
   }
 
   /**
-   * Returns tournaments active today and having at least one non-null game team.
+   * Returns tournaments active within the specified date range and having at least one non-null game team. If no dates are provided, defaults to J-3
+   * to J+3.
+   *
+   * @param startDate optional start date for filtering tournaments
+   * @param endDate optional end date for filtering tournaments
+   * @return list of active tournaments within the date range
    */
-  @Cacheable(cacheNames = "activeTournaments")
-  public List<Tournament> getActiveTournaments() {
-    return tournamentRepository.findActiveWithNonNullGames(LocalDate.now().minusDays(1), LocalDate.now().plusDays(2));
+  @Cacheable(cacheNames = "activeTournaments", key = "#startDate + '_' + #endDate")
+  public List<Tournament> getActiveTournaments(LocalDate startDate, LocalDate endDate) {
+    LocalDate effectiveStartDate = startDate != null ? startDate : LocalDate.now().minusDays(3);
+    LocalDate effectiveEndDate   = endDate != null ? endDate : LocalDate.now().plusDays(3);
+    return tournamentRepository.findActiveWithNonNullGames(effectiveStartDate, effectiveEndDate);
   }
 }

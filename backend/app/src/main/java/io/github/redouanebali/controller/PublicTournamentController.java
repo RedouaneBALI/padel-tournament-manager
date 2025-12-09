@@ -18,6 +18,7 @@ import io.github.redouanebali.service.PlayerPairService;
 import io.github.redouanebali.service.TournamentService;
 import io.github.redouanebali.service.UserService;
 import jakarta.annotation.security.PermitAll;
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -192,15 +193,18 @@ public class PublicTournamentController {
   }
 
   /**
-   * Retrieves active tournaments for the home page. Returns a lightweight summary list of tournaments that are currently ongoing (startDate <= today
-   * <= endDate) and having at least one non-null game.
+   * Retrieves active tournaments for the home page. Returns a lightweight summary list of tournaments that are currently ongoing within the specified
+   * date range and having at least one non-null game. If no dates are provided, defaults to J-3 to J+3.
    *
+   * @param startDate optional start date for filtering tournaments (format: YYYY-MM-DD)
+   * @param endDate optional end date for filtering tournaments (format: YYYY-MM-DD)
    * @return list of tournament summaries
    */
   @GetMapping("/active")
-  public ResponseEntity<List<TournamentSummaryDTO>> getActiveTournaments() {
-    log.debug("Getting active tournaments for home page");
-    List<Tournament> entities = tournamentService.getActiveTournaments();
+  public ResponseEntity<List<TournamentSummaryDTO>> getActiveTournaments(@RequestParam(required = false) LocalDate startDate,
+                                                                         @RequestParam(required = false) LocalDate endDate) {
+    log.debug("Getting active tournaments for home page (startDate: {}, endDate: {})", startDate, endDate);
+    List<Tournament> entities = tournamentService.getActiveTournaments(startDate, endDate);
     List<TournamentSummaryDTO> summaries = entities.stream()
                                                    .map(tournamentMapper::toSummaryDTO)
                                                    .toList();

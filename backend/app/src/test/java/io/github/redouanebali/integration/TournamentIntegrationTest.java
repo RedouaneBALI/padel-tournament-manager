@@ -147,8 +147,8 @@ class TournamentIntegrationTest {
     Tournament futureT = new Tournament();
     futureT.setOwnerId("io.github.redouanebali.api.integration@test.com");
     futureT.setName("Future Cup");
-    futureT.setStartDate(LocalDate.now().plusDays(3));
-    futureT.setEndDate(LocalDate.now().plusDays(4));
+    futureT.setStartDate(LocalDate.now().plusDays(5));
+    futureT.setEndDate(LocalDate.now().plusDays(6));
     Round futRound = new Round(Stage.R32);
     futRound.addGame(new PlayerPair("F1", "F2", 0), new PlayerPair("F3", "F4", 0));
     futRound.getGames().forEach(g -> g.setFormat(finalFormat));
@@ -160,7 +160,7 @@ class TournamentIntegrationTest {
     pastT.setOwnerId("io.github.redouanebali.api.integration@test.com");
     pastT.setName("Past Cup");
     pastT.setStartDate(LocalDate.now().minusDays(10));
-    pastT.setEndDate(LocalDate.now().minusDays(2));
+    pastT.setEndDate(LocalDate.now().minusDays(4));
     Round pastRound = new Round(Stage.R32);
     pastRound.addGame(new PlayerPair("P1", "P2", 0), new PlayerPair("P3", "P4", 0));
     pastRound.getGames().forEach(g -> g.setFormat(finalFormat));
@@ -181,7 +181,7 @@ class TournamentIntegrationTest {
     emptyTeams.getRounds().add(rEmpty);
     tournamentRepository.save(emptyTeams);
 
-    List<Tournament> active = tournamentService.getActiveTournaments();
+    List<Tournament> active = tournamentService.getActiveTournaments(null, null);
     // Only the initially created tournament should be present
     boolean found = active.stream().anyMatch(tt -> tt.getId().equals(saved.getId()));
     assertTrue(found, "The created tournament with a real game should appear in active tournaments");
