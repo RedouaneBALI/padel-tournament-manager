@@ -4,17 +4,12 @@ import type { GamePoint } from '@/src/types/score';
 import { cn } from '@/src/lib/utils';
 import TeamRow from '@/src/components/ui/TeamRow';
 import { incrementGamePoint, undoGamePoint, fetchMatchFormat, incrementStandaloneGamePoint, undoStandaloneGamePoint } from '@/src/api/tournamentApi';
-import { Undo2 } from 'lucide-react';
+import { Undo2, MapPin, Clock, Trophy, Plus, Loader2 } from 'lucide-react';
 import LiveMatchIndicator from '@/src/components/ui/LiveMatchIndicator';
 import { useRealtimeGame } from '@/src/hooks/useRealtimeGame';
 
-// Utilitaire pour formater les points
-function formatPoints(points: number) {
-  const pointMap = ['0', '15', '30', '40', 'A'];
-  return pointMap[points] ?? points.toString();
-}
+// --- Utilitaires ---
 
-// Nouvelle fonction pour formater les points tennis
 function formatGamePoint(point: GamePoint | null | undefined) {
   if (point === null || point === undefined) return '0';
   switch (point) {
@@ -22,7 +17,7 @@ function formatGamePoint(point: GamePoint | null | undefined) {
     case 'QUINZE': return '15';
     case 'TRENTE': return '30';
     case 'QUARANTE': return '40';
-    case 'AVANTAGE': return 'A';
+    case 'AVANTAGE': return 'AD';
     default: return '-';
   }
 }
@@ -36,9 +31,11 @@ function formatScheduledTime(value?: string | null) {
   return parsed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-// Extraction d'une ligne équipe + score + boutons
-function TeamScoreRow({
+// --- Sous-composant pour une ligne d'équipe ---
+
+function ModernTeamScoreRow({
   team,
+  teamIndex,
   gamePoint,
   setScores,
   tieBreakPoint,
@@ -49,6 +46,7 @@ function TeamScoreRow({
   winnerSide,
 }: {
   team: PlayerPair | null;
+  teamIndex: number;
   gamePoint: GamePoint | null | undefined;
   setScores: (number | null)[];
   tieBreakPoint: number | null | undefined;
@@ -58,56 +56,94 @@ function TeamScoreRow({
   onPointChange: (teamSide: TeamSide) => void;
   winnerSide?: number;
 }) {
+  const isTeamA = teamSide === 'TEAM_A';
+  const themeColor = isTeamA ? 'blue' : 'rose';
+  const isWinner = winnerSide === teamIndex;
+
+  // Style dynamique pour le point en cours
+  const isTieBreakActive = tieBreakPoint !== null && tieBreakPoint !== undefined;
+  const displayPoint = isTieBreakActive ? tieBreakPoint : formatGamePoint(gamePoint);
 
   return (
-    <div className="flex items-center gap-1 sm:gap-2 min-h-[56px] sm:min-h-[64px]">
-      <div className="flex-1">
+    <div className={cn(
+      "relative flex items-center p-3 sm:p-4 rounded-xl transition-all duration-300",
+      isWinner
+        ? "bg-gradient-to-r from-yellow-500/10 to-transparent border border-yellow-500/20"
+        : "bg-card border border-transparent shadow-sm"
+    )}>
+
+      {/* 1. Zone Nom d'équipe */}
+      <div className="flex-1 min-w-0 mr-2 sm:mr-4">
         <TeamRow
           team={team}
-          teamIndex={teamSide === 'TEAM_A' ? 0 : 1}
+          teamIndex={teamIndex}
           winnerSide={winnerSide}
-          fontSize={!editable ? 'text-lg sm:text-xl' : undefined}
+          fontSize="text-base sm:text-lg"
+          showChampion={isWinner}
+          themeColor={themeColor}
         />
       </div>
-      {/* Affichage des jeux (sets) */}
-      <div className="flex gap-3 sm:gap-4 min-w-[48px] sm:min-w-[72px] justify-center">
-        {setScores.map((score, i) => (
-          <span
-            key={i}
-            className="text-xl sm:text-3xl font-bold text-foreground"
-            style={{ letterSpacing: '0.04em' }}
-          >
-            {score ?? '-'}
-          </span>
-        ))}
-      </div>
-      {/* Affichage des points tennis ou tie-break */}
-      <div className="w-10 sm:w-12 flex justify-center">
-        {tieBreakPoint !== null && tieBreakPoint !== undefined ? (
-          <span className="text-lg sm:text-xl font-bold text-blue-600" style={{ fontWeight: 700 }}>
-            {tieBreakPoint}
-          </span>
-        ) : (
-          <span className="text-lg sm:text-xl font-medium text-muted-foreground" style={{ fontWeight: 500 }}>
-            {formatGamePoint(gamePoint)}
-          </span>
-        )}
-      </div>
-      {editable && (
-        <div className="flex flex-col gap-1 items-end min-w-[28px] sm:min-w-[32px] ml-1 sm:ml-2">
+
+      {/* 2. Zone Scores (Sets + Points) */}
+      <div className="flex items-center gap-2 sm:gap-4">
+
+        {/* Scores des Sets (Historique) */}
+        <div className="flex gap-1 sm:gap-2">
+          {setScores.map((score, i) => (
+            <div
+              key={i}
+              className={cn(
+                "w-7 h-8 sm:w-9 sm:h-10 flex items-center justify-center rounded text-sm sm:text-lg font-bold tabular-nums",
+                score !== null ? "text-foreground bg-muted/50" : "opacity-0"
+              )}
+            >
+              {score ?? '-'}
+            </div>
+          ))}
+        </div>
+
+        {/* Score du Jeu actuel (Point Tennis / Tie Break) */}
+        <div
+          className={cn(
+            "w-10 h-10 sm:w-14 sm:h-12 flex items-center justify-center rounded-lg font-bold text-lg sm:text-2xl tabular-nums shadow-inner transition-colors",
+            isTeamA
+              ? "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400 border border-blue-100 dark:border-blue-900"
+              : "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100 dark:border-rose-900"
+          )}
+        >
+             <span className={cn(isTieBreakActive ? "text-xl sm:text-2xl" : "")}>
+               {displayPoint}
+             </span>
+        </div>
+
+        {/* 3. Bouton d'action (+) */}
+        {editable && (
           <button
-            className="btn btn-outline btn-xs w-7 sm:w-8"
+            type="button"
             disabled={loading || (typeof winnerSide !== 'undefined')}
             onClick={() => onPointChange(teamSide)}
-            type="button"
+            className={cn(
+              "w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full shadow-sm transition-all active:scale-95 border",
+              isTeamA
+                ? "bg-blue-600 text-white hover:bg-blue-700 border-blue-700 shadow-blue-200 dark:shadow-none"
+                : "bg-rose-600 text-white hover:bg-rose-700 border-rose-700 shadow-rose-200 dark:shadow-none",
+              loading && "opacity-70 cursor-not-allowed"
+            )}
+            aria-label={`Ajouter point à ${isTeamA ? 'Équipe A' : 'Équipe B'}`}
           >
-            +
+            {loading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Plus className="w-6 h-6 sm:w-7 sm:h-7" strokeWidth={3} />
+            )}
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
+
+// --- Composant Principal ---
 
 type MatchResultCardZoomProps = {
   game: Game;
@@ -132,15 +168,13 @@ export default function MatchResultCardZoom({
   const formattedScheduledTime = formatScheduledTime(currentGame.scheduledTime);
   const hasTournamentContext = Boolean(tournamentId);
 
-
-  // Real-time score updates via WebSocket
+  // --- Realtime & API ---
   useRealtimeGame({
     gameId: game.id,
     enabled: !currentGame.finished,
     onScoreUpdate: (dto) => {
       if (dto.score) {
         let newScore = { ...dto.score };
-        // Sync super tie-break scores if present
         const isSuperTB = (
           (matchFormat?.superTieBreakInFinalSet || (newScore.tieBreakPointA != null || newScore.tieBreakPointB != null) || (newScore.sets?.[2]?.tieBreakTeamA != null || newScore.sets?.[2]?.tieBreakTeamB != null))
           && newScore.sets?.length === 3
@@ -182,7 +216,7 @@ export default function MatchResultCardZoom({
       }
     }
     loadFormat();
-  }, [game.round?.stage, hasTournamentContext, tournamentId]);
+  }, [game.round?.stage, hasTournamentContext, tournamentId, game.id]);
 
   const callIncrementEndpoint = (teamSide: TeamSide) => {
     return hasTournamentContext
@@ -197,16 +231,13 @@ export default function MatchResultCardZoom({
   };
 
   const handlePointChange = async (teamSide: TeamSide) => {
-    if (!editable) {
-      return;
-    }
+    if (!editable) return;
     setLoading(teamSide);
     const prevScore = currentGame.score;
     try {
       const result = await callIncrementEndpoint(teamSide);
       if (result && result.score) {
         let newScore = { ...result.score };
-        // Correction : synchronise teamAScore/teamBScore et tieBreakPointA/B avec tieBreakTeamA/B si présents
         const isSuperTB = (
           (matchFormat?.superTieBreakInFinalSet || (newScore.tieBreakPointA != null || newScore.tieBreakPointB != null) || (newScore.sets?.[2]?.tieBreakTeamA != null || newScore.sets?.[2]?.tieBreakTeamB != null))
           && newScore.sets?.length === 3
@@ -222,38 +253,25 @@ export default function MatchResultCardZoom({
             newScore.tieBreakPointB = set3.tieBreakTeamB;
           }
         }
-        setCurrentGame((prev) => ({
-          ...prev,
-          score: newScore,
-        }));
+        setCurrentGame((prev) => ({ ...prev, score: newScore }));
       }
       if (result && typeof result.winner !== 'undefined') {
-        setCurrentGame((prev) => ({
-          ...prev,
-          winnerSide: result.winner,
-        }));
+        setCurrentGame((prev) => ({ ...prev, winnerSide: result.winner }));
       }
     } catch (e) {
-      setCurrentGame((prev) => ({
-        ...prev,
-        score: prevScore,
-      }));
+      setCurrentGame((prev) => ({ ...prev, score: prevScore }));
     } finally {
       setLoading(null);
     }
   };
 
-  // Ajout Undo global
   const handleUndo = async () => {
-    if (!editable) {
-      return;
-    }
+    if (!editable) return;
     setUndoLoading(true);
     try {
       const result = await callUndoEndpoint();
       if (result && result.score) {
         let newScore = { ...result.score };
-        // Correction : synchronise teamAScore/teamBScore et tieBreakPointA/B avec tieBreakTeamA/B si présents
         const isSuperTB = (
           (matchFormat?.superTieBreakInFinalSet || (newScore.tieBreakPointA != null || newScore.tieBreakPointB != null) || (newScore.sets?.[2]?.tieBreakTeamA != null || newScore.sets?.[2]?.tieBreakTeamB != null))
           && newScore.sets?.length === 3
@@ -269,44 +287,38 @@ export default function MatchResultCardZoom({
             newScore.tieBreakPointB = set3.tieBreakTeamB;
           }
         }
-        setCurrentGame((prev) => ({
-          ...prev,
-          score: newScore,
-        }));
+        setCurrentGame((prev) => ({ ...prev, score: newScore }));
       }
       if (result && typeof result.winner !== 'undefined') {
-        setCurrentGame((prev) => ({
-          ...prev,
-          winnerSide: result.winner,
-        }));
+        setCurrentGame((prev) => ({ ...prev, winnerSide: result.winner }));
       }
       if (onScoreUpdate) onScoreUpdate(currentGame);
     } catch (e) {
-      // Optionnel : toast d'erreur
+      // toast error
     } finally {
       setUndoLoading(false);
     }
   };
 
-  // Récupère les infos d'équipes et scores
+  // --- Préparation des Données d'Affichage ---
   const teams: (PlayerPair | null)[] = [currentGame.teamA ?? null, currentGame.teamB ?? null];
-  // Affichage des jeux (sets)
-  const gamesScore = currentGame.score?.sets?.map((set) => [set.teamAScore, set.teamBScore]) ?? [];
-  // Préparation des scores par set pour chaque équipe
+
   let setScoresA = currentGame.score?.sets?.map((set) => set.teamAScore) ?? [];
   let setScoresB = currentGame.score?.sets?.map((set) => set.teamBScore) ?? [];
   let tieBreakPointA = currentGame.score?.tieBreakPointA;
   let tieBreakPointB = currentGame.score?.tieBreakPointB;
-  // Gestion du super tie-break en 3e set (affiche le score réel du set)
+
   const isSuperTieBreak = (
     (matchFormat?.superTieBreakInFinalSet || (currentGame.score?.tieBreakPointA != null || currentGame.score?.tieBreakPointB != null) || (currentGame.score?.sets?.[2]?.tieBreakTeamA != null || currentGame.score?.sets?.[2]?.tieBreakTeamB != null))
     && currentGame.score?.sets?.length === 3
   );
+
+  const MAX_SETS = 3;
   if (isSuperTieBreak && currentGame.score?.sets?.[2]) {
     const set3 = currentGame.score.sets[2];
     setScoresA = [setScoresA[0], setScoresA[1], set3.tieBreakTeamA ?? setScoresA[2]];
     setScoresB = [setScoresB[0], setScoresB[1], set3.tieBreakTeamB ?? setScoresB[2]];
-    // Correction : pour l'affichage des points en cours (gamePoints), on prend tieBreakTeamA/B si tieBreakPointA/B sont null
+
     if ((tieBreakPointA == null || typeof tieBreakPointA === 'undefined') && set3.tieBreakTeamA != null) {
       tieBreakPointA = set3.tieBreakTeamA;
     }
@@ -316,80 +328,94 @@ export default function MatchResultCardZoom({
   } else if (isSuperTieBreak) {
     setScoresA = [setScoresA[0], setScoresA[1], setScoresA[2]];
     setScoresB = [setScoresB[0], setScoresB[1], setScoresB[2]];
-    if (tieBreakPointA == null && setScoresA[2] != null) {
-      tieBreakPointA = setScoresA[2];
-    }
-    if (tieBreakPointB == null && setScoresB[2] != null) {
-      tieBreakPointB = setScoresB[2];
-    }
   } else {
     setScoresA = setScoresA.slice(0, 3);
     setScoresB = setScoresB.slice(0, 3);
   }
 
+  while (setScoresA.length < MAX_SETS) { setScoresA.push(null); }
+  while (setScoresB.length < MAX_SETS) { setScoresB.push(null); }
+
   return (
-    <div className={cn('relative rounded-lg border p-2 sm:p-4 bg-background flex flex-col gap-2 sm:gap-4')}>
-      {/* Barre flottante en haut pour le badge LIVE */}
-      <div className="absolute left-0 right-0 top-0 h-10 flex items-center justify-end px-4 pointer-events-none">
-        {!currentGame.finished && (
-          <div className="pointer-events-auto">
-            <LiveMatchIndicator showLabel={true} />
-          </div>
-        )}
-      </div>
-      {/* Ajoute un padding-top pour ne pas que le contenu chevauche la barre LIVE */}
-      <div className="pt-12 sm:pt-14">
-        {/* Score et équipes + Undo */}
-        <div className="flex items-center gap-1 sm:gap-2">
-          <div className="flex flex-col gap-3 sm:gap-4 flex-1">
-            <TeamScoreRow
-              team={teams[0]}
-              gamePoint={currentGame.score?.currentGamePointA}
-              setScores={setScoresA}
-              tieBreakPoint={tieBreakPointA}
-              teamSide="TEAM_A"
-              editable={editable}
-              loading={loading === 'TEAM_A'}
-              onPointChange={handlePointChange}
-              winnerSide={currentGame.winnerSide === 'TEAM_A' ? 0 : currentGame.winnerSide === 'TEAM_B' ? 1 : undefined}
-            />
-            <TeamScoreRow
-              team={teams[1]}
-              gamePoint={currentGame.score?.currentGamePointB}
-              setScores={setScoresB}
-              tieBreakPoint={tieBreakPointB}
-              teamSide="TEAM_B"
-              editable={editable}
-              loading={loading === 'TEAM_B'}
-              onPointChange={handlePointChange}
-              winnerSide={currentGame.winnerSide === 'TEAM_A' ? 0 : currentGame.winnerSide === 'TEAM_B' ? 1 : undefined}
-            />
-          </div>
-          {/* Boutons d'action (Undo + increment) uniquement en mode admin */}
-          {editable && (
-            <div className="flex flex-col gap-2 items-end ml-3 sm:ml-4">
-              <button
-                className="btn btn-outline btn-xs flex items-center justify-center"
-                disabled={undoLoading}
-                onClick={handleUndo}
-                type="button"
-                aria-label="Undo last point"
-                title="Annuler le dernier point"
-              >
-                <Undo2 className="w-5 h-5" />
-              </button>
+    <div className="w-full max-w-2xl mx-auto font-sans">
+
+      {/* Container Principal "Carte" */}
+      <div className="bg-background rounded-2xl border shadow-sm overflow-hidden flex flex-col relative">
+
+        {/* En-tête : Infos Match */}
+        <div className="px-4 py-3 bg-muted/30 border-b flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              {!currentGame.finished && <LiveMatchIndicator />}
+              {currentGame.finished && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                  <Trophy className="w-3 h-3" /> Terminé
+                </span>
+              )}
             </div>
-          )}
+
+            <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground">
+                {currentGame.court && (
+                  <div className="flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />
+                    <span>{currentGame.court}</span>
+                  </div>
+                )}
+                {formattedScheduledTime && (
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    <span>{formattedScheduledTime}</span>
+                  </div>
+                )}
+            </div>
         </div>
-        {/* Détails supplémentaires (court, heure, etc.) si besoin */}
-        <div className="flex justify-between text-xs text-muted-foreground mt-4 sm:mt-6">
-          <span>
-            {currentGame.court && <>{currentGame.court}</>}
-          </span>
-          <span>
-            {formattedScheduledTime && <>Début : {formattedScheduledTime}</>}
-          </span>
+
+        {/* Corps : Scoreboard */}
+        <div className="p-2 sm:p-4 space-y-2">
+
+            {/* Équipe A */}
+            <ModernTeamScoreRow
+                team={teams[0]}
+                teamIndex={0}
+                gamePoint={currentGame.score?.currentGamePointA}
+                setScores={setScoresA}
+                tieBreakPoint={tieBreakPointA}
+                teamSide="TEAM_A"
+                editable={editable}
+                loading={loading === 'TEAM_A'}
+                onPointChange={handlePointChange}
+                winnerSide={currentGame.winnerSide === 'TEAM_A' ? 0 : currentGame.winnerSide === 'TEAM_B' ? 1 : undefined}
+            />
+
+            {/* Équipe B */}
+            <ModernTeamScoreRow
+                team={teams[1]}
+                teamIndex={1}
+                gamePoint={currentGame.score?.currentGamePointB}
+                setScores={setScoresB}
+                tieBreakPoint={tieBreakPointB}
+                teamSide="TEAM_B"
+                editable={editable}
+                loading={loading === 'TEAM_B'}
+                onPointChange={handlePointChange}
+                winnerSide={currentGame.winnerSide === 'TEAM_A' ? 0 : currentGame.winnerSide === 'TEAM_B' ? 1 : undefined}
+            />
+
         </div>
+
+        {/* Pied de page : Actions Admin (Undo) */}
+        {editable && (
+            <div className="bg-muted/20 px-4 py-3 border-t flex justify-end items-center gap-4">
+               {/* Le bouton Undo est traité comme le "Moins" ou "Retour arrière" */}
+               <button
+                  onClick={handleUndo}
+                  disabled={undoLoading}
+                  className="btn btn-outline btn-sm gap-2 border-border hover:bg-background hover:text-foreground"
+                >
+                  {undoLoading ? <Loader2 className="w-4 h-4 animate-spin"/> : <Undo2 className="w-4 h-4" />}
+                  <span>Annuler le dernier point</span>
+               </button>
+            </div>
+        )}
       </div>
     </div>
   );

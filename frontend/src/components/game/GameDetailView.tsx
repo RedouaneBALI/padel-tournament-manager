@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Game } from '@/src/types/game';
 import { Score } from '@/src/types/score';
 import MatchResultCardZoom from '@/src/components/match/MatchResultCardZoom';
+import VoteModule from '@/src/components/match/VoteModule';
 import BackButton from '@/src/components/ui/buttons/BackButton';
 import { toast } from 'react-toastify';
 import { formatStageLabel } from '@/src/types/stage';
@@ -132,6 +133,8 @@ export default function GameDetailView({
           />
         </div>
       </div>
+
+      <VoteModule gameId={game.id} isVotingDisabled={!!game.score} />
     </main>
   );
 }

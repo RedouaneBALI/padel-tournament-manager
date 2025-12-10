@@ -270,6 +270,32 @@ public class Game {
     }
   }
 
+  /**
+   * Checks if the game has started (i.e., has a score that is not 0-0).
+   *
+   * @return true if the game has started, false otherwise
+   */
+  public boolean isStarted() {
+    return score != null && !isScoreZeroZero();
+  }
+
+  /**
+   * Checks if the current score is 0-0 (no points scored yet).
+   *
+   * @return true if score is 0-0, false otherwise
+   */
+  private boolean isScoreZeroZero() {
+    if (score == null || score.getSets() == null || score.getSets().isEmpty()) {
+      return true;
+    }
+    for (var set : score.getSets()) {
+      if (set.getTeamAScore() > 0 || set.getTeamBScore() > 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   @Override
   public String toString() {
     return String.format(

@@ -37,6 +37,8 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()     // preflight
             .requestMatchers(HttpMethod.GET, "/tournaments/**").permitAll() // ⬅️ public GET
+            .requestMatchers(HttpMethod.GET, "/games/*/votes").permitAll() // ⬅️ public GET votes
+            .requestMatchers(HttpMethod.POST, "/games/*/votes").permitAll() // ⬅️ public POST votes
             .requestMatchers("/ws/**").permitAll() // WebSocket endpoints public
             .anyRequest().authenticated()
         )

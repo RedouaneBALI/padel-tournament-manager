@@ -9,17 +9,19 @@ import lombok.Data;
 @Data
 public class GameDTO {
 
-  private Long          id;
-  private PlayerPairDTO teamA;
-  private PlayerPairDTO teamB;
-  private boolean       finished;
-  private ScoreDTO      score;
-  private TeamSide      winnerSide;
+  private Long           id;
+  private PlayerPairDTO  teamA;
+  private PlayerPairDTO  teamB;
+  private boolean        finished;
+  private ScoreDTO       score;
+  private TeamSide       winnerSide;
   @JsonFormat(pattern = "HH:mm")
-  private LocalTime     scheduledTime;
-  private String        court;
+  private LocalTime      scheduledTime;
+  private String         court;
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  private RoundLightDTO round;
-  private Boolean       isEditable;
+  private RoundLightDTO  round;
+  private Boolean        isEditable;
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private VoteSummaryDTO votes;
 
 }

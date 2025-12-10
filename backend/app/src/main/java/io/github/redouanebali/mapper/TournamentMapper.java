@@ -142,7 +142,6 @@ public interface TournamentMapper {
       light.setId(round.getId());
       light.setStage(round.getStage());
       light.setMatchFormat(toDTO(round.getMatchFormat()));
-      // Cast car GameDTO.round est bien de type RoundLightDTO
       gameDTO.setRound(light);
     }
     return gameDTO;

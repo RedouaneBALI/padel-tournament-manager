@@ -50,6 +50,9 @@ public class PublicTournamentControllerTest {
   @MockitoBean
   private UserService userService;
 
+  @MockitoBean
+  private io.github.redouanebali.service.VoteService voteService;
+
   private MockedStatic<SecurityUtil> secMock;
 
   @BeforeEach

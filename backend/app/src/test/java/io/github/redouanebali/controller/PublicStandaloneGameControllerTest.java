@@ -47,6 +47,9 @@ public class PublicStandaloneGameControllerTest {
   @MockitoBean
   private io.github.redouanebali.security.AuthorizationService authorizationService;
 
+  @MockitoBean
+  private io.github.redouanebali.service.VoteService voteService;
+
   private MockedStatic<SecurityUtil> secMock;
 
   private Game sampleGame(String idSuffix) {

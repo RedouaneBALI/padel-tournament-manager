@@ -17,7 +17,9 @@ import io.github.redouanebali.service.MatchFormatService;
 import io.github.redouanebali.service.PlayerPairService;
 import io.github.redouanebali.service.TournamentService;
 import io.github.redouanebali.service.UserService;
+import io.github.redouanebali.service.VoteService;
 import jakarta.annotation.security.PermitAll;
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -56,6 +58,7 @@ public class PublicTournamentController {
   private final TournamentMapper     tournamentMapper;
   private final AuthorizationService authorizationService;
   private final UserService          userService;
+  private final VoteService          voteService;
 
   /**
    * Retrieves complete tournament information by ID. Returns all tournament details including configuration, dates, and metadata. If user is
@@ -120,11 +123,12 @@ public class PublicTournamentController {
    *
    * @param tournamentId the tournament ID
    * @param gameId the game ID
+   * @param request the HTTP request for vote identification
    * @return ResponseEntity containing the game DTO with round information
    * @throws IllegalArgumentException if tournament or game is not found
    */
   @GetMapping("/{tournamentId}/games/{gameId}")
-  public ResponseEntity<GameDTO> getGame(@PathVariable Long tournamentId, @PathVariable Long gameId) {
+  public ResponseEntity<GameDTO> getGame(@PathVariable Long tournamentId, @PathVariable Long gameId, HttpServletRequest request) {
     log.debug("Getting game {} for tournament {}", gameId, tournamentId);
     Tournament tournament = tournamentService.getTournamentById(tournamentId);
 
@@ -133,6 +137,7 @@ public class PublicTournamentController {
       for (var game : round.getGames()) {
         if (game.getId() != null && game.getId().equals(gameId)) {
           GameDTO gameDTO = tournamentMapper.toDTOWithLightRound(game, round);
+          gameDTO.setVotes(voteService.getVoteSummary(gameId, request));
           return ResponseEntity.ok(gameDTO);
         }
       }
