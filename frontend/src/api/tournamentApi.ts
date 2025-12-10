@@ -492,7 +492,7 @@ export async function updateUserProfile(payload: Partial<Omit<User, 'id' | 'emai
   if (!response.ok) {
     const text = await response.text().catch(() => '');
     toast.error('Erreur lors de la mise à jour du profil.');
-    throw new Error(`Erreur lors de la mise à jour du profil (${response.status}) ${text}`);
+    throw new Error(`Erreur lors du mise à jour du profil (${response.status}) ${text}`);
   }
 
   toast.success('Profil mis à jour avec succès !');
@@ -500,10 +500,8 @@ export async function updateUserProfile(payload: Partial<Omit<User, 'id' | 'emai
 }
 
 export async function submitVote(gameId: string, teamSide: 'TEAM_A' | 'TEAM_B'): Promise<VoteSummary> {
-  const response = await fetch(api(`/games/${gameId}/votes`), {
+  const response = await fetchWithAuth(api(`/games/${gameId}/votes`), {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
     body: JSON.stringify({ teamSide }),
   });
 
@@ -522,9 +520,8 @@ export async function submitVote(gameId: string, teamSide: 'TEAM_A' | 'TEAM_B'):
 }
 
 export async function fetchVoteSummary(gameId: string): Promise<VoteSummary> {
-  const response = await fetch(api(`/games/${gameId}/votes`), {
+  const response = await fetchWithAuth(api(`/games/${gameId}/votes`), {
     method: 'GET',
-    credentials: 'include',
   });
 
   if (!response.ok) {
@@ -549,4 +546,3 @@ async function patchGamePointEndpoint(endpoint: string, teamSide: string | undef
   }
   return await response.json();
 }
-

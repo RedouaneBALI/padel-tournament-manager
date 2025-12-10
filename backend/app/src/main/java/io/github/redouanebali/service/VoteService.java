@@ -83,14 +83,22 @@ public class VoteService {
    */
   String resolveVoterId(HttpServletRequest request) {
     String userId = SecurityUtil.currentUserId();
+    log.info("resolveVoterId - userId: {}", userId);
     if (userId != null) {
       return "user:" + userId;
     }
 
-    String ip          = getClientIp(request);
-    String userAgent   = request.getHeader("User-Agent");
-    String fingerprint = ip + "|" + (userAgent != null ? userAgent : "unknown");
-    return "anon:" + hash(fingerprint);
+    // For anonymous, use a combination of IP, User-Agent, and a session ID to differentiate sessions
+    String ip        = getClientIp(request);
+    String userAgent = request.getHeader("User-Agent");
+    String sessionId = request.getHeader("X-Session-Id"); // Expect front-end to send a unique session ID
+    if (sessionId == null) {
+      sessionId = "default"; // Fallback, but not ideal
+    }
+    String fingerprint = ip + "|" + (userAgent != null ? userAgent : "unknown") + "|" + sessionId;
+    String voterId     = "anon:" + hash(fingerprint);
+    log.info("resolveVoterId - anonymous voterId: {} (IP: {}, UA: {}, Session: {})", voterId, ip, userAgent, sessionId);
+    return voterId;
   }
 
   private String getClientIp(HttpServletRequest request) {

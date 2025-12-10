@@ -40,6 +40,10 @@ export default function VoteModule({
     try {
       const summary = await submitVote(gameId, teamSide);
       setVoteSummary(summary);
+      // Recharger les votes après un court délai pour s'assurer de la synchronisation
+      setTimeout(() => {
+        fetchVoteSummary(gameId).then(setVoteSummary).catch(console.error);
+      }, 500);
     } catch (e) {
       console.error(e);
     } finally {
