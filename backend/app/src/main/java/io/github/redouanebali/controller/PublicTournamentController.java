@@ -205,6 +205,7 @@ public class PublicTournamentController {
                                                                          @RequestParam(required = false) LocalDate endDate) {
     log.debug("Getting active tournaments for home page (startDate: {}, endDate: {})", startDate, endDate);
     List<Tournament> entities = tournamentService.getActiveTournaments(startDate, endDate);
+    
     List<TournamentSummaryDTO> summaries = entities.stream()
                                                    .map(tournamentMapper::toSummaryDTO)
                                                    .toList();
