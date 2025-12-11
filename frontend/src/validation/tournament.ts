@@ -96,8 +96,8 @@ export const TournamentFormSchema = z.object({
 .superRefine((data, ctx) => {
   const { config } = data;
   const nbSeeds = num(config.nbSeeds);
-  if (config.mainDrawSize && (config.mainDrawSize < 4 || config.mainDrawSize > 128)) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: `La taille du tableau doit être entre 4 et 128 (actuellement ${config.mainDrawSize}).`, path: ['config', 'mainDrawSize'] });
+  if (config.mainDrawSize && (config.mainDrawSize < 2 || config.mainDrawSize > 128)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: `La taille du tableau doit être entre 2 et 128 (actuellement ${config.mainDrawSize}).`, path: ['config', 'mainDrawSize'] });
   }
   if (config.nbPairsPerPool && config.nbPairsPerPool < 3) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Il faut au moins 3 équipes par poule (actuellement ${config.nbPairsPerPool}).`, path: ['config', 'nbPairsPerPool'] });
