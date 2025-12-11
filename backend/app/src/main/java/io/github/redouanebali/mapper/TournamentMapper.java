@@ -36,6 +36,7 @@ import org.mapstruct.Mapping;
 public interface TournamentMapper {
 
   @Mapping(target = "organizerName", ignore = true)
+  @Mapping(target = "isEditable", expression = "java(tournament.isEditableBy(io.github.redouanebali.security.SecurityUtil.currentUserId()))")
   @Mapping(target = "editorIds", source = "editorIds")
   TournamentDTO toDTOBase(Tournament tournament);
 
@@ -99,6 +100,8 @@ public interface TournamentMapper {
     return dtos;
   }
 
+  @Mapping(target = "round", ignore = true)
+  @Mapping(target = "isEditable", ignore = true)
   GameDTO toDTO(Game game);
 
   List<GameDTO> toDTOGameList(List<Game> games);
