@@ -39,39 +39,40 @@ export default function TeamRow({
       )}
 
       <div className="flex flex-col min-w-0 overflow-hidden">
-        <div className={cn(
-            "flex flex-col truncate leading-tight",
-            fontSize ? fontSize : 'text-sm',
-            isWinner ? 'font-bold text-foreground' : 'font-medium',
-            isLoser ? 'text-muted-foreground' : 'text-foreground'
-          )}>
-          {team?.player1Name && (
-            <span className="truncate">{team.player1Name}</span>
-          )}
+        <div className="flex items-center">
+          <div className={cn(
+              "flex flex-col truncate leading-tight",
+              fontSize ? fontSize : 'text-sm',
+              isWinner ? 'font-bold text-foreground' : 'font-medium',
+              isLoser ? 'text-muted-foreground' : 'text-foreground'
+            )}>
+            {team?.player1Name && (
+              <span className="truncate">{team.player1Name}</span>
+            )}
 
-          {team?.player2Name && (
-            <span className="truncate">{team.player2Name}</span>
+            {team?.player2Name && (
+              <span className="truncate">{team.player2Name}</span>
+            )}
+          </div>
+
+          {team?.displaySeed && (
+            <span className={cn(
+              "ml-2 truncate",
+              fontSize ? fontSize : 'text-sm',
+              isWinner ? 'font-bold text-foreground' : 'font-medium',
+              isLoser ? 'text-muted-foreground' : 'text-foreground'
+            )}>
+              ({team.displaySeed})
+            </span>
           )}
         </div>
 
-        {/* Affichage de la tête de série ou du trophée */}
-        {(team?.displaySeed || showChampion) && (
+        {/* Affichage du trophée */}
+        {showChampion && (
           <div className="flex items-center gap-2 mt-0.5">
-            {team?.displaySeed && (
-              <span className={cn(
-                "truncate",
-                fontSize ? fontSize : 'text-sm',
-                isWinner ? 'font-bold text-foreground' : 'font-medium',
-                isLoser ? 'text-muted-foreground' : 'text-foreground'
-              )}>
-                {team.displaySeed}
-              </span>
-            )}
-            {showChampion && (
-              <span title="Vainqueur" className="text-yellow-500 animate-in fade-in zoom-in">
-                <Trophy className="h-4 w-4 fill-current" />
-              </span>
-            )}
+            <span title="Vainqueur" className="text-yellow-500 animate-in fade-in zoom-in">
+              <Trophy className="h-4 w-4 fill-current" />
+            </span>
           </div>
         )}
       </div>
