@@ -10,6 +10,7 @@ import { fetchWithAuth } from "./fetchWithAuth";
 import type { InitializeDrawRequest } from '@/src/types/api/InitializeDrawRequest';
 import type { Game } from '@/src/types/game';
 import type { User } from '@/src/types/user';
+import type { VoteSummary, VotePayload } from '@/src/types/vote';
 
 // Utiliser directement l'URL du backend depuis les variables d'environnement
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
@@ -491,10 +492,44 @@ export async function updateUserProfile(payload: Partial<Omit<User, 'id' | 'emai
   if (!response.ok) {
     const text = await response.text().catch(() => '');
     toast.error('Erreur lors de la mise à jour du profil.');
-    throw new Error(`Erreur lors de la mise à jour du profil (${response.status}) ${text}`);
+    throw new Error(`Erreur lors du mise à jour du profil (${response.status}) ${text}`);
   }
 
   toast.success('Profil mis à jour avec succès !');
+  return await response.json();
+}
+
+export async function submitVote(gameId: string, teamSide: 'TEAM_A' | 'TEAM_B'): Promise<VoteSummary> {
+  const response = await fetchWithAuth(api(`/games/${gameId}/votes`), {
+    method: 'POST',
+    body: JSON.stringify({ teamSide }),
+  });
+
+  if (response.status === 409) {
+    toast.error('Vous avez déjà voté pour ce match.');
+    throw new Error('ALREADY_VOTED');
+  }
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    toast.error('Erreur lors du vote.');
+    throw new Error(`Erreur lors du vote (${response.status}) ${text}`);
+  }
+
+  return await response.json();
+}
+
+export async function fetchVoteSummary(gameId: string): Promise<VoteSummary> {
+  const response = await fetchWithAuth(api(`/games/${gameId}/votes`), {
+    method: 'GET',
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    toast.error('Erreur lors du chargement des votes.');
+    throw new Error(`Erreur lors du chargement des votes (${response.status}) ${text}`);
+  }
+
   return await response.json();
 }
 

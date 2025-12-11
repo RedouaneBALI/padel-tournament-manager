@@ -1,0 +1,12 @@
+-- V9__create_votes_table.sql
+CREATE TABLE IF NOT EXISTS votes (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  game_id BIGINT NOT NULL,
+  voter_id VARCHAR(255) NOT NULL,
+  team_side VARCHAR(10) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  is_authenticated BOOLEAN DEFAULT FALSE,
+  CONSTRAINT uk_vote_game_voter UNIQUE (game_id, voter_id)
+);
+
+CREATE INDEX idx_votes_game_id ON votes(game_id);

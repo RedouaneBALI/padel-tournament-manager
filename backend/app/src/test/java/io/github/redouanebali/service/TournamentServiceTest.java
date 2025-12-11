@@ -10,7 +10,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.github.redouanebali.dto.request.RoundRequest;
 import io.github.redouanebali.dto.request.UpdateTournamentRequest;
+import io.github.redouanebali.model.Player;
+import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.Tournament;
@@ -205,5 +208,56 @@ class TournamentServiceTest {
 
     assertEquals(1, result.size());
     assertEquals(tournament, result.get(0));
+  }
+
+  @Test
+  void testGenerateDrawManual_withTwoTeams_shouldWork() {
+    // Create tournament with 2 player pairs
+    Tournament tournament = new Tournament();
+    tournament.setId(1L);
+    tournament.setOwnerId("bali.redouane@gmail.com");
+
+    Player player1 = new Player("Player1");
+    Player player2 = new Player("Player2");
+    Player player3 = new Player("Player3");
+    Player player4 = new Player("Player4");
+
+    PlayerPair pair1 = new PlayerPair(player1, player2, 1);
+    PlayerPair pair2 = new PlayerPair(player3, player4, 2);
+
+    tournament.getPlayerPairs().add(pair1);
+    tournament.getPlayerPairs().add(pair2);
+
+    when(tournamentRepository.findById(1L)).thenReturn(Optional.of(tournament));
+
+    // Mock drawGenerationService to return the tournament with a final round added
+    Tournament updatedTournament = new Tournament();
+    updatedTournament.setId(1L);
+    updatedTournament.setOwnerId("bali.redouane@gmail.com");
+    updatedTournament.getPlayerPairs().addAll(tournament.getPlayerPairs());
+    Round finalRound = new Round(Stage.FINAL);
+    updatedTournament.getRounds().add(finalRound);
+
+    when(drawGenerationService.generateDrawManual(any(Tournament.class), any())).thenReturn(updatedTournament);
+
+    // Create RoundRequest for manual draw: one round FINAL with one game
+    RoundRequest roundRequest = new RoundRequest();
+    roundRequest.setStage("FINAL");
+    // Assuming GameRequest has teamA and teamB as PlayerPairRequest
+    // For simplicity, since it's manual, we can pass empty or mock
+
+    List<RoundRequest> initialRounds = List.of(roundRequest);
+
+    // Call the method
+    Tournament result = tournamentService.generateDrawManual(1L, initialRounds);
+
+    // Assertions
+    assertEquals(1L, result.getId());
+    assertEquals(2, result.getPlayerPairs().size());
+    assertEquals(1, result.getRounds().size());
+    assertEquals(Stage.FINAL, result.getRounds().get(0).getStage());
+
+    // Verify drawGenerationService was called
+    verify(drawGenerationService, times(1)).generateDrawManual(tournament, initialRounds);
   }
 }

@@ -5,6 +5,8 @@ import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.security.AuthorizationService;
 import io.github.redouanebali.service.StandaloneGameService;
+import io.github.redouanebali.service.VoteService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -26,9 +28,10 @@ public class PublicStandaloneGameController {
   private final StandaloneGameService standaloneGameService;
   private final TournamentMapper      tournamentMapper;
   private final AuthorizationService  authorizationService;
+  private final VoteService           voteService;
 
   @GetMapping("/{id}")
-  public ResponseEntity<GameDTO> getGame(@PathVariable Long id) {
+  public ResponseEntity<GameDTO> getGame(@PathVariable Long id, HttpServletRequest request) {
     log.info("Getting public game with ID: {}", id);
     Game    game = standaloneGameService.getGameById(id);
     GameDTO dto  = tournamentMapper.toDTO(game);
@@ -37,6 +40,9 @@ public class PublicStandaloneGameController {
     String  userId  = io.github.redouanebali.security.SecurityUtil.currentUserId();
     boolean canEdit = authorizationService.canEditGame(game, userId);
     dto.setIsEditable(canEdit);
+
+    // Add vote summary
+    dto.setVotes(voteService.getVoteSummary(id, request));
 
     log.debug("Game {} - user {} - canEdit: {}", id, userId, canEdit);
     return ResponseEntity.ok(dto);
