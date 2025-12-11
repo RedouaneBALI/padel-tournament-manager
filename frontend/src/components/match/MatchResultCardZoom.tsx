@@ -3,7 +3,7 @@ import type { Game, PlayerPair, TeamSide } from '@/src/types/game';
 import type { GamePoint } from '@/src/types/score';
 import { cn } from '@/src/lib/utils';
 import TeamRow from '@/src/components/ui/TeamRow';
-import { incrementGamePoint, undoGamePoint, fetchMatchFormat, incrementStandaloneGamePoint, undoStandaloneGamePoint } from '@/src/api/tournamentApi';
+import { incrementGamePoint, undoGamePoint, fetchMatchFormat } from '@/src/api/tournamentApi';
 import { Undo2, MapPin, Clock, Trophy, Plus, Loader2 } from 'lucide-react';
 import LiveMatchIndicator from '@/src/components/ui/LiveMatchIndicator';
 import { useRealtimeGame } from '@/src/hooks/useRealtimeGame';
@@ -219,15 +219,11 @@ export default function MatchResultCardZoom({
   }, [game.round?.stage, hasTournamentContext, tournamentId, game.id]);
 
   const callIncrementEndpoint = (teamSide: TeamSide) => {
-    return hasTournamentContext
-      ? incrementGamePoint(tournamentId, game.id, teamSide)
-      : incrementStandaloneGamePoint(game.id, teamSide);
+    return incrementGamePoint(tournamentId, game.id, teamSide);
   };
 
   const callUndoEndpoint = () => {
-    return hasTournamentContext
-      ? undoGamePoint(tournamentId, game.id)
-      : undoStandaloneGamePoint(game.id);
+    return undoGamePoint(tournamentId, game.id);
   };
 
   const handlePointChange = async (teamSide: TeamSide) => {
