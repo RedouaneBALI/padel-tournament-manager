@@ -83,7 +83,7 @@ export default function GameDetailView({
     if (!score) return false;
 
     // Vérifier si des sets ont des scores > 0
-    if (score.sets && score.sets.some(set => set.teamAScore > 0 || set.teamBScore > 0)) return true;
+    if (score.sets && score.sets.some(set => (set.teamAScore !== null && set.teamAScore > 0) || (set.teamBScore !== null && set.teamBScore > 0))) return true;
 
     // Vérifier si les points actuels ne sont pas à zéro
     if (score.currentGamePointA && score.currentGamePointA !== 'ZERO') return true;
@@ -151,7 +151,7 @@ export default function GameDetailView({
         </div>
       </div>
 
-      <VoteModule gameId={game.id} isVotingDisabled={hasMatchStarted(game.score)} />
+      <VoteModule gameId={game.id} isVotingDisabled={hasMatchStarted(game.score ?? null)} />
     </main>
   );
 }
