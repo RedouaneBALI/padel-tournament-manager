@@ -89,7 +89,12 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
         isQualifKo ? mainSlotsRef.current : undefined
       );
       await generateDraw(tournamentId, rounds);
-      router.push(`/admin/tournament/${tournamentId}/bracket`);
+      const isTwoTeam = mainDrawSize === 2;
+      if (isTwoTeam) {
+        router.push(`/admin/tournament/${tournamentId}/games?stage=FINAL`);
+      } else {
+        router.push(`/admin/tournament/${tournamentId}/bracket`);
+      }
     } finally {
       setIsGenerating(false);
     }
