@@ -58,8 +58,13 @@ export default function TeamRow({
         {(team?.displaySeed || showChampion) && (
           <div className="flex items-center gap-2 mt-0.5">
             {team?.displaySeed && (
-              <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded-sm">
-                TS {team.displaySeed}
+              <span className={cn(
+                "truncate",
+                fontSize ? fontSize : 'text-sm',
+                isWinner ? 'font-bold text-foreground' : 'font-medium',
+                isLoser ? 'text-muted-foreground' : 'text-foreground'
+              )}>
+                {team.displaySeed}
               </span>
             )}
             {showChampion && (

@@ -6,9 +6,7 @@ import { useSession } from 'next-auth/react';
 import { FiLogIn } from 'react-icons/fi';
 import LogoutButton from '@/src/components/auth/LogoutButton';
 import CreateTournamentButton from '@/src/components/ui/buttons/CreateTournamentButton';
-import CreateGameButton from '@/src/components/ui/buttons/CreateGameButton';
 import MyTournamentsButton from '@/src/components/ui/buttons/MyTournamentsButton';
-import MyGamesButton from '@/src/components/ui/buttons/MyGamesButton';
 import ContactButton from '@/src/components/ui/buttons/ContactButton';
 import GoogleLoginButton from '@/src/components/ui/buttons/GoogleLoginButton';
 import PricingButton from '@/src/components/ui/buttons/PricingButton';
@@ -45,7 +43,6 @@ export default function BottomNav({ items, pathname, className, fixed = true, on
   const { status } = useSession();
 
   const hrefCreateTournament = status === 'authenticated' ? '/admin/tournament/new' : '/connexion';
-  const hrefCreateGame = status === 'authenticated' ? '/admin/game/new' : '/connexion';
   const hrefMy = status === 'authenticated' ? '/admin/tournaments' : '/connexion';
 
   const computeActive = (href: string, isActive?: (p: string) => boolean) => {
@@ -128,9 +125,7 @@ export default function BottomNav({ items, pathname, className, fixed = true, on
                 <hr className="border-t border-border my-1" />
                 <div className="flex flex-col gap-2">
                   <CreateTournamentButton href={hrefCreateTournament} onClick={onMoreClick ?? closeMore} />
-                  <CreateGameButton href={hrefCreateGame} onClick={onMoreClick ?? closeMore} />
                   <MyTournamentsButton href={hrefMy} onClick={onMoreClick ?? closeMore} />
-                  <MyGamesButton href={hrefMy.replace('tournaments','games')} onClick={onMoreClick ?? closeMore} />
                 </div>
 
                 <h3 className="text-sm font-semibold text-muted-foreground mt-4 mb-1">FRMT 🇲🇦</h3>

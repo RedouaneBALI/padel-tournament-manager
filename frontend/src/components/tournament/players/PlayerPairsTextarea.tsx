@@ -70,7 +70,6 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
 
         return pair;
       });
-      console.log("save from PlayerPairsTextarea.tsx");
       await savePlayerPairs(tournamentId, pairs);
       if (onSaveSuccess) onSaveSuccess();
     } catch {
@@ -78,8 +77,6 @@ export default function PlayerPairsTextarea({ tournamentId, onPairsChange, hasSt
     } finally {
       setIsSaving(false);
     }
-
-    await fetchUpdatedPairs();
   };
 
   return (
