@@ -79,7 +79,7 @@ export default function VoteModule({
         <div className="px-4 py-3 border-b flex items-center justify-between bg-muted/20">
           <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <Trophy className="w-4 h-4 text-yellow-500" />
-            <span>Pronostiques</span>
+            <span>Pronostics</span>
           </div>
           <span className="text-xs font-medium text-muted-foreground bg-background px-2 py-1 rounded-full border">
             {totalVotes} vote{totalVotes !== 1 ? 's' : ''}

@@ -79,7 +79,7 @@ function ModernTeamScoreRow({
           teamIndex={teamIndex}
           winnerSide={winnerSide}
           fontSize="text-base sm:text-lg"
-          showChampion={isWinner}
+          showChampion={false}
           themeColor={themeColor}
         />
       </div>

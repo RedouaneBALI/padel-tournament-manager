@@ -79,6 +79,23 @@ export default function GameDetailView({
     }
   };
 
+  const hasMatchStarted = (score: Score | null) => {
+    if (!score) return false;
+
+    // Vérifier si des sets ont des scores > 0
+    if (score.sets && score.sets.some(set => set.teamAScore > 0 || set.teamBScore > 0)) return true;
+
+    // Vérifier si les points actuels ne sont pas à zéro
+    if (score.currentGamePointA && score.currentGamePointA !== 'ZERO') return true;
+    if (score.currentGamePointB && score.currentGamePointB !== 'ZERO') return true;
+
+    // Vérifier les points de tie-break
+    if (score.tieBreakPointA && score.tieBreakPointA > 0) return true;
+    if (score.tieBreakPointB && score.tieBreakPointB > 0) return true;
+
+    return false;
+  };
+
   if (loading) {
     return (
       <div className="min-h-full flex items-center justify-center">
@@ -134,7 +151,7 @@ export default function GameDetailView({
         </div>
       </div>
 
-      <VoteModule gameId={game.id} isVotingDisabled={!!game.score} />
+      <VoteModule gameId={game.id} isVotingDisabled={hasMatchStarted(game.score)} />
     </main>
   );
 }

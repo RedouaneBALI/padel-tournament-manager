@@ -145,4 +145,32 @@ class TournamentTest {
     assertTrue(tournament.getPlayerPairs().isEmpty());
     assertTrue(tournament.getEditorIds().isEmpty());
   }
+
+  @Test
+  void tournamentWithTwoTeams_shouldWork() {
+    Tournament tournament = new Tournament();
+    tournament.setName("Test Tournament with 2 Teams");
+    tournament.setOwnerId("owner123");
+
+    Player player1 = new Player("Player1");
+    Player player2 = new Player("Player2");
+    Player player3 = new Player("Player3");
+    Player player4 = new Player("Player4");
+
+    PlayerPair pair1 = new PlayerPair(player1, player2, 1);
+    PlayerPair pair2 = new PlayerPair(player3, player4, 2);
+
+    tournament.getPlayerPairs().add(pair1);
+    tournament.getPlayerPairs().add(pair2);
+
+    Round finalRound = new Round(Stage.FINAL);
+    tournament.getRounds().add(finalRound);
+
+    // Assertions
+    assertEquals(2, tournament.getPlayerPairs().size());
+    assertEquals(1, tournament.getRounds().size());
+    assertEquals(Stage.FINAL, tournament.getRoundByStage(Stage.FINAL).getStage());
+    assertTrue(tournament.isEditableBy("owner123"));
+    assertFalse(tournament.isEditableBy("other"));
+  }
 }

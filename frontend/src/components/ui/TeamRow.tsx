@@ -45,10 +45,8 @@ export default function TeamRow({
             isWinner ? 'font-bold text-foreground' : 'font-medium',
             isLoser ? 'text-muted-foreground' : 'text-foreground'
           )}>
-          {team?.player1Name ? (
+          {team?.player1Name && (
             <span className="truncate">{team.player1Name}</span>
-          ) : (
-            <span className="text-muted-foreground italic">Joueur 1</span>
           )}
 
           {team?.player2Name && (
