@@ -81,7 +81,7 @@ export default function ViewersCounter({ gameId, className }: Props) {
       aria-atomic="true"
       className={
         className ??
-        'w-full text-center bg-white/80 dark:bg-black/60 text-sm px-3 py-1 rounded-md shadow-md flex items-center justify-center gap-2'
+        'w-full text-center bg-muted text-sm px-3 py-1 rounded-md shadow-md flex items-center justify-center gap-2 text-foreground'
       }
     >
       <svg

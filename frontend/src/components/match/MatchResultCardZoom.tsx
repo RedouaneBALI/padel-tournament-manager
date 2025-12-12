@@ -31,6 +31,23 @@ function formatScheduledTime(value?: string | null) {
   return parsed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
+function hasMatchStarted(score: Score | null | undefined): boolean {
+  if (!score) return false;
+
+  // Vérifier si des sets ont des scores > 0
+  if (score.sets && score.sets.some(set => (set.teamAScore !== null && set.teamAScore > 0) || (set.teamBScore !== null && set.teamBScore > 0))) return true;
+
+  // Vérifier si les points actuels ne sont pas à zéro
+  if (score.currentGamePointA && score.currentGamePointA !== 'ZERO') return true;
+  if (score.currentGamePointB && score.currentGamePointB !== 'ZERO') return true;
+
+  // Vérifier les points de tie-break
+  if (score.tieBreakPointA && score.tieBreakPointA > 0) return true;
+  if (score.tieBreakPointB && score.tieBreakPointB > 0) return true;
+
+  return false;
+}
+
 // --- Sous-composant pour une ligne d'équipe ---
 
 function ModernTeamScoreRow({
@@ -349,7 +366,7 @@ export default function MatchResultCardZoom({
         {/* En-tête : Infos Match */}
         <div className="px-4 py-3 bg-muted/30 border-b flex items-center justify-between">
             <div className="flex items-center gap-4">
-              {!currentGame.finished && <LiveMatchIndicator />}
+              {!currentGame.finished && hasMatchStarted(currentGame.score) && <LiveMatchIndicator />}
               {currentGame.finished && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                   <Trophy className="w-3 h-3" /> Terminé

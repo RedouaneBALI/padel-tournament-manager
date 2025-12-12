@@ -21,7 +21,7 @@ export default function AdminGameDetailPage({ params }: PageProps) {
           fetchGameFn={() => fetchGame(tournamentId, gameId)}
           editable={true}
         />
-        <div className="mt-4">
+        <div>
           <ViewersCounter gameId={String(gameId)} />
         </div>
       </div>
