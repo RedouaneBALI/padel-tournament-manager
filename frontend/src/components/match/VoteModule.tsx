@@ -72,7 +72,7 @@ export default function VoteModule({
   const hasVoted = !!voteSummary.currentUserVote;
 
   return (
-    <div className="mt-6 w-full max-w-md mx-auto">
+    <div className="mt-4 w-full max-w-md mx-auto">
       <div className="relative bg-card rounded-xl border shadow-sm overflow-hidden">
 
         {/* Header */}

@@ -119,13 +119,13 @@ export default function GameDetailView({
   }
 
   return (
-    <main className={`py-4 pb-12 min-h-full ${editable ? '' : 'px-4 sm:px-6'}`}>
-      <div className="mb-6 flex justify-between items-center">
+    <main className={`py-4 min-h-full ${editable ? '' : 'px-4 sm:px-6'}`}>
+      <div className="mb-4 flex justify-between items-center">
         <BackButton />
       </div>
 
       {title && (
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-4">
           <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary/20 rounded-full shadow-sm">
             <h1 className="text-xl sm:text-2xl font-bold text-primary">{title}</h1>
           </div>
@@ -133,7 +133,7 @@ export default function GameDetailView({
       )}
 
       {!title && game.round?.stage && (
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-4">
           <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary/20 rounded-full shadow-sm">
             <h1 className="text-xl sm:text-2xl font-bold text-primary">{formatStageLabel(game.round.stage)}</h1>
           </div>

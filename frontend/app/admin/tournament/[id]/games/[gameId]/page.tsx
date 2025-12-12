@@ -13,7 +13,7 @@ export default function AdminGameDetailPage({ params }: PageProps) {
   const { id: tournamentId, gameId } = use(params);
 
   return (
-    <main className="px-4 sm:px-6 py-4 pb-24 min-h-screen">
+    <main className="px-4 sm:px-6 py-4 min-h-screen">
       <div className="w-full max-w-xl mx-auto">
         <GameDetailView
           gameId={gameId}
@@ -21,8 +21,10 @@ export default function AdminGameDetailPage({ params }: PageProps) {
           fetchGameFn={() => fetchGame(tournamentId, gameId)}
           editable={true}
         />
+        <div className="mt-4">
+          <ViewersCounter gameId={String(gameId)} />
+        </div>
       </div>
-      <ViewersCounter gameId={String(gameId)} />
     </main>
   );
 }
