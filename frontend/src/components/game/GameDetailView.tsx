@@ -5,7 +5,6 @@ import { Game } from '@/src/types/game';
 import { Score } from '@/src/types/score';
 import MatchResultCardZoom from '@/src/components/match/MatchResultCardZoom';
 import VoteModule from '@/src/components/match/VoteModule';
-import BackButton from '@/src/components/ui/buttons/BackButton';
 import { toast } from 'react-toastify';
 import { formatStageLabel } from '@/src/types/stage';
 
@@ -112,7 +111,6 @@ export default function GameDetailView({
       <div className="min-h-full flex items-center justify-center">
         <div className="text-center">
           <p className="text-destructive mb-4">{error || 'Match introuvable'}</p>
-          <BackButton />
         </div>
       </div>
     );
@@ -120,23 +118,21 @@ export default function GameDetailView({
 
   return (
     <main className={`py-4 min-h-full ${editable ? '' : 'px-4 sm:px-6'}`}>
-      <div className="mb-4 flex justify-between items-center">
-        <BackButton />
+      {/* Ligne 2 : nom du tournoi (et éventuellement boutons admin) */}
+      <div className="mb-2 flex items-center gap-2">
+        {title && (
+          <span className="text-lg sm:text-xl font-bold text-primary truncate">{title}</span>
+        )}
+        {/* Place ici les boutons admin si besoin, par exemple : */}
+        {/* {isAdmin && <AdminActions ... />} */}
       </div>
 
-      {title && (
+      {/* Ligne 3 : stage name centré */}
+      {game.round?.stage && (
         <div className="flex justify-center mb-4">
-          <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary/20 rounded-full shadow-sm">
-            <h1 className="text-xl sm:text-2xl font-bold text-primary">{title}</h1>
-          </div>
-        </div>
-      )}
-
-      {!title && game.round?.stage && (
-        <div className="flex justify-center mb-4">
-          <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary/20 rounded-full shadow-sm">
-            <h1 className="text-xl sm:text-2xl font-bold text-primary">{formatStageLabel(game.round.stage)}</h1>
-          </div>
+          <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-base font-semibold">
+            {formatStageLabel(game.round.stage)}
+          </span>
         </div>
       )}
 

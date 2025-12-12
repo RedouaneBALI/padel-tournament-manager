@@ -1,20 +1,17 @@
-'use client';
-
 import { useRouter } from 'next/navigation';
 import { FiArrowLeft } from 'react-icons/fi';
-import Button from '@/src/components/ui/buttons/Button';
 
-interface Props {
-  className?: string;
-  label?: string;
-}
-
-export default function BackButton({ className = '', label = 'Retour' }: Props) {
+export default function BackButton({ className = '' }: { className?: string }) {
   const router = useRouter();
   return (
-    <Button onClick={() => router.back()} className={className} variant="secondary" aria-label={label}>
-      <FiArrowLeft className="h-4 w-4" aria-hidden />
-      <span>{label}</span>
-    </Button>
+    <button
+      onClick={() => router.back()}
+      className={`p-2 rounded hover:bg-muted transition-colors cursor-pointer ${className}`}
+      aria-label="Retour"
+      type="button"
+    >
+      <FiArrowLeft className="h-5 w-5 text-muted-foreground hover:text-primary" aria-hidden />
+    </button>
   );
 }
+

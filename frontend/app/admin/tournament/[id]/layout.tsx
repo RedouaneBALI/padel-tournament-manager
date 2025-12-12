@@ -4,16 +4,34 @@
 import React, { use, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { ToastContainer } from 'react-toastify';
-import AdminTournamentHeader from '@/src/components/admin/AdminTournamentHeader';
-import { ExportProvider } from '@/src/contexts/ExportContext';
+import { ExportProvider, useExport } from '@/src/contexts/ExportContext';
 import 'react-toastify/dist/ReactToastify.css';
 import BottomNav from '@/src/components/ui/BottomNav';
 import { getAdminTournamentItems } from '@/src/components/ui/bottomNavPresets';
 import { fetchTournamentAdmin } from '@/src/api/tournamentApi';
 import type { Tournament } from '@/src/types/tournament';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
+import PageHeader from '@/src/components/ui/PageHeader';
 
 export default function AdminTournamentLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ id: string }>;
+}) {
+  // On place ExportProvider ici pour englober tout le layout et permettre l'usage du contexte
+  return (
+    <ExportProvider>
+      <AdminTournamentLayoutContent
+        children={children}
+        params={params}
+      />
+    </ExportProvider>
+  );
+}
+
+function AdminTournamentLayoutContent({
   children,
   params,
 }: {
@@ -26,6 +44,11 @@ export default function AdminTournamentLayout({
   const router = useRouter();
   const pathname = usePathname() ?? '';
   const items = getAdminTournamentItems(id);
+  const { onExport } = useExport();
+
+  // Afficher le bouton retour uniquement sur les pages de détail de match (2 niveaux)
+  // Ex: /tournament/4/games/81 ou /admin/tournament/4/games/81
+  const isGameDetail = /\/tournament\/[^/]+\/games\/[^/]+$/.test(pathname);
 
   useEffect(() => {
     let mounted = true;
@@ -75,18 +98,26 @@ export default function AdminTournamentLayout({
     );
   }
 
+  const showTvButton = tournament.tvUrl !== null;
+  const tvButtonUrl = tournament.tvUrl ?? '';
+  const handleCopyLink = () => { };
+
   return (
-    <ExportProvider>
-      <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
-        <AdminTournamentHeader
-          tournament={tournament}
-          tournamentId={id}
-        />
-        <div className="mb-15">{children}</div>
-        <BottomNav items={items} pathname={pathname} />
-        <ToastContainer />
-      </div>
-    </ExportProvider>
+    <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
+      <PageHeader
+        title={tournament.name}
+        showBackButton={isGameDetail}
+        admin={true}
+        tournamentId={id}
+        showTvButton={showTvButton}
+        onExport={onExport}
+        onShare={handleCopyLink}
+        onEdit={() => router.push(`/admin/tournament/${id}/edit`)}
+        tvButtonUrl={tvButtonUrl}
+      />
+      <div className="mb-15">{children}</div>
+      <BottomNav items={items} pathname={pathname} />
+      <ToastContainer />
+    </div>
   );
 }
-

@@ -17,7 +17,7 @@ import { FiMoreHorizontal, FiPlusCircle, FiMail } from 'react-icons/fi';
 import BottomNav from '@/src/components/ui/BottomNav';
 import { ExportProvider } from '@/src/contexts/ExportContext';
 import type { IconType } from 'react-icons';
-import PageHeader from '@/src/components/ui/PageHeader';
+import TournamentHeader from '@/src/components/ui/PageHeader';
 
 export default function TournamentLayout({
   children,
@@ -73,6 +73,10 @@ export default function TournamentLayout({
     setIsMoreOpen(false);
   }, []);
 
+  // Afficher le bouton retour uniquement sur les pages de détail de match (2 niveaux)
+  // Ex: /tournament/4/games/81
+  const isGameDetail = /\/tournament\/[^/]+\/games\/[^/]+$/.test(pathname);
+
   if (!tournament) {
     return <CenteredLoader />;
   }
@@ -81,7 +85,10 @@ export default function TournamentLayout({
     <ExportProvider>
       <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
         <header className="pt-4 pb-2">
-          <PageHeader title={tournament.name} />
+          <div className="flex items-center gap-2">
+            {isGameDetail && <TournamentHeader showBackButton title={tournament.name} />}
+            {!isGameDetail && <TournamentHeader title={tournament.name} />}
+          </div>
         </header>
 
         {/* Contenu avec padding bas pour ne pas passer sous la bottom bar */}

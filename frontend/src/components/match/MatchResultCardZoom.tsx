@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { Game, PlayerPair, TeamSide } from '@/src/types/game';
-import type { GamePoint } from '@/src/types/score';
+import type { GamePoint, Score } from '@/src/types/score';
 import { cn } from '@/src/lib/utils';
 import TeamRow from '@/src/components/ui/TeamRow';
 import { incrementGamePoint, undoGamePoint, fetchMatchFormat } from '@/src/api/tournamentApi';
