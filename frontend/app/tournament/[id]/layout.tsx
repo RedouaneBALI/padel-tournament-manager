@@ -17,7 +17,7 @@ import { FiMoreHorizontal, FiPlusCircle, FiMail } from 'react-icons/fi';
 import BottomNav from '@/src/components/ui/BottomNav';
 import { ExportProvider } from '@/src/contexts/ExportContext';
 import type { IconType } from 'react-icons';
-import TournamentHeader from '@/src/components/ui/PageHeader';
+import PageHeader from '@/src/components/ui/PageHeader';
 
 export default function TournamentLayout({
   children,
@@ -86,8 +86,8 @@ export default function TournamentLayout({
       <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
         <header className="pt-4 pb-2">
           <div className="flex items-center gap-2">
-            {isGameDetail && <TournamentHeader showBackButton title={tournament.name} />}
-            {!isGameDetail && <TournamentHeader title={tournament.name} />}
+            {isGameDetail && <PageHeader showBackButton title={tournament.name} />}
+            {!isGameDetail && <PageHeader title={tournament.name} />}
           </div>
         </header>
 

@@ -59,11 +59,12 @@ export default function AdminTournamentForm({ tournamentId }: Props) {
   }
 
   const isEditing = Boolean(tournamentId);
+  const title = isEditing ? 'Modifier le tournoi' : 'Créer un tournoi';
 
   return (
     <>
       <TournamentForm
-        title={isEditing ? 'Modifier le tournoi' : 'Créer un tournoi'}
+        title={title}
         isEditing={isEditing}
         onSubmit={isEditing ? handleUpdate : handleCreate}
         initialData={isEditing ? tournament ?? undefined : undefined}

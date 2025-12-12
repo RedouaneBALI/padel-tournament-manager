@@ -3,7 +3,7 @@
 
 import React, { use, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import { ExportProvider, useExport } from '@/src/contexts/ExportContext';
 import 'react-toastify/dist/ReactToastify.css';
 import BottomNav from '@/src/components/ui/BottomNav';
@@ -11,7 +11,7 @@ import { getAdminTournamentItems } from '@/src/components/ui/bottomNavPresets';
 import { fetchTournamentAdmin } from '@/src/api/tournamentApi';
 import type { Tournament } from '@/src/types/tournament';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
-import PageHeader from '@/src/components/ui/PageHeader';
+import PageHeaderAdmin from '@/src/components/ui/PageHeaderAdmin';
 
 export default function AdminTournamentLayout({
   children,
@@ -49,6 +49,8 @@ function AdminTournamentLayoutContent({
   // Afficher le bouton retour uniquement sur les pages de détail de match (2 niveaux)
   // Ex: /tournament/4/games/81 ou /admin/tournament/4/games/81
   const isGameDetail = /\/tournament\/[^/]+\/games\/[^/]+$/.test(pathname);
+  const isEditPage = /\/admin\/tournament\/[^/]+\/edit$/.test(pathname);
+  const showBackButton = isGameDetail || isEditPage;
 
   useEffect(() => {
     let mounted = true;
@@ -100,14 +102,22 @@ function AdminTournamentLayoutContent({
 
   const showTvButton = tournament.tvUrl !== null;
   const tvButtonUrl = tournament.tvUrl ?? '';
-  const handleCopyLink = () => { };
+  const handleCopyLink = async () => {
+    try {
+      const publicPath = pathname.replace(`/admin/tournament/${id}`, `/tournament/${id}`);
+      await navigator.clipboard.writeText(`${window.location.origin}${publicPath}${window.location.search}`);
+      toast.success('Lien copié dans le presse-papiers !');
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+      toast.error('Erreur lors de la copie du lien.');
+    }
+  };
 
   return (
     <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
-      <PageHeader
+      <PageHeaderAdmin
         title={tournament.name}
-        showBackButton={isGameDetail}
-        admin={true}
+        showBackButton={showBackButton}
         tournamentId={id}
         showTvButton={showTvButton}
         onExport={onExport}

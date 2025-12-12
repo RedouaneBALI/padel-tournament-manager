@@ -1,11 +1,12 @@
 import { useRouter } from 'next/navigation';
 import { FiArrowLeft } from 'react-icons/fi';
 
-export default function BackButton({ className = '' }: { className?: string }) {
+export default function BackButton({ className = '', disabled = false }: { className?: string; disabled?: boolean }) {
   const router = useRouter();
   return (
     <button
-      onClick={() => router.back()}
+      onClick={() => !disabled && router.back()}
+      disabled={disabled}
       className={`p-2 rounded hover:bg-muted transition-colors cursor-pointer ${className}`}
       aria-label="Retour"
       type="button"
@@ -14,4 +15,3 @@ export default function BackButton({ className = '' }: { className?: string }) {
     </button>
   );
 }
-
