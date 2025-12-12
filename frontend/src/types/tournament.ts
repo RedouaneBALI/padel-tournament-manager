@@ -22,4 +22,5 @@ export interface Tournament {
   config: TournamentFormatConfig;
   editorIds: string[];
   organizerName?: string;
+  tvUrl?: string | null;
 }

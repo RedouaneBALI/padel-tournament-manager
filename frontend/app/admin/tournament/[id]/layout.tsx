@@ -52,6 +52,16 @@ function AdminTournamentLayoutContent({
   const isEditPage = /\/admin\/tournament\/[^/]+\/edit$/.test(pathname);
   const showBackButton = isGameDetail || isEditPage;
 
+  let tvButtonUrl = tournament?.tvUrl ?? '';
+  if (isGameDetail) {
+    const match = pathname.match(/\/admin\/tournament\/[^/]+\/games\/([^/]+)/);
+    if (match) {
+      tvButtonUrl = `/tv/tournament/${id}/games/${match[1]}`;
+    }
+  }
+
+  const showTvButton = isGameDetail || (tournament?.tvUrl !== null);
+
   useEffect(() => {
     let mounted = true;
 
@@ -100,8 +110,6 @@ function AdminTournamentLayoutContent({
     );
   }
 
-  const showTvButton = tournament.tvUrl !== null;
-  const tvButtonUrl = tournament.tvUrl ?? '';
   const handleCopyLink = async () => {
     try {
       const publicPath = pathname.replace(`/admin/tournament/${id}`, `/tournament/${id}`);
