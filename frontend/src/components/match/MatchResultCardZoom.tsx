@@ -66,34 +66,40 @@ function ModernTeamScoreRow({
 
   return (
     <div className={cn(
-      "relative flex items-center p-3 sm:p-4 rounded-xl transition-all duration-300",
+      // OPTIMISATION MOBILE: px-2 au lieu de p-3 pour gagner de la place sur les côtés
+      "relative flex items-center px-2 py-3 sm:p-4 rounded-xl transition-all duration-300",
       isWinner
         ? "bg-gradient-to-r from-yellow-500/10 to-transparent border border-yellow-500/20"
         : "bg-card border border-transparent shadow-sm"
     )}>
 
       {/* 1. Zone Nom d'équipe */}
-      <div className="flex-1 min-w-0 mr-2 sm:mr-4">
+      {/* OPTIMISATION MOBILE: mr-1 au lieu de mr-2 pour coller un peu plus aux scores */}
+      <div className="flex-1 min-w-0 mr-1 sm:mr-4">
         <TeamRow
           team={team}
           teamIndex={teamIndex}
           winnerSide={winnerSide}
-          fontSize="text-base sm:text-lg"
+          // OPTIMISATION MOBILE: text-sm au lieu de text-base pour afficher des noms plus longs
+          fontSize="text-sm sm:text-lg"
           showChampion={false}
           themeColor={themeColor}
         />
       </div>
 
       {/* 2. Zone Scores (Sets + Points) */}
-      <div className="flex items-center gap-2 sm:gap-4">
+      {/* OPTIMISATION MOBILE: gap-1.5 pour resserrer les blocs */}
+      <div className="flex items-center gap-1.5 sm:gap-4">
 
         {/* Scores des Sets (Historique) */}
-        <div className="flex gap-1 sm:gap-2">
+        {/* OPTIMISATION MOBILE: gap-0.5 entre les sets */}
+        <div className="flex gap-0.5 sm:gap-2">
           {setScores.map((score, i) => (
             <div
               key={i}
               className={cn(
-                "w-7 h-8 sm:w-9 sm:h-10 flex items-center justify-center rounded text-sm sm:text-lg font-bold tabular-nums",
+                // OPTIMISATION MOBILE: w-6 (24px) au lieu de w-7. text-xs.
+                "w-6 h-8 sm:w-9 sm:h-10 flex items-center justify-center rounded text-xs sm:text-lg font-bold tabular-nums",
                 score !== null ? "text-foreground bg-muted/50" : "opacity-0"
               )}
             >
@@ -105,13 +111,14 @@ function ModernTeamScoreRow({
         {/* Score du Jeu actuel (Point Tennis / Tie Break) */}
         <div
           className={cn(
-            "w-10 h-10 sm:w-14 sm:h-12 flex items-center justify-center rounded-lg font-bold text-lg sm:text-2xl tabular-nums shadow-inner transition-colors",
+            // OPTIMISATION MOBILE: w-9 h-9 au lieu de w-10 h-10
+            "w-9 h-9 sm:w-14 sm:h-12 flex items-center justify-center rounded-lg font-bold text-base sm:text-2xl tabular-nums shadow-inner transition-colors",
             isTeamA
               ? "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400 border border-blue-100 dark:border-blue-900"
               : "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100 dark:border-rose-900"
           )}
         >
-             <span className={cn(isTieBreakActive ? "text-xl sm:text-2xl" : "")}>
+             <span className={cn(isTieBreakActive ? "text-sm sm:text-2xl" : "")}>
                {displayPoint}
              </span>
         </div>
@@ -123,7 +130,8 @@ function ModernTeamScoreRow({
             disabled={loading || (typeof winnerSide !== 'undefined')}
             onClick={() => onPointChange(teamSide)}
             className={cn(
-              "w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full shadow-sm transition-all active:scale-95 border",
+              // OPTIMISATION MOBILE: w-9 h-9 au lieu de w-10 h-10
+              "w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center rounded-full shadow-sm transition-all active:scale-95 border",
               isTeamA
                 ? "bg-blue-600 text-white hover:bg-blue-700 border-blue-700 shadow-blue-200 dark:shadow-none"
                 : "bg-rose-600 text-white hover:bg-rose-700 border-rose-700 shadow-rose-200 dark:shadow-none",
@@ -132,9 +140,9 @@ function ModernTeamScoreRow({
             aria-label={`Ajouter point à ${isTeamA ? 'Équipe A' : 'Équipe B'}`}
           >
             {loading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
             ) : (
-              <Plus className="w-6 h-6 sm:w-7 sm:h-7" strokeWidth={3} />
+              <Plus className="w-5 h-5 sm:w-7 sm:h-7" strokeWidth={3} />
             )}
           </button>
         )}
@@ -366,7 +374,8 @@ export default function MatchResultCardZoom({
         </div>
 
         {/* Corps : Scoreboard */}
-        <div className="p-2 sm:p-4 space-y-2">
+        {/* OPTIMISATION MOBILE: p-1 sur mobile pour maximiser la largeur */}
+        <div className="p-1 sm:p-4 space-y-2">
 
             {/* Équipe A */}
             <ModernTeamScoreRow
