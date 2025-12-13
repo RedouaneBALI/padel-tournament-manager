@@ -16,7 +16,7 @@ export default function ContactPage() {
 
   return (
     <>
-      <main className="px-4 sm:px-6 py-4 pb-24">
+      <main>
         {/* Header: 3-column grid keeps title visually centered with a back button on the left */}
         <header className="grid grid-cols-3 items-center mb-6">
           <div className="justify-self-start">

@@ -13,7 +13,7 @@ export default function AdminGameDetailPage({ params }: PageProps) {
   const { id: tournamentId, gameId } = use(params);
 
   return (
-    <main className="px-4 sm:px-6 py-4">
+    <main>
       <div className="w-full max-w-xl mx-auto">
         <GameDetailView
           gameId={gameId}

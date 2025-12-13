@@ -117,7 +117,7 @@ export default function GameDetailView({
   }
 
   return (
-    <main className={`py-4 min-h-full ${editable ? '' : 'px-4 sm:px-6'}`}>
+    <main className={`${editable ? '' : 'px-4 sm:px-6'}`}>
       {/* Ligne 2 : nom du tournoi (et éventuellement boutons admin) */}
       <div className="mb-2 flex items-center gap-2">
         {title && (
