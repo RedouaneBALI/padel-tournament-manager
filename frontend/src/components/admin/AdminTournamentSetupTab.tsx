@@ -14,6 +14,7 @@ import { Tournament } from '@/src/types/tournament';
 import { fetchTournament, fetchPairs } from '@/src/api/tournamentApi';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
 import AdminTournamentPlayerAssignment from '@/src/components/admin/AdminTournamentPlayerAssignment';
+import AdminTournamentSetupTab2Teams from '@/src/components/admin/AdminTournamentSetupTab2Teams';
 import { getStageFromSize } from '@/src/types/stage';
 
 interface Props {
@@ -42,6 +43,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
   const matchesCount = Math.max(1, Math.floor((mainDrawSize || 0) / 2));
 
   const isTwoTeamTournament = mainDrawSize === 2;
+
 
   const buildManualRounds = (assignedPairs: Array<PlayerPair | null>, qualifPairs?: Array<PlayerPair | null>, mainPairs?: Array<PlayerPair | null>) => {
     const toTeamSlot = (p: PlayerPair | null) => {
@@ -212,67 +214,68 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
   }, [tournamentId, isTwoTeamTournament]);
 
 
-  return (
+
+  return loadingTournament || !tournament ? (
+    <CenteredLoader />
+  ) : isTwoTeamTournament ? (
+    <AdminTournamentSetupTab2Teams tournamentId={tournamentId} />
+  ) : (
     <div className="container mx-auto max-w-3xl">
       {isGenerating && (
         <CenteredLoader />
       )}
       <div className="shadow-sm">
         <section>
-          {loadingTournament ? (
-            <CenteredLoader />
-          ) : (
-            <>
-              {!tournamentStarted && !isTwoTeamTournament && (
-                <div className="flex justify-center border-b border-border mb-4">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('players')}
-                    className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'players' ? 'border-primary text-foreground' : 'border-transparent text-tab-inactive'}`}
-                  >
-                    Import
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('assignment')}
-                    className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'assignment' ? 'border-primary text-foreground' : 'border-transparent text-tab-inactive'}`}
-                  >
-                    Affectation
-                  </button>
-                </div>
-              )}
+          <>
+            {!tournamentStarted && !isTwoTeamTournament && (
+              <div className="flex justify-center border-b border-border mb-4">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('players')}
+                  className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'players' ? 'border-primary text-foreground' : 'border-transparent text-tab-inactive'}`}
+                >
+                  Import
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('assignment')}
+                  className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'assignment' ? 'border-primary text-foreground' : 'border-transparent text-tab-inactive'}`}
+                >
+                  Affectation
+                </button>
+              </div>
+            )}
 
-              {activeTab === 'players' || tournamentStarted ? (
-                tournamentStarted ? (
-                  <PlayerPairsList tournamentId={tournamentId} pairs={pairs} loading={loadingPairs} editable={true} tournamentStarted={tournamentStarted} />
-                ) : (
-                  <>
-                    <h2 className="text-base text-foreground px-2">
-                      Lister les joueurs ci-dessous (par ordre de classement ou du tirage)
-                    </h2>
-                    <div className="flex items-center">
-                      <div className="h-px flex-1 bg-border  my-6" />
-                      <h3 className="text-s sm:text-sm uppercase tracking-wider text-muted-foreground select-none">{pairs.length} Equipes inscrites</h3>
-                      <div className="h-px flex-1 bg-border" />
-                    </div>
-                    <p className="p-1 text-tab-inactive"><i>Joueur1,Joueur2,Seed (optionnel)</i></p>
-                    <PlayerPairsTextarea
-                      onPairsChange={onPairsChangeRef.current}
-                      tournamentId={tournamentId}
-                      hasStarted={tournamentStarted}
-                      onSaveSuccess={handleSaveSuccess}
-                    />
-                  </>
-                )
+            {activeTab === 'players' || tournamentStarted ? (
+              tournamentStarted ? (
+                <PlayerPairsList tournamentId={tournamentId} pairs={pairs} loading={loadingPairs} editable={true} tournamentStarted={tournamentStarted} />
               ) : (
-                tournament ? (
-                  <AdminTournamentPlayerAssignment tournament={tournament} />
-                ) : (
-                  <CenteredLoader />
-                )
-              )}
-            </>
-          )}
+                <>
+                  <h2 className="text-base text-foreground px-2">
+                    Lister les joueurs ci-dessous (par ordre de classement ou du tirage)
+                  </h2>
+                  <div className="flex items-center">
+                    <div className="h-px flex-1 bg-border  my-6" />
+                    <h3 className="text-s sm:text-sm uppercase tracking-wider text-muted-foreground select-none">{pairs.length} Equipes inscrites</h3>
+                    <div className="h-px flex-1 bg-border" />
+                  </div>
+                  <p className="p-1 text-tab-inactive"><i>Joueur1,Joueur2,Seed (optionnel)</i></p>
+                  <PlayerPairsTextarea
+                    onPairsChange={onPairsChangeRef.current}
+                    tournamentId={tournamentId}
+                    hasStarted={tournamentStarted}
+                    onSaveSuccess={handleSaveSuccess}
+                  />
+                </>
+              )
+            ) : (
+              tournament ? (
+                <AdminTournamentPlayerAssignment tournament={tournament} />
+              ) : (
+                <CenteredLoader />
+              )
+            )}
+          </>
           {showGenerateButton && (
             <>
               <hr className="my-2 border-t border-border" />
