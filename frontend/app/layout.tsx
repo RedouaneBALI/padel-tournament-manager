@@ -5,13 +5,11 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import SessionProviderWrapper from './SessionProviderWrapper';
-import LogoutButton from '@/src/components/auth/LogoutButton';
 import { getServerSession } from "next-auth";
 import { getAuthOptions } from "@/src/lib/authOptions";
-import Link from 'next/link';
-import Image from 'next/image';
-import { FiPlusCircle, FiList, FiMail } from 'react-icons/fi';
 import GoogleAnalytics from '@/src/components/GoogleAnalytics';
+import { ExportProvider } from '@/src/contexts/ExportContext';
+import HeaderContent from '@/src/components/ui/HeaderContent';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -126,26 +124,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <SessionProviderWrapper>
-          <header className="sticky top-0 z-[80] bg-background/80 border-b border-border">
-            <style>{`summary::-webkit-details-marker, summary::marker{display:none;}`}</style>
-            <div className="max-w-5xl mx-auto px-4">
-              <nav className="h-14 flex items-center justify-between w-full">
-                {/* Center: logo */}
-                <Link href="/" className="flex items-center gap-2" aria-label="Accueil" title="Accueil">
-                  <Image
-                    src="/pr-logo.png"
-                    alt="Padel Rounds"
-                    width={32}
-                    height={32}
-                    priority
-                    className="h-12 w-auto"
-                  />
-                  <span className="sr-only">Accueil</span>
-                </Link>
-              </nav>
-            </div>
-          </header>
-          {children}
+          <ExportProvider>
+            <header className="sticky top-0 z-[80] bg-background/80 border-b border-border">
+              <style>{`summary::-webkit-details-marker, summary::marker{display:none;}`}</style>
+              <div className="max-w-5xl mx-auto px-4">
+                <nav className="h-14 flex items-center justify-between w-full">
+                  <HeaderContent />
+                </nav>
+              </div>
+            </header>
+            {children}
+          </ExportProvider>
         </SessionProviderWrapper>
       </body>
     </html>

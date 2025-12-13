@@ -25,7 +25,7 @@ export default function TournamentResultsTab({ tournamentId }: TournamentResults
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { setExportFunction } = useExport();
+  const { setAdminActions } = useExport();
 
   useEffect(() => {
     async function load() {
@@ -85,21 +85,17 @@ export default function TournamentResultsTab({ tournamentId }: TournamentResults
   // Register export function based on active view
   useEffect(() => {
     if (isLoading || !tournament) {
-      setExportFunction(null);
       return;
     }
 
-    if (activeView === VIEW_CLASSEMENT) {
-      // No export for group stage view (tables)
-      setExportFunction(null);
-    } else if (activeView === VIEW_QUALIF) {
-      setExportFunction(() => exportBracketAsImage('qualif-bracket-container', 'qualifications.png'));
+    if (activeView === VIEW_QUALIF) {
+      setAdminActions({ onExport: () => exportBracketAsImage('qualif-bracket-container', 'qualifications.png') });
     } else if (activeView === VIEW_PHASE_FINALE) {
-      setExportFunction(() => exportBracketAsImage('finals-bracket-container', 'phase_finale.png'));
+      setAdminActions({ onExport: () => exportBracketAsImage('finals-bracket-container', 'phase_finale.png') });
+    } else if (activeView === VIEW_CLASSEMENT) {
+      // No export for group stage view, but don't reset - let parent layout manage
     }
-
-    return () => setExportFunction(null);
-  }, [activeView, isLoading, tournament, setExportFunction]);
+  }, [activeView, isLoading, tournament?.id]);
 
   if (isLoading) return <CenteredLoader />;
   if (!tournament) return <CenteredLoader />;

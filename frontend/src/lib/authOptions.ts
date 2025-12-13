@@ -60,6 +60,12 @@ export function getAuthOptions(): NextAuthOptions {
         (session as any).accessToken = (token as any).accessToken;
         (session as any).accessTokenExpires = (token as any).accessTokenExpires;
         (session as any).error = (token as any).error;
+
+        // Passer l'email - le contexte/layout déterminera les permissions spécifiques
+        if (session.user?.email) {
+          (session.user as any).email = session.user.email;
+        }
+
         return session;
       },
       async redirect({ url, baseUrl }) {

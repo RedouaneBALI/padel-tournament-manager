@@ -1,30 +1,47 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 
-interface ExportContextType {
+interface AdminHeaderContextType {
   onExport: (() => void) | null;
-  setExportFunction: (fn: (() => void) | null) => void;
+  onShare: (() => void) | null;
+  onEdit: (() => void) | null;
+  tvButtonUrl: string | null;
+  showTvButton: boolean;
+  isAdmin: boolean;
+  setAdminActions: (actions: Partial<AdminHeaderContextType>) => void;
 }
 
-const ExportContext = createContext<ExportContextType | undefined>(undefined);
+const AdminHeaderContext = createContext<AdminHeaderContextType | undefined>(undefined);
 
 export function ExportProvider({ children }: { children: React.ReactNode }) {
-  const [exportFn, setExportFn] = useState<(() => void) | null>(null);
+  const [adminActions, setAdminActionsState] = useState<Omit<AdminHeaderContextType, 'setAdminActions'>>({
+    onExport: null,
+    onShare: null,
+    onEdit: null,
+    tvButtonUrl: null,
+    showTvButton: false,
+    isAdmin: false,
+  });
 
-  const setExportFunction = useCallback((fn: (() => void) | null) => {
-    setExportFn(() => fn);
+  const setAdminActions = useCallback((actions: Partial<AdminHeaderContextType>) => {
+    setAdminActionsState((prev) => ({ ...prev, ...actions }));
   }, []);
 
+  const value = useMemo(
+    () => ({ ...adminActions, setAdminActions }),
+    [adminActions, setAdminActions]
+  );
+
   return (
-    <ExportContext.Provider value={{ onExport: exportFn, setExportFunction }}>
+    <AdminHeaderContext.Provider value={value}>
       {children}
-    </ExportContext.Provider>
+    </AdminHeaderContext.Provider>
   );
 }
 
 export function useExport() {
-  const context = useContext(ExportContext);
+  const context = useContext(AdminHeaderContext);
   if (context === undefined) {
     throw new Error('useExport must be used within an ExportProvider');
   }

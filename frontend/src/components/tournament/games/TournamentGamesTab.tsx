@@ -54,7 +54,7 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const stageParam = searchParams?.get('stage') ?? null;
-  const { setExportFunction } = useExport();
+  const { setAdminActions } = useExport();
 
   const getValidGamesSortedByTime = useCallback((games: Game[]) => {
     return games
@@ -197,15 +197,17 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
         )
   ), [sortedGames, selectedGroup]);
 
-  // Register export function with context
+  // Register export function with context - only set if we have games
   useEffect(() => {
-    if (currentRound && displayedGames.length > 0) {
-      setExportFunction(() => exportGamesAsCSV(displayedGames, currentRound.stage));
-    } else {
-      setExportFunction(null);
+    if (currentRound?.games && currentRound.games.length > 0) {
+      setAdminActions({
+        onExport: () => exportGamesAsCSV(currentRound.games, currentRound.stage)
+      });
     }
-    return () => setExportFunction(null);
-  }, [displayedGames, currentRound, setExportFunction]);
+    // Don't reset to null on unmount or when games become empty
+    // The parent layout will handle the default state
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentRound?.id, currentRound?.stage, currentRound?.games?.length]);
 
   if (isLoading) {
     return <CenteredLoader />;
