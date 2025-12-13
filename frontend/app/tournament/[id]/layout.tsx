@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import type { Tournament } from '@/src/types/tournament';
@@ -28,6 +28,7 @@ export default function TournamentLayout({
 }) {
   const { id } = React.use(params);
   const pathname = usePathname() ?? '';
+  const router = useRouter();
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
 
@@ -62,8 +63,20 @@ export default function TournamentLayout({
   ];
 
   useEffect(() => {
-    fetchTournament(id).then(setTournament);
-  }, [id]);
+    fetchTournament(id)
+      .then((data) => {
+        if (!data) {
+          window.location.href = '/404';
+          return;
+        }
+        setTournament(data);
+      })
+      .catch((e) => {
+        if (e?.message?.startsWith('HTTP_401') || e?.message?.startsWith('HTTP_404') || e?.message?.startsWith('HTTP_500')) {
+          window.location.href = '/404';
+        }
+      });
+  }, [id, router]);
 
   const handleMoreClick = useCallback(() => {
     setIsMoreOpen(prev => !prev);

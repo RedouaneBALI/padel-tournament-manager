@@ -102,6 +102,11 @@ function AdminTournamentLayoutContent({
         const data = await fetchTournamentAdmin(id);
         if (!mounted) return;
 
+        if (!data) {
+          window.location.href = '/404';
+          return;
+        }
+
         // Backend now returns isEditable correctly
         if (data.isEditable !== true) {
           const subPath = pathname.replace(`/admin/tournament/${id}`, '');
@@ -118,6 +123,11 @@ function AdminTournamentLayoutContent({
           const subPath = pathname.replace(`/admin/tournament/${id}`, '');
           const search = window.location.search;
           router.replace(`/tournament/${id}${subPath}${search}`);
+          return;
+        }
+
+        if (e?.message?.startsWith('HTTP_404') || e?.message?.startsWith('HTTP_500')) {
+          window.location.href = '/404';
           return;
         }
 
