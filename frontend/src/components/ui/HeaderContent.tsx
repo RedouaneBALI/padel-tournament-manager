@@ -3,13 +3,21 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { useExport } from '@/src/contexts/ExportContext';
 import HeaderAdminActions from '@/src/components/ui/HeaderAdminActions';
 
 export default function HeaderContent() {
-  const { onExport, onShare, onEdit, tvButtonUrl, showTvButton } = useExport();
+  const { onExport, onShare, onEdit, tvButtonUrl, showTvButton, setAdminActions } = useExport();
+  const pathname = usePathname();
   const hasAdminActions = !!(onExport || onShare || onEdit || showTvButton);
 
+  React.useEffect(() => {
+    const isTournament = pathname.startsWith('/tournament/') || pathname.startsWith('/admin/tournament/');
+    if (!isTournament) {
+      setAdminActions({ onExport: null, onShare: null, onEdit: null, tvButtonUrl: null, showTvButton: false, isAdmin: false });
+    }
+  }, [pathname, setAdminActions]);
 
   return (
     <>
@@ -38,4 +46,3 @@ export default function HeaderContent() {
     </>
   );
 }
-
