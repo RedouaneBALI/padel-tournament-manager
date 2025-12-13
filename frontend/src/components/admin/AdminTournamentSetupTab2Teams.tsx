@@ -9,6 +9,7 @@ import { Tournament } from '@/src/types/tournament';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
 import { toast } from 'react-toastify';
 import { getStageFromSize } from '@/src/types/stage';
+import { PairType } from '@/src/types/pairType';
 
 interface Props {
   tournamentId: string;
@@ -108,8 +109,8 @@ export default function AdminTournamentSetupTab2Teams({ tournamentId }: Props) {
           stage: tournament?.rounds?.[0]?.stage ?? getStageFromSize(2),
           games: [
             {
-              teamA: { type: 'NORMAL', pairId: pairA.id },
-              teamB: { type: 'NORMAL', pairId: pairB.id },
+              teamA: { type: 'NORMAL' as PairType, pairId: pairA.id },
+              teamB: { type: 'NORMAL' as PairType, pairId: pairB.id },
             },
           ],
         },
@@ -239,4 +240,3 @@ export default function AdminTournamentSetupTab2Teams({ tournamentId }: Props) {
     </div>
   );
 }
-
