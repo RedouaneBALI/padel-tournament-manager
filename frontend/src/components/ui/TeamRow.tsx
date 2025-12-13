@@ -65,16 +65,14 @@ export default function TeamRow({
               ({team.displaySeed})
             </span>
           )}
-        </div>
 
-        {/* Affichage du trophée */}
-        {showChampion && (
-          <div className="flex items-center gap-2 mt-0.5">
-            <span title="Vainqueur" className="text-yellow-500 animate-in fade-in zoom-in">
+          {/* Affichage du trophée */}
+          {showChampion && (
+            <span title="Vainqueur" className="ml-2 text-yellow-500 animate-in fade-in zoom-in">
               <Trophy className="h-4 w-4 fill-current" />
             </span>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
