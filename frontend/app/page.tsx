@@ -204,4 +204,3 @@ export default function Home() {
 }
 
 // rm -rf .firebase/functions/.next .next && npm run build:functions && firebase deploy --only functions
-// npm run deploy:functions

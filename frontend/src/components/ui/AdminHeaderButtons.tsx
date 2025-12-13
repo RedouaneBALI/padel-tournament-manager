@@ -21,7 +21,7 @@ export default function AdminHeaderButtons({
   tvButtonUrl,
 }: AdminHeaderButtonsProps) {
   return (
-    <div className="flex items-center gap-2 justify-center flex-shrink-0">
+    <div className="flex items-center gap-1 justify-center flex-shrink-0 px-2">
       {showTvButton && tvButtonUrl && (
         <button
           onClick={() => window.location.href = tvButtonUrl}
