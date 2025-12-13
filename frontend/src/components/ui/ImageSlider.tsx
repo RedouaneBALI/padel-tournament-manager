@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 
-const images = ['/screen1.png', '/screen2.png', '/screen3.png', '/screen4.png'];
+const images = ['/screen1.png', '/screen2.png', '/screen3.png', '/screen4.png','/screen5.png'];
 const AUTO_PLAY_INTERVAL = 4000;
 
 const SWIPE_THRESHOLD = 50; // distance minimale pour valider un swipe

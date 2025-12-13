@@ -27,6 +27,11 @@ export default function HeaderAdminActions({
     return null;
   }
 
+  // Hide admin actions on edit pages
+  if (pathname.includes('/edit')) {
+    return null;
+  }
+
   // Show download button only on Games (/games or /games/*) and Bracket (/bracket*) pages
   const showDownloadButton = /\/games($|\/)/.test(pathname) || /\/bracket/.test(pathname);
 
@@ -41,4 +46,3 @@ export default function HeaderAdminActions({
     />
   );
 }
-
