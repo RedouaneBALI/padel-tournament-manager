@@ -4,6 +4,51 @@ import { PlayerPair } from '@/src/types/playerPair';
 import { reorderPlayerPairs } from '@/src/api/tournamentApi';
 import { useAutoScroll } from '@/src/hooks/useAutoScroll';
 
+function persistOrder(tournamentId: string, qualifSlots: Array<PlayerPair | null>, mainSlots: Array<PlayerPair | null>) {
+  const orderedPairs = [...qualifSlots, ...mainSlots].filter(Boolean) as PlayerPair[];
+  const pairIds = orderedPairs.map(pair => pair.id).filter((id): id is number => id !== undefined);
+  reorderPlayerPairs(tournamentId, pairIds).catch(() => {
+    // Optional: show error or log
+  });
+}
+
+function dispatchPairsReordered(tournamentId: string, qualifSlots: Array<PlayerPair | null>, mainSlots: Array<PlayerPair | null>) {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('qualifko:pairs-reordered', {
+      detail: {
+        tournamentId,
+        qualifSlots,
+        mainSlots,
+      },
+    }));
+  }
+}
+
+function moveWithinSameList(slots: Array<PlayerPair | null>, fromIndex: number, toIndex: number): Array<PlayerPair | null> {
+  const newSlots = [...slots];
+  const temp = newSlots[toIndex] ?? null;
+  newSlots[toIndex] = newSlots[fromIndex] ?? null;
+  newSlots[fromIndex] = temp;
+  return newSlots;
+}
+
+function swapBetweenLists(
+  fromSlots: Array<PlayerPair | null>,
+  toSlots: Array<PlayerPair | null>,
+  fromIndex: number,
+  toIndex: number
+): { newFrom: Array<PlayerPair | null>; newTo: Array<PlayerPair | null> } {
+  const itemFrom = fromSlots[fromIndex];
+  const itemTo = toSlots[toIndex];
+
+  const newFrom = [...fromSlots];
+  const newTo = [...toSlots];
+  newFrom[fromIndex] = itemTo;
+  newTo[toIndex] = itemFrom;
+
+  return { newFrom, newTo };
+}
+
 export function useDualPlayerAssignment(
   tournament: Tournament,
   playerPairs: PlayerPair[],
@@ -91,70 +136,27 @@ export function useDualPlayerAssignment(
 
   // Move item from one list to another
   const moveBetweenLists = useCallback((fromList: 'qualif' | 'main', fromIndex: number, toList: 'qualif' | 'main', toIndex: number) => {
-    const persistOrder = async (newQualif: Array<PlayerPair | null>, newMain: Array<PlayerPair | null>) => {
-      // Concaténer les paires non nulles dans l'ordre qualif puis main
-      const orderedPairs = [...newQualif, ...newMain].filter(Boolean) as PlayerPair[];
-      // Extraire uniquement les IDs des paires
-      const pairIds = orderedPairs.map(pair => pair.id).filter((id): id is number => id !== undefined);
-      try {
-        await reorderPlayerPairs((tournament as any)?.id, pairIds);
-      } catch (e) {
-        // Optionnel : afficher une erreur ou logger
-        // toast.error("Erreur lors de la sauvegarde de l'ordre des paires");
-      }
-    };
-
     if (fromList === toList) {
       // Same list, swap
       const setter = fromList === 'qualif' ? setQualifSlots : setMainSlots;
-      const newSlots = [...(fromList === 'qualif' ? qualifSlots : mainSlots)];
-      const temp = newSlots[toIndex] ?? null;
-      newSlots[toIndex] = newSlots[fromIndex] ?? null;
-      newSlots[fromIndex] = temp;
+      const newSlots = moveWithinSameList(fromList === 'qualif' ? qualifSlots : mainSlots, fromIndex, toIndex);
 
       setter(newSlots);
 
       // Dispatch updated slots
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('qualifko:pairs-reordered', {
-          detail: {
-            tournamentId: (tournament as any)?.id,
-            qualifSlots: fromList === 'qualif' ? newSlots : qualifSlots,
-            mainSlots: fromList === 'main' ? newSlots : mainSlots,
-          },
-        }));
-      }
+      dispatchPairsReordered((tournament as any)?.id, fromList === 'qualif' ? newSlots : qualifSlots, fromList === 'main' ? newSlots : mainSlots);
       // Sauvegarder l'ordre
-      persistOrder(fromList === 'qualif' ? newSlots : qualifSlots, fromList === 'main' ? newSlots : mainSlots);
+      persistOrder((tournament as any)?.id, fromList === 'qualif' ? newSlots : qualifSlots, fromList === 'main' ? newSlots : mainSlots);
     } else {
       // Different lists, swap
-      const fromSetter = fromList === 'qualif' ? setQualifSlots : setMainSlots;
-      const toSetter = toList === 'qualif' ? setQualifSlots : setMainSlots;
-      const fromGetter = fromList === 'qualif' ? qualifSlots : mainSlots;
-      const toGetter = toList === 'qualif' ? qualifSlots : mainSlots;
+      const { newFrom, newTo } = swapBetweenLists(fromList === 'qualif' ? qualifSlots : mainSlots, toList === 'qualif' ? qualifSlots : mainSlots, fromIndex, toIndex);
 
-      const itemFrom = fromGetter[fromIndex];
-      const itemTo = toGetter[toIndex];
+      fromList === 'qualif' ? setQualifSlots(newFrom) : setMainSlots(newFrom);
+      toList === 'qualif' ? setQualifSlots(newTo) : setMainSlots(newTo);
 
-      const newFrom = [...fromGetter];
-      const newTo = [...toGetter];
-      newFrom[fromIndex] = itemTo;
-      newTo[toIndex] = itemFrom;
-
-      fromSetter(newFrom);
-      toSetter(newTo);
-
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('qualifko:pairs-reordered', {
-          detail: {
-            tournamentId: (tournament as any)?.id,
-            qualifSlots: toList === 'qualif' ? newTo : newFrom,
-            mainSlots: toList === 'main' ? newTo : newFrom,
-          },
-        }));
-      }
+      dispatchPairsReordered((tournament as any)?.id, toList === 'qualif' ? newTo : newFrom, toList === 'main' ? newTo : newFrom);
       // Sauvegarder l'ordre
-      persistOrder(toList === 'qualif' ? newTo : newFrom, toList === 'main' ? newTo : newFrom);
+      persistOrder((tournament as any)?.id, toList === 'qualif' ? newTo : newFrom, toList === 'main' ? newTo : newFrom);
     }
   }, [qualifSlots, mainSlots, tournament]);
 

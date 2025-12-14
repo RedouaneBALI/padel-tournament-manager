@@ -16,34 +16,42 @@ import {
 import GenderToggle from '@/src/components/ui/GenderToggle';
 import Head from 'next/head';
 
+function calculateRangePoints(bareme: number[], start: number, end: number): number | null {
+  if (isNaN(start) || isNaN(end) || start < 1 || end < start) {
+    return null;
+  }
+  let sum = 0;
+  let count = 0;
+  for (let i = start; i <= end; i++) {
+    const index = i - 1;
+    if (index < bareme.length) {
+      sum += bareme[index];
+    } else {
+      sum += bareme[bareme.length - 1];
+    }
+    count++;
+  }
+  return count > 0 ? Math.round(sum / count) : null;
+}
+
+function calculateSinglePoints(bareme: number[], rankingNumber: number): number | null {
+  if (isNaN(rankingNumber) || rankingNumber < 1) {
+    return null;
+  }
+  const index = rankingNumber - 1;
+  return index >= bareme.length ? bareme[bareme.length - 1] : bareme[index];
+}
+
 function calculateBasePoints(bareme: number[], ranking: string): number | null {
   if (ranking.includes('-')) {
     const parts = ranking.split('-').map(p => p.trim());
     if (parts.length !== 2) return null;
     const start = parseInt(parts[0], 10);
     const end = parseInt(parts[1], 10);
-    if (isNaN(start) || isNaN(end) || start < 1 || end < start) {
-      return null;
-    }
-    let sum = 0;
-    let count = 0;
-    for (let i = start; i <= end; i++) {
-      const index = i - 1;
-      if (index < bareme.length) {
-        sum += bareme[index];
-      } else {
-        sum += bareme[bareme.length - 1];
-      }
-      count++;
-    }
-    return count > 0 ? Math.round(sum / count) : null;
+    return calculateRangePoints(bareme, start, end);
   } else {
     const rankingNumber = parseInt(ranking, 10);
-    if (isNaN(rankingNumber) || rankingNumber < 1) {
-      return null;
-    }
-    const index = rankingNumber - 1;
-    return index >= bareme.length ? bareme[bareme.length - 1] : bareme[index];
+    return calculateSinglePoints(bareme, rankingNumber);
   }
 }
 

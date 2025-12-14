@@ -29,6 +29,25 @@ function updateGameInRounds(rounds: Round[], gameId: string, changes: { schedule
   }));
 }
 
+function initializeCurrentRound(initialRounds: Round[], stageParam: string | null, searchParams: any, router: any, pathname: string, setCurrentRoundIndex: (idx: number) => void) {
+  if (initialRounds.length === 0) {
+    setCurrentRoundIndex(0);
+    return;
+  }
+
+  const currentStageFromApi = (initialRounds[0] as any)?.currentRoundStage as Stage | null;
+  const desiredStage: Stage = (isStage(stageParam) ? stageParam : undefined)
+    || currentStageFromApi
+    || (initialRounds[0].stage as Stage);
+  const finalIdx = Math.max(0, initialRounds.findIndex((r) => r.stage === desiredStage));
+  setCurrentRoundIndex(finalIdx);
+  if (!stageParam) {
+    const sp = new URLSearchParams(searchParams?.toString?.() ?? '');
+    sp.set('stage', initialRounds[finalIdx].stage as any);
+    router.replace(`${pathname}?${sp.toString()}`);
+  }
+}
+
 interface TournamentGamesTabProps {
   tournamentId: string;
   editable: boolean;
@@ -116,21 +135,7 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
         const t = await fetchTournament(tournamentId);
         const initialRounds: Round[] = (t as any)?.rounds ?? [];
         setRounds(initialRounds);
-        if (initialRounds.length > 0) {
-          const currentStageFromApi = (t as any)?.currentRoundStage as Stage | null;
-          const desiredStage: Stage = (isStage(stageParam) ? stageParam : undefined)
-            || currentStageFromApi
-            || (initialRounds[0].stage as Stage);
-          const finalIdx = Math.max(0, initialRounds.findIndex((r) => r.stage === desiredStage));
-          setCurrentRoundIndex(finalIdx);
-          if (!stageParam) {
-            const sp = new URLSearchParams(searchParams?.toString?.() ?? '');
-            sp.set('stage', initialRounds[finalIdx].stage as any);
-            router.replace(`${pathname}?${sp.toString()}`);
-          }
-        } else {
-          setCurrentRoundIndex(0);
-        }
+        initializeCurrentRound(initialRounds, stageParam, searchParams, router, pathname, setCurrentRoundIndex);
       } catch (err) {
         console.error('Erreur lors du chargement des matchs :', err);
       } finally {

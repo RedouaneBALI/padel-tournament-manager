@@ -75,6 +75,25 @@ function computeShowChampion(stage: string | undefined, finished: boolean, winne
   } catch (e) { return false; }
 }
 
+function useScoreSyncing(score: Score | undefined, editing: boolean, setScores: (scores: string[][]) => void, setInitialScores: (scores: string[][]) => void, setIsForfeit: (isForfeit: boolean) => void, setForfeitedBy: (forfeitedBy: 'TEAM_A' | 'TEAM_B' | null) => void) {
+  const prevScoreSerializedRef = React.useRef<string | null>(null);
+
+  React.useEffect(() => {
+    const serialized = JSON.stringify(score || null);
+    if (editing) {
+      prevScoreSerializedRef.current = serialized;
+      return;
+    }
+    if (prevScoreSerializedRef.current === serialized) return;
+    prevScoreSerializedRef.current = serialized;
+    const newScores = initializeScoresFromScore(score);
+    setScores(newScores);
+    setInitialScores(newScores.map(arr => [...arr]));
+    setIsForfeit(score?.forfeit || false);
+    setForfeitedBy(score?.forfeitedBy || null);
+  }, [score, editing, setScores, setInitialScores, setIsForfeit, setForfeitedBy]);
+}
+
 interface Props {
   teamA: PlayerPair | null;
   teamB: PlayerPair | null;
@@ -143,21 +162,7 @@ export default function MatchResultCard({
 
   // Resync scores when `score` prop is updated from parent (e.g. polling)
   // Only resync when the serialized score actually changed to avoid clobbering local edits
-  const prevScoreSerializedRef = React.useRef<string | null>(null);
-  React.useEffect(() => {
-    const serialized = JSON.stringify(score || null);
-    if (editing) {
-      prevScoreSerializedRef.current = serialized;
-      return;
-    }
-    if (prevScoreSerializedRef.current === serialized) return;
-    prevScoreSerializedRef.current = serialized;
-    const newScores = initializeScoresFromScore(score);
-    setScores(newScores);
-    setInitialScores(newScores.map(arr => [...arr]));
-    setIsForfeit(score?.forfeit || false);
-    setForfeitedBy(score?.forfeitedBy || null);
-  }, [score, editing]);
+  useScoreSyncing(score, editing, setScores, setInitialScores, setIsForfeit, setForfeitedBy);
 
   const inputRefs = useRef<(HTMLInputElement | null)[][]>(
     Array.from({ length: 2 }, () => Array(3).fill(null))
@@ -174,7 +179,6 @@ export default function MatchResultCard({
     setInitialScores(appliedScores.map(arr => [...arr]));
     setIsForfeit(apiScore.forfeit || false);
     setForfeitedBy(apiScore.forfeitedBy || null);
-    prevScoreSerializedRef.current = JSON.stringify(apiScore || null);
     try {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('game-updated', { detail: { gameId, score: apiScore } }));

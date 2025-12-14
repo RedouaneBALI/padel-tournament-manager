@@ -10,6 +10,47 @@ interface KnockoutBracketProps {
   tournamentId: string;
 }
 
+function calculateChildCoords(childIdx: number, rounds: Round[], r: number, ROUND_WIDTH: number, matchPositions: number[][], nodeRefs: React.MutableRefObject<Map<string, HTMLElement>>, containerRect: DOMRect): { cx: number; cy: number } | null {
+  const childGame = rounds[r].games[childIdx];
+  if (!childGame) return null;
+  const childId = String(childGame.id);
+  const childEl = nodeRefs.current.get(childId);
+
+  let cx = r * ROUND_WIDTH + ROUND_WIDTH - 10; // default right inside column
+  let cy = (matchPositions[r]?.[childIdx] ?? 0) + 40 + 60;
+
+  if (childEl) {
+    const cRect = childEl.getBoundingClientRect();
+    cx = cRect.right - containerRect.left;
+    // Try to align on the divider between the two TeamScoreRow children if present
+    try {
+      const divide = childEl.querySelector('.divide-y, .divide-gray-200, .divide-border');
+      if (divide && divide.children && divide.children.length >= 1) {
+        const firstRow = divide.children[0] as HTMLElement;
+        const firstRect = firstRow.getBoundingClientRect();
+        const style = window.getComputedStyle(firstRow);
+        const borderBottom = parseFloat(style.borderBottomWidth || '0') || 0;
+        const borderTop = parseFloat(style.borderTopWidth || '0') || 0;
+        let dividerCenter: number;
+        if (borderBottom > 0) {
+          dividerCenter = firstRect.bottom - borderBottom / 2;
+        } else if (borderTop > 0) {
+          dividerCenter = firstRect.top + borderTop / 2;
+        } else {
+          dividerCenter = firstRect.top + firstRect.height / 2;
+        }
+        // Align directly on the divider center (no extra offset)
+        cy = dividerCenter - containerRect.top;
+      } else {
+        cy = cRect.top - containerRect.top + cRect.height / 2;
+      }
+    } catch (e) {
+      cy = cRect.top - containerRect.top + cRect.height / 2;
+    }
+  }
+  return { cx, cy };
+}
+
 export default function KnockoutBracket({ rounds, tournamentId }: KnockoutBracketProps) {
   const ROUND_WIDTH = 320;
   const CONNECTOR_STROKE = 1.5; // px used for SVG stroke width
@@ -81,44 +122,8 @@ export default function KnockoutBracket({ rounds, tournamentId }: KnockoutBracke
           // children
           const childCoords: Array<{cx:number, cy:number}> = [];
           [childIdxA, childIdxB].forEach((childIdx) => {
-            const childGame = rounds[r].games[childIdx];
-            if (!childGame) return;
-            const childId = String(childGame.id);
-            const childEl = nodeRefs.current.get(childId);
-
-            let cx = r * ROUND_WIDTH + ROUND_WIDTH - 10; // default right inside column
-            let cy = (matchPositions[r]?.[childIdx] ?? 0) + 40 + 60;
-
-            if (childEl) {
-              const cRect = childEl.getBoundingClientRect();
-              cx = cRect.right - containerRect.left;
-              // Try to align on the divider between the two TeamScoreRow children if present
-              try {
-                const divide = childEl.querySelector('.divide-y, .divide-gray-200, .divide-border');
-                if (divide && divide.children && divide.children.length >= 1) {
-                  const firstRow = divide.children[0] as HTMLElement;
-                  const firstRect = firstRow.getBoundingClientRect();
-                  const style = window.getComputedStyle(firstRow);
-                  const borderBottom = parseFloat(style.borderBottomWidth || '0') || 0;
-                  const borderTop = parseFloat(style.borderTopWidth || '0') || 0;
-                  let dividerCenter: number;
-                  if (borderBottom > 0) {
-                    dividerCenter = firstRect.bottom - borderBottom / 2;
-                  } else if (borderTop > 0) {
-                    dividerCenter = firstRect.top + borderTop / 2;
-                  } else {
-                    dividerCenter = firstRect.top + firstRect.height / 2;
-                  }
-                  // Align directly on the divider center (no extra offset)
-                  cy = dividerCenter - containerRect.top;
-                } else {
-                  cy = cRect.top - containerRect.top + cRect.height / 2;
-                }
-              } catch (e) {
-                cy = cRect.top - containerRect.top + cRect.height / 2;
-              }
-            }
-            childCoords.push({ cx, cy });
+            const coords = calculateChildCoords(childIdx, rounds, r, ROUND_WIDTH, matchPositions, nodeRefs, containerRect);
+            if (coords) childCoords.push(coords);
           });
 
           if (childCoords.length === 2) {

@@ -12,41 +12,43 @@ function matchesSearch(player: Player, search: string): boolean {
   return searchTerms.every(term => playerName.includes(term));
 }
 
-function passesFilters(player: Player, activeFilters: PlayerFilters, currentYear: number): boolean {
-  if (activeFilters.nationalities.length > 0 && !activeFilters.nationalities.includes(player.nationality)) {
-    return false;
-  }
-  if (activeFilters.clubs.length > 0 && !activeFilters.clubs.includes(player.club)) {
-    return false;
-  }
+function passesNationalityFilter(player: Player, nationalities: string[]): boolean {
+  return nationalities.length === 0 || nationalities.includes(player.nationality);
+}
 
-  const { rankingRange, pointsRange, ageRange } = activeFilters;
-  if (rankingRange.min !== null && player.ranking < rankingRange.min) {
-    return false;
-  }
-  if (rankingRange.max !== null && player.ranking > rankingRange.max) {
-    return false;
-  }
-  if (pointsRange.min !== null && player.points < pointsRange.min) {
-    return false;
-  }
-  if (pointsRange.max !== null && player.points > pointsRange.max) {
-    return false;
-  }
+function passesClubFilter(player: Player, clubs: string[]): boolean {
+  return clubs.length === 0 || clubs.includes(player.club);
+}
 
+function passesRankingFilter(player: Player, rankingRange: { min: null | number; max: null | number }): boolean {
+  if (rankingRange.min !== null && player.ranking < rankingRange.min) return false;
+  if (rankingRange.max !== null && player.ranking > rankingRange.max) return false;
+  return true;
+}
+
+function passesPointsFilter(player: Player, pointsRange: { min: null | number; max: null | number }): boolean {
+  if (pointsRange.min !== null && player.points < pointsRange.min) return false;
+  if (pointsRange.max !== null && player.points > pointsRange.max) return false;
+  return true;
+}
+
+function passesAgeFilter(player: Player, ageRange: { min: null | number; max: null | number }, currentYear: number): boolean {
   if (player.birth_year) {
     const playerAge = currentYear - player.birth_year;
-    if (ageRange.min !== null && playerAge < ageRange.min) {
-      return false;
-    }
-    if (ageRange.max !== null && playerAge > ageRange.max) {
-      return false;
-    }
+    if (ageRange.min !== null && playerAge < ageRange.min) return false;
+    if (ageRange.max !== null && playerAge > ageRange.max) return false;
   } else if (ageRange.min !== null || ageRange.max !== null) {
     return false;
   }
-
   return true;
+}
+
+function passesFilters(player: Player, activeFilters: PlayerFilters, currentYear: number): boolean {
+  return passesNationalityFilter(player, activeFilters.nationalities) &&
+         passesClubFilter(player, activeFilters.clubs) &&
+         passesRankingFilter(player, activeFilters.rankingRange) &&
+         passesPointsFilter(player, activeFilters.pointsRange) &&
+         passesAgeFilter(player, activeFilters.ageRange, currentYear);
 }
 
 function sortPlayers(filteredData: Player[], sortKey: PlayerSortableColumn | null, sortOrder: 'asc' | 'desc'): Player[] {

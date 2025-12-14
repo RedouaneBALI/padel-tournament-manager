@@ -5,6 +5,15 @@ import { useRouter } from 'next/navigation';
 import MatchResultCard from '@/src/components/ui/MatchResultCard';
 import type { Game } from '@/src/types/game';
 import { useRealtimeGames } from '@/src/hooks/useRealtimeGames';
+import { exportGamesAsCSV } from '@/src/utils/gamesExport';
+import { useExport } from '@/src/contexts/ExportContext';
+
+function compareIds(a: string, b: string): number {
+  const na = Number(a);
+  const nb = Number(b);
+  if (!Number.isNaN(na) && !Number.isNaN(nb)) return na - nb;
+  return a.localeCompare(b);
+}
 
 interface GamesListProps {
   games: Game[];
@@ -70,12 +79,7 @@ export default function GamesList({
   // utilisée pour dériver un index stable et indépendant du ré-ordonnancement UI
   const sortedIds = useMemo(() => {
     const ids = [...games.map(g => g.id)];
-    ids.sort((a, b) => {
-      const na = Number(a);
-      const nb = Number(b);
-      if (!Number.isNaN(na) && !Number.isNaN(nb)) return na - nb;
-      return a.localeCompare(b);
-    });
+    ids.sort(compareIds);
     return ids;
   }, [gamesKey]);
 
