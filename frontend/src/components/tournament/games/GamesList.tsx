@@ -218,7 +218,15 @@ export default function GamesList({
         return (
           <div key={game.id} className="w-full max-w-xl flex justify-center">
             <div
+              role="button"
+              tabIndex={0}
               onClick={() => handleGameClick(String(game.id))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleGameClick(String(game.id));
+                }
+              }}
               className="cursor-pointer transition-transform hover:scale-[1.02] w-full flex justify-center"
             >
               <MatchResultCard

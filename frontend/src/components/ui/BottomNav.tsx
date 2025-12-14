@@ -106,7 +106,7 @@ export default function BottomNav({ items, pathname, className, fixed = true, on
       </nav>
       {(isMoreOpen ?? moreOpen) && (
         <>
-          <div className="fixed inset-0 bg-black/50 z-[60]" onClick={onMoreClick ?? closeMore} />
+          <div className="fixed inset-0 bg-black/50 z-[60]" role="presentation" onClick={onMoreClick ?? closeMore} />
           <div className="fixed inset-x-0 bottom-0 z-[70] bg-background rounded-t-2xl border-t border-border shadow-2xl max-h-[90vh]">
             <div className="max-w-screen-sm mx-auto p-4 pt-3 relative">
               {/* Croix flottante dans le coin supérieur droit */}
@@ -144,7 +144,17 @@ export default function BottomNav({ items, pathname, className, fixed = true, on
                   {status === 'authenticated' && <MyAccountButton onClick={onMoreClick ?? closeMore} />}
                   <div role="none">
                     {status === 'authenticated' ? (
-                      <div onClick={onMoreClick ?? closeMore}>
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={onMoreClick ?? closeMore}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            (onMoreClick ?? closeMore)();
+                          }
+                        }}
+                      >
                         <LogoutButton>
                           <span className="text-sm">Déconnexion</span>
                         </LogoutButton>

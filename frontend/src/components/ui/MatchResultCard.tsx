@@ -499,6 +499,7 @@ export default function MatchResultCard({
 
   return (
     <div
+      role="presentation"
       aria-busy={isSaving}
       onClick={(e) => {
         if (editing) {

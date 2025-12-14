@@ -105,36 +105,60 @@ export default function MonComptePage() {
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div
+                  role="button"
+                  tabIndex={0}
                   className={`p-4 border rounded-lg cursor-pointer transition ${
                     formData.profileType === ProfileType.SPECTATOR
                       ? 'border-primary bg-primary/10'
                       : 'border-border hover:border-primary'
                   }`}
                   onClick={() => setFormData({ ...formData, profileType: ProfileType.SPECTATOR })}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setFormData({ ...formData, profileType: ProfileType.SPECTATOR });
+                    }
+                  }}
                 >
                   <Eye className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                   <h3 className="text-center font-bold">Spectateur</h3>
                   <p className="text-center text-sm text-muted-foreground">Regardez les matchs</p>
                 </div>
                 <div
+                  role="button"
+                  tabIndex={0}
                   className={`p-4 border rounded-lg cursor-pointer transition ${
                     formData.profileType === ProfileType.PLAYER
                       ? 'border-primary bg-primary/10'
                       : 'border-border hover:border-primary'
                   }`}
                   onClick={() => setFormData({ ...formData, profileType: ProfileType.PLAYER })}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setFormData({ ...formData, profileType: ProfileType.PLAYER });
+                    }
+                  }}
                 >
                   <UserIcon className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                   <h3 className="text-center font-bold">Joueur</h3>
                   <p className="text-center text-sm text-muted-foreground">Participez aux tournois</p>
                 </div>
                 <div
+                  role="button"
+                  tabIndex={0}
                   className={`p-4 border rounded-lg cursor-pointer transition ${
                     formData.profileType === ProfileType.ORGANIZER
                       ? 'border-primary bg-primary/10'
                       : 'border-border hover:border-primary'
                   }`}
                   onClick={() => setFormData({ ...formData, profileType: ProfileType.ORGANIZER })}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setFormData({ ...formData, profileType: ProfileType.ORGANIZER });
+                    }
+                  }}
                 >
                   <Trophy className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                   <h3 className="text-center font-bold">Organisateur</h3>

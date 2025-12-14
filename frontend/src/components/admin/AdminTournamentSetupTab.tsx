@@ -73,7 +73,7 @@ function useTournamentData(tournamentId: string) {
         setLoadingTournament(true);
         const t = await fetchTournament(tournamentId);
         setTournament(t);
-        setTournamentStarted((t as any)?.started || false);
+        setTournamentStarted(hasTournamentStarted(t));
       } catch (error) {
         console.error('Erreur lors du chargement du tournoi :', error);
       } finally {
@@ -130,6 +130,12 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
   useEffect(() => {
     setActiveTab(defaultView);
   }, [defaultView]);
+
+  useEffect(() => {
+    if (tournamentStarted) {
+      setActiveTab('players');
+    }
+  }, [tournamentStarted]);
 
   const assignedSlotsRef = useRef<Array<PlayerPair | null>>([]);
   const qualifSlotsRef = useRef<Array<PlayerPair | null>>([]);

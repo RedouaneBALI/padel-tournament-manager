@@ -55,7 +55,15 @@ export default function MultiSelectFilter({
   return (
     <div>
       <h3
+        role="button"
+        tabIndex={0}
         onClick={() => setOpen(!open)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setOpen(!open);
+          }
+        }}
         className="text-base font-semibold text-gray-800 mb-2 flex justify-between items-center cursor-pointer"
       >
         <span>{label}</span>
