@@ -6,6 +6,7 @@ import { PlayerPair } from '@/src/types/playerPair';
 import { Tournament } from '@/src/types/tournament';
 import React from 'react';
 import PlayerPairsList from '@/src/components/tournament/players/PlayerPairsList';
+import { hasTournamentStarted } from '@/src/utils/tournamentUtils';
 
 export default function TournamentPlayersTab({ params }: {   params: Promise<{ id: string }>;}) {
   const { id } = React.use(params);
@@ -25,12 +26,7 @@ export default function TournamentPlayersTab({ params }: {   params: Promise<{ i
 
         if (!cancelled) {
           setPlayerPairs(pairsData);
-
-          // Vérifier si le tournoi a démarré
-          const hasStarted = !!(tournamentData as Tournament).rounds?.some(round =>
-            round.games?.some(game => game.score !== null)
-          );
-          setTournamentStarted(hasStarted);
+          setTournamentStarted(hasTournamentStarted(tournamentData as Tournament));
         }
       } catch (error) {
         console.error('Erreur lors du chargement des joueurs : ' + error);

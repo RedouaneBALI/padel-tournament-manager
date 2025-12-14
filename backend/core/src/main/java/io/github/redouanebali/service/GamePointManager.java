@@ -186,29 +186,13 @@ public class GamePointManager {
   }
 
   private void handleStandardGame(Game game, Score score, SetScore set, TeamSide teamSide, boolean withAdvantage) {
-    GamePoint currentA = score.getCurrentGamePointA() == null ? GamePoint.ZERO : score.getCurrentGamePointA();
-    GamePoint currentB = score.getCurrentGamePointB() == null ? GamePoint.ZERO : score.getCurrentGamePointB();
+    GamePoint currentA = getCurrentGamePointA(score);
+    GamePoint currentB = getCurrentGamePointB(score);
 
     if (teamSide == TeamSide.TEAM_A) {
-      if (shouldWinGame(currentA, currentB, withAdvantage)) {
-        winStandardGame(game, score, set, TeamSide.TEAM_A);
-      } else {
-        if (withAdvantage && currentB == GamePoint.AVANTAGE) {
-          score.setCurrentGamePointB(GamePoint.QUARANTE);
-        } else {
-          score.setCurrentGamePointA(nextGamePoint(currentA, currentB, withAdvantage));
-        }
-      }
+      handlePointForTeam(game, score, set, currentA, currentB, TeamSide.TEAM_A, withAdvantage);
     } else {
-      if (shouldWinGame(currentB, currentA, withAdvantage)) {
-        winStandardGame(game, score, set, TeamSide.TEAM_B);
-      } else {
-        if (withAdvantage && currentA == GamePoint.AVANTAGE) {
-          score.setCurrentGamePointA(GamePoint.QUARANTE);
-        } else {
-          score.setCurrentGamePointB(nextGamePoint(currentB, currentA, withAdvantage));
-        }
-      }
+      handlePointForTeam(game, score, set, currentB, currentA, TeamSide.TEAM_B, withAdvantage);
     }
   }
 
@@ -222,6 +206,14 @@ public class GamePointManager {
 
     if (isSetFinished(game, set)) {
       checkAndAddNewSet(game, score);
+    }
+  }
+
+  private void incrementMyGamePoint(Score score, TeamSide myTeam, GamePoint nextPoint) {
+    if (myTeam == TeamSide.TEAM_A) {
+      score.setCurrentGamePointA(nextPoint);
+    } else {
+      score.setCurrentGamePointB(nextPoint);
     }
   }
 
@@ -324,6 +316,40 @@ public class GamePointManager {
       return current == GamePoint.QUARANTE && opponent != GamePoint.QUARANTE && opponent != GamePoint.AVANTAGE;
     } else {
       return current == GamePoint.QUARANTE;
+    }
+  }
+
+  private GamePoint getCurrentGamePointA(Score score) {
+    return score.getCurrentGamePointA() == null ? GamePoint.ZERO : score.getCurrentGamePointA();
+  }
+
+  private GamePoint getCurrentGamePointB(Score score) {
+    return score.getCurrentGamePointB() == null ? GamePoint.ZERO : score.getCurrentGamePointB();
+  }
+
+  private void handlePointForTeam(Game game,
+                                  Score score,
+                                  SetScore set,
+                                  GamePoint myCurrent,
+                                  GamePoint opponentCurrent,
+                                  TeamSide myTeam,
+                                  boolean withAdvantage) {
+    if (shouldWinGame(myCurrent, opponentCurrent, withAdvantage)) {
+      winStandardGame(game, score, set, myTeam);
+    } else {
+      if (withAdvantage && opponentCurrent == GamePoint.AVANTAGE) {
+        resetOpponentAdvantage(score, myTeam);
+      } else {
+        incrementMyGamePoint(score, myTeam, nextGamePoint(myCurrent, opponentCurrent, withAdvantage));
+      }
+    }
+  }
+
+  private void resetOpponentAdvantage(Score score, TeamSide myTeam) {
+    if (myTeam == TeamSide.TEAM_A) {
+      score.setCurrentGamePointB(GamePoint.QUARANTE);
+    } else {
+      score.setCurrentGamePointA(GamePoint.QUARANTE);
     }
   }
 

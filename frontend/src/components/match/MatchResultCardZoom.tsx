@@ -49,6 +49,50 @@ function hasMatchStarted(score: Score | null | undefined): boolean {
   return false;
 }
 
+function processDisplayData(currentGame: Game, matchFormat: import('@/src/types/matchFormat').MatchFormat | null) {
+  const scores = initializeScoresFromScore(currentGame.score);
+  let setScoresA = scores[0].map(s => s === '' ? null : parseInt(s));
+  let setScoresB = scores[1].map(s => s === '' ? null : parseInt(s));
+  let tieBreakPointA = currentGame.score?.tieBreakPointA;
+  let tieBreakPointB = currentGame.score?.tieBreakPointB;
+
+  const isSuperTieBreak = (
+    (matchFormat?.superTieBreakInFinalSet || (currentGame.score?.tieBreakPointA != null || currentGame.score?.tieBreakPointB != null) || (currentGame.score?.sets?.[2]?.tieBreakTeamA != null || currentGame.score?.sets?.[2]?.tieBreakTeamB != null))
+    && currentGame.score?.sets?.length === 3
+  );
+
+  const MAX_SETS = 3;
+  if (isSuperTieBreak && currentGame.score?.sets?.[2]) {
+    const set3 = currentGame.score.sets[2];
+    setScoresA = [setScoresA[0], setScoresA[1], set3.tieBreakTeamA ?? setScoresA[2]];
+    setScoresB = [setScoresB[0], setScoresB[1], set3.tieBreakTeamB ?? setScoresB[2]];
+
+    if ((tieBreakPointA == null || typeof tieBreakPointA === 'undefined') && set3.tieBreakTeamA != null) {
+      tieBreakPointA = set3.tieBreakTeamA;
+    }
+    if ((tieBreakPointB == null || typeof tieBreakPointB === 'undefined') && set3.tieBreakTeamB != null) {
+      tieBreakPointB = set3.tieBreakTeamB;
+    }
+  } else if (isSuperTieBreak) {
+    setScoresA = [setScoresA[0], setScoresA[1], setScoresA[2]];
+    setScoresB = [setScoresB[0], setScoresB[1], setScoresB[2]];
+  } else {
+    setScoresA = setScoresA.slice(0, 3);
+    setScoresB = setScoresB.slice(0, 3);
+  }
+
+  while (setScoresA.length < MAX_SETS) { setScoresA.push(null); }
+  while (setScoresB.length < MAX_SETS) { setScoresB.push(null); }
+
+  return {
+    setScoresA,
+    setScoresB,
+    tieBreakPointA,
+    tieBreakPointB,
+    isSuperTieBreak
+  };
+}
+
 // --- Sous-composants pour ModernTeamScoreRow ---
 
 /**
@@ -322,39 +366,13 @@ export default function MatchResultCardZoom({
   // --- Préparation des Données d'Affichage ---
   const teams: (PlayerPair | null)[] = [currentGame.teamA ?? null, currentGame.teamB ?? null];
 
-  const scores = initializeScoresFromScore(currentGame.score);
-  let setScoresA = scores[0].map(s => s === '' ? null : parseInt(s));
-  let setScoresB = scores[1].map(s => s === '' ? null : parseInt(s));
-  let tieBreakPointA = currentGame.score?.tieBreakPointA;
-  let tieBreakPointB = currentGame.score?.tieBreakPointB;
-
-  const isSuperTieBreak = (
-    (matchFormat?.superTieBreakInFinalSet || (currentGame.score?.tieBreakPointA != null || currentGame.score?.tieBreakPointB != null) || (currentGame.score?.sets?.[2]?.tieBreakTeamA != null || currentGame.score?.sets?.[2]?.tieBreakTeamB != null))
-    && currentGame.score?.sets?.length === 3
-  );
-
-  const MAX_SETS = 3;
-  if (isSuperTieBreak && currentGame.score?.sets?.[2]) {
-    const set3 = currentGame.score.sets[2];
-    setScoresA = [setScoresA[0], setScoresA[1], set3.tieBreakTeamA ?? setScoresA[2]];
-    setScoresB = [setScoresB[0], setScoresB[1], set3.tieBreakTeamB ?? setScoresB[2]];
-
-    if ((tieBreakPointA == null || typeof tieBreakPointA === 'undefined') && set3.tieBreakTeamA != null) {
-      tieBreakPointA = set3.tieBreakTeamA;
-    }
-    if ((tieBreakPointB == null || typeof tieBreakPointB === 'undefined') && set3.tieBreakTeamB != null) {
-      tieBreakPointB = set3.tieBreakTeamB;
-    }
-  } else if (isSuperTieBreak) {
-    setScoresA = [setScoresA[0], setScoresA[1], setScoresA[2]];
-    setScoresB = [setScoresB[0], setScoresB[1], setScoresB[2]];
-  } else {
-    setScoresA = setScoresA.slice(0, 3);
-    setScoresB = setScoresB.slice(0, 3);
-  }
-
-  while (setScoresA.length < MAX_SETS) { setScoresA.push(null); }
-  while (setScoresB.length < MAX_SETS) { setScoresB.push(null); }
+  const {
+    setScoresA,
+    setScoresB,
+    tieBreakPointA,
+    tieBreakPointB,
+    isSuperTieBreak
+  } = processDisplayData(currentGame, matchFormat);
 
   return (
     <div className="w-full max-w-2xl mx-auto font-sans">

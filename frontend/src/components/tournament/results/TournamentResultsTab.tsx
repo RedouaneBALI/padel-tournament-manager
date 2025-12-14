@@ -14,6 +14,19 @@ import { exportBracketAsImage } from '@/src/utils/imageExport';
 
 const VIEW_QUALIF = 'qualif';
 
+function computeDefaultView(isGroupStageFormat: boolean, isQualifStageFormat: boolean, currentStage: Stage | null | undefined, hasMatchesInFinalPhase: boolean): string {
+  if (isGroupStageFormat && currentStage !== Stage.GROUPS) {
+    return VIEW_PHASE_FINALE;
+  }
+  if (isGroupStageFormat) {
+    return VIEW_CLASSEMENT;
+  }
+  if (isQualifStageFormat) {
+    return hasMatchesInFinalPhase ? VIEW_PHASE_FINALE : VIEW_QUALIF;
+  }
+  return VIEW_PHASE_FINALE;
+}
+
 interface TournamentResultsTabProps {
   tournamentId: string;
 }
@@ -55,14 +68,7 @@ export default function TournamentResultsTab({ tournamentId }: TournamentResults
   }, [tournament]);
 
   const currentStage = tournament?.currentRoundStage;
-  const defaultView =
-    isGroupStageFormat && currentStage !== Stage.GROUPS
-      ? VIEW_PHASE_FINALE
-      : isGroupStageFormat
-      ? VIEW_CLASSEMENT
-      : isQualifStageFormat
-      ? (hasMatchesInFinalPhase ? VIEW_PHASE_FINALE : VIEW_QUALIF)
-      : VIEW_PHASE_FINALE;
+  const defaultView = computeDefaultView(isGroupStageFormat, isQualifStageFormat, currentStage, hasMatchesInFinalPhase);
 
   const queryView = searchParams?.get('view');
   const activeView =

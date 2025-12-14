@@ -16,9 +16,28 @@ import CenteredLoader from '@/src/components/ui/CenteredLoader';
 import AdminTournamentPlayerAssignment from '@/src/components/admin/AdminTournamentPlayerAssignment';
 import AdminTournamentSetupTab2Teams from '@/src/components/admin/AdminTournamentSetupTab2Teams';
 import { getStageFromSize } from '@/src/types/stage';
+import { hasTournamentStarted } from '@/src/utils/tournamentUtils';
 
 interface Props {
   tournamentId: string;
+}
+
+function toTeamSlot(p: PlayerPair | null) {
+  if (!p || !p.id) return { type: 'BYE' as const };
+  return { type: 'NORMAL' as const, pairId: p.id };
+}
+
+function buildGames(slots: (PlayerPair | null)[]) {
+  const games = [];
+  for (let i = 0; i < slots.length; i += 2) {
+    const a = slots[i];
+    const b = slots[i + 1];
+    games.push({
+      teamA: toTeamSlot(a),
+      teamB: toTeamSlot(b),
+    });
+  }
+  return games;
 }
 
 export default function AdminTournamentSetupTab({ tournamentId }: Props) {
@@ -46,23 +65,6 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
 
 
   const buildManualRounds = (assignedPairs: Array<PlayerPair | null>, qualifPairs?: Array<PlayerPair | null>, mainPairs?: Array<PlayerPair | null>) => {
-    const toTeamSlot = (p: PlayerPair | null) => {
-      if (!p || !p.id) return { type: 'BYE' as const };
-      return { type: 'NORMAL' as const, pairId: p.id };
-    };
-
-    const buildGames = (slots: (PlayerPair | null)[]) => {
-      const games = [];
-      for (let i = 0; i < slots.length; i += 2) {
-        const a = slots[i];
-        const b = slots[i + 1];
-        games.push({
-          teamA: toTeamSlot(a),
-          teamB: toTeamSlot(b),
-        });
-      }
-      return games;
-    };
 
     const isQualifKo = (tournament?.config as any)?.format === 'QUALIF_KO';
 
@@ -126,11 +128,8 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
       try {
         const data = await fetchTournament(tournamentId);
         setTournament(data);
-        const hasStarted = !!data.rounds?.some(round =>
-          round.games?.some(game => game.score !== null)
-        );
-        setTournamentStarted(hasStarted);
-        if (hasStarted) {
+        setTournamentStarted(hasTournamentStarted(data));
+        if (hasTournamentStarted(data)) {
           setActiveTab('players');
         }
       } finally {

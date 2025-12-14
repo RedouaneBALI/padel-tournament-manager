@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
-import { confirmAlert } from 'react-confirm-alert';
-import { generateDraw, savePlayerPairs, fetchTournament, fetchPairs } from '@/src/api/tournamentApi';
+import { fetchTournament, fetchPairs, savePlayerPairs, generateDraw } from '@/src/api/tournamentApi';
 import { PlayerPair } from '@/src/types/playerPair';
 import { Tournament } from '@/src/types/tournament';
+import { hasTournamentStarted } from '@/src/utils/tournamentUtils';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
-import { toast } from 'react-toastify';
 import { getStageFromSize } from '@/src/types/stage';
 import { PairType } from '@/src/types/pairType';
 
@@ -42,10 +42,7 @@ export default function AdminTournamentSetupTab2Teams({ tournamentId }: Props) {
       try {
         const data = await fetchTournament(tournamentId);
         setTournament(data);
-        const hasStarted = !!data.rounds?.some((round: any) =>
-          round.games?.some((game: any) => game.score !== null)
-        );
-        setTournamentStarted(hasStarted);
+        setTournamentStarted(hasTournamentStarted(data));
       } catch (e: any) {
         toast.error('Erreur lors du chargement du tournoi.');
       } finally {

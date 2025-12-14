@@ -16,6 +16,63 @@ import {
 import GenderToggle from '@/src/components/ui/GenderToggle';
 import Head from 'next/head';
 
+function calculateBasePoints(bareme: number[], ranking: string): number | null {
+  if (ranking.includes('-')) {
+    const parts = ranking.split('-').map(p => p.trim());
+    if (parts.length !== 2) return null;
+    const start = parseInt(parts[0], 10);
+    const end = parseInt(parts[1], 10);
+    if (isNaN(start) || isNaN(end) || start < 1 || end < start) {
+      return null;
+    }
+    let sum = 0;
+    let count = 0;
+    for (let i = start; i <= end; i++) {
+      const index = i - 1;
+      if (index < bareme.length) {
+        sum += bareme[index];
+      } else {
+        sum += bareme[bareme.length - 1];
+      }
+      count++;
+    }
+    return count > 0 ? Math.round(sum / count) : null;
+  } else {
+    const rankingNumber = parseInt(ranking, 10);
+    if (isNaN(rankingNumber) || rankingNumber < 1) {
+      return null;
+    }
+    const index = rankingNumber - 1;
+    return index >= bareme.length ? bareme[bareme.length - 1] : bareme[index];
+  }
+}
+
+function getRankingValidationError(ranking: string): string | null {
+  if (ranking.includes('-')) {
+    const parts = ranking.split('-').map(p => p.trim());
+    if (parts.length !== 2) {
+      return "Format de plage invalide. Utilisez le format: 1-4 ou 16-20";
+    }
+    const start = parseInt(parts[0], 10);
+    const end = parseInt(parts[1], 10);
+    if (isNaN(start) || isNaN(end)) {
+      return "Format de plage invalide. Utilisez le format: 1-4 ou 16-20";
+    }
+    if (start < 1) {
+      return "Le classement doit commencer à partir de 1.";
+    }
+    if (end < start) {
+      return "La fin de la plage doit être supérieure ou égale au début.";
+    }
+    return null;
+  }
+  const rankingNumber = parseInt(ranking, 10);
+  if (isNaN(rankingNumber) || rankingNumber < 1) {
+    return "Le classement doit être un nombre positif.";
+  }
+  return null;
+}
+
 export default function PointsCalculatorPage() {
   const [tournamentLevel, setTournamentLevel] = useState<string>('P100');
   const [teamRange, setTeamRange] = useState<string>('29+');
@@ -73,46 +130,7 @@ export default function PointsCalculatorPage() {
 
     let basePoints: number | null = null;
 
-    if (ranking.includes('-')) {
-      const parts = ranking.split('-').map(p => p.trim());
-      if (parts.length === 2) {
-        const start = parseInt(parts[0], 10);
-        const end = parseInt(parts[1], 10);
-
-        if (isNaN(start) || isNaN(end) || start < 1 || end < start) {
-          return null;
-        }
-
-        let sum = 0;
-        let count = 0;
-
-        for (let i = start; i <= end; i++) {
-          const index = i - 1;
-          if (index < bareme.length) {
-            sum += bareme[index];
-            count++;
-          } else {
-            sum += bareme[bareme.length - 1];
-            count++;
-          }
-        }
-
-        basePoints = count > 0 ? Math.round(sum / count) : null;
-      }
-    } else {
-      const rankingNumber = parseInt(ranking, 10);
-      if (isNaN(rankingNumber) || rankingNumber < 1) {
-        return null;
-      }
-
-      const index = rankingNumber - 1;
-
-      if (index >= bareme.length) {
-        basePoints = bareme[bareme.length - 1];
-      } else {
-        basePoints = bareme[index];
-      }
-    }
+    basePoints = calculateBasePoints(bareme, ranking);
 
     if (basePoints !== null && showTop100Selection) {
       const multiplier = getTop100Multiplier(tournamentLevel, Number(top100TeamsCount), gender);
@@ -130,36 +148,7 @@ export default function PointsCalculatorPage() {
       return "Cette combinaison niveau/équipes n'est pas disponible.";
     }
 
-    if (ranking.includes('-')) {
-      const parts = ranking.split('-').map(p => p.trim());
-      if (parts.length === 2) {
-        const start = parseInt(parts[0], 10);
-        const end = parseInt(parts[1], 10);
-
-        if (isNaN(start) || isNaN(end)) {
-          return "Format de plage invalide. Utilisez le format: 1-4 ou 16-20";
-        }
-
-        if (start < 1) {
-          return "Le classement doit commencer à partir de 1.";
-        }
-
-        if (end < start) {
-          return "La fin de la plage doit être supérieure ou égale au début.";
-        }
-      } else {
-        return "Format de plage invalide. Utilisez le format: 1-4 ou 16-20";
-      }
-      return null;
-    }
-
-    const rankingNumber = parseInt(ranking, 10);
-    if (isNaN(rankingNumber) || rankingNumber < 1) {
-      return "Le classement doit être un nombre positif.";
-    }
-
-
-    return null;
+    return getRankingValidationError(ranking);
   }, [tournamentLevel, teamRange, ranking]);
 
   const availableLevels = React.useMemo(() => {

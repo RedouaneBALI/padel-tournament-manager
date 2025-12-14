@@ -14,6 +14,21 @@ import GamesList from '@/src/components/tournament/games/GamesList';
 import { exportGamesAsCSV } from '@/src/utils/gamesExport';
 import { useExport } from '@/src/contexts/ExportContext';
 
+function updateGameInRounds(rounds: Round[], gameId: string, changes: { scheduledTime?: string; court?: string }): Round[] {
+  return rounds.map((round) => ({
+    ...round,
+    games: round.games.map((g) =>
+      String(g.id) === String(gameId)
+        ? {
+            ...g,
+            ...(changes.scheduledTime !== undefined ? { scheduledTime: changes.scheduledTime } : {}),
+            ...(changes.court !== undefined ? { court: changes.court } : {})
+          }
+        : g
+    ),
+  }));
+}
+
 interface TournamentGamesTabProps {
   tournamentId: string;
   editable: boolean;
@@ -91,10 +106,7 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
 
   // Quand MatchResultCard notifie d'un changement de court/heure, mettre à jour l'état local
   const handleGameUpdated = useCallback((gameId: string, changes: { scheduledTime?: string; court?: string }) => {
-    setRounds((currentRounds) => currentRounds.map((round) => ({
-      ...round,
-      games: round.games.map((g) => (String(g.id) === String(gameId) ? { ...g, ...(changes.scheduledTime !== undefined ? { scheduledTime: changes.scheduledTime } : {}), ...(changes.court !== undefined ? { court: changes.court } : {}) } : g)),
-    })));
+    setRounds((currentRounds) => updateGameInRounds(currentRounds, gameId, changes));
   }, []);
 
   useEffect(() => {

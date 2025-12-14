@@ -17,6 +17,64 @@ import { Stage } from '@/src/types/stage';
 import { initializeScoresFromScore } from '@/src/utils/scoreUtils';
 import { useGameSave } from '@/src/hooks/useGameSave';
 
+function computeVisibleSets(setsToWin: number | undefined, scores: string[][]): number {
+  const setsToWinValue = setsToWin ?? 2;
+  if (setsToWinValue === 1) {
+    return 1;
+  } else if (setsToWinValue === 2) {
+    // Compute wins for first two sets if both scores are numeric
+    const firstSetA = parseInt(scores[0][0], 10);
+    const firstSetB = parseInt(scores[1][0], 10);
+    const secondSetA = parseInt(scores[0][1], 10);
+    const secondSetB = parseInt(scores[1][1], 10);
+
+    const firstSetValid = !isNaN(firstSetA) && !isNaN(firstSetB);
+    const secondSetValid = !isNaN(secondSetA) && !isNaN(secondSetB);
+
+    let winsA = 0;
+    let winsB = 0;
+
+    if (firstSetValid) {
+      if (firstSetA > firstSetB) winsA++;
+      else if (firstSetB > firstSetA) winsB++;
+    }
+    if (secondSetValid) {
+      if (secondSetA > secondSetB) winsA++;
+      else if (secondSetB > secondSetA) winsB++;
+    }
+
+    if (winsA === 1 && winsB === 1) {
+      return 3;
+    } else {
+      return 2;
+    }
+  } else {
+    return 3;
+  }
+}
+
+function computeIsInProgress(finished: boolean, score: Score | undefined, scores: string[][]): boolean {
+  const propHasScores = !!(score?.sets && score.sets.some(set => (set.teamAScore !== null && set.teamAScore !== undefined) || (set.teamBScore !== null && set.teamBScore !== undefined)));
+  const localHasScores = !!(scores && (scores[0].some(s => s !== '' && s !== undefined && s !== null) || scores[1].some(s => s !== '' && s !== undefined && s !== null)));
+  return !finished && (propHasScores || localHasScores);
+}
+
+function computeBadgeLabel(pool: { name?: string } | undefined, matchIndex: number | undefined, totalMatches: number | undefined): string {
+  return pool?.name
+    ? formatGroupLabel(pool.name)
+    : (matchIndex !== undefined && totalMatches !== undefined)
+      ? `${matchIndex + 1}/${totalMatches}`
+      : '';
+}
+
+function computeShowChampion(stage: string | undefined, finished: boolean, winnerSide: number | undefined, teamIndex: number): boolean {
+  try {
+    const stageStr = String(stage || '').toLowerCase();
+    const isFinalStage = stage === Stage.FINAL || stageStr === 'finale' || stageStr === 'final' || stageStr.includes('final');
+    return finished && isFinalStage && winnerSide !== undefined && winnerSide === teamIndex;
+  } catch (e) { return false; }
+}
+
 interface Props {
   teamA: PlayerPair | null;
   teamB: PlayerPair | null;
@@ -106,94 +164,7 @@ export default function MatchResultCard({
   );
 
   // Helper to compute visibleSets based on setsToWin and first two sets
-  const setsToWinValue = setsToWin ?? 2;
-  let visibleSets: number;
-  if (setsToWinValue === 1) {
-    visibleSets = 1;
-  } else if (setsToWinValue === 2) {
-    // Compute wins for first two sets if both scores are numeric
-    const firstSetA = parseInt(scores[0][0], 10);
-    const firstSetB = parseInt(scores[1][0], 10);
-    const secondSetA = parseInt(scores[0][1], 10);
-    const secondSetB = parseInt(scores[1][1], 10);
-
-    const firstSetValid = !isNaN(firstSetA) && !isNaN(firstSetB);
-    const secondSetValid = !isNaN(secondSetA) && !isNaN(secondSetB);
-
-    let winsA = 0;
-    let winsB = 0;
-
-    if (firstSetValid) {
-      if (firstSetA > firstSetB) winsA++;
-      else if (firstSetB > firstSetA) winsB++;
-    }
-    if (secondSetValid) {
-      if (secondSetA > secondSetB) winsA++;
-      else if (secondSetB > secondSetA) winsB++;
-    }
-
-    if (winsA === 1 && winsB === 1) {
-      visibleSets = 3;
-    } else {
-      visibleSets = 2;
-    }
-  } else {
-    visibleSets = 3;
-  }
-
-  function convertToScoreObject(scores: string[][], isForfeit: boolean, forfeitedBy: 'TEAM_A' | 'TEAM_B' | null) {
-    const sets = scores[0].slice(0, visibleSets).map((_, i) => {
-      const teamAStr = scores[0][i];
-      const teamBStr = scores[1][i];
-      if ((teamAStr === '' || teamAStr === undefined) && (teamBStr === '' || teamBStr === undefined)) {
-        return null;
-      }
-      // Pour le 3e set, si on détecte un super tie-break (score > 7), on place les points dans tieBreakTeamA/tieBreakTeamB
-      if (i === 2 && (Number(teamAStr) > 7 || Number(teamBStr) > 7)) {
-        return {
-          teamAScore: 0, // ou 1 si tu veux, mais il faut un score non null
-          teamBScore: 0,
-          tieBreakTeamA: teamAStr === '' ? null : parseInt(teamAStr, 10),
-          tieBreakTeamB: teamBStr === '' ? null : parseInt(teamBStr, 10)
-        };
-      }
-      return {
-        teamAScore: teamAStr === '' ? null : parseInt(teamAStr, 10),
-        teamBScore: teamBStr === '' ? null : parseInt(teamBStr, 10)
-      };
-    }).filter(set => set !== null);
-
-    return {
-      sets,
-      forfeit: isForfeit,
-      forfeitedBy: isForfeit ? forfeitedBy : null
-    };
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent, teamIndex: number, setIndex: number) => {
-    if (e.key === 'Tab') {
-      e.preventDefault();
-
-      let nextTeamIndex: number;
-      let nextSetIndex: number;
-
-      if (teamIndex === 0) {
-        nextTeamIndex = 1;
-        nextSetIndex = setIndex;
-      } else {
-        nextTeamIndex = 0;
-        nextSetIndex = setIndex + 1;
-        if (nextSetIndex >= visibleSets) {
-          nextSetIndex = 0;
-        }
-      }
-
-      const nextInput = inputRefs.current[nextTeamIndex][nextSetIndex];
-      if (nextInput) {
-        nextInput.focus();
-      }
-    }
-  };
+  const visibleSets = computeVisibleSets(setsToWin, scores);
 
   const { saveGame, isSaving: hookIsSaving } = useGameSave(gameId, tournamentId, updateGameFn, onInfoSaved, onTimeChanged, onGameUpdated);
 
@@ -213,7 +184,7 @@ export default function MatchResultCard({
 
   const saveGameDetails = async () => {
     try {
-      const scorePayload = convertToScoreObject(scores, isForfeit, forfeitedBy);
+      const scorePayload = convertToScoreObject(scores, visibleSets, isForfeit, forfeitedBy);
 
       // Utiliser updateGameFn si fourni (pour les matchs standalone), sinon updateGameDetails (pour les matchs de tournoi)
       const result = updateGameFn
@@ -323,16 +294,10 @@ export default function MatchResultCard({
   };
 
   // Calculer si le match est en cours
-  const propHasScores = !!(score?.sets && score.sets.some(set => (set.teamAScore !== null && set.teamAScore !== undefined) || (set.teamBScore !== null && set.teamBScore !== undefined)));
-  const localHasScores = !!(scores && (scores[0].some(s => s !== '' && s !== undefined && s !== null) || scores[1].some(s => s !== '' && s !== undefined && s !== null)));
-  const isInProgress = !finished && (propHasScores || localHasScores);
+  const isInProgress = computeIsInProgress(finished, score, scores);
 
   // Calculer le contenu du badge (garder la logique en dehors du JSX pour satisfaire TypeScript)
-  const badgeLabel = pool?.name
-    ? formatGroupLabel(pool.name)
-    : (matchIndex !== undefined && totalMatches !== undefined)
-      ? `${matchIndex + 1}/${totalMatches}`
-      : '';
+  const badgeLabel = computeBadgeLabel(pool, matchIndex, totalMatches);
 
   return (
     <div
@@ -422,13 +387,7 @@ export default function MatchResultCard({
           winnerSide={isForfeit ? (forfeitedBy === 'TEAM_B' ? 0 : undefined) : winnerSide}
           visibleSets={visibleSets}
           computeTabIndex={(tIdx, sIdx) => sIdx * 2 + (tIdx + 1)}
-          showChampion={(() => {
-            try {
-              const stageStr = String(stage || '').toLowerCase();
-              const isFinalStage = stage === Stage.FINAL || stageStr === 'finale' || stageStr === 'final' || stageStr.includes('final');
-              return finished && isFinalStage && winnerSide !== undefined && winnerSide === 0;
-            } catch (e) { return false; }
-          })()}
+          showChampion={computeShowChampion(stage, finished, winnerSide, 0)}
           forfeited={isForfeit && forfeitedBy === 'TEAM_A'}
           showAbSlot={isForfeit}
           onToggleForfeit={() => {
@@ -452,13 +411,7 @@ export default function MatchResultCard({
           winnerSide={isForfeit ? (forfeitedBy === 'TEAM_A' ? 1 : undefined) : winnerSide}
           visibleSets={visibleSets}
           computeTabIndex={(tIdx, sIdx) => sIdx * 2 + (tIdx + 1)}
-          showChampion={(() => {
-            try {
-              const stageStr = String(stage || '').toLowerCase();
-              const isFinalStage = stage === Stage.FINAL || stageStr === 'finale' || stageStr === 'final' || stageStr.includes('final');
-              return finished && isFinalStage && winnerSide !== undefined && winnerSide === 1;
-            } catch (e) { return false; }
-          })()}
+          showChampion={computeShowChampion(stage, finished, winnerSide, 1)}
           forfeited={isForfeit && forfeitedBy === 'TEAM_B'}
           showAbSlot={isForfeit}
           onToggleForfeit={() => {

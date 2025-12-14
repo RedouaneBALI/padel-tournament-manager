@@ -249,7 +249,6 @@ export async function generateDraw(
 }
 
 export async function initializeDraw(tournamentId: string, payload: InitializeDrawRequest) {
-  var json = JSON.stringify(payload);
   const response = await fetchWithAuth(api(`/admin/tournaments/${tournamentId}/draw/initialize`), {
     method: 'POST',
     body: JSON.stringify(payload),
