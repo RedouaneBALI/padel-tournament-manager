@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { fetchMyTournaments, deleteTournament } from '@/src/api/tournamentApi';
@@ -8,6 +8,7 @@ import type { Tournament } from '@/src/types/tournament';
 import { toast } from 'react-toastify';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
 import TournamentCard from '@/src/components/tournament/TournamentCard';
+import MultiSelectFilter from '@/src/components/frmt-ranking/filters/MultiSelectFilter';
 
 export default function TournamentList() {
   const { status } = useSession();
@@ -16,6 +17,8 @@ export default function TournamentList() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | number | null>(null);
+  const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
+  const [selectedGenders, setSelectedGenders] = useState<string[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -27,7 +30,14 @@ export default function TournamentList() {
       if (!cancelled) setLoading(true);
       try {
         const data = await fetchMyTournaments('all');
-        if (!cancelled) setItems(data);
+        if (!cancelled) {
+          setItems(data);
+          // Initialize filters with all available options
+          const levels = Array.from(new Set(data.map((t) => t.level || '')));
+          const genders = Array.from(new Set(data.map((t) => t.gender || '')));
+          setSelectedLevels([...levels]);
+          setSelectedGenders([...genders]);
+        }
       } catch (e: any) {
         if (!cancelled) setError(e?.message || 'Erreur inconnue');
       } finally {
@@ -39,6 +49,47 @@ export default function TournamentList() {
       cancelled = true;
     };
   }, [status]);
+
+  const availableLevels = useMemo(() => {
+    if (!items) return [];
+    const levelOrder = ['AMATEUR', 'P25', 'P50', 'P100', 'P250', 'P500', 'P1000', 'P1500', 'P2000'];
+    const levels = Array.from(new Set(items.map((t) => t.level || '')));
+    return levels.sort((a, b) => {
+      if (a === '') return 1;
+      if (b === '') return -1;
+      const aIndex = levelOrder.indexOf(a);
+      const bIndex = levelOrder.indexOf(b);
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+      return aIndex - bIndex;
+    });
+  }, [items]);
+
+  const availableGenders = useMemo(() => {
+    if (!items) return [];
+    const genderOrder = ['MEN', 'WOMEN', 'MIX'];
+    const genders = Array.from(new Set(items.map((t) => t.gender || '')));
+    return genders.sort((a, b) => {
+      if (a === '') return 1;
+      if (b === '') return -1;
+      const aIndex = genderOrder.indexOf(a);
+      const bIndex = genderOrder.indexOf(b);
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+      return aIndex - bIndex;
+    });
+  }, [items]);
+
+  const filteredItems = useMemo(() => {
+    if (!items) return [];
+    return items.filter((t) => {
+      const levelMatch = selectedLevels.length === 0 || selectedLevels.includes(t.level || '');
+      const genderMatch = selectedGenders.length === 0 || selectedGenders.includes(t.gender || '');
+      return levelMatch && genderMatch;
+    });
+  }, [items, selectedLevels, selectedGenders]);
+
+  const formatOption = (opt: string) => opt || '?';
 
   // Loading session: show loader
   if (status === 'loading') {
@@ -102,16 +153,47 @@ export default function TournamentList() {
 
           {!loading && !error && (
             <>
+              {(items?.length ?? 0) > 0 && (
+                <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <MultiSelectFilter
+                    label="Niveau"
+                    availableOptions={availableLevels}
+                    selectedOptions={selectedLevels}
+                    onChange={setSelectedLevels}
+                    allItems={items ?? []}
+                    keyField="level"
+                    renderOption={formatOption}
+                  />
+                  <MultiSelectFilter
+                    label="Genre"
+                    availableOptions={availableGenders}
+                    selectedOptions={selectedGenders}
+                    onChange={setSelectedGenders}
+                    allItems={items ?? []}
+                    keyField="gender"
+                    renderOption={formatOption}
+                  />
+                </div>
+              )}
+
               {(items?.length ?? 0) > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {(items ?? []).map((t) => (
-                    <TournamentCard
-                      key={t.id}
-                      tournament={t}
-                      onDelete={onDelete}
-                      isDeleting={String(deletingId) === String(t.id)}
-                    />
-                  ))}
+                <div>
+                  {filteredItems.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {filteredItems.map((t) => (
+                        <TournamentCard
+                          key={t.id}
+                          tournament={t}
+                          onDelete={onDelete}
+                          isDeleting={String(deletingId) === String(t.id)}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-muted-foreground">
+                      Aucun tournoi ne correspond à ces critères.
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="text-muted-foreground">

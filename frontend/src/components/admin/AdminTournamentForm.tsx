@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { ParsedTournamentForm } from '@/src/validation/tournament';

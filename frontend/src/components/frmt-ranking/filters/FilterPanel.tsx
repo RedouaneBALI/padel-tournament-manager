@@ -78,7 +78,8 @@ export default function FilterPanel<T>({
 
         {/* --- FOOTER (Fixe) --- */}
         {/* flex-none : empêche le footer de s'écraser */}
-        <div className="flex-none p-4 border-t bg-gray-50 flex items-center gap-3 safe-area-bottom">
+        {/* Positionnement au-dessus du BottomNav avec safe-area-inset-bottom */}
+        <div className="flex-none p-4 border-t bg-gray-50 flex items-center gap-3" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom) + var(--bottom-nav-height, 64px))' }}>
           <button
             onClick={handleResetClick}
             className="flex-1 px-2 py-2 font-semibold text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 flex items-center justify-center gap-1"

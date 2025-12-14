@@ -72,7 +72,7 @@ export default function TournamentConfigSection({
               <option value="P250">P250</option>
               <option value="P500">P500</option>
               <option value="P1000">P1000</option>
-              <option value="P1000">P1500</option>
+              <option value="P1500">P1500</option>
               <option value="P2000">P2000</option>
             </select>
           </div>

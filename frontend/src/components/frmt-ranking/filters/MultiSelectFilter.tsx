@@ -13,6 +13,7 @@ interface Props {
   allItems?: Record<string, any>[]  // items with the field `keyField`
   keyField: string                  // e.g., "nationality" or "club"
   renderPrefix?: (option: string) => ReactNode
+  renderOption?: (option: string) => ReactNode
 }
 
 export default function MultiSelectFilter({
@@ -22,7 +23,8 @@ export default function MultiSelectFilter({
   onChange,
   allItems = [],
   keyField,
-  renderPrefix
+  renderPrefix,
+  renderOption
 }: Props) {
   const [open, setOpen] = useState(false)
 
@@ -45,8 +47,7 @@ export default function MultiSelectFilter({
 
   const counts = useMemo(() => {
     return allItems.reduce<Record<string, number>>((acc, item) => {
-      const key = item[keyField]
-      if (!key) return acc
+      const key = item[keyField] || ''
       acc[key] = (acc[key] || 0) + 1
       return acc
     }, {})
@@ -107,7 +108,7 @@ export default function MultiSelectFilter({
                 className="w-4 h-4 rounded border-gray-300"
               />
               <span>
-                {renderPrefix?.(opt)} {opt} ({counts[opt] || 0})
+                {renderPrefix?.(opt)} {renderOption?.(opt) ?? opt} ({counts[opt] || 0})
               </span>
             </label>
           ))}
