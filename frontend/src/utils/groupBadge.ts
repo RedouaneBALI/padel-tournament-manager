@@ -25,14 +25,14 @@ export function normalizeGroup(poolName?: string): GroupLetter | null {
 /** Classes tailwind pour le badge selon la poule (clair & dark). */
 export function groupBadgeClasses(group: GroupLetter | null): string {
   switch (group) {
-    case 'A': return 'bg-sky-500 text-sky-100 dark:bg-sky-700 dark:text-white';
-    case 'B': return 'bg-emerald-500 text-emerald-100 dark:bg-emerald-700 dark:text-white';
-    case 'C': return 'bg-amber-500 text-amber-100 dark:bg-amber-700 dark:text-white';
-    case 'D': return 'bg-violet-500 text-violet-100 dark:bg-violet-700 dark:text-white';
-    case 'E': return 'bg-rose-500 text-rose-100 dark:bg-rose-700 dark:text-white';
-    case 'F': return 'bg-cyan-500 text-cyan-100 dark:bg-cyan-700 dark:text-white';
-    case 'G': return 'bg-lime-500 text-lime-100 dark:bg-lime-700 dark:text-white';
-    case 'H': return 'bg-indigo-500 text-indigo-100 dark:bg-indigo-700 dark:text-white';
+    case 'A': return 'bg-sky-500 text-sky-100';
+    case 'B': return 'bg-emerald-500 text-emerald-100';
+    case 'C': return 'bg-amber-500 text-amber-100';
+    case 'D': return 'bg-violet-500 text-violet-100';
+    case 'E': return 'bg-rose-500 text-rose-100';
+    case 'F': return 'bg-cyan-500 text-cyan-100';
+    case 'G': return 'bg-lime-500 text-lime-100';
+    case 'H': return 'bg-indigo-500 text-indigo-100';
     default:  return 'bg-muted text-foreground';
   }
 }

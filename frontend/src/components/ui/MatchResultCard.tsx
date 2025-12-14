@@ -456,7 +456,7 @@ export default function MatchResultCard({
   );
 
   // Compute footer class
-  const footerClass = pool?.name ? groupBadgeClasses(group) : editing ? 'bg-card text-foreground' : 'bg-background text-foreground dark:bg-primary dark:text-on-primary';
+  const footerClass = pool?.name ? groupBadgeClasses(group) : editing ? 'bg-card text-foreground' : 'bg-background text-foreground';
 
   // Compute footer content
   const footerContent = editing ? (

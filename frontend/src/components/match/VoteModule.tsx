@@ -88,7 +88,7 @@ export default function VoteModule({
 
         <div className="p-4">
           {/* Barre de duel (Tug of war) */}
-          <div className="relative h-8 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex mb-4 ring-1 ring-inset ring-black/5">
+          <div className="relative h-8 w-full bg-slate-100 rounded-full overflow-hidden flex mb-4 ring-1 ring-inset ring-black/5">
 
             {/* Côté A (Bleu) */}
             <div
@@ -136,7 +136,7 @@ export default function VoteModule({
                 className={`
                   group relative flex flex-col items-center justify-center py-3 px-2 rounded-lg border transition-all duration-200
                   ${isVotedA
-                    ? 'bg-blue-50/50 border-blue-500 ring-1 ring-blue-500 dark:bg-blue-900/20 cursor-default'
+                    ? 'bg-blue-50/50 border-blue-500 ring-1 ring-blue-500 cursor-default'
                     : 'hover:bg-muted border-border hover:border-blue-300 hover:shadow-sm active:scale-[0.98]'}
                   ${isVotedB ? 'opacity-70 hover:opacity-100' : ''}
                 `}
@@ -158,7 +158,7 @@ export default function VoteModule({
                 className={`
                   group relative flex flex-col items-center justify-center py-3 px-2 rounded-lg border transition-all duration-200
                   ${isVotedB
-                    ? 'bg-rose-50/50 border-rose-500 ring-1 ring-rose-500 dark:bg-rose-900/20 cursor-default'
+                    ? 'bg-rose-50/50 border-rose-500 ring-1 ring-rose-500 cursor-default'
                     : 'hover:bg-muted border-border hover:border-rose-300 hover:shadow-sm active:scale-[0.98]'}
                   ${isVotedA ? 'opacity-70 hover:opacity-100' : ''}
                 `}

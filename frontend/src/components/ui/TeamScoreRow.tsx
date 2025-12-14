@@ -144,7 +144,7 @@ export default function TeamScoreRow({
           {showAbSlot && (
             <div key="ab-slot" className="flex items-center justify-center" style={{ width: `var(--team-score-ab-slot-width-rem)` }}>
               {forfeited ? (
-                <span className="inline-flex items-center justify-center h-5 text-[10px] font-bold px-1 py-0.5 rounded bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border border-yellow-500/30 leading-none">
+                <span className="inline-flex items-center justify-center h-5 text-[10px] font-bold px-1 py-0.5 rounded bg-yellow-500/20 text-yellow-700 border border-yellow-500/30 leading-none">
                   AB
                 </span>
               ) : (
