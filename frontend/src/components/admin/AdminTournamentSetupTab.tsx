@@ -262,7 +262,82 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
     };
   }, [tournamentId, isTwoTeamTournament]);
 
+  const renderTabContent = () => {
+    if (activeTab === 'players' || tournamentStarted) {
+      return tournamentStarted ? (
+        <PlayerPairsList tournamentId={tournamentId} pairs={pairs} loading={loadingPairs} editable={true} tournamentStarted={tournamentStarted} />
+      ) : (
+        <>
+          <h2 className="text-base text-foreground px-2">
+            Lister les joueurs ci-dessous (par ordre de classement ou du tirage)
+          </h2>
+          <div className="flex items-center">
+            <div className="h-px flex-1 bg-border  my-6" />
+            <h3 className="text-s sm:text-sm uppercase tracking-wider text-muted-foreground select-none">{pairs.length} Equipes inscrites</h3>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+          <p className="p-1 text-tab-inactive"><i>Joueur1,Joueur2,Seed (optionnel)</i></p>
+          <PlayerPairsTextarea
+            onPairsChange={onPairsChangeRef.current}
+            tournamentId={tournamentId}
+            hasStarted={tournamentStarted}
+            onSaveSuccess={handleSaveSuccess}
+          />
+        </>
+      );
+    }
+    return tournament ? (
+      <AdminTournamentPlayerAssignment tournament={tournament} />
+    ) : (
+      <CenteredLoader />
+    );
+  };
 
+  const renderTabs = () => {
+    if (tournamentStarted || isTwoTeamTournament) return null;
+    return (
+      <div className="flex justify-center border-b border-border mb-4">
+        <button
+          type="button"
+          onClick={() => setActiveTab('players')}
+          className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'players' ? 'border-primary text-foreground' : 'border-transparent text-tab-inactive'}`}
+        >
+          Import
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('assignment')}
+          className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'assignment' ? 'border-primary text-foreground' : 'border-transparent text-tab-inactive'}`}
+        >
+          Affectation
+        </button>
+      </div>
+    );
+  };
+
+  const renderGenerateButton = () => {
+    if (!showGenerateButton) return null;
+    return (
+      <>
+        <hr className="my-2 border-t border-border" />
+        <div className="flex flex-col sm:flex-row sm:justify-center sm:items-end gap-4 mt-4">
+          <div className="flex flex-col gap-2 pb-4">
+            <button
+              onClick={pairs.length > 0 ? handleDraw : undefined}
+              disabled={pairs.length === 0}
+              className={`px-4 py-2 h-12 rounded transition-colors ${
+                pairs.length === 0
+                  ? 'bg-border text-color-text-secondary cursor-not-allowed'
+                  : 'bg-primary text-on-primary hover:bg-primary-hover'
+              }`}
+            >
+              Générer le tirage
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  };
 
   return loadingTournament || !tournament ? (
     <CenteredLoader />
@@ -276,77 +351,11 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
       <div className="shadow-sm">
         <section>
           <>
-            {!tournamentStarted && !isTwoTeamTournament && (
-              <div className="flex justify-center border-b border-border mb-4">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('players')}
-                  className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'players' ? 'border-primary text-foreground' : 'border-transparent text-tab-inactive'}`}
-                >
-                  Import
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('assignment')}
-                  className={`px-4 py-2 -mb-px border-b-2 ${activeTab === 'assignment' ? 'border-primary text-foreground' : 'border-transparent text-tab-inactive'}`}
-                >
-                  Affectation
-                </button>
-              </div>
-            )}
-
-            {activeTab === 'players' || tournamentStarted ? (
-              tournamentStarted ? (
-                <PlayerPairsList tournamentId={tournamentId} pairs={pairs} loading={loadingPairs} editable={true} tournamentStarted={tournamentStarted} />
-              ) : (
-                <>
-                  <h2 className="text-base text-foreground px-2">
-                    Lister les joueurs ci-dessous (par ordre de classement ou du tirage)
-                  </h2>
-                  <div className="flex items-center">
-                    <div className="h-px flex-1 bg-border  my-6" />
-                    <h3 className="text-s sm:text-sm uppercase tracking-wider text-muted-foreground select-none">{pairs.length} Equipes inscrites</h3>
-                    <div className="h-px flex-1 bg-border" />
-                  </div>
-                  <p className="p-1 text-tab-inactive"><i>Joueur1,Joueur2,Seed (optionnel)</i></p>
-                  <PlayerPairsTextarea
-                    onPairsChange={onPairsChangeRef.current}
-                    tournamentId={tournamentId}
-                    hasStarted={tournamentStarted}
-                    onSaveSuccess={handleSaveSuccess}
-                  />
-                </>
-              )
-            ) : (
-              tournament ? (
-                <AdminTournamentPlayerAssignment tournament={tournament} />
-              ) : (
-                <CenteredLoader />
-              )
-            )}
+            {renderTabs()}
+            {renderTabContent()}
           </>
-          {showGenerateButton && (
-            <>
-              <hr className="my-2 border-t border-border" />
-              <div className="flex flex-col sm:flex-row sm:justify-center sm:items-end gap-4 mt-4">
-                <div className="flex flex-col gap-2 pb-4">
-                  <button
-                    onClick={pairs.length > 0 ? handleDraw : undefined}
-                    disabled={pairs.length === 0}
-                    className={`px-4 py-2 h-12 rounded transition-colors ${
-                      pairs.length === 0
-                        ? 'bg-border text-color-text-secondary cursor-not-allowed'
-                        : 'bg-primary text-on-primary hover:bg-primary-hover'
-                    }`}
-                  >
-                    Générer le tirage
-                  </button>
-                </div>
-              </div>
-            </>
-          )}
+          {renderGenerateButton()}
         </section>
-
       </div>
 
     </div>

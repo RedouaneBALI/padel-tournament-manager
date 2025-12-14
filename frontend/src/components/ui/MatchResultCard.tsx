@@ -124,49 +124,45 @@ function useSaveLogic(
   setLocalWinnerSide: (winner: number | undefined) => void,
   setLocalFinished: (finished: boolean) => void
 ) {
+  const applyScoresToState = (score: Score) => {
+    const appliedScores = initializeScoresFromScore(score);
+    setScores(appliedScores);
+    setInitialScores(appliedScores.map(arr => [...arr]));
+    setIsForfeit(score.forfeit || false);
+    setForfeitedBy(score.forfeitedBy || null);
+  };
+
+  const notifyGameUpdate = (gameId: string, score: Score) => {
+    try {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('game-updated', { detail: { gameId, score } }));
+      }
+    } catch (e) { /* ignore */ }
+  };
+
   const saveGameDetails = async () => {
     try {
       const scorePayload = convertToScoreObject(scores, visibleSets, isForfeit, forfeitedBy);
-
-      // Utiliser updateGameFn si fourni (pour les matchs standalone), sinon updateGameDetails (pour les matchs de tournoi)
       const result = updateGameFn
         ? await updateGameFn(gameId, scorePayload, localCourt, localScheduledTime)
         : await updateGameDetails(tournamentId, gameId, scorePayload, localCourt, localScheduledTime);
 
-      // Ensure local state reflects saved values immediately (prevents blank UI before parent updates)
       setLocalCourt(localCourt);
       setLocalScheduledTime(localScheduledTime);
 
-      // If API returned the updated score, apply it to local state so UI reflects 'in progress' immediately
       if (result && result.score) {
         try {
           const apiScore = result.score as Score;
-          const appliedScores = initializeScoresFromScore(apiScore);
-          setScores(appliedScores);
-          setInitialScores(appliedScores.map(arr => [...arr]));
-          setIsForfeit(apiScore.forfeit || false);
-          setForfeitedBy(apiScore.forfeitedBy || null);
-          try {
-            if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('game-updated', { detail: { gameId, score: apiScore } }));
-            }
-          } catch (e) { /* ignore */ }
+          applyScoresToState(apiScore);
+          notifyGameUpdate(gameId, apiScore);
         } catch (e) {
           console.error('Apply API score error', e);
         }
       } else {
         try {
           const payloadScore = scorePayload as Score;
-          const appliedScores = initializeScoresFromScore(payloadScore);
-          setScores(appliedScores);
-          setInitialScores(appliedScores.map(arr => [...arr]));
-          setIsForfeit(payloadScore.forfeit || false);
-          setForfeitedBy(payloadScore.forfeitedBy || null);
-          try {
-            if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('game-updated', { detail: { gameId, score: payloadScore } }));
-            }
-          } catch (e) { /* ignore */ }
+          applyScoresToState(payloadScore);
+          notifyGameUpdate(gameId, payloadScore);
         } catch (e) { /* ignore */ }
        }
 
@@ -174,7 +170,6 @@ function useSaveLogic(
         onTimeChanged(gameId, localScheduledTime);
       }
 
-      // Notify parent of any updated fields (court and/or scheduledTime)
       if (onGameUpdated) {
         const changes: { scheduledTime?: string; court?: string } = {};
         if (localScheduledTime !== scheduledTime) changes.scheduledTime = localScheduledTime;
@@ -186,12 +181,9 @@ function useSaveLogic(
         onInfoSaved(result);
       }
 
-      // Update local winnerSide and isFinished immediately based on result
       if (result && result.winner) {
         setLocalWinnerSide(result.winner === 'TEAM_A' ? 0 : result.winner === 'TEAM_B' ? 1 : undefined);
-        setLocalFinished(true); // Match is finished when winner is determined
-
-        // Dispatch event to notify parent immediately
+        setLocalFinished(true);
         try {
           window.dispatchEvent(new CustomEvent('game-updated', { detail: { gameId, score: result.score, winner: result.winner } }));
         } catch (e) { /* ignore */ }
@@ -210,7 +202,6 @@ function useSaveLogic(
         await saveGameDetails();
         setInitialScores([...scores]);
         setEditing(false);
-        // mark that the first-match confirmation has been shown (if applicable)
         try {
           if (isFirstRound && matchIndex === 0 && tournamentId && typeof window !== 'undefined') {
             const key = `ptm_first_match_confirmed_${tournamentId}`;
@@ -224,12 +215,7 @@ function useSaveLogic(
       }
     };
 
-    // If this is the first match and the user hasn't previously confirmed for this tournament,
-    // show a modal confirm like in the draw generation flow. If confirmed, save; otherwise do nothing.
     try {
-      // Only show the 'start tournament' confirmation when editing the very first match
-      // of the tournament (not the first match of any round). `isFirstRound` is passed
-      // from the parent when the current round is the tournament's first round.
       if (isFirstRound && matchIndex === 0 && tournamentId && typeof window !== 'undefined') {
         const key = `ptm_first_match_confirmed_${tournamentId}`;
         if (!sessionStorage.getItem(key)) {
@@ -246,9 +232,7 @@ function useSaveLogic(
               },
               {
                 label: 'Annuler',
-                onClick: () => {
-                  // nothing to do, user cancelled
-                },
+                onClick: () => {},
               },
             ],
           });
@@ -256,11 +240,9 @@ function useSaveLogic(
         }
       }
     } catch (e) {
-      // If confirm fails for whatever reason, fall back to direct save
       console.error('Erreur confirm dialog:', e);
     }
 
-    // Default: just save
     await doSave();
   };
 
@@ -477,6 +459,7 @@ export default function MatchResultCard({
           showChampion={computeShowChampion(stage, localFinished, localWinnerSide, 0)}
           forfeited={isForfeit && forfeitedBy === 'TEAM_A'}
           showAbSlot={isForfeit}
+          hideScores={isForfeit && !editing}
           onToggleForfeit={() => {
             if (isForfeit && forfeitedBy === 'TEAM_A') {
               setIsForfeit(false);
@@ -501,6 +484,7 @@ export default function MatchResultCard({
           showChampion={computeShowChampion(stage, localFinished, localWinnerSide, 1)}
           forfeited={isForfeit && forfeitedBy === 'TEAM_B'}
           showAbSlot={isForfeit}
+          hideScores={isForfeit && !editing}
           onToggleForfeit={() => {
             if (isForfeit && forfeitedBy === 'TEAM_B') {
               setIsForfeit(false);

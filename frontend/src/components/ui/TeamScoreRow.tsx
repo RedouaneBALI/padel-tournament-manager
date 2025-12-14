@@ -28,6 +28,7 @@ interface Props {
   showAbSlot?: boolean;
   onToggleForfeit?: () => void;
   showChampion?: boolean;
+  hideScores?: boolean;
 }
 
 export default function TeamScoreRow({
@@ -45,6 +46,7 @@ export default function TeamScoreRow({
   showAbSlot,
   onToggleForfeit,
   showChampion,
+  hideScores,
 }: Props) {
   const handleChange = (setIndex: number, value: string) => {
     const sanitized = value.replace(/[^0-9]/g, '');
@@ -109,27 +111,35 @@ export default function TeamScoreRow({
           className="ml-auto team-score-grid"
           style={{ gridTemplateColumns: gridTemplate }}
         >
-          {Array.from({ length: setsCount }).map((_, i) => {
-            const isWinner = winnerSide !== undefined && winnerSide === teamIndex;
-            let displayValue = scores[i] || '';
-            if (
-              i === 2 &&
-              team &&
-              (team as any).scores &&
-              (team as any).scores.length > 2 &&
-              ((teamIndex === 0 && (team as any).scores[2].tieBreakTeamA != null) ||
-                (teamIndex === 1 && (team as any).scores[2].tieBreakTeamB != null))
-            ) {
-              displayValue = teamIndex === 0
-                ? (team as any).scores[2].tieBreakTeamA?.toString() || ''
-                : (team as any).scores[2].tieBreakTeamB?.toString() || '';
-            }
-            return (
-              <div key={`score-${i}`} className={`text-center tabular-nums text-base leading-none ${isWinner ? 'font-bold' : 'font-semibold'} team-score-justify-center`}>
-                {displayValue}
+          {hideScores ? (
+            Array.from({ length: setsCount }).map((_, i) => (
+              <div key={`score-${i}`} className="text-center tabular-nums text-base leading-none font-semibold team-score-justify-center">
+                {/* Empty space where scores would be */}
               </div>
-            );
-          })}
+            ))
+          ) : (
+            Array.from({ length: setsCount }).map((_, i) => {
+              const isWinner = winnerSide !== undefined && winnerSide === teamIndex;
+              let displayValue = scores[i] || '';
+              if (
+                i === 2 &&
+                team &&
+                (team as any).scores &&
+                (team as any).scores.length > 2 &&
+                ((teamIndex === 0 && (team as any).scores[2].tieBreakTeamA != null) ||
+                  (teamIndex === 1 && (team as any).scores[2].tieBreakTeamB != null))
+              ) {
+                displayValue = teamIndex === 0
+                  ? (team as any).scores[2].tieBreakTeamA?.toString() || ''
+                  : (team as any).scores[2].tieBreakTeamB?.toString() || '';
+              }
+              return (
+                <div key={`score-${i}`} className={`text-center tabular-nums text-base leading-none ${isWinner ? 'font-bold' : 'font-semibold'} team-score-justify-center`}>
+                  {displayValue}
+                </div>
+              );
+            })
+          )}
 
           {showAbSlot && (
             <div key="ab-slot" className="flex items-center justify-center" style={{ width: `var(--team-score-ab-slot-width-rem)` }}>

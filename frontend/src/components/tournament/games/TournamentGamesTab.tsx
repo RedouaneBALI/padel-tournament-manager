@@ -221,10 +221,37 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
         onExport: () => exportGamesAsCSV(currentRound.games, currentRound.stage)
       });
     }
-    // Don't reset to null on unmount or when games become empty
-    // The parent layout will handle the default state
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentRound?.id, currentRound?.stage, currentRound?.games?.length]);
+
+  const setsToWin = getSetsToWin(currentRound);
+
+  const renderGroupSelector = () => {
+    if (!isGroupStage) return null;
+    return (
+      <GroupSelector
+        groups={availableGroups}
+        value={selectedGroup}
+        onChange={setSelectedGroup}
+      />
+    );
+  };
+
+  const renderGamesList = () => {
+    return (
+      <GamesList
+        games={displayedGames}
+        tournamentId={tournamentId}
+        editable={editable}
+        setsToWin={setsToWin}
+        onInfoSaved={handleInfoSaved}
+        onTimeChanged={handleTimeChanged}
+        onGameUpdated={handleGameUpdated}
+        stage={currentRound.stage as unknown as string}
+        isFirstRound={currentRoundIndex === 0}
+      />
+    );
+  };
 
   if (isLoading) {
     return <CenteredLoader />;
@@ -233,8 +260,6 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
   if (rounds.length === 0) {
     return <p className="text-muted">Aucun round défini pour le moment.</p>;
   }
-
-  const setsToWin = getSetsToWin(currentRound);
 
   return (
     <div className="flex flex-col items-center space-y-4 mb-15">
@@ -248,26 +273,8 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
         }}
         onStageChange={handleStageChangeInUrl}
       />
-
-      {isGroupStage && (
-        <GroupSelector
-          groups={availableGroups}
-          value={selectedGroup}
-          onChange={setSelectedGroup}
-        />
-      )}
-
-      <GamesList
-        games={displayedGames}
-        tournamentId={tournamentId}
-        editable={editable}
-        setsToWin={setsToWin}
-        onInfoSaved={handleInfoSaved}
-        onTimeChanged={handleTimeChanged}
-        onGameUpdated={handleGameUpdated}
-        stage={currentRound.stage as unknown as string}
-        isFirstRound={currentRoundIndex === 0}
-      />
+      {renderGroupSelector()}
+      {renderGamesList()}
     </div>
   );
 }
