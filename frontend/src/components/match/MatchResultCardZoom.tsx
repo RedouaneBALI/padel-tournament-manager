@@ -99,12 +99,12 @@ function processDisplayData(currentGame: Game, matchFormat: import('@/src/types/
  */
 function SetScoresDisplay({ setScores }: { setScores: (number | null)[] }) {
   return (
-    <div className="flex gap-0.5 sm:gap-2">
+    <div className="flex gap-[2px] sm:gap-2">
       {setScores.map((score, i) => (
         <div
           key={`set-${i}`}
           className={cn(
-            "w-6 h-8 sm:w-9 sm:h-10 flex items-center justify-center rounded text-xs sm:text-lg font-bold tabular-nums",
+            "w-6 h-8 sm:w-9 sm:h-10 flex items-center justify-center rounded text-base sm:text-xl font-bold tabular-nums",
             score !== null ? "text-foreground bg-muted/50" : "opacity-0"
           )}
         >
