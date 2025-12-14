@@ -78,12 +78,19 @@ export default function PlayerDetailModal({ player, onClose }: Props) {
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
       onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          onClose();
+        }
+      }}
+      tabIndex={-1}
     >
       {/* Carte Principale */}
       <div
         ref={cardRef}
         className="relative w-full max-w-sm bg-primary rounded-2xl shadow-lg overflow-hidden border border-white/10"
         onClick={(e) => e.stopPropagation()}
+        role="presentation"
       >
         {/* Boutons d'action */}
         <div className="absolute top-4 right-4 z-10 flex gap-2 ignore-capture">
