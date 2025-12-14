@@ -14,6 +14,8 @@ import CenteredLoader from '@/src/components/ui/CenteredLoader';
 import LiveMatchIndicator from '@/src/components/ui/LiveMatchIndicator';
 import { confirmAlert } from 'react-confirm-alert';
 import { Stage } from '@/src/types/stage';
+import { initializeScoresFromScore } from '@/src/utils/scoreUtils';
+import { useGameSave } from '@/src/hooks/useGameSave';
 
 interface Props {
   teamA: PlayerPair | null;
@@ -78,49 +80,8 @@ export default function MatchResultCard({
   const [isForfeit, setIsForfeit] = useState(score?.forfeit || false);
   const [forfeitedBy, setForfeitedBy] = useState<'TEAM_A' | 'TEAM_B' | null>(score?.forfeitedBy || null);
 
-  const [scores, setScores] = useState<string[][]>(() => {
-    const initialScores: string[][] = [[], []];
-    for (let i = 0; i < 3; i++) {
-      if (
-        i === 2 &&
-        score?.sets?.[2] &&
-        (score.sets[2] as any).tieBreakTeamA != null &&
-        (score.sets[2] as any).tieBreakTeamB != null
-      ) {
-        initialScores[0][i] = (score.sets[2] as any).tieBreakTeamA.toString();
-        initialScores[1][i] = (score.sets[2] as any).tieBreakTeamB.toString();
-      } else if (i === 2 && score?.tieBreakPointA != null && score?.tieBreakPointB != null) {
-        initialScores[0][i] = score.tieBreakPointA.toString();
-        initialScores[1][i] = score.tieBreakPointB.toString();
-      } else {
-        initialScores[0][i] = score?.sets[i]?.teamAScore?.toString() || '';
-        initialScores[1][i] = score?.sets[i]?.teamBScore?.toString() || '';
-      }
-    }
-    return initialScores;
-  });
-
-  const [initialScores, setInitialScores] = useState<string[][]>(() => {
-    const initial: string[][] = [[], []];
-    for (let i = 0; i < 3; i++) {
-      if (
-        i === 2 &&
-        score?.sets?.[2] &&
-        (score.sets[2] as any).tieBreakTeamA != null &&
-        (score.sets[2] as any).tieBreakTeamB != null
-      ) {
-        initial[0][i] = (score.sets[2] as any).tieBreakTeamA.toString();
-        initial[1][i] = (score.sets[2] as any).tieBreakTeamB.toString();
-      } else if (i === 2 && score?.tieBreakPointA != null && score?.tieBreakPointB != null) {
-        initial[0][i] = score.tieBreakPointA.toString();
-        initial[1][i] = score.tieBreakPointB.toString();
-      } else {
-        initial[0][i] = score?.sets[i]?.teamAScore?.toString() || '';
-        initial[1][i] = score?.sets[i]?.teamBScore?.toString() || '';
-      }
-    }
-    return initial;
-  });
+  const [scores, setScores] = useState<string[][]>(() => initializeScoresFromScore(score));
+  const [initialScores, setInitialScores] = useState<string[][]>(() => initializeScoresFromScore(score));
 
   // Resync scores when `score` prop is updated from parent (e.g. polling)
   // Only resync when the serialized score actually changed to avoid clobbering local edits
@@ -133,24 +94,7 @@ export default function MatchResultCard({
     }
     if (prevScoreSerializedRef.current === serialized) return;
     prevScoreSerializedRef.current = serialized;
-    const newScores: string[][] = [[], []];
-    for (let i = 0; i < 3; i++) {
-      if (
-        i === 2 &&
-        score?.sets?.[2] &&
-        (score.sets[2] as any).tieBreakTeamA != null &&
-        (score.sets[2] as any).tieBreakTeamB != null
-      ) {
-        newScores[0][i] = (score.sets[2] as any).tieBreakTeamA.toString();
-        newScores[1][i] = (score.sets[2] as any).tieBreakTeamB.toString();
-      } else if (i === 2 && score?.tieBreakPointA != null && score?.tieBreakPointB != null) {
-        newScores[0][i] = score.tieBreakPointA.toString();
-        newScores[1][i] = score.tieBreakPointB.toString();
-      } else {
-        newScores[0][i] = score?.sets[i]?.teamAScore?.toString() || '';
-        newScores[1][i] = score?.sets[i]?.teamBScore?.toString() || '';
-      }
-    }
+    const newScores = initializeScoresFromScore(score);
     setScores(newScores);
     setInitialScores(newScores.map(arr => [...arr]));
     setIsForfeit(score?.forfeit || false);
@@ -162,11 +106,11 @@ export default function MatchResultCard({
   );
 
   // Helper to compute visibleSets based on setsToWin and first two sets
-  const stw = setsToWin ?? 2;
+  const setsToWinValue = setsToWin ?? 2;
   let visibleSets: number;
-  if (stw === 1) {
+  if (setsToWinValue === 1) {
     visibleSets = 1;
-  } else if (stw === 2) {
+  } else if (setsToWinValue === 2) {
     // Compute wins for first two sets if both scores are numeric
     const firstSetA = parseInt(scores[0][0], 10);
     const firstSetB = parseInt(scores[1][0], 10);
@@ -198,7 +142,7 @@ export default function MatchResultCard({
   }
 
   function convertToScoreObject(scores: string[][], isForfeit: boolean, forfeitedBy: 'TEAM_A' | 'TEAM_B' | null) {
-    const sets = scores[0].map((_, i) => {
+    const sets = scores[0].slice(0, visibleSets).map((_, i) => {
       const teamAStr = scores[0][i];
       const teamBStr = scores[1][i];
       if ((teamAStr === '' || teamAStr === undefined) && (teamBStr === '' || teamBStr === undefined)) {
@@ -251,6 +195,22 @@ export default function MatchResultCard({
     }
   };
 
+  const { saveGame, isSaving: hookIsSaving } = useGameSave(gameId, tournamentId, updateGameFn, onInfoSaved, onTimeChanged, onGameUpdated);
+
+  const applyApiScore = (apiScore: Score) => {
+    const appliedScores = initializeScoresFromScore(apiScore);
+    setScores(appliedScores);
+    setInitialScores(appliedScores.map(arr => [...arr]));
+    setIsForfeit(apiScore.forfeit || false);
+    setForfeitedBy(apiScore.forfeitedBy || null);
+    prevScoreSerializedRef.current = JSON.stringify(apiScore || null);
+    try {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('game-updated', { detail: { gameId, score: apiScore } }));
+      }
+    } catch (e) { /* ignore */ }
+  };
+
   const saveGameDetails = async () => {
     try {
       const scorePayload = convertToScoreObject(scores, isForfeit, forfeitedBy);
@@ -268,66 +228,14 @@ export default function MatchResultCard({
       if (result && result.score) {
         try {
           const apiScore = result.score as Score;
-          const appliedScores: string[][] = [[], []];
-          for (let i = 0; i < 3; i++) {
-            if (
-              i === 2 &&
-              apiScore.sets?.[2] &&
-              (apiScore.sets[2] as any).tieBreakTeamA != null &&
-              (apiScore.sets[2] as any).tieBreakTeamB != null
-            ) {
-              appliedScores[0][i] = (apiScore.sets[2] as any).tieBreakTeamA.toString();
-              appliedScores[1][i] = (apiScore.sets[2] as any).tieBreakTeamB.toString();
-            } else if (i === 2 && apiScore.tieBreakPointA != null && apiScore.tieBreakPointB != null) {
-              appliedScores[0][i] = apiScore.tieBreakPointA.toString();
-              appliedScores[1][i] = apiScore.tieBreakPointB.toString();
-            } else {
-              appliedScores[0][i] = apiScore.sets?.[i]?.teamAScore?.toString() || '';
-              appliedScores[1][i] = apiScore.sets?.[i]?.teamBScore?.toString() || '';
-            }
-          }
-          setScores(appliedScores);
-          setInitialScores(appliedScores.map(arr => [...arr]));
-          setIsForfeit(apiScore.forfeit || false);
-          setForfeitedBy(apiScore.forfeitedBy || null);
-          prevScoreSerializedRef.current = JSON.stringify(apiScore || null);
-          try {
-            if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('game-updated', { detail: { gameId, score: apiScore, winner: result.winner } }));
-            }
-          } catch (e) { /* ignore */ }
+          applyApiScore(apiScore);
         } catch (e) {
           console.error('Apply API score error', e);
         }
       } else {
         try {
           const payloadScore = scorePayload as Score;
-          const appliedScores: string[][] = [[], []];
-          for (let i = 0; i < 3; i++) {
-            if (
-              i === 2 &&
-              payloadScore.sets?.[2] &&
-              (payloadScore.sets[2] as any).tieBreakTeamA != null &&
-              (payloadScore.sets[2] as any).tieBreakTeamB != null
-            ) {
-              appliedScores[0][i] = (payloadScore.sets[2] as any).tieBreakTeamA.toString();
-              appliedScores[1][i] = (payloadScore.sets[2] as any).tieBreakTeamB.toString();
-            } else if (i === 2 && payloadScore.tieBreakPointA != null && payloadScore.tieBreakPointB != null) {
-              appliedScores[0][i] = payloadScore.tieBreakPointA.toString();
-              appliedScores[1][i] = payloadScore.tieBreakPointB.toString();
-            } else {
-              appliedScores[0][i] = payloadScore.sets?.[i]?.teamAScore?.toString() || '';
-              appliedScores[1][i] = payloadScore.sets?.[i]?.teamBScore?.toString() || '';
-            }
-          }
-          setScores(appliedScores);
-          setInitialScores(appliedScores.map(arr => [...arr]));
-          setIsForfeit(payloadScore.forfeit || false);
-          setForfeitedBy(payloadScore.forfeitedBy || null);
-          prevScoreSerializedRef.current = JSON.stringify(payloadScore || null);
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('game-updated', { detail: { gameId, score: payloadScore, winner: result.winner } }));
-          }
+          applyApiScore(payloadScore);
         } catch (e) { /* ignore */ }
        }
 
@@ -428,7 +336,7 @@ export default function MatchResultCard({
 
   return (
     <div
-      aria-busy={isSaving}
+      aria-busy={hookIsSaving}
       onClick={(e) => {
         if (editing) {
           e.stopPropagation();
@@ -449,7 +357,7 @@ export default function MatchResultCard({
         </div>
       )}
 
-      {isSaving && (
+      {hookIsSaving && (
         <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px] z-20 flex items-center justify-center" aria-hidden>
           <CenteredLoader />
         </div>

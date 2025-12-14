@@ -7,6 +7,7 @@ import TeamScoreRow from '@/src/components/ui/TeamScoreRow';
 import { normalizeGroup, groupBadgeClasses, formatGroupLabel } from '@/src/utils/groupBadge';
 import LiveMatchIndicator from '@/src/components/ui/LiveMatchIndicator';
 import { Stage } from '@/src/types/stage';
+import { initializeScoresFromScore } from '@/src/utils/scoreUtils';
 
 interface Props {
   teamA: PlayerPair | null;
@@ -19,21 +20,24 @@ interface Props {
   totalMatches?: number;
   stage?: string | Stage;
   scheduledTime?: string;
+  setsToWin?: number;
 }
 
-export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, pool, finished = true, matchIndex, totalMatches, stage, scheduledTime }: Props) {
-  const [scores] = useState<string[][]>(() => [
-    Array.from({ length: 3 }, (_, i) => score?.sets[i]?.teamAScore?.toString() || ''),
-    Array.from({ length: 3 }, (_, i) => score?.sets[i]?.teamBScore?.toString() || ''),
-  ]);
+/**
+ * A lightweight, read-only component for displaying match results.
+ * Supports displaying scores, winners, and adapts to tournament rules like setsToWin.
+ */
+export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, pool, finished = true, matchIndex, totalMatches, stage, scheduledTime, setsToWin }: Props) {
+  const [scores] = useState<string[][]>(() => initializeScoresFromScore(score));
 
   // Informations d'abandon (forfeit) si présentes
   const isForfeit = !!score?.forfeit;
   const forfeitedBy = score?.forfeitedBy || null;
 
-  // Déterminer combien de sets afficher : nombre maximal de sets non vides entre les deux équipes
+  // Déterminer combien de sets afficher : basé sur setsToWin et les scores existants
   const countNonEmpty = (arr: string[]) => arr.filter((s) => s !== '' && s !== undefined && s !== null).length;
-  const visibleSets = Math.max(2, countNonEmpty(scores[0]), countNonEmpty(scores[1]));
+  const stw = setsToWin ?? 2;
+  const visibleSets = Math.min(3, Math.max(stw, countNonEmpty(scores[0]), countNonEmpty(scores[1])));
 
   const group = normalizeGroup(pool?.name);
   const isInProgress = !finished && (score?.sets?.some(set => set.teamAScore || set.teamBScore) || false);

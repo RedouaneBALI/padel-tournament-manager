@@ -13,12 +13,11 @@ export default function HeaderContent() {
   const hasAdminActions = !!(onExport || onShare || onEdit || showTvButton);
 
   React.useEffect(() => {
-    const isTournament = pathname.startsWith('/tournament/') || pathname.startsWith('/admin/tournament/');
-    if (!isTournament) {
+    const isTournament = pathname && (pathname.startsWith('/tournament/') || pathname.startsWith('/admin/tournament/'));
+    if (!pathname || !isTournament) {
       setAdminActions({ onExport: null, onShare: null, onEdit: null, tvButtonUrl: null, showTvButton: false, isAdmin: false });
     }
   }, [pathname, setAdminActions]);
-
   return (
     <>
       <Link href="/" className="flex items-center gap-2" aria-label="Accueil" title="Accueil">

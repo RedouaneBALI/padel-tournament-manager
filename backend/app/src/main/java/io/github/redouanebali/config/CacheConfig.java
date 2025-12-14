@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Profile;
 @Profile("!test & !h2")
 public class CacheConfig {
 
-  @Value("${app.cache.activeTournaments.ttlMinutes:30}")
+  @Value("${app.cache.activeTournaments.ttlMinutes:120}")
   private int activeTournamentsTtlMinutes;
 
   @Bean
