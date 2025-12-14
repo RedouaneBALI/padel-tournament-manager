@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { ToastContainer } from 'react-toastify';
 import PlayerPairsTextarea from '@/src/components/tournament/players/PlayerPairsTextarea';
 import PlayerPairsList from '@/src/components/tournament/players/PlayerPairsList';
 import { useRouter } from 'next/navigation';
 import { confirmAlert } from 'react-confirm-alert';
-import { generateDraw, initializeDraw, savePlayerPairs } from '@/src/api/tournamentApi';
+import { generateDraw, savePlayerPairs } from '@/src/api/tournamentApi';
 import type { InitializeDrawRequest } from '@/src/types/api/InitializeDrawRequest';
 import { FileText } from 'lucide-react';
 import { PlayerPair } from '@/src/types/playerPair';
@@ -40,17 +40,100 @@ function buildGames(slots: (PlayerPair | null)[]) {
   return games;
 }
 
-export default function AdminTournamentSetupTab({ tournamentId }: Props) {
+function computeDefaultView(tournament: Tournament | null, pairs: PlayerPair[]): 'players' | 'assignment' {
+  if (!tournament || !pairs.length) return 'players';
+
+  const hasQualif = (tournament as any)?.config?.qualifSize > 0;
+  const hasMain = (tournament as any)?.config?.mainDrawSize > 0;
+
+  if (hasQualif && hasMain) {
+    // Both qualif and main: check if qualif is filled
+    const qualifSize = (tournament as any)?.config?.qualifSize || 0;
+    const qualifFilled = pairs.length >= qualifSize;
+    return qualifFilled ? 'assignment' : 'players';
+  } else if (hasMain) {
+    // Only main draw
+    return 'assignment';
+  } else {
+    // Only qualif or none
+    return 'players';
+  }
+}
+
+function useTournamentData(tournamentId: string) {
   const [pairs, setPairs] = useState<PlayerPair[]>([]);
   const [loadingPairs, setLoadingPairs] = useState(true);
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [tournamentStarted, setTournamentStarted] = useState(false);
   const [loadingTournament, setLoadingTournament] = useState(true);
 
+  useEffect(() => {
+    async function loadTournament() {
+      try {
+        setLoadingTournament(true);
+        const t = await fetchTournament(tournamentId);
+        setTournament(t);
+        setTournamentStarted((t as any)?.started || false);
+      } catch (error) {
+        console.error('Erreur lors du chargement du tournoi :', error);
+      } finally {
+        setLoadingTournament(false);
+      }
+    }
+    loadTournament();
+  }, [tournamentId]);
+
+  useEffect(() => {
+    async function loadPairs() {
+      try {
+        setLoadingPairs(true);
+        const p = await fetchPairs(tournamentId, false, false);
+        setPairs(p);
+      } catch (error) {
+        console.error('Erreur lors du chargement des paires :', error);
+      } finally {
+        setLoadingPairs(false);
+      }
+    }
+    loadPairs();
+  }, [tournamentId]);
+
+  const defaultView = useMemo(() => computeDefaultView(tournament, pairs), [tournament, pairs]);
+
+  return {
+    pairs,
+    setPairs,
+    loadingPairs,
+    tournament,
+    setTournament,
+    tournamentStarted,
+    setTournamentStarted,
+    loadingTournament,
+    defaultView,
+  };
+}
+
+export default function AdminTournamentSetupTab({ tournamentId }: Props) {
+  const {
+    pairs,
+    setPairs,
+    loadingPairs,
+    tournament,
+    setTournament,
+    tournamentStarted,
+    setTournamentStarted,
+    loadingTournament,
+    defaultView,
+  } = useTournamentData(tournamentId);
+
   const [isGenerating, setIsGenerating] = useState(false);
   const router = useRouter();
 
-  const [activeTab, setActiveTab] = useState<'players' | 'assignment'>('players');
+  const [activeTab, setActiveTab] = useState<'players' | 'assignment'>(defaultView);
+
+  useEffect(() => {
+    setActiveTab(defaultView);
+  }, [defaultView]);
 
   const [assignedSlots, setAssignedSlots] = useState<Array<PlayerPair | null>>([]);
   const [qualifSlots, setQualifSlots] = useState<Array<PlayerPair | null>>([]);
@@ -122,39 +205,6 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
     });
   };
 
-  useEffect(() => {
-    async function loadTournament() {
-      setLoadingTournament(true);
-      try {
-        const data = await fetchTournament(tournamentId);
-        setTournament(data);
-        setTournamentStarted(hasTournamentStarted(data));
-        if (hasTournamentStarted(data)) {
-          setActiveTab('players');
-        }
-      } finally {
-        setLoadingTournament(false);
-      }
-    }
-    loadTournament();
-  }, [tournamentId]);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function loadPairs() {
-      setLoadingPairs(true);
-      try {
-        const data = await fetchPairs(tournamentId, false, false);
-        if (!cancelled) setPairs(data);
-      } finally {
-        if (!cancelled) setLoadingPairs(false);
-      }
-    }
-    loadPairs();
-    return () => {
-      cancelled = true;
-    };
-  }, [tournamentId]);
 
   useEffect(() => {
     const handleSlotsUpdate = (event: CustomEvent) => {

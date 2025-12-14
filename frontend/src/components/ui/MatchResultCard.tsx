@@ -16,6 +16,7 @@ import { confirmAlert } from 'react-confirm-alert';
 import { Stage } from '@/src/types/stage';
 import { initializeScoresFromScore } from '@/src/utils/scoreUtils';
 import { useGameSave } from '@/src/hooks/useGameSave';
+import { convertToScoreObject } from '@/src/utils/scoreUtils';
 
 function computeVisibleSets(setsToWin: number | undefined, scores: string[][]): number {
   const setsToWinValue = setsToWin ?? 2;
@@ -94,98 +95,33 @@ function useScoreSyncing(score: Score | undefined, editing: boolean, setScores: 
   }, [score, editing, setScores, setInitialScores, setIsForfeit, setForfeitedBy]);
 }
 
-interface Props {
-  teamA: PlayerPair | null;
-  teamB: PlayerPair | null;
-  editable?: boolean;
-  gameId: string;
-  tournamentId: string;
-  score?: Score;
-  onInfoSaved?: (result: { tournamentUpdated: boolean; winner: string | null }) => void;
-  onTimeChanged?: (gameId: string, newTime: string) => void;
-  onGameUpdated?: (gameId: string, changes: { scheduledTime?: string; court?: string }) => void;
-  winnerSide?: number;
-  stage?: string;
-  court?: string;
-  scheduledTime?: string;
-  pool?: { name?: string };
-  setsToWin?: number;
-  finished?: boolean;
-  matchIndex?: number;
-  totalMatches?: number;
-  isFirstRound?: boolean;
-  updateGameFn?: (gameId: string, scorePayload: Score, court: string, scheduledTime: string) => Promise<any>;
-}
-
-export default function MatchResultCard({
-  teamA,
-  teamB,
-  editable = false,
-  gameId,
-  score,
-  tournamentId,
-  onInfoSaved,
-  onTimeChanged,
-  onGameUpdated,
-  winnerSide,
-  stage,
-  court,
-  scheduledTime,
-  pool,
-  setsToWin,
-  finished = true,
-  matchIndex,
-  totalMatches,
-  isFirstRound = false,
-  updateGameFn,
-}: Props) {
-  const group = normalizeGroup(pool?.name);
-
-  const [localCourt, setLocalCourt] = useState(court || 'Court central');
-  const [localScheduledTime, setLocalScheduledTime] = useState(scheduledTime || '00:00');
-  const [editing, setEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-
-  // Keep local court/time in sync with props when not editing
-  React.useEffect(() => {
-    if (!editing) {
-      setLocalCourt(court || 'Court central');
-      setLocalScheduledTime(scheduledTime || '00:00');
-    }
-  }, [court, scheduledTime, editing]);
-
-  const [isForfeit, setIsForfeit] = useState(score?.forfeit || false);
-  const [forfeitedBy, setForfeitedBy] = useState<'TEAM_A' | 'TEAM_B' | null>(score?.forfeitedBy || null);
-
-  const [scores, setScores] = useState<string[][]>(() => initializeScoresFromScore(score));
-  const [initialScores, setInitialScores] = useState<string[][]>(() => initializeScoresFromScore(score));
-
-  // Resync scores when `score` prop is updated from parent (e.g. polling)
-  // Only resync when the serialized score actually changed to avoid clobbering local edits
-  useScoreSyncing(score, editing, setScores, setInitialScores, setIsForfeit, setForfeitedBy);
-
-  const inputRefs = useRef<(HTMLInputElement | null)[][]>(
-    Array.from({ length: 2 }, () => Array(3).fill(null))
-  );
-
-  // Helper to compute visibleSets based on setsToWin and first two sets
-  const visibleSets = computeVisibleSets(setsToWin, scores);
-
-  const { saveGame, isSaving: hookIsSaving } = useGameSave(gameId, tournamentId, updateGameFn, onInfoSaved, onTimeChanged, onGameUpdated);
-
-  const applyApiScore = (apiScore: Score) => {
-    const appliedScores = initializeScoresFromScore(apiScore);
-    setScores(appliedScores);
-    setInitialScores(appliedScores.map(arr => [...arr]));
-    setIsForfeit(apiScore.forfeit || false);
-    setForfeitedBy(apiScore.forfeitedBy || null);
-    try {
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('game-updated', { detail: { gameId, score: apiScore } }));
-      }
-    } catch (e) { /* ignore */ }
-  };
-
+function useSaveLogic(
+  isSaving: boolean,
+  setIsSaving: (saving: boolean) => void,
+  scores: string[][],
+  visibleSets: number,
+  isForfeit: boolean,
+  forfeitedBy: 'TEAM_A' | 'TEAM_B' | null,
+  gameId: string,
+  tournamentId: string,
+  localCourt: string,
+  localScheduledTime: string,
+  updateGameFn: any,
+  onInfoSaved: any,
+  onTimeChanged: any,
+  onGameUpdated: any,
+  setScores: (scores: string[][]) => void,
+  setInitialScores: (scores: string[][]) => void,
+  setEditing: (editing: boolean) => void,
+  setIsForfeit: (isForfeit: boolean) => void,
+  setForfeitedBy: (forfeitedBy: 'TEAM_A' | 'TEAM_B' | null) => void,
+  setLocalCourt: (court: string) => void,
+  setLocalScheduledTime: (time: string) => void,
+  court: string | undefined,
+  scheduledTime: string | undefined,
+  isFirstRound: boolean,
+  matchIndex: number | undefined
+) {
   const saveGameDetails = async () => {
     try {
       const scorePayload = convertToScoreObject(scores, visibleSets, isForfeit, forfeitedBy);
@@ -203,14 +139,32 @@ export default function MatchResultCard({
       if (result && result.score) {
         try {
           const apiScore = result.score as Score;
-          applyApiScore(apiScore);
+          const appliedScores = initializeScoresFromScore(apiScore);
+          setScores(appliedScores);
+          setInitialScores(appliedScores.map(arr => [...arr]));
+          setIsForfeit(apiScore.forfeit || false);
+          setForfeitedBy(apiScore.forfeitedBy || null);
+          try {
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('game-updated', { detail: { gameId, score: apiScore } }));
+            }
+          } catch (e) { /* ignore */ }
         } catch (e) {
           console.error('Apply API score error', e);
         }
       } else {
         try {
           const payloadScore = scorePayload as Score;
-          applyApiScore(payloadScore);
+          const appliedScores = initializeScoresFromScore(payloadScore);
+          setScores(appliedScores);
+          setInitialScores(appliedScores.map(arr => [...arr]));
+          setIsForfeit(payloadScore.forfeit || false);
+          setForfeitedBy(payloadScore.forfeitedBy || null);
+          try {
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('game-updated', { detail: { gameId, score: payloadScore } }));
+            }
+          } catch (e) { /* ignore */ }
         } catch (e) { /* ignore */ }
        }
 
@@ -297,6 +251,108 @@ export default function MatchResultCard({
     await doSave();
   };
 
+  return { handleSave };
+}
+
+interface Props {
+  teamA: PlayerPair | null;
+  teamB: PlayerPair | null;
+  editable?: boolean;
+  gameId: string;
+  tournamentId: string;
+  score?: Score;
+  onInfoSaved?: (result: { tournamentUpdated: boolean; winner: string | null }) => void;
+  onTimeChanged?: (gameId: string, newTime: string) => void;
+  onGameUpdated?: (gameId: string, changes: { scheduledTime?: string; court?: string }) => void;
+  winnerSide?: number;
+  stage?: string;
+  court?: string;
+  scheduledTime?: string;
+  pool?: { name?: string };
+  setsToWin?: number;
+  finished?: boolean;
+  matchIndex?: number;
+  totalMatches?: number;
+  isFirstRound?: boolean;
+  updateGameFn?: (gameId: string, scorePayload: Score, court: string, scheduledTime: string) => Promise<any>;
+}
+
+export default function MatchResultCard({
+  teamA,
+  teamB,
+  editable = false,
+  gameId,
+  score,
+  tournamentId,
+  onInfoSaved,
+  onTimeChanged,
+  onGameUpdated,
+  winnerSide,
+  stage,
+  court,
+  scheduledTime,
+  pool,
+  setsToWin,
+  finished = true,
+  matchIndex,
+  totalMatches,
+  isFirstRound = false,
+  updateGameFn,
+}: Props) {
+  const group = normalizeGroup(pool?.name);
+
+  const [localCourt, setLocalCourt] = useState(court || 'Court central');
+  const [localScheduledTime, setLocalScheduledTime] = useState(scheduledTime || '00:00');
+  const [editing, setEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Keep local court/time in sync with props when not editing
+  React.useEffect(() => {
+    if (!editing) {
+      setLocalCourt(court || 'Court central');
+      setLocalScheduledTime(scheduledTime || '00:00');
+    }
+  }, [court, scheduledTime, editing]);
+
+  const [isForfeit, setIsForfeit] = useState(score?.forfeit || false);
+  const [forfeitedBy, setForfeitedBy] = useState<'TEAM_A' | 'TEAM_B' | null>(score?.forfeitedBy || null);
+
+  const [scores, setScores] = useState<string[][]>(() => initializeScoresFromScore(score));
+  const [initialScores, setInitialScores] = useState<string[][]>(() => initializeScoresFromScore(score));
+
+  // Resync scores when `score` prop is updated from parent (e.g. polling)
+  // Only resync when the serialized score actually changed to avoid clobbering local edits
+  useScoreSyncing(score, editing, setScores, setInitialScores, setIsForfeit, setForfeitedBy);
+
+  const inputRefs = useRef<(HTMLInputElement | null)[][]>(
+    Array.from({ length: 2 }, () => Array(3).fill(null))
+  );
+
+  // Helper to compute visibleSets based on setsToWin and first two sets
+  const visibleSets = computeVisibleSets(setsToWin, scores);
+
+  const { handleSave } = useSaveLogic(isSaving, setIsSaving, scores, visibleSets, isForfeit, forfeitedBy, gameId, tournamentId, localCourt, localScheduledTime, updateGameFn, onInfoSaved, onTimeChanged, onGameUpdated, setScores, setInitialScores, setEditing, setIsForfeit, setForfeitedBy, setLocalCourt, setLocalScheduledTime, court, scheduledTime, isFirstRound, matchIndex);
+
+  const handleKeyDown = (e: React.KeyboardEvent<Element>, teamIndex: number, setIndex: number) => {
+    if (e.key === 'Enter' || e.key === 'NumpadEnter') {
+      e.preventDefault();
+      void handleSave();
+    }
+  };
+
+  const applyApiScore = (apiScore: Score) => {
+    const appliedScores = initializeScoresFromScore(apiScore);
+    setScores(appliedScores);
+    setInitialScores(appliedScores.map(arr => [...arr]));
+    setIsForfeit(apiScore.forfeit || false);
+    setForfeitedBy(apiScore.forfeitedBy || null);
+    try {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('game-updated', { detail: { gameId, score: apiScore } }));
+      }
+    } catch (e) { /* ignore */ }
+  };
+
   // Calculer si le match est en cours
   const isInProgress = computeIsInProgress(finished, score, scores);
 
@@ -305,7 +361,7 @@ export default function MatchResultCard({
 
   return (
     <div
-      aria-busy={hookIsSaving}
+      aria-busy={isSaving}
       onClick={(e) => {
         if (editing) {
           e.stopPropagation();
@@ -326,7 +382,7 @@ export default function MatchResultCard({
         </div>
       )}
 
-      {hookIsSaving && (
+      {isSaving && (
         <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px] z-20 flex items-center justify-center" aria-hidden>
           <CenteredLoader />
         </div>

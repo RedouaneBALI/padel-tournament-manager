@@ -73,7 +73,7 @@ export default function GamesList({
 
   // Créer une clé unique basée sur le stage et les IDs des matchs
   // key basée sur l'ensemble des IDs triés (indépendante de l'ordre)
-  const gamesKey = `${stage}-${[...games.map(g => g.id)].sort().join('-')}`;
+  const gamesKey = `${stage}-${[...games.map(g => g.id)].sort(compareIds).join('-')}`;
 
   // Liste d'IDs triée de manière déterministe (numérique si possible)
   // utilisée pour dériver un index stable et indépendant du ré-ordonnancement UI

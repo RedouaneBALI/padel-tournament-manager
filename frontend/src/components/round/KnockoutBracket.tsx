@@ -51,6 +51,71 @@ function calculateChildCoords(childIdx: number, rounds: Round[], r: number, ROUN
   return { cx, cy };
 }
 
+function computeConnections(rounds: Round[], ROUND_WIDTH: number, matchPositions: number[][], nodeRefs: React.MutableRefObject<Map<string, HTMLElement>>, containerRect: DOMRect): Array<{ cx1:number, cy1:number, cx2:number, cy2:number, px:number, py:number }> {
+  const conns: Array<{ cx1:number, cy1:number, cx2:number, cy2:number, px:number, py:number }> = [];
+
+  for (let r = 0; r < rounds.length - 1; r++) {
+    const current = rounds[r];
+    const next = rounds[r + 1];
+
+    next.games.forEach((parentGame, parentIndex) => {
+      // children indices in previous round
+      const childIdxA = parentIndex * 2;
+      const childIdxB = parentIndex * 2 + 1;
+
+      const parentId = String(parentGame.id);
+
+      const parentEl = nodeRefs.current.get(parentId);
+      // parent coords (relative to container) - left edge and center Y
+      let px = (r + 1) * ROUND_WIDTH + 10; // fallback left inside column
+      let py = (matchPositions[r + 1]?.[parentIndex] ?? 0) + 40 + 60; // fallback center Y
+      if (parentEl) {
+        const pRect = parentEl.getBoundingClientRect();
+        px = pRect.left - containerRect.left; // left edge
+        // Try to align parent connector on the internal divider between TeamScoreRow
+        try {
+          const divideP = parentEl.querySelector('.divide-y, .divide-gray-200, .divide-border');
+          if (divideP && divideP.children && divideP.children.length >= 1) {
+            // prefer using a first row's bottom border center if available
+            const firstRowP = divideP.children[0] as HTMLElement;
+            const firstRectP = firstRowP.getBoundingClientRect();
+            const styleP = window.getComputedStyle(firstRowP);
+            const borderBottomP = parseFloat(styleP.borderBottomWidth || '0') || 0;
+            const borderTopP = parseFloat(styleP.borderTopWidth || '0') || 0;
+            let dividerCenterP: number;
+            if (borderBottomP > 0) {
+              dividerCenterP = firstRectP.bottom - borderBottomP / 2;
+            } else if (borderTopP > 0) {
+              dividerCenterP = firstRectP.top + borderTopP / 2;
+            } else {
+              dividerCenterP = firstRectP.top + firstRectP.height / 2;
+            }
+            // Align directly on the divider center (no extra offset) to avoid over/under correction
+            py = dividerCenterP - containerRect.top;
+          } else {
+            py = pRect.top - containerRect.top + pRect.height / 2;
+          }
+        } catch (e) {
+          py = pRect.top - containerRect.top + pRect.height / 2;
+        }
+      }
+
+      // children
+      const childCoords: Array<{cx:number, cy:number}> = [];
+      [childIdxA, childIdxB].forEach((childIdx) => {
+        const coords = calculateChildCoords(childIdx, rounds, r, ROUND_WIDTH, matchPositions, nodeRefs, containerRect);
+        if (coords) childCoords.push(coords);
+      });
+
+      if (childCoords.length === 2) {
+        conns.push({ cx1: childCoords[0].cx, cy1: childCoords[0].cy, cx2: childCoords[1].cx, cy2: childCoords[1].cy, px, py });
+      }
+    });
+  }
+
+  return conns;
+}
+
 export default function KnockoutBracket({ rounds, tournamentId }: KnockoutBracketProps) {
   const ROUND_WIDTH = 320;
   const CONNECTOR_STROKE = 1.5; // px used for SVG stroke width
@@ -71,66 +136,8 @@ export default function KnockoutBracket({ rounds, tournamentId }: KnockoutBracke
       const container = containerRef.current;
       if (!container) return;
       const containerRect = container.getBoundingClientRect();
-      const conns: Array<{ cx1:number, cy1:number, cx2:number, cy2:number, px:number, py:number }> = [];
 
-      for (let r = 0; r < rounds.length - 1; r++) {
-        const current = rounds[r];
-        const next = rounds[r + 1];
-
-        next.games.forEach((parentGame, parentIndex) => {
-          // children indices in previous round
-          const childIdxA = parentIndex * 2;
-          const childIdxB = parentIndex * 2 + 1;
-
-          const parentId = String(parentGame.id);
-
-          const parentEl = nodeRefs.current.get(parentId);
-          // parent coords (relative to container) - left edge and center Y
-          let px = (r + 1) * ROUND_WIDTH + 10; // fallback left inside column
-          let py = (matchPositions[r + 1]?.[parentIndex] ?? 0) + 40 + 60; // fallback center Y
-          if (parentEl) {
-            const pRect = parentEl.getBoundingClientRect();
-            px = pRect.left - containerRect.left; // left edge
-            // Try to align parent connector on the internal divider between TeamScoreRow
-            try {
-              const divideP = parentEl.querySelector('.divide-y, .divide-gray-200, .divide-border');
-              if (divideP && divideP.children && divideP.children.length >= 1) {
-                // prefer using a first row's bottom border center if available
-                const firstRowP = divideP.children[0] as HTMLElement;
-                const firstRectP = firstRowP.getBoundingClientRect();
-                const styleP = window.getComputedStyle(firstRowP);
-                const borderBottomP = parseFloat(styleP.borderBottomWidth || '0') || 0;
-                const borderTopP = parseFloat(styleP.borderTopWidth || '0') || 0;
-                let dividerCenterP: number;
-                if (borderBottomP > 0) {
-                  dividerCenterP = firstRectP.bottom - borderBottomP / 2;
-                } else if (borderTopP > 0) {
-                  dividerCenterP = firstRectP.top + borderTopP / 2;
-                } else {
-                  dividerCenterP = firstRectP.top + firstRectP.height / 2;
-                }
-                // Align directly on the divider center (no extra offset) to avoid over/under correction
-                py = dividerCenterP - containerRect.top;
-              } else {
-                py = pRect.top - containerRect.top + pRect.height / 2;
-              }
-            } catch (e) {
-              py = pRect.top - containerRect.top + pRect.height / 2;
-            }
-          }
-
-          // children
-          const childCoords: Array<{cx:number, cy:number}> = [];
-          [childIdxA, childIdxB].forEach((childIdx) => {
-            const coords = calculateChildCoords(childIdx, rounds, r, ROUND_WIDTH, matchPositions, nodeRefs, containerRect);
-            if (coords) childCoords.push(coords);
-          });
-
-          if (childCoords.length === 2) {
-            conns.push({ cx1: childCoords[0].cx, cy1: childCoords[0].cy, cx2: childCoords[1].cx, cy2: childCoords[1].cy, px, py });
-          }
-        });
-      }
+      const conns = computeConnections(rounds, ROUND_WIDTH, matchPositions, nodeRefs, containerRect);
 
       // Only update state when connections actually changed to avoid infinite loops
       try {

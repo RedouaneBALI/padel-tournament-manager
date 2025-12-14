@@ -29,25 +29,6 @@ function updateGameInRounds(rounds: Round[], gameId: string, changes: { schedule
   }));
 }
 
-function initializeCurrentRound(initialRounds: Round[], stageParam: string | null, searchParams: any, router: any, pathname: string, setCurrentRoundIndex: (idx: number) => void) {
-  if (initialRounds.length === 0) {
-    setCurrentRoundIndex(0);
-    return;
-  }
-
-  const currentStageFromApi = (initialRounds[0] as any)?.currentRoundStage as Stage | null;
-  const desiredStage: Stage = (isStage(stageParam) ? stageParam : undefined)
-    || currentStageFromApi
-    || (initialRounds[0].stage as Stage);
-  const finalIdx = Math.max(0, initialRounds.findIndex((r) => r.stage === desiredStage));
-  setCurrentRoundIndex(finalIdx);
-  if (!stageParam) {
-    const sp = new URLSearchParams(searchParams?.toString?.() ?? '');
-    sp.set('stage', initialRounds[finalIdx].stage as any);
-    router.replace(`${pathname}?${sp.toString()}`);
-  }
-}
-
 interface TournamentGamesTabProps {
   tournamentId: string;
   editable: boolean;
@@ -89,6 +70,25 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
   const pathname = usePathname();
   const stageParam = searchParams?.get('stage') ?? null;
   const { setAdminActions } = useExport();
+
+  function initializeCurrentRound(initialRounds: Round[], stageParam: string | null, searchParams: URLSearchParams | null, router: ReturnType<typeof useRouter>, pathname: string | null, setCurrentRoundIndex: (idx: number) => void) {
+    if (initialRounds.length === 0) {
+      setCurrentRoundIndex(0);
+      return;
+    }
+
+    const currentStageFromApi = (initialRounds[0] as any)?.currentRoundStage as Stage | null;
+    const desiredStage: Stage = (isStage(stageParam) ? stageParam : undefined)
+      || currentStageFromApi
+      || (initialRounds[0].stage as Stage);
+    const finalIdx = Math.max(0, initialRounds.findIndex((r) => r.stage === desiredStage));
+    setCurrentRoundIndex(finalIdx);
+    if (!stageParam) {
+      const sp = new URLSearchParams(searchParams?.toString?.() ?? '');
+      sp.set('stage', initialRounds[finalIdx].stage as any);
+      router.replace(`${pathname}?${sp.toString()}`);
+    }
+  }
 
   const getValidGamesSortedByTime = useCallback((games: Game[]) => {
     return games

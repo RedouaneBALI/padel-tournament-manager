@@ -49,6 +49,54 @@ function swapBetweenLists(
   return { newFrom, newTo };
 }
 
+function handleSameListMove(
+  list: 'qualif' | 'main',
+  fromIndex: number,
+  toIndex: number,
+  qualifSlots: Array<PlayerPair | null>,
+  mainSlots: Array<PlayerPair | null>,
+  setQualifSlots: (slots: Array<PlayerPair | null>) => void,
+  setMainSlots: (slots: Array<PlayerPair | null>) => void,
+  tournamentId: string
+) {
+  const slots = list === 'qualif' ? qualifSlots : mainSlots;
+  const setter = list === 'qualif' ? setQualifSlots : setMainSlots;
+  const newSlots = moveWithinSameList(slots, fromIndex, toIndex);
+
+  setter(newSlots);
+
+  // Dispatch updated slots
+  dispatchPairsReordered(tournamentId, list === 'qualif' ? newSlots : qualifSlots, list === 'main' ? newSlots : mainSlots);
+  // Sauvegarder l'ordre
+  persistOrder(tournamentId, list === 'qualif' ? newSlots : qualifSlots, list === 'main' ? newSlots : mainSlots);
+}
+
+function handleDifferentListMove(
+  fromList: 'qualif' | 'main',
+  toList: 'qualif' | 'main',
+  fromIndex: number,
+  toIndex: number,
+  qualifSlots: Array<PlayerPair | null>,
+  mainSlots: Array<PlayerPair | null>,
+  setQualifSlots: (slots: Array<PlayerPair | null>) => void,
+  setMainSlots: (slots: Array<PlayerPair | null>) => void,
+  tournamentId: string
+) {
+  const { newFrom, newTo } = swapBetweenLists(
+    fromList === 'qualif' ? qualifSlots : mainSlots,
+    toList === 'qualif' ? qualifSlots : mainSlots,
+    fromIndex,
+    toIndex
+  );
+
+  fromList === 'qualif' ? setQualifSlots(newFrom) : setMainSlots(newFrom);
+  toList === 'qualif' ? setQualifSlots(newTo) : setMainSlots(newTo);
+
+  dispatchPairsReordered(tournamentId, toList === 'qualif' ? newTo : newFrom, toList === 'main' ? newTo : newFrom);
+  // Sauvegarder l'ordre
+  persistOrder(tournamentId, toList === 'qualif' ? newTo : newFrom, toList === 'main' ? newTo : newFrom);
+}
+
 export function useDualPlayerAssignment(
   tournament: Tournament,
   playerPairs: PlayerPair[],
@@ -138,25 +186,10 @@ export function useDualPlayerAssignment(
   const moveBetweenLists = useCallback((fromList: 'qualif' | 'main', fromIndex: number, toList: 'qualif' | 'main', toIndex: number) => {
     if (fromList === toList) {
       // Same list, swap
-      const setter = fromList === 'qualif' ? setQualifSlots : setMainSlots;
-      const newSlots = moveWithinSameList(fromList === 'qualif' ? qualifSlots : mainSlots, fromIndex, toIndex);
-
-      setter(newSlots);
-
-      // Dispatch updated slots
-      dispatchPairsReordered((tournament as any)?.id, fromList === 'qualif' ? newSlots : qualifSlots, fromList === 'main' ? newSlots : mainSlots);
-      // Sauvegarder l'ordre
-      persistOrder((tournament as any)?.id, fromList === 'qualif' ? newSlots : qualifSlots, fromList === 'main' ? newSlots : mainSlots);
+      handleSameListMove(fromList, fromIndex, toIndex, qualifSlots, mainSlots, setQualifSlots, setMainSlots, (tournament as any)?.id);
     } else {
       // Different lists, swap
-      const { newFrom, newTo } = swapBetweenLists(fromList === 'qualif' ? qualifSlots : mainSlots, toList === 'qualif' ? qualifSlots : mainSlots, fromIndex, toIndex);
-
-      fromList === 'qualif' ? setQualifSlots(newFrom) : setMainSlots(newFrom);
-      toList === 'qualif' ? setQualifSlots(newTo) : setMainSlots(newTo);
-
-      dispatchPairsReordered((tournament as any)?.id, toList === 'qualif' ? newTo : newFrom, toList === 'main' ? newTo : newFrom);
-      // Sauvegarder l'ordre
-      persistOrder((tournament as any)?.id, toList === 'qualif' ? newTo : newFrom, toList === 'main' ? newTo : newFrom);
+      handleDifferentListMove(fromList, toList, fromIndex, toIndex, qualifSlots, mainSlots, setQualifSlots, setMainSlots, (tournament as any)?.id);
     }
   }, [qualifSlots, mainSlots, tournament]);
 

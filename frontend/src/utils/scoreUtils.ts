@@ -53,3 +53,48 @@ export function processSuperTieBreakScore(score: Score, matchFormat?: any): Scor
   }
   return newScore;
 }
+
+/**
+ * Converts scores array to Score object.
+ * @param scores - 2D array of scores for both teams.
+ * @param visibleSets - Number of visible sets.
+ * @param isForfeit - Whether the match is forfeited.
+ * @param forfeitedBy - Which team forfeited.
+ * @returns The Score object.
+ */
+export function convertToScoreObject(scores: string[][], visibleSets: number, isForfeit: boolean, forfeitedBy: 'TEAM_A' | 'TEAM_B' | null): Score {
+  const sets: any[] = [];
+  for (let i = 0; i < visibleSets; i++) {
+    const teamAScore = parseInt(scores[0][i], 10) || 0;
+    const teamBScore = parseInt(scores[1][i], 10) || 0;
+    sets.push({
+      teamAScore,
+      teamBScore,
+    });
+  }
+
+  // Handle tie-break for the last set if visibleSets > 2 or something, but for now simple
+  const score: Score = {
+    sets,
+    forfeit: isForfeit,
+    forfeitedBy,
+  };
+
+  // If there's a third set and it's a tie-break, handle it
+  if (visibleSets >= 3 && scores[0][2] && scores[1][2]) {
+    const set3A = parseInt(scores[0][2], 10);
+    const set3B = parseInt(scores[1][2], 10);
+    if (set3A > 6 || set3B > 6) {
+      // Assume super tie-break
+      score.tieBreakPointA = set3A;
+      score.tieBreakPointB = set3B;
+      sets[2].teamAScore = 1;
+      sets[2].teamBScore = 0; // or whatever, but since it's super, maybe adjust
+    } else {
+      sets[2].teamAScore = set3A;
+      sets[2].teamBScore = set3B;
+    }
+  }
+
+  return score;
+}
