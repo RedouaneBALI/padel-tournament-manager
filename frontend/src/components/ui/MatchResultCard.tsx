@@ -20,10 +20,10 @@ import { convertToScoreObject } from '@/src/utils/scoreUtils';
 
 function computeVisibleSets(setsToWin: number | undefined, scores: string[][]): number {
   const setsToWinValue = setsToWin ?? 2;
-  if (setsToWinValue === 1) {
-    return 1;
-  } else if (setsToWinValue === 2) {
-    // Compute wins for first two sets if both scores are numeric
+  if (setsToWinValue === 1) return 1;
+  if (setsToWinValue !== 2) return 3;
+
+  const computeWins = () => {
     const firstSetA = parseInt(scores[0][0], 10);
     const firstSetB = parseInt(scores[1][0], 10);
     const secondSetA = parseInt(scores[0][1], 10);
@@ -44,14 +44,11 @@ function computeVisibleSets(setsToWin: number | undefined, scores: string[][]): 
       else if (secondSetB > secondSetA) winsB++;
     }
 
-    if (winsA === 1 && winsB === 1) {
-      return 3;
-    } else {
-      return 2;
-    }
-  } else {
-    return 3;
-  }
+    return { winsA, winsB };
+  };
+
+  const { winsA, winsB } = computeWins();
+  return winsA === 1 && winsB === 1 ? 3 : 2;
 }
 
 function computeIsInProgress(finished: boolean, score: Score | undefined, scores: string[][]): boolean {
@@ -122,7 +119,8 @@ function useSaveLogic(
   isFirstRound: boolean,
   matchIndex: number | undefined,
   setLocalWinnerSide: (winner: number | undefined) => void,
-  setLocalFinished: (finished: boolean) => void
+  setLocalFinished: (finished: boolean) => void,
+  matchFormat?: any
 ) {
   const applyScoresToState = (score: Score) => {
     const appliedScores = initializeScoresFromScore(score);
@@ -140,9 +138,26 @@ function useSaveLogic(
     } catch (e) { /* ignore */ }
   };
 
+  const notifyCallbacks = (result: any) => {
+    if (onTimeChanged && localScheduledTime !== scheduledTime) {
+      onTimeChanged(gameId, localScheduledTime);
+    }
+
+    if (onGameUpdated) {
+      const changes: { scheduledTime?: string; court?: string } = {};
+      if (localScheduledTime !== scheduledTime) changes.scheduledTime = localScheduledTime;
+      if (localCourt !== (court || '')) changes.court = localCourt;
+      if (Object.keys(changes).length > 0) onGameUpdated(gameId, changes);
+    }
+
+    if (onInfoSaved) {
+      onInfoSaved(result);
+    }
+  };
+
   const saveGameDetails = async () => {
     try {
-      const scorePayload = convertToScoreObject(scores, visibleSets, isForfeit, forfeitedBy);
+      const scorePayload = convertToScoreObject(scores, visibleSets, isForfeit, forfeitedBy, matchFormat);
       const result = updateGameFn
         ? await updateGameFn(gameId, scorePayload, localCourt, localScheduledTime)
         : await updateGameDetails(tournamentId, gameId, scorePayload, localCourt, localScheduledTime);
@@ -150,38 +165,17 @@ function useSaveLogic(
       setLocalCourt(localCourt);
       setLocalScheduledTime(localScheduledTime);
 
-      if (result && result.score) {
-        try {
-          const apiScore = result.score as Score;
-          applyScoresToState(apiScore);
-          notifyGameUpdate(gameId, apiScore);
-        } catch (e) {
-          console.error('Apply API score error', e);
-        }
-      } else {
-        try {
-          const payloadScore = scorePayload as Score;
-          applyScoresToState(payloadScore);
-          notifyGameUpdate(gameId, payloadScore);
-        } catch (e) { /* ignore */ }
-       }
-
-      if (onTimeChanged && localScheduledTime !== scheduledTime) {
-        onTimeChanged(gameId, localScheduledTime);
+      const scoreToApply = result?.score ?? scorePayload;
+      try {
+        applyScoresToState(scoreToApply);
+        notifyGameUpdate(gameId, scoreToApply);
+      } catch (e) {
+        console.error('Apply score error', e);
       }
 
-      if (onGameUpdated) {
-        const changes: { scheduledTime?: string; court?: string } = {};
-        if (localScheduledTime !== scheduledTime) changes.scheduledTime = localScheduledTime;
-        if (localCourt !== (court || '')) changes.court = localCourt;
-        if (Object.keys(changes).length > 0) onGameUpdated(gameId, changes);
-      }
+      notifyCallbacks(result);
 
-      if (onInfoSaved) {
-        onInfoSaved(result);
-      }
-
-      if (result && result.winner) {
+      if (result?.winner) {
         setLocalWinnerSide(result.winner === 'TEAM_A' ? 0 : result.winner === 'TEAM_B' ? 1 : undefined);
         setLocalFinished(true);
         try {
@@ -269,6 +263,7 @@ interface Props {
   matchIndex?: number;
   totalMatches?: number;
   isFirstRound?: boolean;
+  matchFormat?: any;
   updateGameFn?: (gameId: string, scorePayload: Score, court: string, scheduledTime: string) => Promise<any>;
 }
 
@@ -292,6 +287,7 @@ export default function MatchResultCard({
   matchIndex,
   totalMatches,
   isFirstRound = false,
+  matchFormat,
   updateGameFn,
 }: Props) {
   const group = normalizeGroup(pool?.name);
@@ -340,7 +336,7 @@ export default function MatchResultCard({
   // Helper to compute visibleSets based on setsToWin and first two sets
   const visibleSets = computeVisibleSets(setsToWin, scores);
 
-  const { handleSave } = useSaveLogic(isSaving, setIsSaving, scores, visibleSets, isForfeit, forfeitedBy, gameId, tournamentId, localCourt, localScheduledTime, updateGameFn, onInfoSaved, onTimeChanged, onGameUpdated, setScores, setInitialScores, setEditing, setIsForfeit, setForfeitedBy, setLocalCourt, setLocalScheduledTime, court, scheduledTime, isFirstRound, matchIndex, setLocalWinnerSide, setLocalFinished);
+  const { handleSave } = useSaveLogic(isSaving, setIsSaving, scores, visibleSets, isForfeit, forfeitedBy, gameId, tournamentId, localCourt, localScheduledTime, updateGameFn, onInfoSaved, onTimeChanged, onGameUpdated, setScores, setInitialScores, setEditing, setIsForfeit, setForfeitedBy, setLocalCourt, setLocalScheduledTime, court, scheduledTime, isFirstRound, matchIndex, setLocalWinnerSide, setLocalFinished, matchFormat);
 
   const handleKeyDown = (e: React.KeyboardEvent<Element>, teamIndex: number, setIndex: number) => {
     if (e.key === 'Enter' || e.key === 'NumpadEnter') {

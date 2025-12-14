@@ -25,6 +25,7 @@ interface GamesListProps {
   onGameUpdated?: (gameId: string, changes: { scheduledTime?: string; court?: string }) => void;
   stage: string;
   isFirstRound?: boolean;
+  matchFormat?: any;
 }
 
 export default function GamesList({
@@ -37,6 +38,7 @@ export default function GamesList({
   onGameUpdated,
   stage,
   isFirstRound = false,
+  matchFormat,
 }: GamesListProps) {
   const router = useRouter();
   // overrides locaux (score + winner) quand un match a été modifié (par MatchResultCard dispatch)
@@ -239,6 +241,7 @@ export default function GamesList({
                 matchIndex={originalIndex}
                 totalMatches={totalMatches}
                 isFirstRound={isFirstRound}
+                matchFormat={matchFormat}
               />
             </div>
           </div>

@@ -15,17 +15,17 @@ import { exportGamesAsCSV } from '@/src/utils/gamesExport';
 import { useExport } from '@/src/contexts/ExportContext';
 
 function updateGameInRounds(rounds: Round[], gameId: string, changes: { scheduledTime?: string; court?: string }): Round[] {
+  const updateGame = (game: Game) => {
+    if (String(game.id) !== String(gameId)) return game;
+    const updated = { ...game };
+    if (changes.scheduledTime !== undefined) updated.scheduledTime = changes.scheduledTime;
+    if (changes.court !== undefined) updated.court = changes.court;
+    return updated;
+  };
+
   return rounds.map((round) => ({
     ...round,
-    games: round.games.map((g) =>
-      String(g.id) === String(gameId)
-        ? {
-            ...g,
-            ...(changes.scheduledTime !== undefined ? { scheduledTime: changes.scheduledTime } : {}),
-            ...(changes.court !== undefined ? { court: changes.court } : {})
-          }
-        : g
-    ),
+    games: round.games.map(updateGame),
   }));
 }
 
@@ -93,7 +93,6 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
   const getValidGamesSortedByTime = useCallback((games: Game[]) => {
     return games
       .filter(game =>
-        // On ne filtre plus sur teamA/teamB null, on garde seulement le filtre BYE
         (game.teamA?.player1Name !== 'BYE' &&
          game.teamA?.player2Name !== 'BYE' &&
          game.teamB?.player1Name !== 'BYE' &&
@@ -106,6 +105,7 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
         return a.scheduledTime.localeCompare(b.scheduledTime);
       });
   }, []);
+
 
   const handleTimeChanged = useCallback((gameId: string, newTime: string) => {
     console.debug('[handleTimeChanged]', gameId, newTime);
@@ -238,6 +238,7 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
   };
 
   const renderGamesList = () => {
+    const matchFormat = (currentRound as any)?.matchFormat;
     return (
       <GamesList
         games={displayedGames}
@@ -249,6 +250,7 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
         onGameUpdated={handleGameUpdated}
         stage={currentRound.stage as unknown as string}
         isFirstRound={currentRoundIndex === 0}
+        matchFormat={matchFormat}
       />
     );
   };
