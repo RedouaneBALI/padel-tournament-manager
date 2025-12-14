@@ -86,10 +86,20 @@ export function convertToScoreObject(scores: string[][], visibleSets: number, is
     const set3B = parseInt(scores[1][2], 10);
     if (set3A > 6 || set3B > 6) {
       // Assume super tie-break
+      // Set tie-break points in the set object (as tieBreakTeamA/B)
+      (sets[2] as any).tieBreakTeamA = set3A;
+      (sets[2] as any).tieBreakTeamB = set3B;
+      // Also set at root level for compatibility
       score.tieBreakPointA = set3A;
       score.tieBreakPointB = set3B;
-      sets[2].teamAScore = 1;
-      sets[2].teamBScore = 0; // or whatever, but since it's super, maybe adjust
+      // Determine winner: the one with higher score wins the set 1-0
+      if (set3A > set3B) {
+        sets[2].teamAScore = 1;
+        sets[2].teamBScore = 0;
+      } else {
+        sets[2].teamAScore = 0;
+        sets[2].teamBScore = 1;
+      }
     } else {
       sets[2].teamAScore = set3A;
       sets[2].teamBScore = set3B;

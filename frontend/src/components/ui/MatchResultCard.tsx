@@ -120,7 +120,9 @@ function useSaveLogic(
   court: string | undefined,
   scheduledTime: string | undefined,
   isFirstRound: boolean,
-  matchIndex: number | undefined
+  matchIndex: number | undefined,
+  setLocalWinnerSide: (winner: number | undefined) => void,
+  setLocalFinished: (finished: boolean) => void
 ) {
   const saveGameDetails = async () => {
     try {
@@ -182,6 +184,17 @@ function useSaveLogic(
 
       if (onInfoSaved) {
         onInfoSaved(result);
+      }
+
+      // Update local winnerSide and isFinished immediately based on result
+      if (result && result.winner) {
+        setLocalWinnerSide(result.winner === 'TEAM_A' ? 0 : result.winner === 'TEAM_B' ? 1 : undefined);
+        setLocalFinished(true); // Match is finished when winner is determined
+
+        // Dispatch event to notify parent immediately
+        try {
+          window.dispatchEvent(new CustomEvent('game-updated', { detail: { gameId, score: result.score, winner: result.winner } }));
+        } catch (e) { /* ignore */ }
       }
     } catch (error) {
       console.error('Erreur API:', error);
@@ -320,6 +333,20 @@ export default function MatchResultCard({
   const [scores, setScores] = useState<string[][]>(() => initializeScoresFromScore(score));
   const [initialScores, setInitialScores] = useState<string[][]>(() => initializeScoresFromScore(score));
 
+  // Local winnerSide to update immediately after saving
+  const [localWinnerSide, setLocalWinnerSide] = useState<number | undefined>(winnerSide);
+
+  // Local finished status to update immediately after saving (for LIVE indicator)
+  const [localFinished, setLocalFinished] = useState(finished);
+
+  // Update localWinnerSide and localFinished when props change (but not during editing to avoid clobbering)
+  React.useEffect(() => {
+    if (!editing) {
+      setLocalWinnerSide(winnerSide);
+      setLocalFinished(finished);
+    }
+  }, [winnerSide, finished, editing]);
+
   // Resync scores when `score` prop is updated from parent (e.g. polling)
   // Only resync when the serialized score actually changed to avoid clobbering local edits
   useScoreSyncing(score, editing, setScores, setInitialScores, setIsForfeit, setForfeitedBy);
@@ -331,7 +358,7 @@ export default function MatchResultCard({
   // Helper to compute visibleSets based on setsToWin and first two sets
   const visibleSets = computeVisibleSets(setsToWin, scores);
 
-  const { handleSave } = useSaveLogic(isSaving, setIsSaving, scores, visibleSets, isForfeit, forfeitedBy, gameId, tournamentId, localCourt, localScheduledTime, updateGameFn, onInfoSaved, onTimeChanged, onGameUpdated, setScores, setInitialScores, setEditing, setIsForfeit, setForfeitedBy, setLocalCourt, setLocalScheduledTime, court, scheduledTime, isFirstRound, matchIndex);
+  const { handleSave } = useSaveLogic(isSaving, setIsSaving, scores, visibleSets, isForfeit, forfeitedBy, gameId, tournamentId, localCourt, localScheduledTime, updateGameFn, onInfoSaved, onTimeChanged, onGameUpdated, setScores, setInitialScores, setEditing, setIsForfeit, setForfeitedBy, setLocalCourt, setLocalScheduledTime, court, scheduledTime, isFirstRound, matchIndex, setLocalWinnerSide, setLocalFinished);
 
   const handleKeyDown = (e: React.KeyboardEvent<Element>, teamIndex: number, setIndex: number) => {
     if (e.key === 'Enter' || e.key === 'NumpadEnter') {
@@ -354,7 +381,7 @@ export default function MatchResultCard({
   };
 
   // Calculer si le match est en cours
-  const isInProgress = computeIsInProgress(finished, score, scores);
+  const isInProgress = computeIsInProgress(localFinished, score, scores);
 
   // Calculer le contenu du badge (garder la logique en dehors du JSX pour satisfaire TypeScript)
   const badgeLabel = computeBadgeLabel(pool, matchIndex, totalMatches);
@@ -444,10 +471,10 @@ export default function MatchResultCard({
           setScores={(newScores) => setScores((prev) => [newScores, prev[1]])}
           inputRefs={{ current: inputRefs.current[0] }}
           handleKeyDown={handleKeyDown}
-          winnerSide={isForfeit ? (forfeitedBy === 'TEAM_B' ? 0 : undefined) : winnerSide}
+          winnerSide={isForfeit ? (forfeitedBy === 'TEAM_B' ? 0 : undefined) : localWinnerSide}
           visibleSets={visibleSets}
           computeTabIndex={(tIdx, sIdx) => sIdx * 2 + (tIdx + 1)}
-          showChampion={computeShowChampion(stage, finished, winnerSide, 0)}
+          showChampion={computeShowChampion(stage, localFinished, localWinnerSide, 0)}
           forfeited={isForfeit && forfeitedBy === 'TEAM_A'}
           showAbSlot={isForfeit}
           onToggleForfeit={() => {
@@ -468,10 +495,10 @@ export default function MatchResultCard({
           setScores={(newScores) => setScores((prev) => [prev[0], newScores])}
           inputRefs={{ current: inputRefs.current[1] }}
           handleKeyDown={handleKeyDown}
-          winnerSide={isForfeit ? (forfeitedBy === 'TEAM_A' ? 1 : undefined) : winnerSide}
+          winnerSide={isForfeit ? (forfeitedBy === 'TEAM_A' ? 1 : undefined) : localWinnerSide}
           visibleSets={visibleSets}
           computeTabIndex={(tIdx, sIdx) => sIdx * 2 + (tIdx + 1)}
-          showChampion={computeShowChampion(stage, finished, winnerSide, 1)}
+          showChampion={computeShowChampion(stage, localFinished, localWinnerSide, 1)}
           forfeited={isForfeit && forfeitedBy === 'TEAM_B'}
           showAbSlot={isForfeit}
           onToggleForfeit={() => {
