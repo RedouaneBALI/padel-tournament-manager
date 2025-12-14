@@ -95,9 +95,9 @@ export default function TournamentResultsTab({ tournamentId }: TournamentResults
     }
 
     if (activeView === VIEW_QUALIF) {
-      setAdminActions({ onExport: () => exportBracketAsImage('qualif-bracket-container', 'qualifications.png') });
+      setAdminActions({ onExport: () => { exportBracketAsImage('qualif-bracket-container', 'qualifications.png'); } });
     } else if (activeView === VIEW_PHASE_FINALE) {
-      setAdminActions({ onExport: () => exportBracketAsImage('finals-bracket-container', 'phase_finale.png') });
+      setAdminActions({ onExport: () => { exportBracketAsImage('finals-bracket-container', 'phase_finale.png'); } });
     } else if (activeView === VIEW_CLASSEMENT) {
       // No export for group stage view, but don't reset - let parent layout manage
     }

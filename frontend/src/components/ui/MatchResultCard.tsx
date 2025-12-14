@@ -52,17 +52,19 @@ function computeVisibleSets(setsToWin: number | undefined, scores: string[][]): 
 }
 
 function computeIsInProgress(finished: boolean, score: Score | undefined, scores: string[][]): boolean {
-  const propHasScores = !!(score?.sets && score.sets.some(set => (set.teamAScore !== null && set.teamAScore !== undefined) || (set.teamBScore !== null && set.teamBScore !== undefined)));
-  const localHasScores = !!(scores && (scores[0].some(s => s !== '' && s !== undefined && s !== null) || scores[1].some(s => s !== '' && s !== undefined && s !== null)));
+  const propHasScores = !!(score?.sets?.some(set => set.teamAScore != null || set.teamBScore != null));
+  const localHasScores = !!(scores && (scores[0].some(s => s !== '' && s != null) || scores[1].some(s => s !== '' && s != null)));
   return !finished && (propHasScores || localHasScores);
 }
 
 function computeBadgeLabel(pool: { name?: string } | undefined, matchIndex: number | undefined, totalMatches: number | undefined): string {
-  return pool?.name
-    ? formatGroupLabel(pool.name)
-    : (matchIndex !== undefined && totalMatches !== undefined)
-      ? `${matchIndex + 1}/${totalMatches}`
-      : '';
+  if (pool?.name) {
+    return formatGroupLabel(pool.name);
+  } else if (matchIndex !== undefined && totalMatches !== undefined) {
+    return `${matchIndex + 1}/${totalMatches}`;
+  } else {
+    return '';
+  }
 }
 
 function computeShowChampion(stage: string | undefined, finished: boolean, winnerSide: number | undefined, teamIndex: number): boolean {
@@ -92,36 +94,69 @@ function useScoreSyncing(score: Score | undefined, editing: boolean, setScores: 
   }, [score, editing, setScores, setInitialScores, setIsForfeit, setForfeitedBy]);
 }
 
-function useSaveLogic(
-  isSaving: boolean,
-  setIsSaving: (saving: boolean) => void,
-  scores: string[][],
-  visibleSets: number,
-  isForfeit: boolean,
-  forfeitedBy: 'TEAM_A' | 'TEAM_B' | null,
-  gameId: string,
-  tournamentId: string,
-  localCourt: string,
-  localScheduledTime: string,
-  updateGameFn: any,
-  onInfoSaved: any,
-  onTimeChanged: any,
-  onGameUpdated: any,
-  setScores: (scores: string[][]) => void,
-  setInitialScores: (scores: string[][]) => void,
-  setEditing: (editing: boolean) => void,
-  setIsForfeit: (isForfeit: boolean) => void,
-  setForfeitedBy: (forfeitedBy: 'TEAM_A' | 'TEAM_B' | null) => void,
-  setLocalCourt: (court: string) => void,
-  setLocalScheduledTime: (time: string) => void,
-  court: string | undefined,
-  scheduledTime: string | undefined,
-  isFirstRound: boolean,
-  matchIndex: number | undefined,
-  setLocalWinnerSide: (winner: number | undefined) => void,
-  setLocalFinished: (finished: boolean) => void,
-  matchFormat?: any
-) {
+interface UseSaveLogicParams {
+  isSaving: boolean;
+  setIsSaving: (saving: boolean) => void;
+  scores: string[][];
+  visibleSets: number;
+  isForfeit: boolean;
+  forfeitedBy: 'TEAM_A' | 'TEAM_B' | null;
+  gameId: string;
+  tournamentId: string;
+  localCourt: string;
+  localScheduledTime: string;
+  updateGameFn: any;
+  onInfoSaved: any;
+  onTimeChanged: any;
+  onGameUpdated: any;
+  setScores: (scores: string[][]) => void;
+  setInitialScores: (scores: string[][]) => void;
+  setEditing: (editing: boolean) => void;
+  setIsForfeit: (isForfeit: boolean) => void;
+  setForfeitedBy: (forfeitedBy: 'TEAM_A' | 'TEAM_B' | null) => void;
+  setLocalCourt: (court: string) => void;
+  setLocalScheduledTime: (time: string) => void;
+  court: string | undefined;
+  scheduledTime: string | undefined;
+  isFirstRound: boolean;
+  matchIndex: number | undefined;
+  setLocalWinnerSide: (winner: number | undefined) => void;
+  setLocalFinished: (finished: boolean) => void;
+  matchFormat?: any;
+}
+
+function useSaveLogic(params: UseSaveLogicParams) {
+  const {
+    isSaving,
+    setIsSaving,
+    scores,
+    visibleSets,
+    isForfeit,
+    forfeitedBy,
+    gameId,
+    tournamentId,
+    localCourt,
+    localScheduledTime,
+    updateGameFn,
+    onInfoSaved,
+    onTimeChanged,
+    onGameUpdated,
+    setScores,
+    setInitialScores,
+    setEditing,
+    setIsForfeit,
+    setForfeitedBy,
+    setLocalCourt,
+    setLocalScheduledTime,
+    court,
+    scheduledTime,
+    isFirstRound,
+    matchIndex,
+    setLocalWinnerSide,
+    setLocalFinished,
+    matchFormat,
+  } = params;
+
   const applyScoresToState = (score: Score) => {
     const appliedScores = initializeScoresFromScore(score);
     setScores(appliedScores);
@@ -176,7 +211,15 @@ function useSaveLogic(
       notifyCallbacks(result);
 
       if (result?.winner) {
-        setLocalWinnerSide(result.winner === 'TEAM_A' ? 0 : result.winner === 'TEAM_B' ? 1 : undefined);
+        let winnerSideValue: number | undefined;
+        if (result.winner === 'TEAM_A') {
+          winnerSideValue = 0;
+        } else if (result.winner === 'TEAM_B') {
+          winnerSideValue = 1;
+        } else {
+          winnerSideValue = undefined;
+        }
+        setLocalWinnerSide(winnerSideValue);
         setLocalFinished(true);
         try {
           window.dispatchEvent(new CustomEvent('game-updated', { detail: { gameId, score: result.score, winner: result.winner } }));
@@ -220,8 +263,8 @@ function useSaveLogic(
             buttons: [
               {
                 label: 'Oui',
-                onClick: async () => {
-                  await doSave();
+                onClick: () => {
+                  doSave();
                 },
               },
               {
@@ -336,7 +379,36 @@ export default function MatchResultCard({
   // Helper to compute visibleSets based on setsToWin and first two sets
   const visibleSets = computeVisibleSets(setsToWin, scores);
 
-  const { handleSave } = useSaveLogic(isSaving, setIsSaving, scores, visibleSets, isForfeit, forfeitedBy, gameId, tournamentId, localCourt, localScheduledTime, updateGameFn, onInfoSaved, onTimeChanged, onGameUpdated, setScores, setInitialScores, setEditing, setIsForfeit, setForfeitedBy, setLocalCourt, setLocalScheduledTime, court, scheduledTime, isFirstRound, matchIndex, setLocalWinnerSide, setLocalFinished, matchFormat);
+  const { handleSave } = useSaveLogic({
+    isSaving,
+    setIsSaving,
+    scores,
+    visibleSets,
+    isForfeit,
+    forfeitedBy,
+    gameId,
+    tournamentId,
+    localCourt,
+    localScheduledTime,
+    updateGameFn,
+    onInfoSaved,
+    onTimeChanged,
+    onGameUpdated,
+    setScores,
+    setInitialScores,
+    setEditing,
+    setIsForfeit,
+    setForfeitedBy,
+    setLocalCourt,
+    setLocalScheduledTime,
+    court,
+    scheduledTime,
+    isFirstRound,
+    matchIndex,
+    setLocalWinnerSide,
+    setLocalFinished,
+    matchFormat,
+  });
 
   const handleKeyDown = (e: React.KeyboardEvent<Element>, teamIndex: number, setIndex: number) => {
     if (e.key === 'Enter' || e.key === 'NumpadEnter') {
@@ -345,24 +417,85 @@ export default function MatchResultCard({
     }
   };
 
-  const applyApiScore = (apiScore: Score) => {
-    const appliedScores = initializeScoresFromScore(apiScore);
-    setScores(appliedScores);
-    setInitialScores(appliedScores.map(arr => [...arr]));
-    setIsForfeit(apiScore.forfeit || false);
-    setForfeitedBy(apiScore.forfeitedBy || null);
-    try {
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('game-updated', { detail: { gameId, score: apiScore } }));
-      }
-    } catch (e) { /* ignore */ }
-  };
-
   // Calculer si le match est en cours
   const isInProgress = computeIsInProgress(localFinished, score, scores);
 
   // Calculer le contenu du badge (garder la logique en dehors du JSX pour satisfaire TypeScript)
   const badgeLabel = computeBadgeLabel(pool, matchIndex, totalMatches);
+
+  // Compute winner sides to avoid nested ternaries
+  const teamAWinnerSide = isForfeit ? (forfeitedBy === 'TEAM_B' ? 0 : undefined) : localWinnerSide;
+  const teamBWinnerSide = isForfeit ? (forfeitedBy === 'TEAM_A' ? 1 : undefined) : localWinnerSide;
+
+  // Compute edit controls
+  const editControls = editing ? (
+    <SaveAndCancelButtons
+      isSaving={isSaving}
+      onCancel={() => {
+        setScores([...initialScores]);
+        setLocalCourt(court || 'Court central');
+        setLocalScheduledTime(scheduledTime || '00:00');
+        setIsForfeit(score?.forfeit || false);
+        setForfeitedBy(score?.forfeitedBy || null);
+        setEditing(false);
+      }}
+      bindEnter={editing}
+      onSave={handleSave}
+    />
+  ) : (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        setEditing(true);
+      }}
+      className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-7 w-7 p-0 hover:bg-primary/10 hover:text-primary"
+      title="Modifier les scores"
+    >
+      <Edit3 className="h-4 w-4" />
+    </button>
+  );
+
+  // Compute footer class
+  const footerClass = pool?.name ? groupBadgeClasses(group) : editing ? 'bg-card text-foreground' : 'bg-background text-foreground dark:bg-primary dark:text-on-primary';
+
+  // Compute footer content
+  const footerContent = editing ? (
+    <div className="flex gap-4 items-center">
+      <input
+        type="text"
+        value={localCourt}
+        onChange={(e) => setLocalCourt(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === 'NumpadEnter') {
+            e.preventDefault();
+            void handleSave();
+          }
+        }}
+        enterKeyHint="done"
+        className="px-2 py-1 rounded border text-sm text-foreground bg-card"
+        placeholder="Court"
+      />
+      <input
+        type="time"
+        step="300"
+        value={localScheduledTime}
+        onChange={(e) => setLocalScheduledTime(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === 'NumpadEnter') {
+            e.preventDefault();
+            void handleSave();
+          }
+        }}
+        enterKeyHint="done"
+        className="px-2 py-1 rounded border text-sm text-foreground bg-card"
+      />
+    </div>
+  ) : (
+    <div className="flex justify-between">
+      <span>{court ?? localCourt}</span>
+      <span>{scheduledTime ?? localScheduledTime}</span>
+    </div>
+  );
 
   return (
     <div
@@ -404,36 +537,11 @@ export default function MatchResultCard({
           </div>
         )}
         {editable && (
-          <div className="z-10 ml-auto flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+          <div className="z-10 ml-auto flex items-center gap-2">
             {/* Point rouge en mode éditable si match en cours */}
             {isInProgress && <LiveMatchIndicator showLabel={false} />}
 
-            {editing ? (
-              <SaveAndCancelButtons
-                isSaving={isSaving}
-                onCancel={() => {
-                  setScores([...initialScores]);
-                  setLocalCourt(court || 'Court central');
-                  setLocalScheduledTime(scheduledTime || '00:00');
-                  setIsForfeit(score?.forfeit || false);
-                  setForfeitedBy(score?.forfeitedBy || null);
-                  setEditing(false);
-                }}
-                bindEnter={editing}
-                onSave={handleSave}
-              />
-            ) : (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setEditing(true);
-                }}
-                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-7 w-7 p-0 hover:bg-primary/10 hover:text-primary"
-                title="Modifier les scores"
-              >
-                <Edit3 className="h-4 w-4" />
-              </button>
-            )}
+            {editControls}
           </div>
         )}
       </div>
@@ -449,7 +557,7 @@ export default function MatchResultCard({
           setScores={(newScores) => setScores((prev) => [newScores, prev[1]])}
           inputRefs={{ current: inputRefs.current[0] }}
           handleKeyDown={handleKeyDown}
-          winnerSide={isForfeit ? (forfeitedBy === 'TEAM_B' ? 0 : undefined) : localWinnerSide}
+          winnerSide={teamAWinnerSide}
           visibleSets={visibleSets}
           computeTabIndex={(tIdx, sIdx) => sIdx * 2 + (tIdx + 1)}
           showChampion={computeShowChampion(stage, localFinished, localWinnerSide, 0)}
@@ -474,7 +582,7 @@ export default function MatchResultCard({
           setScores={(newScores) => setScores((prev) => [prev[0], newScores])}
           inputRefs={{ current: inputRefs.current[1] }}
           handleKeyDown={handleKeyDown}
-          winnerSide={isForfeit ? (forfeitedBy === 'TEAM_A' ? 1 : undefined) : localWinnerSide}
+          winnerSide={teamBWinnerSide}
           visibleSets={visibleSets}
           computeTabIndex={(tIdx, sIdx) => sIdx * 2 + (tIdx + 1)}
           showChampion={computeShowChampion(stage, localFinished, localWinnerSide, 1)}
@@ -496,50 +604,10 @@ export default function MatchResultCard({
       <div
         className={[
           'border-t border-gray-300 px-4 py-2 text-sm',
-          pool?.name
-            ? groupBadgeClasses(group)
-            : (editing
-                ? 'bg-card text-foreground'
-                : 'bg-background text-foreground dark:bg-primary dark:text-on-primary')
+          footerClass
         ].join(' ')}
       >
-        {editing ? (
-          <div className="flex gap-4 items-center">
-            <input
-              type="text"
-              value={localCourt}
-              onChange={(e) => setLocalCourt(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === 'NumpadEnter') {
-                  e.preventDefault();
-                  void handleSave();
-                }
-              }}
-              enterKeyHint="done"
-              className="px-2 py-1 rounded border text-sm text-foreground bg-card"
-              placeholder="Court"
-            />
-            <input
-              type="time"
-              step="300"
-              value={localScheduledTime}
-              onChange={(e) => setLocalScheduledTime(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === 'NumpadEnter') {
-                  e.preventDefault();
-                  void handleSave();
-                }
-              }}
-              enterKeyHint="done"
-              className="px-2 py-1 rounded border text-sm text-foreground bg-card"
-            />
-          </div>
-        ) : (
-          <div className="flex justify-between">
-            <span>{court ?? localCourt}</span>
-            <span>{scheduledTime ?? localScheduledTime}</span>
-          </div>
-        )}
+        {footerContent}
       </div>
     </div>
   );

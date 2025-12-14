@@ -36,7 +36,7 @@ function hasMatchStarted(score: Score | null | undefined): boolean {
   if (!score) return false;
 
   // Vérifier si des sets ont des scores > 0
-  if (score.sets && score.sets.some(set => (set.teamAScore !== null && set.teamAScore > 0) || (set.teamBScore !== null && set.teamBScore > 0))) return true;
+  if (score.sets?.some(set => set.teamAScore != null && set.teamAScore > 0 || set.teamBScore != null && set.teamBScore > 0)) return true;
 
   // Vérifier si les points actuels ne sont pas à zéro
   if (score.currentGamePointA && score.currentGamePointA !== 'ZERO') return true;
@@ -88,8 +88,7 @@ function processDisplayData(currentGame: Game, matchFormat: import('@/src/types/
     setScoresA,
     setScoresB,
     tieBreakPointA,
-    tieBreakPointB,
-    isSuperTieBreak
+    tieBreakPointB
   };
 }
 
@@ -103,7 +102,7 @@ function SetScoresDisplay({ setScores }: { setScores: (number | null)[] }) {
     <div className="flex gap-0.5 sm:gap-2">
       {setScores.map((score, i) => (
         <div
-          key={i}
+          key={`set-${i}`}
           className={cn(
             "w-6 h-8 sm:w-9 sm:h-10 flex items-center justify-center rounded text-xs sm:text-lg font-bold tabular-nums",
             score !== null ? "text-foreground bg-muted/50" : "opacity-0"
@@ -333,7 +332,7 @@ export default function MatchResultCardZoom({
         const newScore = processSuperTieBreakScore(result.score, matchFormat);
         setCurrentGame((prev) => ({ ...prev, score: newScore }));
       }
-      if (result && typeof result.winner !== 'undefined') {
+      if (result?.winner != null) {
         setCurrentGame((prev) => ({ ...prev, winnerSide: result.winner }));
       }
     } catch (e) {
@@ -348,11 +347,11 @@ export default function MatchResultCardZoom({
     setUndoLoading(true);
     try {
       const result = await callUndoEndpoint();
-      if (result && result.score) {
+      if (result?.score) {
         const newScore = processSuperTieBreakScore(result.score, matchFormat);
         setCurrentGame((prev) => ({ ...prev, score: newScore }));
       }
-      if (result && typeof result.winner !== 'undefined') {
+      if (result?.winner != null) {
         setCurrentGame((prev) => ({ ...prev, winnerSide: result.winner }));
       }
       if (onScoreUpdate) onScoreUpdate(currentGame);
@@ -370,9 +369,12 @@ export default function MatchResultCardZoom({
     setScoresA,
     setScoresB,
     tieBreakPointA,
-    tieBreakPointB,
-    isSuperTieBreak
+    tieBreakPointB
   } = processDisplayData(currentGame, matchFormat);
+
+  // Compute winner sides
+  const winnerSideA = currentGame.winnerSide === 'TEAM_A' ? 0 : currentGame.winnerSide === 'TEAM_B' ? 1 : undefined;
+  const winnerSideB = winnerSideA;
 
   return (
     <div className="w-full max-w-2xl mx-auto font-sans">
@@ -422,7 +424,7 @@ export default function MatchResultCardZoom({
                 editable={editable}
                 loading={loading === 'TEAM_A'}
                 onPointChange={handlePointChange}
-                winnerSide={currentGame.winnerSide === 'TEAM_A' ? 0 : currentGame.winnerSide === 'TEAM_B' ? 1 : undefined}
+                winnerSide={winnerSideA}
             />
 
             {/* Équipe B */}
@@ -436,7 +438,7 @@ export default function MatchResultCardZoom({
                 editable={editable}
                 loading={loading === 'TEAM_B'}
                 onPointChange={handlePointChange}
-                winnerSide={currentGame.winnerSide === 'TEAM_A' ? 0 : currentGame.winnerSide === 'TEAM_B' ? 1 : undefined}
+                winnerSide={winnerSideB}
             />
 
         </div>

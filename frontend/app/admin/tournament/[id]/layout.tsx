@@ -159,7 +159,7 @@ function AdminTournamentLayoutContent({
     adminHeader.setAdminActions({
       showTvButton: isGameDetail || (tournament?.tvUrl !== null),
       tvButtonUrl: tvUrl || null,
-      onShare: handleCopyLink,
+      onShare: () => { handleCopyLink(); },
       onEdit: handleEdit,
     });
   }, [tournament?.tvUrl, isGameDetail, id, pathname, handleCopyLink, handleEdit]);

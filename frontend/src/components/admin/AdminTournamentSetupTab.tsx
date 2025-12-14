@@ -23,7 +23,7 @@ interface Props {
 }
 
 function toTeamSlot(p: PlayerPair | null) {
-  if (!p || !p.id) return { type: 'BYE' as const };
+  if (!p?.id) return { type: 'BYE' as const };
   return { type: 'NORMAL' as const, pairId: p.id };
 }
 
@@ -105,9 +105,7 @@ function useTournamentData(tournamentId: string) {
     setPairs,
     loadingPairs,
     tournament,
-    setTournament,
     tournamentStarted,
-    setTournamentStarted,
     loadingTournament,
     defaultView,
   };
@@ -119,9 +117,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
     setPairs,
     loadingPairs,
     tournament,
-    setTournament,
     tournamentStarted,
-    setTournamentStarted,
     loadingTournament,
     defaultView,
   } = useTournamentData(tournamentId);
@@ -135,14 +131,10 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
     setActiveTab(defaultView);
   }, [defaultView]);
 
-  const [assignedSlots, setAssignedSlots] = useState<Array<PlayerPair | null>>([]);
-  const [qualifSlots, setQualifSlots] = useState<Array<PlayerPair | null>>([]);
-  const [mainSlots, setMainSlots] = useState<Array<PlayerPair | null>>([]);
   const assignedSlotsRef = useRef<Array<PlayerPair | null>>([]);
   const qualifSlotsRef = useRef<Array<PlayerPair | null>>([]);
   const mainSlotsRef = useRef<Array<PlayerPair | null>>([]);
   const mainDrawSize = (tournament as any)?.config?.mainDrawSize ?? (pairs?.length || 0);
-  const matchesCount = Math.max(1, Math.floor((mainDrawSize || 0) / 2));
 
   const isTwoTeamTournament = mainDrawSize === 2;
 
@@ -195,7 +187,7 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
       buttons: [
         {
           label: 'Oui',
-          onClick: performDraw,
+          onClick: () => { performDraw(); },
         },
         {
           label: 'Annuler',
@@ -210,12 +202,9 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
     const handleSlotsUpdate = (event: CustomEvent) => {
       if (event.type === 'knockout:pairs-reordered') {
         assignedSlotsRef.current = event.detail.slots;
-        setAssignedSlots(event.detail.slots);
       } else if (event.type === 'qualifko:pairs-reordered') {
         qualifSlotsRef.current = event.detail.qualifSlots;
         mainSlotsRef.current = event.detail.mainSlots;
-        setQualifSlots(event.detail.qualifSlots);
-        setMainSlots(event.detail.mainSlots);
       }
     };
 
@@ -339,25 +328,29 @@ export default function AdminTournamentSetupTab({ tournamentId }: Props) {
     );
   };
 
-  return loadingTournament || !tournament ? (
-    <CenteredLoader />
-  ) : isTwoTeamTournament ? (
-    <AdminTournamentSetupTab2Teams tournamentId={tournamentId} />
-  ) : (
-    <div className="container mx-auto max-w-3xl">
-      {isGenerating && (
-        <CenteredLoader />
-      )}
-      <div className="shadow-sm">
-        <section>
-          <>
-            {renderTabs()}
-            {renderTabContent()}
-          </>
-          {renderGenerateButton()}
-        </section>
+  let content;
+  if (loadingTournament || !tournament) {
+    content = <CenteredLoader />;
+  } else if (isTwoTeamTournament) {
+    content = <AdminTournamentSetupTab2Teams tournamentId={tournamentId} />;
+  } else {
+    content = (
+      <div className="container mx-auto max-w-3xl">
+        {isGenerating && (
+          <CenteredLoader />
+        )}
+        <div className="shadow-sm">
+          <section>
+            <>
+              {renderTabs()}
+              {renderTabContent()}
+            </>
+            {renderGenerateButton()}
+          </section>
+        </div>
       </div>
+    );
+  }
 
-    </div>
-  );
+  return content;
 }

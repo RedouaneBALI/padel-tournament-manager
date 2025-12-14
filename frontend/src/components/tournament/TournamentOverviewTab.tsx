@@ -96,7 +96,7 @@ export default function TournamentOverviewTab({ tournament }: TournamentOverview
         )}
 
         {/* Format + Têtes de série */}
-        {(tournament.config?.format || tournament.config?.nbSeeds) && (
+        {Boolean(tournament.config?.format || tournament.config?.nbSeeds) && (
         <div className="rounded-lg border bg-card/50 p-4 relative">
           <div className="absolute -top-2 left-3 bg-card px-1 text-xs uppercase tracking-wide text-muted-foreground">
             FORMAT DU TOURNOI
