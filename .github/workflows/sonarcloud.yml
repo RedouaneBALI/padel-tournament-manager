@@ -29,7 +29,8 @@ jobs:
 
       - name: Build backend with Maven
         run: mvn clean compile test-compile surefire:test jacoco:prepare-agent test jacoco:report -DskipTests=false
-      
+        working-directory: backend
+
       # Frontend: Node.js setup and tests
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -52,4 +53,3 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           scanner: cli
-        working-directory: .
