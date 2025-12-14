@@ -34,8 +34,8 @@ export default function FRMTLayout({ children }: { children: React.ReactNode }) 
 	}, [pathname]);
 
 	return (
-		<div className="min-h-screen bg-background">
-			<main className="pb-20">
+		<div className="bg-background">
+			<main>
 				{children}
 			</main>
 			<BottomNav items={navItems} pathname={pathname} />

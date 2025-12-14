@@ -48,7 +48,7 @@ export default function DataTable<T>({
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto pb-14">
       <table className="text-left border-collapse" style={{ width: isDesktop ? '100%' : 'max-content', tableLayout: isDesktop ? 'auto' : 'fixed', minWidth: '100%' }}>
         <thead className="sticky top-0 bg-primary text-white z-10">
           <tr className="bg-primary text-white font-bold text-lg">
