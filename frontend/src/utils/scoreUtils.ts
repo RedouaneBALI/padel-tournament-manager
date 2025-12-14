@@ -63,13 +63,11 @@ export function processSuperTieBreakScore(score: Score, matchFormat?: any): Scor
  * @returns The Score object.
  */
 export function convertToScoreObject(scores: string[][], visibleSets: number, isForfeit: boolean, forfeitedBy: 'TEAM_A' | 'TEAM_B' | null, matchFormat?: any): Score {
-  // Only create sets for visible sets, don't add extra empty ones
   const sets: any[] = [];
   for (let i = 0; i < visibleSets; i++) {
     const teamAScore = parseInt(scores[0][i], 10);
     const teamBScore = parseInt(scores[1][i], 10);
 
-    // Only add set if at least one team has a score (or it's an empty set placeholder)
     if (!isNaN(teamAScore) || !isNaN(teamBScore)) {
       sets.push({
         teamAScore: !isNaN(teamAScore) ? teamAScore : 0,
@@ -84,42 +82,46 @@ export function convertToScoreObject(scores: string[][], visibleSets: number, is
     forfeitedBy,
   };
 
-  // If there's a third set, determine if it's a super tie-break or regular set
   if (visibleSets === 3 && sets.length === 3 && scores[0][2] && scores[1][2]) {
-    const set3A = parseInt(scores[0][2], 10);
-    const set3B = parseInt(scores[1][2], 10);
-
-    if (!isNaN(set3A) && !isNaN(set3B)) {
-      const superTieBreakInFinalSet = matchFormat?.superTieBreakInFinalSet ?? false;
-
-      if (superTieBreakInFinalSet) {
-        // Super tie-break: store the actual points as tieBreakTeamA/B
-        (sets[2] as any).tieBreakTeamA = set3A;
-        (sets[2] as any).tieBreakTeamB = set3B;
-        score.tieBreakPointA = set3A;
-        score.tieBreakPointB = set3B;
-
-        // Set match winner only if tie-break is finished (one team wins with 2+ point lead at 10+)
-        const minWinningScore = 10;
-        const minDifference = 2;
-        if (set3A >= minWinningScore && set3A - set3B >= minDifference) {
-          sets[2].teamAScore = 1;
-          sets[2].teamBScore = 0;
-        } else if (set3B >= minWinningScore && set3B - set3A >= minDifference) {
-          sets[2].teamAScore = 0;
-          sets[2].teamBScore = 1;
-        } else {
-          // Tie-break in progress, don't mark set as finished
-          sets[2].teamAScore = 0;
-          sets[2].teamBScore = 0;
-        }
-      } else {
-        // Regular set (not super tie-break)
-        sets[2].teamAScore = set3A;
-        sets[2].teamBScore = set3B;
-      }
-    }
+    handleThirdSet(sets, score, scores, matchFormat);
   }
 
   return score;
+}
+
+function handleThirdSet(sets: any[], score: Score, scores: string[][], matchFormat?: any): void {
+  const set3A = parseInt(scores[0][2], 10);
+  const set3B = parseInt(scores[1][2], 10);
+
+  if (isNaN(set3A) || isNaN(set3B)) return;
+
+  const superTieBreakInFinalSet = matchFormat?.superTieBreakInFinalSet ?? false;
+
+  if (superTieBreakInFinalSet) {
+    handleSuperTieBreak(sets, score, set3A, set3B);
+  } else {
+    sets[2].teamAScore = set3A;
+    sets[2].teamBScore = set3B;
+  }
+}
+
+function handleSuperTieBreak(sets: any[], score: Score, set3A: number, set3B: number): void {
+  (sets[2] as any).tieBreakTeamA = set3A;
+  (sets[2] as any).tieBreakTeamB = set3B;
+  score.tieBreakPointA = set3A;
+  score.tieBreakPointB = set3B;
+
+  const minWinningScore = 10;
+  const minDifference = 2;
+
+  if (set3A >= minWinningScore && set3A - set3B >= minDifference) {
+    sets[2].teamAScore = 1;
+    sets[2].teamBScore = 0;
+  } else if (set3B >= minWinningScore && set3B - set3A >= minDifference) {
+    sets[2].teamAScore = 0;
+    sets[2].teamBScore = 1;
+  } else {
+    sets[2].teamAScore = 0;
+    sets[2].teamBScore = 0;
+  }
 }

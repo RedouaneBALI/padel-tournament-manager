@@ -107,12 +107,18 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
   }, []);
 
 
+  const updateGameTime = (gameId: string, newTime: string, currentRounds: Round[]): Round[] => {
+    return currentRounds.map((round) => ({
+      ...round,
+      games: round.games.map((g) =>
+        String(g.id) === String(gameId) ? { ...g, scheduledTime: newTime } : g
+      ),
+    }));
+  };
+
   const handleTimeChanged = useCallback((gameId: string, newTime: string) => {
     console.debug('[handleTimeChanged]', gameId, newTime);
-    setRounds((currentRounds) => currentRounds.map((round) => ({
-      ...round,
-      games: round.games.map((g) => (String(g.id) === String(gameId) ? { ...g, scheduledTime: newTime } : g)),
-    })));
+    setRounds((currentRounds) => updateGameTime(gameId, newTime, currentRounds));
   }, []);
 
   const handleInfoSaved = useCallback((result: { tournamentUpdated: boolean; winner: string | null }) => {
