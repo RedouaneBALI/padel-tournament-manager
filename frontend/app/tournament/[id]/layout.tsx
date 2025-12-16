@@ -1,7 +1,7 @@
 // app/tournament/[id]/layout.tsx
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ToastContainer } from 'react-toastify';
@@ -33,34 +33,43 @@ export default function TournamentLayout({
   const [isMoreOpen, setIsMoreOpen] = useState(false);
 
   // Navigation items for bottom navigation
-  const moreItems = [
-    {
-      href: `/tournament/${id}`,
-      label: 'Home',
-      Icon: Home,
-    },
-    {
-      href: `/tournament/${id}/players`,
-      label: 'Joueurs',
-      Icon: Users,
-    },
-    {
-      href: `/tournament/${id}/games`,
-      label: 'Matchs',
-      Icon: LuSwords,
-    },
-    {
-      href: `/tournament/${id}/bracket`,
-      label: 'Tableau',
-      Icon: TbTournament,
-    },
-    {
-      href: '#more',
-      label: 'Plus',
-      Icon: FiMoreHorizontal
-    },
+  const moreItems = useMemo(() => {
+    const isSingleMatchTournament = tournament?.config?.mainDrawSize === 2 &&
+      tournament.rounds?.length === 1 &&
+      tournament.rounds[0]?.games?.length === 1;
 
-  ];
+    const gamesHref = isSingleMatchTournament
+      ? `/tournament/${id}/games/${tournament.rounds[0].games[0].id}`
+      : `/tournament/${id}/games`;
+
+    return [
+      {
+        href: `/tournament/${id}`,
+        label: 'Home',
+        Icon: Home,
+      },
+      {
+        href: `/tournament/${id}/players`,
+        label: 'Joueurs',
+        Icon: Users,
+      },
+      {
+        href: gamesHref,
+        label: 'Matchs',
+        Icon: LuSwords,
+      },
+      {
+        href: `/tournament/${id}/bracket`,
+        label: 'Tableau',
+        Icon: TbTournament,
+      },
+      {
+        href: '#more',
+        label: 'Plus',
+        Icon: FiMoreHorizontal
+      },
+    ];
+  }, [tournament, id]);
 
   useEffect(() => {
     fetchTournament(id)
