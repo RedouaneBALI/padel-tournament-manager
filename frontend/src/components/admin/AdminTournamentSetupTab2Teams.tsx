@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
-import { fetchTournament, fetchPairs, savePlayerPairs, generateDraw } from '@/src/api/tournamentApi';
+import { fetchTournament, fetchPairs, savePlayerPairs, generateDraw, updatePlayerPair } from '@/src/api/tournamentApi';
 import { PlayerPair } from '@/src/types/playerPair';
 import { Tournament } from '@/src/types/tournament';
 import { hasTournamentStarted } from '@/src/utils/tournamentUtils';
@@ -34,7 +34,12 @@ export default function AdminTournamentSetupTab2Teams({ tournamentId }: Props) {
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isFirstCreation, setIsFirstCreation] = useState<boolean | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    setIsFirstCreation(!teamA.id || !teamB.id);
+  }, [teamA.id, teamB.id]);
 
   useEffect(() => {
     const loadTournament = async () => {
@@ -93,7 +98,9 @@ export default function AdminTournamentSetupTab2Teams({ tournamentId }: Props) {
     setTeamB({ player1Name: '', player2Name: '', type: 'NORMAL' });
   };
 
-  const performDrawWithPairs = async (pairA: PlayerPair, pairB: PlayerPair) => {
+  // ...existing code...
+
+  const performDrawWithPairs = async (pairA: PlayerPair, pairB: PlayerPair, isFirstCreation: boolean) => {
     if (!pairA?.id || !pairB?.id) {
       toast.error('Les équipes n\'ont pas d\'ID. Veuillez réessayer.');
       return;
@@ -101,19 +108,21 @@ export default function AdminTournamentSetupTab2Teams({ tournamentId }: Props) {
 
     setIsGenerating(true);
     try {
-      const rounds = [
-        {
-          stage: tournament?.rounds?.[0]?.stage ?? getStageFromSize(2),
-          games: [
-            {
-              teamA: { type: 'NORMAL' as PairType, pairId: pairA.id },
-              teamB: { type: 'NORMAL' as PairType, pairId: pairB.id },
-            },
-          ],
-        },
-      ];
-      await generateDraw(tournamentId, rounds);
-      router.push(`/admin/tournament/${tournamentId}/games?stage=FINAL`);
+      if (isFirstCreation) {
+        const rounds = [
+          {
+            stage: tournament?.rounds?.[0]?.stage ?? getStageFromSize(2),
+            games: [
+              {
+                teamA: { type: 'NORMAL' as PairType, pairId: pairA.id },
+                teamB: { type: 'NORMAL' as PairType, pairId: pairB.id },
+              },
+            ],
+          },
+        ];
+        await generateDraw(tournamentId, rounds);
+        router.push(`/admin/tournament/${tournamentId}/games?stage=FINAL`);
+      }
     } catch (e: any) {
       toast.error(e?.message ?? 'Erreur lors de la génération du tirage.');
     } finally {
@@ -129,14 +138,45 @@ export default function AdminTournamentSetupTab2Teams({ tournamentId }: Props) {
 
     setIsSaving(true);
     try {
-      await savePlayerPairs(tournamentId, [teamA, teamB]);
-      toast.success('Équipes enregistrées.');
+      const isFirstCreation = !teamA.id && !teamB.id;
+
+      if (isFirstCreation) {
+        await savePlayerPairs(tournamentId, [teamA, teamB]);
+      } else {
+        // Update existing pairs with new player names
+        if (teamA.id) {
+          await updatePlayerPair(tournamentId, teamA.id, {
+            player1Name: teamA.player1Name,
+            player2Name: teamA.player2Name,
+          });
+        }
+        if (teamB.id) {
+          await updatePlayerPair(tournamentId, teamB.id, {
+            player1Name: teamB.player1Name,
+            player2Name: teamB.player2Name,
+          });
+        }
+      }
 
       await new Promise(resolve => setTimeout(resolve, 500));
 
+      // Always reload to ensure sync
+      const updatedTournament = await fetchTournament(tournamentId);
+      setTournament(updatedTournament);
+
       const reloadedPairs = await fetchPairs(tournamentId, false, false);
       if (reloadedPairs.length >= 2) {
-        await performDrawWithPairs(reloadedPairs[0], reloadedPairs[1]);
+        const actionLabel = isFirstCreation ? 'Équipes enregistrées' : 'Joueurs mis à jour';
+        toast.success(actionLabel);
+
+        if (isFirstCreation) {
+          await performDrawWithPairs(reloadedPairs[0], reloadedPairs[1], true);
+        } else {
+          // For updates: refresh data and navigate to games
+          setTeamA(reloadedPairs[0]);
+          setTeamB(reloadedPairs[1]);
+          router.push(`/admin/tournament/${tournamentId}/games?stage=FINAL`);
+        }
       }
     } catch (e: any) {
       console.error('[AdminTournamentSetupTab2Teams] Error saving:', e);
@@ -227,7 +267,7 @@ export default function AdminTournamentSetupTab2Teams({ tournamentId }: Props) {
                   disabled={isSaving}
                   className="px-4 py-2 bg-primary text-on-primary rounded hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSaving ? 'Enregistrement...' : 'Enregistrer et générer'}
+                  {isSaving ? 'Enregistrement...' : isFirstCreation ? 'Enregistrer et générer' : 'Mettre à jour'}
                 </button>
               </div>
             </>
