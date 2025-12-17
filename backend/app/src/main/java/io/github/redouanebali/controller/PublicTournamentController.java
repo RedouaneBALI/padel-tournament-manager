@@ -92,7 +92,6 @@ public class PublicTournamentController {
   public ResponseEntity<List<PlayerPairDTO>> getPairs(@PathVariable Long id,
                                                       @RequestParam(defaultValue = "false") boolean includeByes,
                                                       @RequestParam(defaultValue = "false") boolean includeQualified) {
-    log.debug("Getting pairs for tournament {} (includeByes: {}, includeQualified: {})", id, includeByes, includeQualified);
     List<PlayerPairDTO> pairs = tournamentMapper.toDTOPlayerPairList(
         playerPairService.getPairsByTournamentId(id, includeByes, includeQualified)
     );
@@ -108,7 +107,6 @@ public class PublicTournamentController {
    */
   @GetMapping("/{id}/rounds")
   public ResponseEntity<List<RoundDTO>> getRounds(@PathVariable Long id) {
-    log.debug("Getting rounds for tournament {}", id);
     Tournament tournament = tournamentService.getTournamentById(id);
     List<RoundDTO> rounds = tournamentMapper.toDTORoundList(
         tournament.getRounds().stream()
@@ -129,7 +127,6 @@ public class PublicTournamentController {
    */
   @GetMapping("/{tournamentId}/games/{gameId}")
   public ResponseEntity<GameDTO> getGame(@PathVariable Long tournamentId, @PathVariable Long gameId, HttpServletRequest request) {
-    log.debug("Getting game {} for tournament {}", gameId, tournamentId);
     Tournament tournament = tournamentService.getTournamentById(tournamentId);
 
     // Find the game in all rounds and include the round information
@@ -156,7 +153,6 @@ public class PublicTournamentController {
    */
   @GetMapping("/{id}/rounds/{stage}/games")
   public ResponseEntity<Set<GameDTO>> getGamesByStage(@PathVariable Long id, @PathVariable Stage stage) {
-    log.debug("Getting games for tournament {} stage {}", id, stage);
     Set<GameDTO> games = tournamentMapper.toDTOGameSet(
         tournamentService.getGamesByTournamentAndStage(id, stage)
     );
@@ -174,7 +170,6 @@ public class PublicTournamentController {
    */
   @GetMapping("/{id}/rounds/{stage}/match-format")
   public ResponseEntity<MatchFormatDTO> getMatchFormat(@PathVariable Long id, @PathVariable Stage stage) {
-    log.debug("Getting match format for tournament {} stage {}", id, stage);
     MatchFormatDTO format = tournamentMapper.toDTO(
         matchFormatService.getMatchFormatForRound(id, stage)
     );
@@ -190,7 +185,6 @@ public class PublicTournamentController {
    */
   @GetMapping("/{id}/groups/ranking")
   public ResponseEntity<List<PoolRankingDTO>> getGroupRankings(@PathVariable Long id) {
-    log.debug("Getting group rankings for tournament {}", id);
     List<PoolRankingDTO> rankings = tournamentMapper.toDTOPoolRankingList(
         Pool.getGroupRankings(tournamentService.getTournamentById(id))
     );
@@ -208,7 +202,6 @@ public class PublicTournamentController {
   @GetMapping("/active")
   public ResponseEntity<List<TournamentSummaryDTO>> getActiveTournaments(@RequestParam(required = false) LocalDate startDate,
                                                                          @RequestParam(required = false) LocalDate endDate) {
-    log.debug("Getting active tournaments for home page (startDate: {}, endDate: {})", startDate, endDate);
     List<Tournament> entities = tournamentService.getActiveTournaments(startDate, endDate);
     
     List<TournamentSummaryDTO> summaries = entities.stream()
