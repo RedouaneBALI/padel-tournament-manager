@@ -387,7 +387,6 @@ export async function updateUserProfile(payload: Partial<Omit<User, 'id' | 'emai
 
 export async function submitVote(gameId: string, teamSide: 'TEAM_A' | 'TEAM_B'): Promise<VoteSummary> {
   const url = api(`/games/${gameId}/votes`);
-  console.log('Submitting vote to:', url, 'with teamSide:', teamSide);
   const response = await fetchWithAuth(url, {
     method: 'POST',
     headers: { 'X-Session-Id': getSessionId() },
