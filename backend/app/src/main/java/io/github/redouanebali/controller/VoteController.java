@@ -43,7 +43,6 @@ public class VoteController {
   public ResponseEntity<VoteSummaryDTO> vote(@PathVariable Long gameId,
                                              @Valid @RequestBody VoteRequest voteRequest,
                                              HttpServletRequest request) {
-    log.info("Vote request for game {} - team {}", gameId, voteRequest.getTeamSide());
     try {
       voteService.vote(gameId, voteRequest.getTeamSide(), request);
       VoteSummaryDTO summary = voteService.getVoteSummary(gameId, request);
@@ -62,7 +61,6 @@ public class VoteController {
    */
   @GetMapping("/{gameId}/votes")
   public ResponseEntity<VoteSummaryDTO> getVotes(@PathVariable Long gameId, HttpServletRequest request) {
-    log.debug("Getting votes for game {}", gameId);
     VoteSummaryDTO summary = voteService.getVoteSummary(gameId, request);
     return ResponseEntity.ok(summary);
   }

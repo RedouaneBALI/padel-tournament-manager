@@ -75,7 +75,7 @@ public class SecurityConfig {
         "https://*.a.run.app"
     ));
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-    config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+    config.setAllowedHeaders(List.of("Authorization", "Content-Type", "x-session-id"));
     config.setAllowCredentials(true);
     config.setMaxAge(3600L);
 

@@ -24,6 +24,15 @@ const api = (path: string) => {
   return `${API_BASE_URL}${path}`;
 };
 
+const getSessionId = (): string => {
+  let sessionId = localStorage.getItem('sessionId');
+  if (!sessionId) {
+    sessionId = crypto.randomUUID();
+    localStorage.setItem('sessionId', sessionId);
+  }
+  return sessionId;
+};
+
 export async function fetchTournament(tournamentId: string): Promise<Tournament> {
   const res = await fetch(api(`/tournaments/${tournamentId}`), { method: 'GET' });
   if (!res.ok) {
@@ -377,8 +386,11 @@ export async function updateUserProfile(payload: Partial<Omit<User, 'id' | 'emai
 }
 
 export async function submitVote(gameId: string, teamSide: 'TEAM_A' | 'TEAM_B'): Promise<VoteSummary> {
-  const response = await fetchWithAuth(api(`/games/${gameId}/votes`), {
+  const url = api(`/games/${gameId}/votes`);
+  console.log('Submitting vote to:', url, 'with teamSide:', teamSide);
+  const response = await fetchWithAuth(url, {
     method: 'POST',
+    headers: { 'X-Session-Id': getSessionId() },
     body: JSON.stringify({ teamSide }),
   });
 
@@ -399,6 +411,7 @@ export async function submitVote(gameId: string, teamSide: 'TEAM_A' | 'TEAM_B'):
 export async function fetchVoteSummary(gameId: string): Promise<VoteSummary> {
   const response = await fetchWithAuth(api(`/games/${gameId}/votes`), {
     method: 'GET',
+    headers: { 'X-Session-Id': getSessionId() },
   });
 
   if (!response.ok) {

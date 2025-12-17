@@ -25,6 +25,7 @@ import io.github.redouanebali.service.TournamentService;
 import io.github.redouanebali.service.UserService;
 import io.github.redouanebali.websocket.GameScoreWebSocketController;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -145,7 +146,7 @@ public class AdminTournamentController {
    * @return ResponseEntity containing the updated tournament DTO
    */
   @PostMapping(path = "/{id}/pairs", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<TournamentDTO> addPairs(@PathVariable Long id, @RequestBody @Valid List<CreatePlayerPairRequest> players) {
+  public ResponseEntity<TournamentDTO> addPairs(@PathVariable Long id, @RequestBody @Valid @Size(max = 128) List<CreatePlayerPairRequest> players) {
     checkOwnership(id);
     TournamentDTO dto = tournamentMapper.toDTO(playerPairService.addPairs(id, players));
     dto.setOrganizerName(userService.getUserNameByEmail(dto.getOwnerId()));

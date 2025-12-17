@@ -14,6 +14,8 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.HexFormat;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,9 @@ public class VoteService {
 
   private final VoteRepository voteRepository;
   private final GameRepository gameRepository;
+
+  // Cache for generated session IDs to ensure consistency for anonymous users
+  private final ConcurrentHashMap<String, String> sessionIdCache = new ConcurrentHashMap<>();
 
   /**
    * Casts a vote for a team in a game. Each voter can vote once per game, but can change their vote if the game hasn't started.
@@ -50,12 +55,12 @@ public class VoteService {
       existingVote.get().setTeamSide(teamSide);
       existingVote.get().setCreatedAt(Instant.now());
       voteRepository.save(existingVote.get());
-      log.debug("Vote updated: game={}, team={}, authenticated={}", gameId, teamSide, isAuthenticated);
+      log.info("Vote updated: game={}, team={}, voterId={}, authenticated={}", gameId, teamSide, voterId, isAuthenticated);
       return existingVote.get();
     } else {
       Vote vote = new Vote(gameId, voterId, teamSide, isAuthenticated);
       vote = voteRepository.save(vote);
-      log.debug("Vote recorded: game={}, team={}, authenticated={}", gameId, teamSide, isAuthenticated);
+      log.info("Vote recorded: game={}, team={}, voterId={}, authenticated={}", gameId, teamSide, voterId, isAuthenticated);
       return vote;
     }
   }
@@ -83,7 +88,6 @@ public class VoteService {
    */
   String resolveVoterId(HttpServletRequest request) {
     String userId = SecurityUtil.currentUserId();
-    log.info("resolveVoterId - userId: {}", userId);
     if (userId != null) {
       return "user:" + userId;
     }
@@ -95,9 +99,11 @@ public class VoteService {
     if (sessionId == null) {
       sessionId = "default"; // Fallback, but not ideal
     }
+    // Ensure the session ID is consistent for the same IP and User-Agent
+    String sessionIdKey = ip + "|" + (userAgent != null ? userAgent : "unknown");
+    sessionId = sessionIdCache.computeIfAbsent(sessionIdKey, key -> UUID.randomUUID().toString());
     String fingerprint = ip + "|" + (userAgent != null ? userAgent : "unknown") + "|" + sessionId;
     String voterId     = "anon:" + hash(fingerprint);
-    log.info("resolveVoterId - anonymous voterId: {} (IP: {}, UA: {}, Session: {})", voterId, ip, userAgent, sessionId);
     return voterId;
   }
 
