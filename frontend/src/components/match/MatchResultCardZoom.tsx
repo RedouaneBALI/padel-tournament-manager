@@ -178,6 +178,7 @@ function ModernTeamScoreRow({
   loading,
   onPointChange,
   winnerSide,
+  isFinished = false,
 }: {
   team: PlayerPair | null;
   teamIndex: number;
@@ -189,6 +190,7 @@ function ModernTeamScoreRow({
   loading: boolean;
   onPointChange: (teamSide: TeamSide) => void;
   winnerSide?: number;
+  isFinished?: boolean;
 }) {
   const isTeamA = teamSide === 'TEAM_A';
   const themeColor = isTeamA ? 'blue' : 'rose';
@@ -230,11 +232,13 @@ function ModernTeamScoreRow({
         <SetScoresDisplay setScores={setScores} />
 
         {/* Score du Jeu actuel (Point Tennis / Tie Break) */}
-        <CurrentPointDisplay
-          isTieBreakActive={isTieBreakActive}
-          displayPoint={displayPoint}
-          isTeamA={isTeamA}
-        />
+        {!isFinished && (
+          <CurrentPointDisplay
+            isTieBreakActive={isTieBreakActive}
+            displayPoint={displayPoint}
+            isTeamA={isTeamA}
+          />
+        )}
 
         {/* 3. Bouton d'action (+) */}
         {editable && (
@@ -425,6 +429,7 @@ export default function MatchResultCardZoom({
                 loading={loading === 'TEAM_A'}
                 onPointChange={handlePointChange}
                 winnerSide={winnerSideA}
+                isFinished={currentGame.finished}
             />
 
             {/* Équipe B */}
@@ -439,6 +444,7 @@ export default function MatchResultCardZoom({
                 loading={loading === 'TEAM_B'}
                 onPointChange={handlePointChange}
                 winnerSide={winnerSideB}
+                isFinished={currentGame.finished}
             />
 
         </div>
