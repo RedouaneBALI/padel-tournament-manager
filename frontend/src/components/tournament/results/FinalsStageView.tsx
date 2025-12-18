@@ -25,7 +25,7 @@ export default function FinalsStageView({
     if (!hasFinals) return 0;
     const matchPositions = calculateMatchPositions(finalsRounds);
     if (matchPositions.length === 0) return 0;
-    return Math.max(...matchPositions.flat()) + 100;
+    return Math.max(...matchPositions.flat()) + 150;
   })();
 
   if (!hasFinals)
@@ -35,7 +35,7 @@ export default function FinalsStageView({
     <div className="w-full">
       <div
         id="finals-bracket-container"
-        className="relative overflow-auto border border-border rounded-lg px-2 py-6 md:p-8 bg-background stage-min-height"
+        className="relative overflow-auto bg-background stage-min-height pb-4 md:pb-8"
         style={maxPosition ? { ['--stage-min-height' as any]: `${maxPosition}px` } as React.CSSProperties : undefined}
       >
         <div className="w-max mx-0 md:mx-auto">
