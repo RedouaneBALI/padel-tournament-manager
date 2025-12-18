@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
@@ -26,7 +27,9 @@ import jakarta.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -159,6 +162,49 @@ class DrawGenerationServiceTest {
                                                       () -> generateDrawManualWithEmptyRounds(tournament));
     assertEquals("Manual draw generation requires initial rounds to be provided.",
                  exception.getMessage());
+  }
+
+  @Test
+  void generateDraw_manual_knockout_with_bye_should_propagate_bye_winners_to_semis() {
+    Tournament tournament = new Tournament();
+    tournament.setId(1L);
+    tournament.setOwnerId("bali.redouane@gmail.com");
+    tournament.setConfig(TournamentConfig.builder().mainDrawSize(8).nbSeeds(0).format(TournamentFormat.KNOCKOUT).build());
+
+    // Create 6 normal pairs
+    List<PlayerPair> normals = TestFixturesApp.createPlayerPairs(6);
+    // Create 2 BYE
+    PlayerPair bye1 = PlayerPair.bye();
+    PlayerPair bye2 = PlayerPair.bye();
+    // Arrange pairs: bye, p1, p2, p3, p4, p5, p6, bye
+    List<PlayerPair> pairs = new ArrayList<>();
+    pairs.add(bye1);
+    pairs.addAll(normals);
+    pairs.add(bye2);
+    tournament.getPlayerPairs().addAll(pairs);
+
+    // Create manual rounds for quarters
+    List<RoundRequest> manualRounds = TestFixturesApp.createManualRoundRequestsFromPairs(Stage.QUARTERS, pairs);
+
+    // Generate draw
+    Tournament updated = drawGenerationService.generateDrawManual(tournament, manualRounds);
+
+    // Check semis
+    Round semis = updated.getRoundByStage(Stage.SEMIS);
+    assertNotNull(semis);
+    assertEquals(2, semis.getGames().size());
+
+    // The teams that faced BYE are p1 and p6
+    PlayerPair p1 = normals.get(0);
+    PlayerPair p6 = normals.get(5);
+
+    // They should be in semis, but due to bug, they are not
+    List<PlayerPair> semisTeams = semis.getGames().stream()
+                                       .flatMap(g -> Stream.of(g.getTeamA(), g.getTeamB()))
+                                       .filter(Objects::nonNull)
+                                       .toList();
+    assertTrue(semisTeams.contains(p1), "p1 should be in semis after facing BYE");
+    assertTrue(semisTeams.contains(p6), "p6 should be in semis after facing BYE");
   }
 
   // -------------------- helpers --------------------

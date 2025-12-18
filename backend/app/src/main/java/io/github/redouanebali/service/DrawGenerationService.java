@@ -59,6 +59,8 @@ public class DrawGenerationService {
                                                .map(req -> RoundRequest.toModel(req, tournament))
                                                .toList();
     TournamentBuilder.setupTournamentWithInitialRounds(tournament, convertedRounds);
+    
+    propagateWinners(tournament);
 
     log.info("Generated draw (manual) for tournament id {}", tournament.getId());
     Tournament saved = tournamentRepository.save(tournament);
