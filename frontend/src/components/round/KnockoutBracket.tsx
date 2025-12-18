@@ -18,7 +18,7 @@ function calculateChildCoords(childIdx: number, rounds: Round[], r: number, ROUN
   const childEl = nodeRefs.current.get(childId);
 
   let cx = r * ROUND_WIDTH + ROUND_WIDTH - 10; // default right inside column
-  let cy = (matchPositions[r]?.[childIdx] ?? 0) + 40 + 60;
+  let cy = (matchPositions[r]?.[childIdx] ?? 0) + 30 + 60;
 
   if (childEl) {
     const cRect = childEl.getBoundingClientRect();
@@ -69,7 +69,7 @@ function computeConnections(rounds: Round[], ROUND_WIDTH: number, matchPositions
       const parentEl = nodeRefs.current.get(parentId);
       // parent coords (relative to container) - left edge and center Y
       let px = (r + 1) * ROUND_WIDTH + 10; // fallback left inside column
-      let py = (matchPositions[r + 1]?.[parentIndex] ?? 0) + 40 + 60; // fallback center Y
+      let py = (matchPositions[r + 1]?.[parentIndex] ?? 0) + 30 + 60; // fallback center Y
       if (parentEl) {
         const pRect = parentEl.getBoundingClientRect();
         px = pRect.left - containerRect.left; // left edge
@@ -121,7 +121,7 @@ export default function KnockoutBracket({ rounds, tournamentId, isQualif }: Knoc
   const ROUND_WIDTH = 320;
   const CONNECTOR_STROKE = 1.5; // px used for SVG stroke width
   const matchPositions = useMemo(() => calculateMatchPositions(rounds), [rounds]);
-  const maxPosition = Math.max(...matchPositions.flat()) + 200;
+  const maxPosition = Math.max(...matchPositions.flat()) + 100;
 
   // refs
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -210,7 +210,7 @@ export default function KnockoutBracket({ rounds, tournamentId, isQualif }: Knoc
               }}
               className="absolute"
               style={{
-                top: `${matchPositions[roundIndex][gameIndex] + 40}px`,
+                top: `${matchPositions[roundIndex][gameIndex] + 30}px`,
                 left: '10px',
                 right: '10px',
               }}
@@ -249,7 +249,7 @@ export default function KnockoutBracket({ rounds, tournamentId, isQualif }: Knoc
                 key={`label-${game.id}`}
                 className="absolute text-sm flex items-center"
                 style={{
-                  top: `calc(${matchPositions[roundIndex][gameIndex] + 40}px + ${(matchHeight / 2)}px)`,
+                  top: `calc(${matchPositions[roundIndex][gameIndex] + 30}px + ${(matchHeight / 2)}px)`,
                   left: `${ROUND_WIDTH + 10}px`,
                   transform: 'translateY(-50%)',
                   height: `${matchHeight}px`,

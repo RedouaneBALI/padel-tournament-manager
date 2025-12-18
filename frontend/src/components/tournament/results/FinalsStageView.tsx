@@ -25,7 +25,7 @@ export default function FinalsStageView({
     if (!hasFinals) return 0;
     const matchPositions = calculateMatchPositions(finalsRounds);
     if (matchPositions.length === 0) return 0;
-    return Math.max(...matchPositions.flat()) + 200;
+    return Math.max(...matchPositions.flat()) + 100;
   })();
 
   if (!hasFinals)

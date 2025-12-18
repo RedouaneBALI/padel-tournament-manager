@@ -9,7 +9,7 @@ export function calculateMatchPositions(rounds: Round[]) {
     const nbMatches = round.games.length;
 
     if (roundIndex === 0) {
-      const baseSpacing = 160;
+      const baseSpacing = 140;
       for (let i = 0; i < nbMatches; i++) roundPositions.push(i * baseSpacing);
     } else {
       const prev = positions[roundIndex - 1];

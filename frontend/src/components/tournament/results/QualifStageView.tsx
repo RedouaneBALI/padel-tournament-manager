@@ -18,7 +18,7 @@ export default function QualifStageView({
     if (!hasQualifs) return 0;
     const matchPositions = calculateMatchPositions(qualifRounds);
     if (matchPositions.length === 0) return 0;
-    return Math.max(...matchPositions.flat()) + 200;
+    return Math.max(...matchPositions.flat()) + 100;
   })();
 
   if (!hasQualifs)
