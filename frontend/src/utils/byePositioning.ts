@@ -41,8 +41,15 @@ export async function applyByePositions(
       return null;
     }
 
-    // Directly access positions by number of BYEs
-    const positions = drawObj[String(byesCount)];
+    // Find the largest number of BYEs <= byesCount that has positions
+    const byeKeys = Object.keys(drawObj).map(Number).sort((a, b) => b - a); // descending
+    const selectedByeCount = byeKeys.find((k) => k <= byesCount);
+    if (!selectedByeCount) {
+      window.alert('Aucun nombre de BYE compatible trouvé.');
+      return null;
+    }
+
+    const positions = drawObj[String(selectedByeCount)];
     if (!Array.isArray(positions) || positions.length === 0) {
       window.alert('Positions BYE non définies pour ce nombre de BYE.');
       return null;
@@ -51,24 +58,26 @@ export async function applyByePositions(
     // positions are expected as zero-based indices
     const result: Array<PlayerPair | null> = new Array(slotsSize).fill(null);
 
-    // use existing bye pair objects if available, otherwise create placeholders
+    // use existing bye pair objects
     const byeQueue = [...byePairs];
+    const selectedByes = byeQueue.splice(0, positions.length); // take first selectedByeCount
 
     for (let i = 0; i < positions.length; i++) {
       const idx = Number(positions[i]);
-      const bye = byeQueue.shift() || makeByePair();
+      const bye = selectedByes[i];
       if (idx >= 0 && idx < slotsSize) {
         result[idx] = bye;
       }
     }
 
-    // fill remaining slots with non-BYE pairs in original order
+    // fill remaining slots with extra BYE first, then non-BYE pairs
+    const remainingByes = byeQueue;
     const nonByePairs = (playerPairs || []).filter((p) => p?.type !== 'BYE');
-    let ni = 0;
+    const fillers = [...remainingByes, ...nonByePairs];
+    let fi = 0;
     for (let i = 0; i < slotsSize; i++) {
       if (result[i] == null) {
-        const next = nonByePairs[ni++];
-        result[i] = next || null;
+        result[i] = fillers[fi++] || null;
       }
     }
 
@@ -79,4 +88,3 @@ export async function applyByePositions(
     return null;
   }
 }
-

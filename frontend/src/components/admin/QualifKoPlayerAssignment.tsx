@@ -48,16 +48,14 @@ export default function QualifKoPlayerAssignment({ tournament, playerPairs }: Pr
     return mainDrawPairs.some((p) => p?.type === 'BYE');
   }, [playerPairs, qualifSlotsSize, mainSlotsSize]);
 
-  // Apply BYE positions using the public/bye-positions.json mapping (main draw only)
+  // Apply BYE positions for main draw
   const applyByes = async () => {
     setApplyingByes(true);
     try {
-      // Filter to get only main draw pairs (those that would go in mainSlots)
       const mainDrawPairs = playerPairs.slice(qualifSlotsSize, qualifSlotsSize + mainSlotsSize);
-
       const result = await applyByePositions(mainDrawPairs, mainSlotsSize);
       if (result) {
-        // Dispatch event to update main slots only
+        // Dispatch event to update main slots
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('qualifko:apply-main-byes', { detail: { mainSlots: result } }));
         }
