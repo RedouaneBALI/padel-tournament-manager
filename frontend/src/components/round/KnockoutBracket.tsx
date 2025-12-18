@@ -8,6 +8,7 @@ import { calculateMatchPositions } from '@/src/utils/bracket';
 interface KnockoutBracketProps {
   rounds: Round[];
   tournamentId: string;
+  isQualif: boolean;
 }
 
 function calculateChildCoords(childIdx: number, rounds: Round[], r: number, ROUND_WIDTH: number, matchPositions: number[][], nodeRefs: React.MutableRefObject<Map<string, HTMLElement>>, containerRect: DOMRect): { cx: number; cy: number } | null {
@@ -116,7 +117,7 @@ function computeConnections(rounds: Round[], ROUND_WIDTH: number, matchPositions
   return conns;
 }
 
-export default function KnockoutBracket({ rounds, tournamentId }: KnockoutBracketProps) {
+export default function KnockoutBracket({ rounds, tournamentId, isQualif }: KnockoutBracketProps) {
   const ROUND_WIDTH = 320;
   const CONNECTOR_STROKE = 1.5; // px used for SVG stroke width
   const matchPositions = useMemo(() => calculateMatchPositions(rounds), [rounds]);
@@ -167,12 +168,12 @@ export default function KnockoutBracket({ rounds, tournamentId }: KnockoutBracke
       ref={containerRef}
       className="relative flex"
       style={{
-        width: `${rounds.length * ROUND_WIDTH}px`,
+        width: `${rounds.length * ROUND_WIDTH + (isQualif ? 50 : 0)}px`,
         height: `${maxPosition}px`,
       }}
     >
       {/* SVG overlay for orthogonal connections */}
-      <svg className="absolute inset-0 pointer-events-none" width={rounds.length * ROUND_WIDTH} height={maxPosition}>
+      <svg className="absolute inset-0 pointer-events-none" width={rounds.length * ROUND_WIDTH + (isQualif ? 50 : 0)} height={maxPosition}>
         {connections.map((c, i) => {
           const midX = Math.round((Math.max(c.cx1, c.cx2) + c.px) / 2);
           const minY = Math.min(c.cy1, c.cy2);
@@ -233,6 +234,32 @@ export default function KnockoutBracket({ rounds, tournamentId }: KnockoutBracke
               />
             </div>
           ))}
+
+          {isQualif && roundIndex === rounds.length - 1 && round.games.map((game, gameIndex) => {
+            // Get the ref to the MatchResultCardLight DOM node
+            const matchNode = nodeRefs.current.get(String(game.id));
+            let matchHeight = 0;
+            if (matchNode) {
+              matchHeight = matchNode.offsetHeight;
+            } else {
+              matchHeight = 120; // fallback default
+            }
+            return (
+              <div
+                key={`label-${game.id}`}
+                className="absolute text-sm flex items-center"
+                style={{
+                  top: `calc(${matchPositions[roundIndex][gameIndex] + 40}px + ${(matchHeight / 2)}px)`,
+                  left: `${ROUND_WIDTH + 10}px`,
+                  transform: 'translateY(-50%)',
+                  height: `${matchHeight}px`,
+                  minHeight: '40px',
+                }}
+              >
+                Q{gameIndex + 1}
+              </div>
+            );
+          })}
         </div>
       ))}
     </div>

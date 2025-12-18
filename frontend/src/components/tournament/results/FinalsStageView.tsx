@@ -39,7 +39,7 @@ export default function FinalsStageView({
         style={maxPosition ? { ['--stage-min-height' as any]: `${maxPosition}px` } as React.CSSProperties : undefined}
       >
         <div className="w-max mx-0 md:mx-auto">
-          <KnockoutBracket rounds={finalsRounds} tournamentId={tournamentId} />
+          <KnockoutBracket rounds={finalsRounds} tournamentId={tournamentId} isQualif={false} />
         </div>
       </div>
     </div>

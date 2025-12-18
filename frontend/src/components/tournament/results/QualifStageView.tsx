@@ -32,7 +32,7 @@ export default function QualifStageView({
         style={maxPosition ? { ['--stage-min-height' as any]: `${maxPosition}px` } as React.CSSProperties : undefined}
       >
         <div className="w-max mx-0 md:mx-auto">
-          <KnockoutBracket rounds={qualifRounds} tournamentId={tournamentId} />
+          <KnockoutBracket rounds={qualifRounds} tournamentId={tournamentId} isQualif={true} />
         </div>
       </div>
     </div>
