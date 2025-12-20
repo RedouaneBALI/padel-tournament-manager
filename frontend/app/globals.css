@@ -82,6 +82,18 @@
 
   .team-score-justify-center { justify-self: center; }
 
+  /* Winner Highlight */
+  .winner-highlight {
+    background: linear-gradient(to right, rgba(250, 204, 21, 0.1), transparent);
+    border: 1px solid rgba(250, 204, 21, 0.2);
+  }
+
+  /* Bye Highlight */
+  .bye-highlight {
+    background: linear-gradient(to right, rgba(156, 163, 175, 0.5), transparent);
+    border: 1px solid rgba(156, 163, 175, 0.2);
+  }
+
   /* Brand Text Utils */
   .text-brand-google { color: var(--color-brand-google); }
   .text-brand-linkedin { color: var(--color-brand-linkedin); }

@@ -68,8 +68,11 @@ export default function TeamScoreRow({
     ? `${scoresCols} ${gapVar} ${abSlot} ${gapVar}`
     : `${scoresCols}`;
 
+  const isWinner = winnerSide !== undefined && winnerSide === teamIndex;
+  const isBye = team?.type === 'BYE';
+
   return (
-    <div className="relative flex items-center pl-4 pr-2 h-[60px]">
+    <div className={`relative flex items-center pl-4 pr-2 h-[60px] ${isWinner ? 'winner-highlight' : ''} ${isBye ? 'bye-highlight' : ''}`}>
       <div className="flex-1 min-w-0">
         <TeamRow team={team} winnerSide={winnerSide} teamIndex={teamIndex} showChampion={showChampion} />
       </div>
@@ -119,7 +122,6 @@ export default function TeamScoreRow({
             ))
           ) : (
             Array.from({ length: setsCount }).map((_, i) => {
-              const isWinner = winnerSide !== undefined && winnerSide === teamIndex;
               let displayValue = scores[i] || '';
               if (
                 i === 2 &&

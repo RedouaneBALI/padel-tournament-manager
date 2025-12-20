@@ -127,7 +127,7 @@ export default function ZoomTeamScoreRow({
       className={cn(
         'relative flex items-center px-2 py-3 sm:p-4 rounded-xl transition-all duration-300',
         isWinner
-          ? 'bg-gradient-to-r from-yellow-500/10 to-transparent border border-yellow-500/20'
+          ? 'winner-highlight'
           : 'bg-card border border-transparent shadow-sm'
       )}
     >
@@ -168,4 +168,3 @@ export default function ZoomTeamScoreRow({
     </div>
   );
 }
-
