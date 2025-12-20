@@ -131,12 +131,12 @@ export default function GamesList({
       return a.scheduledTime.localeCompare(b.scheduledTime);
     };
 
-    let sortedGames: Game[];
+    let sortedGames = [...games];
     if (sortMode === 'time') {
-      sortedGames = [...games].sort((a, b) => compareTime(a, b));
+      sortedGames.sort((a, b) => compareTime(a, b));
     } else if (sortMode === 'court') {
       // sortMode === 'court' : trier par court (locale, numérique), puis par heure
-      sortedGames = [...games].sort((a, b) => {
+      sortedGames.sort((a, b) => {
         const ca = (a.court || '').trim();
         const cb = (b.court || '').trim();
 
@@ -150,7 +150,7 @@ export default function GamesList({
       });
     } else if (sortMode === 'number') {
       // sortMode === 'number' : trier par numéro de match (ID numérique)
-      sortedGames = [...games].sort((a, b) => compareIds(a.id, b.id));
+      sortedGames.sort((a, b) => compareIds(a.id, b.id));
     }
 
     // Filtrer si nécessaire

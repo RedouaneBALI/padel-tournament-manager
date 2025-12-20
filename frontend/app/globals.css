@@ -85,13 +85,13 @@
   /* Winner Highlight */
   .winner-highlight {
     background: linear-gradient(to right, rgba(250, 204, 21, 0.1), transparent);
-    border: 1px solid rgba(250, 204, 21, 0.2);
+    box-shadow: inset 0 0 0 1px rgba(250, 204, 21, 0.2);
   }
 
   /* Bye Highlight */
   .bye-highlight {
     background: linear-gradient(to right, rgba(156, 163, 175, 0.5), transparent);
-    border: 1px solid rgba(156, 163, 175, 0.2);
+    box-shadow: inset 0 0 0 1px rgba(156, 163, 175, 0.2);
   }
 
   /* Brand Text Utils */
