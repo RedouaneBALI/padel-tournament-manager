@@ -71,13 +71,12 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
   const stageParam = searchParams?.get('stage') ?? null;
   const { setAdminActions } = useExport();
 
-  function initializeCurrentRound(initialRounds: Round[], stageParam: string | null, searchParams: URLSearchParams | null, router: ReturnType<typeof useRouter>, pathname: string | null, setCurrentRoundIndex: (idx: number) => void) {
+  function initializeCurrentRound(initialRounds: Round[], stageParam: string | null, searchParams: URLSearchParams | null, router: ReturnType<typeof useRouter>, pathname: string | null, setCurrentRoundIndex: (idx: number) => void, currentStageFromApi: Stage | null) {
     if (initialRounds.length === 0) {
       setCurrentRoundIndex(0);
       return;
     }
 
-    const currentStageFromApi = (initialRounds[0] as any)?.currentRoundStage as Stage | null;
     const desiredStage: Stage = (isStage(stageParam) ? stageParam : undefined)
       || currentStageFromApi
       || (initialRounds[0].stage as Stage);
@@ -140,8 +139,9 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
         setIsLoading(true);
         const t = await fetchTournament(tournamentId);
         const initialRounds: Round[] = (t as any)?.rounds ?? [];
+        const currentStageFromApi = (t as any)?.currentRoundStage as Stage | null;
         setRounds(initialRounds);
-        initializeCurrentRound(initialRounds, stageParam, searchParams, router, pathname, setCurrentRoundIndex);
+        initializeCurrentRound(initialRounds, stageParam, searchParams, router, pathname, setCurrentRoundIndex, currentStageFromApi);
       } catch (err) {
         console.error('Erreur lors du chargement des matchs :', err);
       } finally {
