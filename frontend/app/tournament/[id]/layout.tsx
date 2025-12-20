@@ -18,6 +18,7 @@ import BottomNav from '@/src/components/ui/BottomNav';
 import { ExportProvider } from '@/src/contexts/ExportContext';
 import type { IconType } from 'react-icons';
 import PageHeader from '@/src/components/ui/PageHeader';
+import { TournamentNameContext } from '@/src/contexts/TournamentNameContext';
 
 export default function TournamentLayout({
   children,
@@ -105,26 +106,28 @@ export default function TournamentLayout({
 
   return (
     <ExportProvider>
-      <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
-        <header className="pt-4 pb-2">
-          <div className="flex items-center gap-2">
-            {isGameDetail && <PageHeader showBackButton title={tournament.name} />}
-            {!isGameDetail && <PageHeader title={tournament.name} />}
-          </div>
-        </header>
+      <TournamentNameContext.Provider value={tournament.name}>
+        <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
+          <header className="pt-4 pb-2">
+            <div className="flex items-center gap-2">
+              {isGameDetail && <PageHeader showBackButton title={tournament.name} />}
+              {!isGameDetail && <PageHeader title={tournament.name} />}
+            </div>
+          </header>
 
-        {/* Contenu avec padding bas pour ne pas passer sous la bottom bar */}
-        <main className="mb-15">{children}</main>
+          {/* Contenu avec padding bas pour ne pas passer sous la bottom bar */}
+          <main className="mb-15">{children}</main>
 
-        {/* Bottom navigation – remplace les onglets du haut */}
-        <nav className="fixed bottom-0 inset-x-0 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-[80]">
-          <div className="max-w-screen-2xl mx-auto px-2 sm:px-4">
-            <BottomNav items={moreItems} pathname={pathname} onMoreClick={handleMoreClick} isMoreOpen={isMoreOpen} />
-          </div>
-        </nav>
+          {/* Bottom navigation – remplace les onglets du haut */}
+          <nav className="fixed bottom-0 inset-x-0 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-[80]">
+            <div className="max-w-screen-2xl mx-auto px-2 sm:px-4">
+              <BottomNav items={moreItems} pathname={pathname} onMoreClick={handleMoreClick} isMoreOpen={isMoreOpen} />
+            </div>
+          </nav>
 
-        <ToastContainer />
-      </div>
+          <ToastContainer />
+        </div>
+      </TournamentNameContext.Provider>
     </ExportProvider>
   );
 }

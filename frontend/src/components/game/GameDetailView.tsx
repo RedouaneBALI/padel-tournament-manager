@@ -1,12 +1,15 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Game } from '@/src/types/game';
 import { Score } from '@/src/types/score';
 import MatchResultCardZoom from '@/src/components/match/MatchResultCardZoom';
+import MatchShareCard from '@/src/components/match/MatchShareCard';
 import VoteModule from '@/src/components/match/VoteModule';
 import { toast } from 'react-toastify';
 import { formatStageLabel } from '@/src/types/stage';
+import { toBlob } from 'html-to-image';
+import { TournamentNameContext } from '@/src/contexts/TournamentNameContext';
 
 interface GameDetailViewProps {
   gameId: string;
@@ -29,6 +32,8 @@ export default function GameDetailView({
   editable = false,
   title,
 }: GameDetailViewProps) {
+  const contextTournamentName = useContext(TournamentNameContext);
+  const displayTitle = title || contextTournamentName;
 
   const [game, setGame] = useState<Game | null>(null);
   const [loading, setLoading] = useState(true);
@@ -95,6 +100,94 @@ export default function GameDetailView({
     return false;
   };
 
+  const handleShare = async () => {
+    if (!game) return;
+
+    let tempContainer: HTMLDivElement | null = null;
+
+    try {
+      // Create a temporary container off-DOM
+      tempContainer = document.createElement('div');
+      tempContainer.style.position = 'fixed';
+      tempContainer.style.top = '0';
+      tempContainer.style.left = '0';
+      tempContainer.style.width = '400px';
+      tempContainer.style.zIndex = '-9999';
+      tempContainer.style.opacity = '0';
+      tempContainer.style.pointerEvents = 'none';
+
+      // Add to DOM before rendering
+      document.body.appendChild(tempContainer);
+
+      // Render the component into this container
+      const { createRoot } = await import('react-dom/client');
+      const root = createRoot(tempContainer);
+      root.render(
+        <MatchShareCard game={game} tournamentName={displayTitle} />
+      );
+
+      // Wait for render to complete
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Capture the element
+      const shareElement = tempContainer.querySelector('.match-share-card');
+      if (!shareElement) throw new Error('Élément non trouvé');
+
+      const blob = await toBlob(shareElement as HTMLElement, {
+        cacheBust: true,
+        backgroundColor: '#ffffff',
+      });
+
+      // Cleanup
+      root.unmount();
+      if (tempContainer.parentNode) {
+        document.body.removeChild(tempContainer);
+      }
+
+      if (!blob) throw new Error('Échec de la génération de l\'image');
+
+      const fileName = `match-${title || 'tournament'}-${game.round?.stage ? formatStageLabel(game.round.stage) : 'round'}.png`;
+      const file = new File([blob], fileName, { type: 'image/png' });
+
+      const shareData = {
+        title: `Match ${title || ''} - ${game.round?.stage ? formatStageLabel(game.round.stage) : ''}`,
+        text: `Découvrez le score du match sur PadelRounds !`,
+        files: [file],
+      };
+
+      if (navigator.canShare && navigator.canShare(shareData)) {
+        try {
+          await navigator.share(shareData);
+          return;
+        } catch (err) {
+          if ((err as Error).name !== 'AbortError') console.warn('Erreur partage:', err);
+        }
+      }
+
+      // Fallback: download the image
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+    } catch (error) {
+      // Cleanup in case of error
+      if (tempContainer?.parentNode) {
+        try {
+          document.body.removeChild(tempContainer);
+        } catch (e) {
+          console.warn('Erreur cleanup:', e);
+        }
+      }
+      console.error('Erreur lors de la création de l\'image:', error);
+      toast.error('Impossible de générer l\'image pour le moment.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-full flex items-center justify-center">
@@ -156,6 +249,19 @@ export default function GameDetailView({
           votes={game.votes}
         />
       )}
+      {/* Composant de partage */}
+      <div className="hidden">
+        <MatchShareCard game={game} tournamentName={displayTitle} />
+      </div>
+      {/* Bouton de partage */}
+      <div className="mt-4 flex justify-center">
+        <button
+          onClick={handleShare}
+          className="px-4 py-2 bg-primary text-white rounded-md shadow-md hover:bg-primary/90 transition-colors"
+        >
+          Partager le match
+        </button>
+      </div>
     </main>
   );
 }
