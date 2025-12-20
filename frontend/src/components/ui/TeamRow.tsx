@@ -56,7 +56,7 @@ export default function TeamRow({
           </div>
 
           {team?.displaySeed && (
-            <span className="ml-2 px-1.5 py-0.5 rounded text-xs font-medium whitespace-nowrap bg-slate-200 text-black">
+            <span className="ml-2 px-1 py-0.5 rounded-lg text-xs font-medium whitespace-nowrap bg-border/50 text-foreground">
               {team.displaySeed}
             </span>
           )}
