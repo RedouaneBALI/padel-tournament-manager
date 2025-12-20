@@ -8,20 +8,28 @@ type VoteModuleProps = {
   teamAName?: string;
   teamBName?: string;
   isVotingDisabled?: boolean;
+  votes?: VoteSummary;
 };
 
 export default function VoteModule({
   gameId,
   teamAName = "Équipe A",
   teamBName = "Équipe B",
-  isVotingDisabled = false
+  isVotingDisabled = false,
+  votes: initialVotes
 }: VoteModuleProps) {
-  const [voteSummary, setVoteSummary] = useState<VoteSummary | null>(null);
+  const [voteSummary, setVoteSummary] = useState<VoteSummary | null>(initialVotes || null);
   const [voteLoading, setVoteLoading] = useState<'TEAM_A' | 'TEAM_B' | null>(null);
   const [hasAnimated, setHasAnimated] = useState(false);
 
   useEffect(() => {
     async function loadVotes() {
+      if (initialVotes) {
+        setVoteSummary(initialVotes);
+        setTimeout(() => setHasAnimated(true), 100);
+        return;
+      }
+
       try {
         const summary = await fetchVoteSummary(gameId);
         setVoteSummary(summary);
@@ -31,7 +39,15 @@ export default function VoteModule({
       }
     }
     loadVotes();
-  }, [gameId]);
+  }, [gameId, initialVotes]);
+
+  // Update voteSummary if initialVotes prop changes
+  useEffect(() => {
+    if (initialVotes) {
+      setVoteSummary(initialVotes);
+      setHasAnimated(true);
+    }
+  }, [initialVotes]);
 
   const handleVote = async (teamSide: 'TEAM_A' | 'TEAM_B') => {
     if (voteLoading || voteSummary?.currentUserVote === teamSide) return;
@@ -40,10 +56,6 @@ export default function VoteModule({
     try {
       const summary = await submitVote(gameId, teamSide);
       setVoteSummary(summary);
-      // Recharger les votes après un court délai pour s'assurer de la synchronisation
-      setTimeout(() => {
-        fetchVoteSummary(gameId).then(setVoteSummary).catch(console.error);
-      }, 500);
     } catch (e) {
       console.error(e);
     } finally {

@@ -116,6 +116,8 @@ export default function GameDetailView({
     );
   }
 
+  const totalVotes = game.votes ? game.votes.teamAVotes + game.votes.teamBVotes : 0;
+
   return (
     <main className={`${editable ? '' : 'px-4 sm:px-6'}`}>
       {/* Ligne 2 : nom du tournoi (et éventuellement boutons admin) */}
@@ -146,8 +148,14 @@ export default function GameDetailView({
           />
         </div>
       </div>
-
-      <VoteModule gameId={game.id} isVotingDisabled={hasMatchStarted(game.score ?? null)} />
+      {/* Afficher VoteModule seulement si (match non démarré) OU (match démarré et au moins un vote) */}
+      {(!hasMatchStarted(game.score ?? null) || totalVotes > 0) && (
+        <VoteModule
+          gameId={game.id}
+          isVotingDisabled={hasMatchStarted(game.score ?? null)}
+          votes={game.votes}
+        />
+      )}
     </main>
   );
 }

@@ -57,7 +57,7 @@ export default function TeamRow({
 
           {team?.displaySeed && (
             <span className={cn(
-              "ml-2 truncate",
+              "ml-2 whitespace-nowrap",
               fontSize ? fontSize : 'text-sm',
               isWinner ? 'font-bold text-foreground' : 'font-medium',
               isLoser ? 'text-muted-foreground' : 'text-foreground'

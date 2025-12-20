@@ -4,6 +4,7 @@ import { Score } from '@/src/types/score';
 import { Pool } from '@/src/types/pool';
 import { Round } from '@/src/types/round';
 import { PlayerPair } from '@/src/types/playerPair';
+import { VoteSummary } from '@/src/types/vote';
 
 export interface Game {
   id: string;
@@ -20,6 +21,7 @@ export interface Game {
   scheduledTime: string;
   court: string;
   round?: Round;
+  votes?: VoteSummary;
 }
 
 export type { PlayerPair } from '@/src/types/playerPair';
