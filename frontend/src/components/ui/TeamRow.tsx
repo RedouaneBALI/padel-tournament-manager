@@ -56,13 +56,8 @@ export default function TeamRow({
           </div>
 
           {team?.displaySeed && (
-            <span className={cn(
-              "ml-2 whitespace-nowrap",
-              fontSize ? fontSize : 'text-sm',
-              isWinner ? 'font-bold text-foreground' : 'font-medium',
-              isLoser ? 'text-muted-foreground' : 'text-foreground'
-            )}>
-              ({team.displaySeed})
+            <span className="ml-2 px-1.5 py-0.5 rounded text-xs font-medium whitespace-nowrap bg-slate-200 text-black">
+              {team.displaySeed}
             </span>
           )}
 
