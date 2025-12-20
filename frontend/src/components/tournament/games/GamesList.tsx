@@ -44,7 +44,7 @@ export default function GamesList({
   // overrides locaux (score + winner) quand un match a été modifié (par MatchResultCard dispatch)
   const [overrides, setOverrides] = useState<Record<string, { score: any; winner: string | null }>>({});
   // État de tri local (time | court)
-  const [sortMode, setSortMode] = useState<'time' | 'court'>('time');
+  const [sortMode, setSortMode] = useState<'time' | 'court' | 'number'>('time');
   const [showOnlyInProgress, setShowOnlyInProgress] = useState(false);
 
   const handleGameClick = (gameId: string) => {
@@ -134,7 +134,7 @@ export default function GamesList({
     let sortedGames: Game[];
     if (sortMode === 'time') {
       sortedGames = [...games].sort((a, b) => compareTime(a, b));
-    } else {
+    } else if (sortMode === 'court') {
       // sortMode === 'court' : trier par court (locale, numérique), puis par heure
       sortedGames = [...games].sort((a, b) => {
         const ca = (a.court || '').trim();
@@ -148,6 +148,9 @@ export default function GamesList({
         if (courtCmp !== 0) return courtCmp;
         return compareTime(a, b);
       });
+    } else if (sortMode === 'number') {
+      // sortMode === 'number' : trier par numéro de match (ID numérique)
+      sortedGames = [...games].sort((a, b) => compareIds(a.id, b.id));
     }
 
     // Filtrer si nécessaire
@@ -189,6 +192,18 @@ export default function GamesList({
             }`}
           >
             Par court
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-pressed={sortMode === 'number'}
+            title="Trier par numéro"
+            onClick={() => setSortMode('number')}
+            className={`px-3 py-1 rounded-full text-sm transition-colors disabled:opacity-50 ${
+              sortMode === 'number' ? 'bg-primary text-on-primary' : 'bg-transparent text-foreground hover:bg-primary/10'
+            }`}
+          >
+            Par numéro
           </button>
           {hasLiveMatches && (
             <>
