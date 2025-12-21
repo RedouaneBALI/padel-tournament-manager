@@ -176,7 +176,7 @@ function AdminTournamentLayoutContent({
 
 
   return (
-    <TournamentContext.Provider value={{ name: tournament.name, club: tournament.club }}>
+    <TournamentContext.Provider value={{ name: tournament.name, club: tournament.club, level: tournament.level }}>
       <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
         <header className="pt-4 pb-2">
           <PageHeader

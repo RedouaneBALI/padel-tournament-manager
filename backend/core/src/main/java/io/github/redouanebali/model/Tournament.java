@@ -82,6 +82,10 @@ public class Tournament {
   private String           city;
   @Size(max = 50)
   private String           club;
+  @Size(max = 100)
+  private String           organizerName;
+  @Column(name = "is_featured")
+  private boolean          featured;
   @Enumerated(EnumType.STRING)
   private Gender           gender;
   @Enumerated(EnumType.STRING)

@@ -18,5 +18,7 @@ public class TournamentSummaryDTO {
   private Gender          gender;
   private LocalDate       startDate;
   private LocalDate       endDate;
+  private String          organizerName;
+  private boolean         featured;
 
 }

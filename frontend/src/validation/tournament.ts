@@ -75,6 +75,10 @@ export const TournamentFormSchema = z.object({
   club: z.preprocess(trimThenEmptyToNull, z.string()
     .max(200, 'Le nom du club ne doit pas dépasser 200 caractères.')
     .nullable()).default(null),
+  organizerName: z.preprocess(trimThenEmptyToNull, z.string()
+    .max(50, 'Le nom de l\'organisateur ne doit pas dépasser 50 caractères.')
+    .nullable()).default(null),
+  featured: z.preprocess((v) => v === undefined ? false : v, z.boolean()).default(false),
   gender: z.preprocess(trimThenEmptyToNull, z.string().nullable()).default(null),
   level: z.preprocess(trimThenEmptyToNull, z.string().nullable()).default(null),
   startDate: z.preprocess(emptyToNull, z.string().nullable()).default(null),

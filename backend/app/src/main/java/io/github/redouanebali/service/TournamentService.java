@@ -113,6 +113,8 @@ public class TournamentService {
     existing.setDescription(updatedTournament.getDescription());
     existing.setCity(updatedTournament.getCity());
     existing.setClub(updatedTournament.getClub());
+    existing.setOrganizerName(updatedTournament.getOrganizerName());
+    existing.setFeatured(updatedTournament.isFeatured());
     existing.setGender(updatedTournament.getGender());
     existing.setLevel(updatedTournament.getLevel());
     existing.setConfig(updatedTournament.getConfig());

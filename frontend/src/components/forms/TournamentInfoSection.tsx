@@ -1,12 +1,14 @@
 import { MapPin, Building, FileText } from 'lucide-react';
 import type { TournamentFormData } from '@/src/validation/tournament';
+import { Switch } from '@/src/components/ui/Switch';
 
 interface TournamentInfoSectionProps {
   formData: TournamentFormData;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  setFormData: React.Dispatch<React.SetStateAction<TournamentFormData>>;
 }
 
-export default function TournamentInfoSection({ formData, handleInputChange }: TournamentInfoSectionProps) {
+export default function TournamentInfoSection({ formData, handleInputChange, setFormData }: TournamentInfoSectionProps) {
   return (
     <div className="bg-card">
       <div className="p-4 border-b border-border">
@@ -64,6 +66,21 @@ export default function TournamentInfoSection({ formData, handleInputChange }: T
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             />
           </div>
+
+          <div className="space-y-2">
+            <label htmlFor="organizerName" className="block text-sm font-medium text-foreground">
+              Organisateur
+            </label>
+            <input
+              id="organizerName"
+              name="organizerName"
+              type="text"
+              placeholder="Nom de l'organisateur"
+              value={String(formData.organizerName ?? '')}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+            />
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -79,6 +96,18 @@ export default function TournamentInfoSection({ formData, handleInputChange }: T
             rows={3}
             className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors min-h-[100px] resize-none"
           />
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="featured"
+            name="featured"
+            checked={Boolean(formData.featured)}
+            onCheckedChange={(checked) => setFormData({ ...formData, featured: checked })}
+          />
+          <label htmlFor="featured" className="text-sm font-medium text-foreground">
+            Tournoi mis en avant
+          </label>
         </div>
       </div>
     </div>

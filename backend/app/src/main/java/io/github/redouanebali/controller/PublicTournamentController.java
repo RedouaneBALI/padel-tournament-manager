@@ -75,7 +75,6 @@ public class PublicTournamentController {
     String        userId     = SecurityUtil.currentUserId();
     boolean       canEdit    = authorizationService.canEditTournament(tournament, userId);
     dto.setIsEditable(canEdit);
-    dto.setOrganizerName(userService.getUserNameByEmail(dto.getOwnerId()));
     return ResponseEntity.ok(dto);
   }
 
@@ -203,7 +202,7 @@ public class PublicTournamentController {
   public ResponseEntity<List<TournamentSummaryDTO>> getActiveTournaments(@RequestParam(required = false) LocalDate startDate,
                                                                          @RequestParam(required = false) LocalDate endDate) {
     List<Tournament> entities = tournamentService.getActiveTournaments(startDate, endDate);
-    
+
     List<TournamentSummaryDTO> summaries = entities.stream()
                                                    .map(tournamentMapper::toSummaryDTO)
                                                    .toList();

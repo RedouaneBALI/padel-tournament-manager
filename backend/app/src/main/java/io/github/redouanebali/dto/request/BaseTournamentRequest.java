@@ -40,6 +40,17 @@ public abstract class BaseTournamentRequest {
   private String club;
 
   /**
+   * Optional organizer name; used for display and filtering.
+   */
+  @Size(max = 100, message = "Organizer name must not exceed 100 characters")
+  private String organizerName;
+
+  /**
+   * Whether the tournament is featured on the home page.
+   */
+  private boolean featured;
+
+  /**
    * Classification fields.
    */
   private Gender          gender;

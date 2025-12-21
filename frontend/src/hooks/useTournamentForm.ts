@@ -12,6 +12,8 @@ export function getInitialFormData(initialData?: Partial<TournamentFormData>): T
     description: '',
     city: '',
     club: '',
+    organizerName: null,
+    featured: false,
     gender: null,
     level: null,
     startDate: null,
@@ -59,7 +61,7 @@ export function useTournamentForm(initialData?: Partial<TournamentFormData>) {
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
 
     setFormData((prev) => {
       const updated = { ...prev } as TournamentFormData;
@@ -80,7 +82,11 @@ export function useTournamentForm(initialData?: Partial<TournamentFormData>) {
           (updated.config as any)[key] = value as any;
         }
       } else {
-        (updated as any)[name] = value;
+        if (type === 'checkbox') {
+          (updated as any)[name] = checked;
+        } else {
+          (updated as any)[name] = value;
+        }
       }
 
       return updated;

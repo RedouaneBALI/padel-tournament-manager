@@ -23,5 +23,6 @@ export interface Tournament {
   ownerId: string;
   editorIds: string[];
   organizerName?: string;
+  featured: boolean;
   tvUrl?: string | null;
 }

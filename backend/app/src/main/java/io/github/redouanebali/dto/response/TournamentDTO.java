@@ -30,6 +30,7 @@ public class TournamentDTO {
   private Set<String>         editorIds;
   private Boolean             isEditable;
   private String              organizerName;
+  private boolean             featured;
 
   public Stage getCurrentRoundStage() {
     if (rounds == null || rounds.isEmpty()) {

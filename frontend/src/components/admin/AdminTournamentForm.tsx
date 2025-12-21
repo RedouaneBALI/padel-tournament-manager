@@ -1,9 +1,8 @@
-
 'use client';
 
 import type { ParsedTournamentForm } from '@/src/validation/tournament';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import TournamentForm from '@/src/components/forms/TournamentForm';
 import type { Tournament } from '@/src/types/tournament';
@@ -55,12 +54,20 @@ export default function AdminTournamentForm({ tournamentId }: Props) {
     router.refresh();
   };
 
+  const isEditing = Boolean(tournamentId);
+  const title = isEditing ? 'Modifier le tournoi' : 'Créer un tournoi';
+
+  const initialData = useMemo(() => {
+    if (isEditing) {
+      return tournament ?? undefined;
+    } else {
+      return undefined;
+    }
+  }, [isEditing, tournament]);
+
   if (loading) {
     return <CenteredLoader />;
   }
-
-  const isEditing = Boolean(tournamentId);
-  const title = isEditing ? 'Modifier le tournoi' : 'Créer un tournoi';
 
   return (
     <>
@@ -68,7 +75,7 @@ export default function AdminTournamentForm({ tournamentId }: Props) {
         title={title}
         isEditing={isEditing}
         onSubmit={isEditing ? handleUpdate : handleCreate}
-        initialData={isEditing ? tournament ?? undefined : undefined}
+        initialData={initialData}
       />
       <BottomNav items={items} pathname={pathname} />
     </>

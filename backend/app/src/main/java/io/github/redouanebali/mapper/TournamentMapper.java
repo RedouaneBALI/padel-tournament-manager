@@ -35,7 +35,8 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface TournamentMapper {
 
-  @Mapping(target = "organizerName", ignore = true)
+  @Mapping(target = "organizerName", source = "organizerName")
+  @Mapping(target = "featured", source = "featured")
   @Mapping(target = "isEditable", expression = "java(tournament.isEditableBy(io.github.redouanebali.security.SecurityUtil.currentUserId()))")
   @Mapping(target = "editorIds", source = "editorIds")
   TournamentDTO toDTOBase(Tournament tournament);
@@ -284,6 +285,8 @@ public interface TournamentMapper {
   Tournament toEntity(CreateTournamentRequest request);
 
   // Summary mapping for the public home endpoint
+  @Mapping(target = "organizerName", source = "organizerName")
+  @Mapping(target = "featured", source = "featured")
   TournamentSummaryDTO toSummaryDTO(Tournament tournament);
 
   default ScoreDTO toDTO(Score score) {

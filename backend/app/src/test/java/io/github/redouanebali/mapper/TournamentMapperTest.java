@@ -59,6 +59,8 @@ class TournamentMapperTest {
     t.setDescription("Test tournament");
     t.setCity("Casa");
     t.setClub("Padel Club");
+    t.setOrganizerName("Test Organizer");
+    t.setFeatured(true);
     t.setGender(Gender.MIX);
     t.setLevel(TournamentLevel.P100);
     t.setStartDate(LocalDate.of(2025, 10, 1));
@@ -90,6 +92,8 @@ class TournamentMapperTest {
     assertEquals("Test tournament", dto.getDescription());
     assertEquals("Casa", dto.getCity());
     assertEquals("Padel Club", dto.getClub());
+    assertEquals("Test Organizer", dto.getOrganizerName());
+    assertTrue(dto.isFeatured());
     assertEquals(Gender.MIX, dto.getGender());
     assertEquals(TournamentLevel.P100, dto.getLevel());
     assertEquals(LocalDate.of(2025, 10, 1), dto.getStartDate());
@@ -479,11 +483,15 @@ class TournamentMapperTest {
   void testCreateTournamentRequest_mapsEditorIdsToEntity() {
     CreateTournamentRequest req = new CreateTournamentRequest();
     req.setName("Test Tour");
+    req.setOrganizerName("Test Organizer");
+    req.setFeatured(true);
     req.setEditorIds(java.util.Set.of("e1@test.com", "e2@test.com"));
 
     Tournament t = mapper.toEntity(req);
     // ownerId is ignored by mapper (set elsewhere), but editors should be mapped
     assertNotNull(t);
+    assertEquals("Test Organizer", t.getOrganizerName());
+    assertTrue(t.isFeatured());
     assertEquals(2, t.getEditorIds().size());
     assertTrue(t.getEditorIds().contains("e1@test.com"));
     assertTrue(t.getEditorIds().contains("e2@test.com"));

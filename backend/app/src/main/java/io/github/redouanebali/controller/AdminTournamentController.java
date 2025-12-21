@@ -14,7 +14,6 @@ import io.github.redouanebali.model.Score;
 import io.github.redouanebali.model.Stage;
 import io.github.redouanebali.model.TeamSide;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.model.User;
 import io.github.redouanebali.security.AuthorizationService;
 import io.github.redouanebali.security.SecurityProps;
 import io.github.redouanebali.security.SecurityUtil;
@@ -76,11 +75,9 @@ public class AdminTournamentController {
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<TournamentDTO> createTournament(@RequestBody @Valid CreateTournamentRequest request) {
     log.info("Creating tournament '{}' for user: {}", request.getName(), SecurityUtil.currentUserId());
-    Tournament    tournament  = tournamentMapper.toEntity(request);
-    Tournament    saved       = tournamentService.createTournament(tournament);
-    TournamentDTO body        = tournamentMapper.toDTO(saved);
-    User          currentUser = SecurityUtil.getCurrentUser();
-    body.setOrganizerName(currentUser != null ? currentUser.getName() : null);
+    Tournament    tournament = tournamentMapper.toEntity(request);
+    Tournament    saved      = tournamentService.createTournament(tournament);
+    TournamentDTO body       = tournamentMapper.toDTO(saved);
     return ResponseEntity
         .created(URI.create("/admin/tournaments/" + saved.getId()))
         .body(body);
@@ -117,9 +114,6 @@ public class AdminTournamentController {
                             : tournamentService.listByOwnerOrEditor(me);
 
     List<TournamentDTO> dtos = tournamentMapper.toDTO(list);
-    for (TournamentDTO dto : dtos) {
-      dto.setOrganizerName(userService.getUserNameByEmail(dto.getOwnerId()));
-    }
     return ResponseEntity.ok(dtos);
   }
 
@@ -134,7 +128,6 @@ public class AdminTournamentController {
   public ResponseEntity<TournamentDTO> updateTournament(@PathVariable Long id, @RequestBody @Valid UpdateTournamentRequest updated) {
     checkOwnership(id);
     TournamentDTO dto = tournamentMapper.toDTO(tournamentService.updateTournament(id, updated));
-    dto.setOrganizerName(userService.getUserNameByEmail(dto.getOwnerId()));
     return ResponseEntity.ok(dto);
   }
 
@@ -149,7 +142,6 @@ public class AdminTournamentController {
   public ResponseEntity<TournamentDTO> addPairs(@PathVariable Long id, @RequestBody @Valid @Size(max = 128) List<CreatePlayerPairRequest> players) {
     checkOwnership(id);
     TournamentDTO dto = tournamentMapper.toDTO(playerPairService.addPairs(id, players));
-    dto.setOrganizerName(userService.getUserNameByEmail(dto.getOwnerId()));
     return ResponseEntity.ok(dto);
   }
 
@@ -299,7 +291,6 @@ public class AdminTournamentController {
     log.info("Generating manual draw for tournament {} by user {}", id, SecurityUtil.currentUserId());
     checkOwnership(id);
     TournamentDTO dto = tournamentMapper.toDTO(tournamentService.generateDrawManual(id, initialRounds));
-    dto.setOrganizerName(userService.getUserNameByEmail(dto.getOwnerId()));
     return ResponseEntity.ok(dto);
   }
 
