@@ -17,7 +17,7 @@ export default function TournamentOverviewTab({ tournament }: TournamentOverview
   const currentRound = rounds[currentStageIndex];
 
   return (
-    <section className="bg-card p-6 rounded-md shadow-md">
+    <section className="bg-card px-2 rounded-md shadow-md">
       {/* Divider & section header */}
       <div className="mb-4 flex items-center gap-3">
         <div className="h-px flex-1 bg-border" />

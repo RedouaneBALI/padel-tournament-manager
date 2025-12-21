@@ -138,15 +138,6 @@ export default function GameDetailView({
 
   return (
     <main className={`${editable ? '' : 'px-4 sm:px-6'}`}>
-      {/* Ligne 2 : nom du tournoi (et éventuellement boutons admin) */}
-      <div className="mb-2 flex items-center gap-2">
-        {title && (
-          <span className="text-lg sm:text-xl font-bold text-primary truncate">{title}</span>
-        )}
-        {/* Place ici les boutons admin si besoin, par exemple : */}
-        {/* {isAdmin && <AdminActions ... />} */}
-      </div>
-
       {/* Ligne 3 : stage name centré */}
       {game.round?.stage && (
         <div className="flex justify-center mb-4">

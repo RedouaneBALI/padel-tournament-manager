@@ -62,10 +62,8 @@ export default function PlayerPairList({ pairs, tournamentId, loading = false, e
 
   return (
     <>
-      <div className="flex items-center">
-        <div className="h-px flex-1 bg-border  my-6" />
-        <h3 className="text-s sm:text-sm uppercase tracking-wider text-muted-foreground select-none">{pairs.length} Equipes inscrites</h3>
-        <div className="h-px flex-1 bg-border" />
+      <div className="flex items-center justify-center">
+        <h3 className="text-center pb-2 text-s sm:text-sm uppercase tracking-wider text-muted-foreground select-none">{pairs.length} Equipes inscrites</h3>
       </div>
       <ul className="space-y-2">
         {localPairs.map((pair) => {

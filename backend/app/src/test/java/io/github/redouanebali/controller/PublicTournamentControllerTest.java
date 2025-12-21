@@ -4,6 +4,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.github.redouanebali.dto.response.TournamentDTO;
+import io.github.redouanebali.dto.response.TournamentSummaryDTO;
 import io.github.redouanebali.mapper.TournamentMapper;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.security.AuthorizationService;
@@ -12,6 +13,7 @@ import io.github.redouanebali.service.MatchFormatService;
 import io.github.redouanebali.service.PlayerPairService;
 import io.github.redouanebali.service.TournamentService;
 import io.github.redouanebali.service.UserService;
+import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -144,6 +146,35 @@ public class PublicTournamentControllerTest {
 
     mockMvc.perform(MockMvcRequestBuilders.get("/tournaments/{tournamentId}/games/{gameId}", 6L, 999L).accept(MediaType.APPLICATION_JSON))
            .andExpect(status().isNotFound());
+  }
+
+  @Test
+  public void getActiveTournaments_returnsOnlyFeatured() throws Exception {
+    Tournament featuredTournament = new Tournament();
+    featuredTournament.setId(1L);
+    featuredTournament.setFeatured(true);
+
+    Tournament nonFeaturedTournament = new Tournament();
+    nonFeaturedTournament.setId(2L);
+    nonFeaturedTournament.setFeatured(false);
+
+    when(tournamentService.getActiveTournaments(null, null)).thenReturn(List.of(featuredTournament, nonFeaturedTournament));
+
+    TournamentSummaryDTO featuredSummary = new TournamentSummaryDTO();
+    featuredSummary.setId(1L);
+    featuredSummary.setFeatured(true);
+
+    when(tournamentMapper.toSummaryDTO(featuredTournament)).thenReturn(featuredSummary);
+
+    mockMvc.perform(MockMvcRequestBuilders.get("/tournaments/active").accept(MediaType.APPLICATION_JSON))
+           .andExpect(status().isOk())
+           .andReturn()
+           .getResponse()
+           .getContentAsString();
+
+    // Verify that only the featured tournament is mapped
+    Mockito.verify(tournamentMapper).toSummaryDTO(featuredTournament);
+    Mockito.verify(tournamentMapper, Mockito.never()).toSummaryDTO(nonFeaturedTournament);
   }
 
 }

@@ -21,11 +21,11 @@ export default function AdminHeaderButtons({
   tvButtonUrl,
 }: AdminHeaderButtonsProps) {
   return (
-    <div className="flex items-center gap-1 justify-center flex-shrink-0 px-2">
+    <div className="flex items-center gap-0 justify-center flex-shrink-0">
       {showTvButton && tvButtonUrl && (
         <button
           onClick={() => window.location.href = tvButtonUrl}
-          className="p-2 rounded hover:bg-muted transition-colors cursor-pointer"
+          className="p-1 rounded hover:bg-muted transition-colors cursor-pointer"
           title="Mode TV"
           aria-label="Mode TV"
         >
@@ -35,7 +35,7 @@ export default function AdminHeaderButtons({
       {onShare && (
         <button
           onClick={onShare}
-          className="p-2 rounded hover:bg-muted transition-colors cursor-pointer"
+          className="p-1 rounded hover:bg-muted transition-colors cursor-pointer"
           title="Partager le lien aux joueurs"
         >
           <Share2 className="h-5 w-5 text-muted-foreground hover:text-primary" />
@@ -44,7 +44,7 @@ export default function AdminHeaderButtons({
       {showDownloadButton && onExport && (
         <button
           onClick={onExport}
-          className="p-2 rounded hover:bg-muted transition-colors cursor-pointer"
+          className="p-1 rounded hover:bg-muted transition-colors cursor-pointer"
           title="Télécharger"
         >
           <Download className="h-5 w-5 text-muted-foreground hover:text-primary" />
@@ -53,7 +53,7 @@ export default function AdminHeaderButtons({
       {onEdit && (
         <button
           onClick={onEdit}
-          className="p-2 rounded hover:bg-muted transition-colors cursor-pointer"
+          className="p-1 rounded hover:bg-muted transition-colors cursor-pointer"
           title="Modifier le tournoi"
         >
           <Settings className="h-5 w-5 text-muted-foreground hover:text-primary" />
@@ -62,4 +62,3 @@ export default function AdminHeaderButtons({
     </div>
   );
 }
-

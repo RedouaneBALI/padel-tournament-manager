@@ -127,13 +127,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <ExportProvider>
             <header className="sticky top-0 z-[80] bg-background/80 border-b border-border">
               <style>{`summary::-webkit-details-marker, summary::marker{display:none;}`}</style>
-              <div className="max-w-5xl mx-auto px-4">
+              <div className="max-w-5xl mx-auto px-2">
                 <nav className="h-14 flex items-center justify-between w-full">
                   <HeaderContent />
                 </nav>
               </div>
             </header>
-            {children}
+            <div style={{ marginTop: '15px' }}>{children}</div>
           </ExportProvider>
         </SessionProviderWrapper>
       </body>

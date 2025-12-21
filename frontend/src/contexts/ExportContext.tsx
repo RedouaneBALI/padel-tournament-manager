@@ -9,28 +9,35 @@ interface AdminHeaderContextType {
   tvButtonUrl: string | null;
   showTvButton: boolean;
   isAdmin: boolean;
+  tournamentName: string | null;
   setAdminActions: (actions: Partial<AdminHeaderContextType>) => void;
+  setTournamentName: (name: string | null) => void;
 }
 
 const AdminHeaderContext = createContext<AdminHeaderContextType | undefined>(undefined);
 
 export function ExportProvider({ children }: { children: React.ReactNode }) {
-  const [adminActions, setAdminActionsState] = useState<Omit<AdminHeaderContextType, 'setAdminActions'>>({
+  const [adminActions, setAdminActionsState] = useState<Omit<AdminHeaderContextType, 'setAdminActions' | 'setTournamentName'>>({
     onExport: null,
     onShare: null,
     onEdit: null,
     tvButtonUrl: null,
     showTvButton: false,
     isAdmin: false,
+    tournamentName: null,
   });
 
   const setAdminActions = useCallback((actions: Partial<AdminHeaderContextType>) => {
     setAdminActionsState((prev) => ({ ...prev, ...actions }));
   }, []);
 
+  const setTournamentName = useCallback((name: string | null) => {
+    setAdminActionsState((prev) => ({ ...prev, tournamentName: name }));
+  }, []);
+
   const value = useMemo(
-    () => ({ ...adminActions, setAdminActions }),
-    [adminActions, setAdminActions]
+    () => ({ ...adminActions, setAdminActions, setTournamentName }),
+    [adminActions, setAdminActions, setTournamentName]
   );
 
   return (

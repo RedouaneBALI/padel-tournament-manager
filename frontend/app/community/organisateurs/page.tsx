@@ -46,10 +46,14 @@ export default function OrganisateursInstagramPage() {
     <>
       <main className="min-h-screen bg-background">
         <div className="container mx-auto py-6 px-4 pb-24">
-          <BackButton className="mb-4" />
           <div className="mb-4 space-y-3">
-            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">Ils parlent de nous</h1>
-            <p className="text-lg text-muted-foreground max-w-2xl">Nos derniers tournois</p>
+            <div className="flex items-center gap-4">
+              <BackButton />
+              <div>
+                <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">Ils parlent de nous</h1>
+                <p className="text-lg text-muted-foreground max-w-2xl">Nos derniers tournois</p>
+              </div>
+            </div>
           </div>
 
           <div ref={containerRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

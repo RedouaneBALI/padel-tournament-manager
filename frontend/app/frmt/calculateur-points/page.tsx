@@ -198,9 +198,9 @@ export default function PointsCalculatorPage() {
           'keywords': 'calculateur, points, padel, tournoi, FRMT, Maroc, classement, P50, P100, P250, P500, P1000, P1500, P2000, homme, femme, fédération royale marocaine de tennis'
         }) }} />
       </Head>
-      <div className="container mx-auto py-8 px-4 pb-24">
+      <div className="container mx-auto px-4 pb-20">
         <div className="max-w-2xl mx-auto">
-          <div className="mb-8">
+          <div className="mb-2">
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">Calculateur de Points</h1>
             <p className="text-gray-600">Calculez les points gagnés selon votre classement dans un tournoi FRMT.</p>
           </div>
@@ -323,7 +323,7 @@ export default function PointsCalculatorPage() {
             </div>
           </div>
 
-          <div className="mt-6 p-4 bg-gray-100 rounded-lg">
+          <div className="mt-4 p-4 bg-gray-100 rounded-lg">
             <p className="text-sm text-gray-600">
               Pour plus de détails, consultez{' '}
               <a

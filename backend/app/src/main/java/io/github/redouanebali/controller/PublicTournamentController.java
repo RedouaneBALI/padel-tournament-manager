@@ -204,6 +204,7 @@ public class PublicTournamentController {
     List<Tournament> entities = tournamentService.getActiveTournaments(startDate, endDate);
 
     List<TournamentSummaryDTO> summaries = entities.stream()
+                                                   .filter(Tournament::isFeatured)
                                                    .map(tournamentMapper::toSummaryDTO)
                                                    .toList();
     return ResponseEntity.ok(summaries);

@@ -7,7 +7,7 @@ export default function BackButton({ className = '', disabled = false }: { class
     <button
       onClick={() => !disabled && router.back()}
       disabled={disabled}
-      className={`p-2 rounded hover:bg-muted transition-colors cursor-pointer ${className}`}
+      className={`p-4 rounded hover:bg-muted transition-colors cursor-pointer ${className}`}
       aria-label="Retour"
       type="button"
     >

@@ -14,6 +14,7 @@ import { fetchTournamentAdmin } from '@/src/api/tournamentApi';
 import type { Tournament } from '@/src/types/tournament';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
 import PageHeader from '@/src/components/ui/PageHeader';
+import BackButton from '@/src/components/ui/buttons/BackButton';
 
 export default function AdminTournamentLayout({
   children,
@@ -45,7 +46,7 @@ function AdminTournamentLayoutContent({
   const router = useRouter();
   const pathname = usePathname() ?? '';
   const items = getAdminTournamentItems(id);
-  const adminHeader = useExport();
+  const { setTournamentName, setAdminActions } = useExport();
 
   // Afficher le bouton retour uniquement sur les pages de détail de match (2 niveaux)
   // Ex: /tournament/4/games/81 ou /admin/tournament/4/games/81
@@ -117,6 +118,7 @@ function AdminTournamentLayoutContent({
         }
 
         setTournament(data);
+        setTournamentName(data.name); // Set the tournament name in the export context
       } catch (e: any) {
         if (!mounted) return;
 
@@ -141,12 +143,12 @@ function AdminTournamentLayoutContent({
     }
 
     loadTournament();
-    return () => { mounted = false; };
-  }, [id, router, pathname]);
+    return () => { setTournamentName(null); mounted = false; };
+  }, [id, router, pathname, setTournamentName]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    adminHeader.setAdminActions({ isAdmin });
+    setAdminActions({ isAdmin });
   }, [isAdmin]);
 
   useEffect(() => {
@@ -157,7 +159,7 @@ function AdminTournamentLayoutContent({
 
     // Don't override onExport - let TournamentGamesTab/TournamentResultsTab handle it
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    adminHeader.setAdminActions({
+    setAdminActions({
       showTvButton: isGameDetail || (tournament?.tvUrl !== null),
       tvButtonUrl: tvUrl || null,
       onShare: () => { handleCopyLink(); },
@@ -178,12 +180,9 @@ function AdminTournamentLayoutContent({
   return (
     <TournamentContext.Provider value={{ name: tournament.name, club: tournament.club, level: tournament.level }}>
       <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
-        <header className="pt-4 pb-2">
-          <PageHeader
-            title={tournament.name}
-            showBackButton={showBackButton}
-          />
-        </header>
+        {showBackButton && (
+          <BackButton className="fixed top-16 left-4 z-[100]" />
+        )}
         <div className="mb-15">{children}</div>
         <BottomNav items={items} pathname={pathname} />
         <ToastContainer />

@@ -2,23 +2,21 @@
 'use client';
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import type { Tournament } from '@/src/types/tournament';
 import { fetchTournament } from '@/src/api/tournamentApi';
 import CenteredLoader from '@/src/components/ui/CenteredLoader';
-import type { ReactNode } from 'react';
+import PageHeader from '@/src/components/ui/PageHeader';
 import { Home, Users } from 'lucide-react';
 import { LuSwords } from 'react-icons/lu';
-import { TbTournament, TbTrophy } from 'react-icons/tb';
-import { FiMoreHorizontal, FiPlusCircle, FiMail } from 'react-icons/fi';
+import { TbTournament } from 'react-icons/tb';
+import { FiMoreHorizontal } from 'react-icons/fi';
 import BottomNav from '@/src/components/ui/BottomNav';
-import { ExportProvider } from '@/src/contexts/ExportContext';
-import type { IconType } from 'react-icons';
-import PageHeader from '@/src/components/ui/PageHeader';
+import { ExportProvider, useExport } from '@/src/contexts/ExportContext';
 import { TournamentContext } from '@/src/contexts/TournamentContext';
+import BackButton from '@/src/components/ui/buttons/BackButton';
 
 export default function TournamentLayout({
   children,
@@ -32,6 +30,7 @@ export default function TournamentLayout({
   const router = useRouter();
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const { setTournamentName } = useExport();
 
   // Navigation items for bottom navigation
   const moreItems = useMemo(() => {
@@ -80,20 +79,18 @@ export default function TournamentLayout({
           return;
         }
         setTournament(data);
+        setTournamentName(data.name); // Set the tournament name in the export context
       })
       .catch((e) => {
         if (e?.message?.startsWith('HTTP_401') || e?.message?.startsWith('HTTP_404') || e?.message?.startsWith('HTTP_500')) {
           window.location.href = '/404';
         }
       });
-  }, [id, router]);
+    return () => setTournamentName(null); // Cleanup on unmount
+  }, [id, router, setTournamentName]);
 
   const handleMoreClick = useCallback(() => {
     setIsMoreOpen(prev => !prev);
-  }, []);
-
-  const handleCloseMore = useCallback(() => {
-    setIsMoreOpen(false);
   }, []);
 
   // Afficher le bouton retour uniquement sur les pages de détail de match (2 niveaux)
@@ -107,13 +104,10 @@ export default function TournamentLayout({
   return (
     <ExportProvider>
       <TournamentContext.Provider value={{ name: tournament.name, club: tournament.club, level: tournament.level }}>
+        {isGameDetail && (
+          <BackButton className="fixed top-16 left-4 z-[100]" />
+        )}
         <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
-          <header className="pt-4 pb-2">
-            <div className="flex items-center gap-2">
-              {isGameDetail && <PageHeader showBackButton title={tournament.name} />}
-              {!isGameDetail && <PageHeader title={tournament.name} />}
-            </div>
-          </header>
 
           {/* Contenu avec padding bas pour ne pas passer sous la bottom bar */}
           <main className="mb-15">{children}</main>
