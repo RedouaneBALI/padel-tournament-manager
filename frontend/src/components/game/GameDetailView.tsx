@@ -34,7 +34,7 @@ export default function GameDetailView({
   title,
 }: GameDetailViewProps) {
   const contextTournament = useContext(TournamentContext);
-  const displayTitle = title || contextTournament?.name || undefined;
+  const displayTitle = contextTournament?.name || title || undefined;
   const displayClub = contextTournament?.club || undefined;
 
   const [game, setGame] = useState<Game | null>(null);

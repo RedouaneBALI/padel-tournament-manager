@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ToastContainer, toast } from 'react-toastify';
 import { useExport } from '@/src/contexts/ExportContext';
+import { TournamentContext } from '@/src/contexts/TournamentContext';
 import 'react-toastify/dist/ReactToastify.css';
 import BottomNav from '@/src/components/ui/BottomNav';
 import { getAdminTournamentItems } from '@/src/components/ui/bottomNavPresets';
@@ -175,16 +176,18 @@ function AdminTournamentLayoutContent({
 
 
   return (
-    <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
-      <header className="pt-4 pb-2">
-        <PageHeader
-          title={tournament.name}
-          showBackButton={showBackButton}
-        />
-      </header>
-      <div className="mb-15">{children}</div>
-      <BottomNav items={items} pathname={pathname} />
-      <ToastContainer />
-    </div>
+    <TournamentContext.Provider value={{ name: tournament.name, club: tournament.club }}>
+      <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
+        <header className="pt-4 pb-2">
+          <PageHeader
+            title={tournament.name}
+            showBackButton={showBackButton}
+          />
+        </header>
+        <div className="mb-15">{children}</div>
+        <BottomNav items={items} pathname={pathname} />
+        <ToastContainer />
+      </div>
+    </TournamentContext.Provider>
   );
 }
