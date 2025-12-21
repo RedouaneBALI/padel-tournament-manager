@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 import { formatStageLabel } from '@/src/types/stage';
 import { toBlob } from 'html-to-image';
 import { TournamentContext } from '@/src/contexts/TournamentContext';
+import { Share } from 'lucide-react';
 
 interface GameDetailViewProps {
   gameId: string;
@@ -155,7 +156,7 @@ export default function GameDetailView({
         backgroundColor: primaryColor,
         width: elementWidth,
         height: elementHeight,
-        pixelRatio: 1,
+        pixelRatio: 2,
       });
 
       // Cleanup
@@ -279,6 +280,7 @@ export default function GameDetailView({
           onClick={handleShare}
           className="px-4 py-2 bg-primary text-white rounded-md shadow-md hover:bg-primary/90 transition-colors"
         >
+          <Share className="w-5 h-5 inline-block mr-2" />
           Partager le match
         </button>
       </div>
