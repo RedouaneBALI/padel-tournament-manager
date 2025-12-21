@@ -1,5 +1,6 @@
 import { Score } from '@/src/types/score';
 import { Stage } from '@/src/types/stage';
+import { TeamSide } from '@/src/types/teamSide';
 import { formatGroupLabel } from '@/src/utils/groupBadge';
 
 export function computeVisibleSets(setsToWin: number | undefined, scores: string[][]): number {
@@ -51,10 +52,10 @@ export function computeBadgeLabel(pool: { name?: string } | undefined, matchInde
   }
 }
 
-export function computeShowChampion(stage: string | undefined, finished: boolean, winnerSide: number | undefined, teamIndex: number): boolean {
+export function computeShowChampion(stage: string | undefined, finished: boolean, winnerSide: TeamSide | undefined, teamIndex: number): boolean {
   try {
     const stageStr = String(stage || '').toLowerCase();
     const isFinalStage = stage === Stage.FINAL || stageStr === 'finale' || stageStr === 'final' || stageStr.includes('final');
-    return finished && isFinalStage && winnerSide !== undefined && winnerSide === teamIndex;
+    return finished && isFinalStage && winnerSide !== undefined && winnerSide === (teamIndex === 0 ? 'TEAM_A' : 'TEAM_B');
   } catch (e) { return false; }
 }

@@ -131,8 +131,8 @@ export async function shareMatchImage(
     if (!blob) throw new Error('Échec de la génération de l\'image');
 
     // Default filename, title, text
-    const teamAName = game.teamA?.players?.map(p => p.name).join(' & ') || 'Équipe A';
-    const teamBName = game.teamB?.players?.map(p => p.name).join(' & ') || 'Équipe B';
+    const teamAName = game.teamA ? `${game.teamA.player1Name} & ${game.teamA.player2Name}` : 'Équipe A';
+    const teamBName = game.teamB ? `${game.teamB.player1Name} & ${game.teamB.player2Name}` : 'Équipe B';
     const fileName = customFileName || `match-${teamAName}-vs-${teamBName}.png`;
     const title = customTitle || `Match ${tournamentName || 'Tournoi'}`;
     const text = customText || `Résultats du match ${teamAName} vs ${teamBName}`;

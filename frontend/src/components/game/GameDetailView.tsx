@@ -11,6 +11,7 @@ import { formatStageLabel } from '@/src/types/stage';
 import { TournamentContext } from '@/src/contexts/TournamentContext';
 import { Share } from 'lucide-react';
 import { shareMatchImage } from '@/src/utils/imageExport';
+import { TeamSide } from '@/src/types/teamSide';
 
 interface GameDetailViewProps {
   gameId: string;
@@ -69,7 +70,7 @@ export default function GameDetailView({
     };
   }, [fetchGameFn]);
 
-  const handleInfoSaved = (result: { tournamentUpdated: boolean; winner: string | null }) => {
+  const handleInfoSaved = (result: { tournamentUpdated: boolean; winner: TeamSide | null }) => {
     toast.success('Match mis à jour avec succès !');
     // Recharger le match pour afficher les données à jour
     fetchGameFn().then(setGame);

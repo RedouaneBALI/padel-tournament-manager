@@ -24,8 +24,7 @@ export default function MatchShareCard({
   const displayClub = club || contextTournament?.club;
   const teams: (any | null)[] = [game.teamA ?? null, game.teamB ?? null];
   const { setScoresA, setScoresB, tieBreakPointA, tieBreakPointB } = processDisplayData(game, matchFormat ?? null);
-  const winnerSideA = game.winnerSide === 'TEAM_A' ? 0 : game.winnerSide === 'TEAM_B' ? 1 : undefined;
-  const winnerSideB = winnerSideA;
+  const winnerSide = game.winnerSide;
 
   return (
     <div className="match-share-card">
@@ -70,9 +69,9 @@ export default function MatchShareCard({
 
         {/* Scoreboard - fond très léger, sans bordure */}
         <div className="flex flex-col" style={{ background: 'rgba(255, 255, 255, 0.06)', padding: '16px', margin: '0', gap: '0px', borderRadius: '12px', marginTop: '12px' }}>
-          <ZoomTeamScoreRow team={teams[0]} teamIndex={0} gamePoint={game.score?.currentGamePointA} setScores={setScoresA} tieBreakPoint={tieBreakPointA} teamSide="TEAM_A" editable={false} loading={false} onPointChange={() => {}} winnerSide={winnerSideA} isFinished={game.finished} hideBackground={true} shareMode={true} />
+          <ZoomTeamScoreRow team={teams[0]} teamIndex={0} gamePoint={game.score?.currentGamePointA} setScores={setScoresA} tieBreakPoint={tieBreakPointA} teamSide="TEAM_A" editable={false} loading={false} onPointChange={() => {}} winnerSide={winnerSide} isFinished={game.finished} hideBackground={true} shareMode={true} />
           <div style={{ height: 1, background: 'rgba(255, 255, 255, 0.1)', margin: '8px 0' }} />
-          <ZoomTeamScoreRow team={teams[1]} teamIndex={1} gamePoint={game.score?.currentGamePointB} setScores={setScoresB} tieBreakPoint={tieBreakPointB} teamSide="TEAM_B" editable={false} loading={false} onPointChange={() => {}} winnerSide={winnerSideB} isFinished={game.finished} hideBackground={true} shareMode={true} />
+          <ZoomTeamScoreRow team={teams[1]} teamIndex={1} gamePoint={game.score?.currentGamePointB} setScores={setScoresB} tieBreakPoint={tieBreakPointB} teamSide="TEAM_B" editable={false} loading={false} onPointChange={() => {}} winnerSide={winnerSide} isFinished={game.finished} hideBackground={true} shareMode={true} />
         </div>
 
         {/* Footer - intégré naturellement */}

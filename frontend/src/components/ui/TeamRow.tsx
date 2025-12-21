@@ -5,10 +5,11 @@ import React from 'react';
 import { PlayerPair } from '@/src/types/playerPair';
 import { Trophy } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
+import { TeamSide } from '@/src/types/teamSide';
 
 interface Props {
   team: PlayerPair | null;
-  winnerSide?: number;
+  winnerSide?: TeamSide;
   teamIndex?: number; // 0 ou 1
   showChampion?: boolean;
   fontSize?: string;
@@ -25,8 +26,8 @@ export default function TeamRow({
   themeColor,
   textColor
 }: Props) {
-  const isWinner = winnerSide !== undefined && winnerSide === teamIndex;
-  const isLoser = winnerSide !== undefined && winnerSide !== teamIndex;
+  const isWinner = winnerSide !== undefined && winnerSide === (teamIndex === 0 ? 'TEAM_A' : 'TEAM_B');
+  const isLoser = winnerSide !== undefined && winnerSide !== (teamIndex === 0 ? 'TEAM_A' : 'TEAM_B');
 
 
   return (

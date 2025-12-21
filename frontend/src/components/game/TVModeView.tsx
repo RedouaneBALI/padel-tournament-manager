@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Game } from '@/src/types/game';
+import { TeamSide } from '@/src/types/teamSide';
 import { toast } from 'react-toastify';
 import { formatStageLabel } from '@/src/types/stage';
 import LiveMatchIndicator from '@/src/components/ui/LiveMatchIndicator';
@@ -53,7 +54,7 @@ export default function TVModeView({
         return {
           ...prev,
           score: newScore,
-          winnerSide: dto.winner || prev.winnerSide,
+          winnerSide: dto.winner ? (dto.winner as TeamSide) : prev.winnerSide,
           finished: dto.winner ? true : prev.finished,
         };
       });
@@ -86,7 +87,7 @@ export default function TVModeView({
   }
 
   const isInProgress = !game.finished && (game.score?.sets?.some(set => set.teamAScore || set.teamBScore) || false);
-  const winnerSide = game.winnerSide ? parseInt(game.winnerSide) : undefined;
+  const winnerSide = game.winnerSide;
 
   // Calculer les scores par set
   const sets = game.score?.sets || [];
@@ -136,7 +137,7 @@ export default function TVModeView({
         {/* Équipes et scores */}
         <div className="divide-y-4 divide-gray-200">
           {/* Team A */}
-          <div className={`flex items-center px-8 py-10 ${winnerSide === 0 ? 'bg-green-50' : 'bg-white'}`}>
+          <div className={`flex items-center px-8 py-10 ${winnerSide === 'TEAM_A' ? 'bg-green-50' : 'bg-white'}`}>
             <div className="flex-1 min-w-0">
               <div className="text-5xl font-bold text-gray-900 truncate">
                 {game.teamA?.player1Name || 'Équipe A'}
@@ -169,13 +170,13 @@ export default function TVModeView({
             </div>
 
             {/* Icône champion si gagnant */}
-            {winnerSide === 0 && game.finished && (
+            {winnerSide === 'TEAM_A' && game.finished && (
               <div className="ml-6 text-6xl">🏆</div>
             )}
           </div>
 
           {/* Team B */}
-          <div className={`flex items-center px-8 py-10 ${winnerSide === 1 ? 'bg-green-50' : 'bg-white'}`}>
+          <div className={`flex items-center px-8 py-10 ${winnerSide === 'TEAM_B' ? 'bg-green-50' : 'bg-white'}`}>
             <div className="flex-1 min-w-0">
               <div className="text-5xl font-bold text-gray-900 truncate">
                 {game.teamB?.player1Name || 'Équipe B'}
@@ -208,7 +209,7 @@ export default function TVModeView({
             </div>
 
             {/* Icône champion si gagnant */}
-            {winnerSide === 1 && game.finished && (
+            {winnerSide === 'TEAM_B' && game.finished && (
               <div className="ml-6 text-6xl">🏆</div>
             )}
           </div>

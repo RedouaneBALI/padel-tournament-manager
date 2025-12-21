@@ -8,12 +8,13 @@ import { normalizeGroup, groupBadgeClasses, formatGroupLabel } from '@/src/utils
 import LiveMatchIndicator from '@/src/components/ui/LiveMatchIndicator';
 import { Stage } from '@/src/types/stage';
 import { initializeScoresFromScore } from '@/src/utils/scoreUtils';
+import { TeamSide } from '@/src/types/teamSide';
 
 interface Props {
   teamA: PlayerPair | null;
   teamB: PlayerPair | null;
   score?: Score;
-  winnerSide?: number;
+  winnerSide?: TeamSide;
   pool?: { name?: string };
   finished?: boolean;
   matchIndex?: number;
@@ -83,7 +84,7 @@ export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, 
             scores={scores[0]}
             editing={false}
             winnerSide={winnerSide}
-            showChampion={finished && isFinalStage && winnerSide !== undefined && winnerSide === 0}
+            showChampion={finished && isFinalStage && winnerSide !== undefined && winnerSide === 'TEAM_A'}
             visibleSets={visibleSets}
             forfeited={isForfeit && forfeitedBy === 'TEAM_A'}
             showAbSlot={isForfeit}
@@ -94,7 +95,7 @@ export default function MatchResultCardLight({ teamA, teamB, score, winnerSide, 
             scores={scores[1]}
             editing={false}
             winnerSide={winnerSide}
-            showChampion={finished && isFinalStage && winnerSide !== undefined && winnerSide === 1}
+            showChampion={finished && isFinalStage && winnerSide !== undefined && winnerSide === 'TEAM_B'}
             visibleSets={visibleSets}
             forfeited={isForfeit && forfeitedBy === 'TEAM_B'}
             showAbSlot={isForfeit}

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { PlayerPair } from '@/src/types/playerPair';
+import { TeamSide } from '@/src/types/teamSide';
 import TeamRow from '@/src/components/ui/TeamRow';
 import { Flag } from 'lucide-react';
 
@@ -21,7 +22,7 @@ interface Props {
   setScores?: (scores: string[]) => void;
   inputRefs?: React.MutableRefObject<(HTMLInputElement | null)[]>;
   handleKeyDown?: (e: React.KeyboardEvent, teamIndex: number, setIndex: number) => void;
-  winnerSide?: number;
+  winnerSide?: TeamSide;
   visibleSets?: number;
   computeTabIndex?: (teamIndex: number, setIndex: number) => number;
   forfeited?: boolean;
@@ -68,7 +69,7 @@ export default function TeamScoreRow({
     ? `${scoresCols} ${gapVar} ${abSlot} ${gapVar}`
     : `${scoresCols}`;
 
-  const isWinner = winnerSide !== undefined && winnerSide === teamIndex;
+  const isWinner = winnerSide !== undefined && winnerSide === (teamIndex === 0 ? 'TEAM_A' : 'TEAM_B');
   const isBye = team?.type === 'BYE';
 
   return (

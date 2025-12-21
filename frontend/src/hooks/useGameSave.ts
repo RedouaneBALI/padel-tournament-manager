@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Score } from '@/src/types/score';
 import { updateGameDetails } from '@/src/api/tournamentApi';
+import { TeamSide } from '@/src/types/teamSide';
 
 /**
  * Custom hook to handle game save logic.
@@ -16,7 +17,7 @@ export function useGameSave(
   gameId: string,
   tournamentId: string,
   updateGameFn?: (gameId: string, scorePayload: Score, court: string, scheduledTime: string) => Promise<any>,
-  onInfoSaved?: (result: { tournamentUpdated: boolean; winner: string | null }) => void,
+  onInfoSaved?: (result: { tournamentUpdated: boolean; winner: TeamSide | null }) => void,
   onTimeChanged?: (gameId: string, newTime: string) => void,
   onGameUpdated?: (gameId: string, changes: { scheduledTime?: string; court?: string }) => void
 ) {

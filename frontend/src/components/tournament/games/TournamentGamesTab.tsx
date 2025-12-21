@@ -13,6 +13,7 @@ import GroupSelector from '@/src/components/tournament/games/GroupSelector';
 import GamesList from '@/src/components/tournament/games/GamesList';
 import { exportGamesAsCSV } from '@/src/utils/gamesExport';
 import { useExport } from '@/src/contexts/ExportContext';
+import { TeamSide } from '@/src/types/teamSide';
 
 function updateGameInRounds(rounds: Round[], gameId: string, changes: { scheduledTime?: string; court?: string }): Round[] {
   const updateGame = (game: Game) => {
@@ -120,7 +121,7 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
     setRounds((currentRounds) => updateGameTime(gameId, newTime, currentRounds));
   }, []);
 
-  const handleInfoSaved = useCallback((result: { tournamentUpdated: boolean; winner: string | null }) => {
+  const handleInfoSaved = useCallback((result: { tournamentUpdated: boolean; winner: TeamSide | null }) => {
     if (result.tournamentUpdated) {
       fetchTournament(tournamentId)
         .then((t) => setRounds((t as any)?.rounds ?? []))

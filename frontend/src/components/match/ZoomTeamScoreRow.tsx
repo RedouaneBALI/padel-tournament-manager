@@ -95,11 +95,18 @@ function ActionButton({
   const theme = getTeamTheme(isTeamA);
   const isDisabled = disabled || isFinished;
 
+  const handleClick = () => {
+    console.log('ActionButton clicked for team:', isTeamA ? 'TEAM_A' : 'TEAM_B', 'disabled:', isDisabled);
+    if (!isDisabled) {
+      onClick();
+    }
+  };
+
   return (
     <button
       type="button"
       disabled={isDisabled}
-      onClick={onClick}
+      onClick={handleClick}
       className={cn(
         'w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center rounded-full shadow-sm transition-all active:scale-95 border text-white',
         theme.button.bg,
@@ -130,7 +137,7 @@ interface ZoomTeamScoreRowProps {
   editable: boolean;
   loading: boolean;
   onPointChange: (teamSide: TeamSide) => void;
-  winnerSide?: number;
+  winnerSide?: TeamSide;
   isFinished?: boolean;
   hideBackground?: boolean;
   shareMode?: boolean;
@@ -152,7 +159,7 @@ export default function ZoomTeamScoreRow({
   shareMode = false,
 }: ZoomTeamScoreRowProps) {
   const isTeamA = teamSide === 'TEAM_A';
-  const isWinner = winnerSide === teamIndex;
+  const isWinner = winnerSide === (isTeamA ? 'TEAM_A' : 'TEAM_B');
 
   const isTieBreakActive = tieBreakPoint !== null && tieBreakPoint !== undefined;
   const displayPoint = isTieBreakActive ? tieBreakPoint : formatGamePoint(gamePoint);
@@ -198,7 +205,7 @@ export default function ZoomTeamScoreRow({
             isTeamA={isTeamA}
             loading={loading}
             onClick={() => onPointChange(teamSide)}
-            disabled={loading || typeof winnerSide !== 'undefined'}
+            disabled={loading || !!winnerSide}
             isFinished={isFinished}
           />
         )}

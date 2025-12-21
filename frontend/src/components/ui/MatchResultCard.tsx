@@ -18,7 +18,9 @@ import { Share } from 'lucide-react';
 import { toast } from 'react-toastify';
 import MatchShareCard from '@/src/components/match/MatchShareCard';
 import { Game } from '@/src/types/game';
+import { MatchFormat } from '@/src/types/matchFormat';
 import { shareMatchImage } from '@/src/utils/imageExport';
+import { TeamSide } from '@/src/types/teamSide';
 
 interface Props {
   teamA: PlayerPair | null;
@@ -27,10 +29,10 @@ interface Props {
   gameId: string;
   tournamentId: string;
   score?: Score;
-  onInfoSaved?: (result: { tournamentUpdated: boolean; winner: string | null }) => void;
+  onInfoSaved?: (result: { tournamentUpdated: boolean; winner: TeamSide | null }) => void;
   onTimeChanged?: (gameId: string, newTime: string) => void;
   onGameUpdated?: (gameId: string, changes: { scheduledTime?: string; court?: string }) => void;
-  winnerSide?: number;
+  winnerSide?: TeamSide;
   stage?: string;
   court?: string;
   scheduledTime?: string;
@@ -84,13 +86,13 @@ export default function MatchResultCard({
   }, [court, scheduledTime, editing]);
 
   const [isForfeit, setIsForfeit] = useState(score?.forfeit || false);
-  const [forfeitedBy, setForfeitedBy] = useState<'TEAM_A' | 'TEAM_B' | null>(score?.forfeitedBy || null);
+  const [forfeitedBy, setForfeitedBy] = useState<TeamSide | null>(score?.forfeitedBy || null);
 
   const [scores, setScores] = useState<string[][]>(() => initializeScoresFromScore(score));
   const [initialScores, setInitialScores] = useState<string[][]>(() => initializeScoresFromScore(score));
 
   // Local winnerSide to update immediately after saving
-  const [localWinnerSide, setLocalWinnerSide] = useState<number | undefined>(winnerSide);
+  const [localWinnerSide, setLocalWinnerSide] = useState<TeamSide | undefined>(winnerSide);
 
   // Local finished status to update immediately after saving (for LIVE indicator)
   const [localFinished, setLocalFinished] = useState(finished);
@@ -159,8 +161,8 @@ export default function MatchResultCard({
   const badgeLabel = computeBadgeLabel(pool, matchIndex, totalMatches);
 
   // Compute winner sides to avoid nested ternaries
-  const teamAWinnerSide = isForfeit ? (forfeitedBy === 'TEAM_B' ? 0 : undefined) : localWinnerSide;
-  const teamBWinnerSide = isForfeit ? (forfeitedBy === 'TEAM_A' ? 1 : undefined) : localWinnerSide;
+  const teamAWinnerSide = localWinnerSide;
+  const teamBWinnerSide = localWinnerSide;
 
   const onCancel = () => {
     setScores([...initialScores]);
@@ -212,15 +214,11 @@ export default function MatchResultCard({
       winnerSide: localWinnerSide,
       court: localCourt,
       scheduledTime: localScheduledTime,
-      pool,
-      setsToWin,
       finished: localFinished,
-      matchIndex,
-      totalMatches,
-      round: stage ? { stage } : undefined,
+      round: stage ? ({ stage: stage as any } as any) : undefined,
     };
 
-    await shareMatchImage(game as Game, contextTournament?.name, contextTournament?.club);
+    await shareMatchImage(game as Game, contextTournament?.name ?? undefined, contextTournament?.club ?? undefined);
   };
 
   return (

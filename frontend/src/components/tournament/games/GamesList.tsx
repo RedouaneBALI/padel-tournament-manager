@@ -7,6 +7,7 @@ import type { Game } from '@/src/types/game';
 import { useRealtimeGames } from '@/src/hooks/useRealtimeGames';
 import { exportGamesAsCSV } from '@/src/utils/gamesExport';
 import { useExport } from '@/src/contexts/ExportContext';
+import { TeamSide } from '@/src/types/teamSide';
 
 function compareIds(a: string, b: string): number {
   const na = Number(a);
@@ -20,7 +21,7 @@ interface GamesListProps {
   tournamentId: string;
   editable: boolean;
   setsToWin: number;
-  onInfoSaved: (result: { tournamentUpdated: boolean; winner: string | null }) => void;
+  onInfoSaved: (result: { tournamentUpdated: boolean; winner: TeamSide | null }) => void;
   onTimeChanged: (gameId: string, newTime: string) => void;
   onGameUpdated?: (gameId: string, changes: { scheduledTime?: string; court?: string }) => void;
   stage: string;
@@ -42,7 +43,7 @@ export default function GamesList({
 }: GamesListProps) {
   const router = useRouter();
   // overrides locaux (score + winner) quand un match a été modifié (par MatchResultCard dispatch)
-  const [overrides, setOverrides] = useState<Record<string, { score: any; winner: string | null }>>({});
+  const [overrides, setOverrides] = useState<Record<string, { score: any; winner: TeamSide | null }>>({});
   // État de tri local (time | court)
   const [sortMode, setSortMode] = useState<'time' | 'court' | 'number'>('time');
   const [showOnlyInProgress, setShowOnlyInProgress] = useState(false);
@@ -62,7 +63,7 @@ export default function GamesList({
           ...prev,
           [String(detail.gameId)]: {
             score: detail.score,
-            winner: detail.winner ?? null
+            winner: detail.winner ? (detail.winner as TeamSide) : null
           }
         }));
       } catch (err) {
@@ -93,7 +94,7 @@ export default function GamesList({
   }, [games]);
 
   // Real-time WebSocket updates for all non-finished games
-  const handleRealtimeUpdate = useCallback((gameId: string, dto: { score: any; winner: string | null }) => {
+  const handleRealtimeUpdate = useCallback((gameId: string, dto: { score: any; winner: TeamSide | null }) => {
     setOverrides(prev => ({
       ...prev,
       [gameId]: {
@@ -225,8 +226,6 @@ export default function GamesList({
         // Utiliser le winner de l'API si disponible dans les overrides, sinon utiliser game.winnerSide
         const winner = override?.winner !== undefined ? override.winner : (game.finished ? game.winnerSide : null);
 
-        const winnerIndex = winner === 'TEAM_A' ? 0 : winner === 'TEAM_B' ? 1 : undefined;
-
         // Récupérer l'index d'origine du match de façon déterministe via sortedIds
         const originalIndex = Math.max(0, sortedIds.indexOf(game.id));
 
@@ -256,11 +255,11 @@ export default function GamesList({
                 onInfoSaved={onInfoSaved}
                 onTimeChanged={onTimeChanged}
                 onGameUpdated={onGameUpdated}
-                winnerSide={winnerIndex}
+                winnerSide={winner ?? undefined}
                 stage={stage}
                 pool={(game as any).pool}
                 setsToWin={setsToWin}
-                finished={winner !== null}
+                finished={game.finished || winner !== null}
                 matchIndex={originalIndex}
                 totalMatches={totalMatches}
                 isFirstRound={isFirstRound}

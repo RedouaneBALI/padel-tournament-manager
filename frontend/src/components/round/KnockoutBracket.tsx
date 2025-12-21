@@ -219,15 +219,7 @@ export default function KnockoutBracket({ rounds, tournamentId, isQualif }: Knoc
                 teamA={game.teamA}
                 teamB={game.teamB}
                 score={game.score}
-                winnerSide={
-                  game.finished
-                    ? game.winnerSide === 'TEAM_A'
-                      ? 0
-                      : game.winnerSide === 'TEAM_B'
-                        ? 1
-                        : undefined
-                    : undefined
-                }
+                winnerSide={game.finished ? game.winnerSide : undefined}
                 finished={game.finished}
                 stage={round.stage}
                 scheduledTime={game.scheduledTime}

@@ -2,16 +2,17 @@ import { useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { StompClientManager } from '@/src/lib/realtime/StompClientManager';
 import { Score } from '@/src/types/score';
+import { TeamSide } from '@/src/types/teamSide';
 
 interface UpdateScoreDTO {
   tournamentUpdated: boolean;
-  winner: string | null;
+  winner: TeamSide | null;
   score: Score;
 }
 
 interface UseRealtimeGameOptions {
   gameId: string;
-  onScoreUpdate: (dto: UpdateScoreDTO) => void;
+  onScoreUpdate: (dto: { score: any; winner: TeamSide | null }) => void;
   enabled?: boolean;
 }
 
@@ -55,7 +56,7 @@ export function useRealtimeGame({ gameId, onScoreUpdate, enabled = true }: UseRe
       try {
         const unsubscribe = await manager.subscribe(destination, (message) => {
           try {
-            const dto: UpdateScoreDTO = JSON.parse(message.body);
+            const dto = JSON.parse(message.body) as UpdateScoreDTO;
             callbackRef.current(dto);
           } catch (e) {
             console.error('[useRealtimeGame] Failed to parse message:', e);
@@ -80,4 +81,3 @@ export function useRealtimeGame({ gameId, onScoreUpdate, enabled = true }: UseRe
 
   return { connected: true }; // Could be enhanced to track connection state
 }
-

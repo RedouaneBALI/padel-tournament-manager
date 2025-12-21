@@ -31,7 +31,7 @@ describe('hasTournamentStarted', () => {
     ${'set joué'}                        | ${{ score: { sets: [{ a: 6, b: 4 }] } }}           | ${true}
     ${'points en cours'}                 | ${{ score: { currentGamePointA: 15 } }}            | ${true}
     ${'tie-break en cours'}              | ${{ score: { tieBreakPointA: 3 } }}                | ${true}
-    ${'vainqueur défini'}                | ${{ winnerSide: 0 }}                               | ${true}
+    ${'vainqueur défini'}                | ${{ winnerSide: 'TEAM_A' }}                               | ${true}
     ${'match terminé'}                   | ${{ finished: true }}                              | ${true}
     ${'forfait'}                         | ${{ score: { forfeit: true } }}                    | ${true}
   `('$desc', ({ gameModifications, expected }) => {
@@ -55,4 +55,3 @@ describe('hasTournamentStarted', () => {
     expect(hasTournamentStarted(tournament)).toBe(true);
   });
 });
-

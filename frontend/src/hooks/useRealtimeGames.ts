@@ -1,17 +1,18 @@
 import { useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { Score } from '@/src/types/score';
+import { TeamSide } from '@/src/types/teamSide';
 import { getStompManager } from './useRealtimeGame';
 
 interface UpdateScoreDTO {
   tournamentUpdated: boolean;
-  winner: string | null;
+  winner: TeamSide | null;
   score: Score;
 }
 
 interface UseRealtimeGamesOptions {
   gameIds: string[];
-  onScoreUpdate: (gameId: string, dto: UpdateScoreDTO) => void;
+  onScoreUpdate: (gameId: string, dto: { score: any; winner: TeamSide | null }) => void;
   enabled?: boolean;
 }
 
@@ -67,7 +68,7 @@ export function useRealtimeGames({ gameIds, onScoreUpdate, enabled = true }: Use
       try {
         const unsubscribe = await manager.subscribe(destination, (message) => {
           try {
-            const dto: UpdateScoreDTO = JSON.parse(message.body);
+            const dto = JSON.parse(message.body) as UpdateScoreDTO;
             callbackRef.current(gameId, dto);
           } catch (e) {
             // Only log parsing errors

@@ -92,7 +92,7 @@ export default function MatchResultCardZoom({
         setCurrentGame((prev) => ({ ...prev, score: newScore }));
       }
       if (result?.winner != null) {
-        setCurrentGame((prev) => ({ ...prev, winnerSide: result.winner }));
+        setCurrentGame((prev) => ({ ...prev, winnerSide: result.winner ? (result.winner as TeamSide) : prev.winnerSide }));
       }
     } catch (e) {
       setCurrentGame((prev) => ({ ...prev, score: prevScore }));
@@ -116,7 +116,7 @@ export default function MatchResultCardZoom({
         }));
       }
       if (result?.winner != null) {
-        setCurrentGame((prev) => ({ ...prev, winnerSide: result.winner }));
+        setCurrentGame((prev) => ({ ...prev, winnerSide: result.winner ? (result.winner as TeamSide) : prev.winnerSide }));
       }
       if (onScoreUpdate) onScoreUpdate(currentGame);
     } catch (e) {
@@ -137,8 +137,8 @@ export default function MatchResultCardZoom({
   } = processDisplayData(currentGame, matchFormat);
 
   // Compute winner sides
-  const winnerSideA = currentGame.winnerSide === 'TEAM_A' ? 0 : currentGame.winnerSide === 'TEAM_B' ? 1 : undefined;
-  const winnerSideB = winnerSideA;
+  const winnerSideA = currentGame.winnerSide;
+  const winnerSideB = currentGame.winnerSide;
 
   return (
     <div className="w-full max-w-2xl mx-auto font-sans">

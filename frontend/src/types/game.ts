@@ -5,6 +5,7 @@ import { Pool } from '@/src/types/pool';
 import { Round } from '@/src/types/round';
 import { PlayerPair } from '@/src/types/playerPair';
 import { VoteSummary } from '@/src/types/vote';
+import { TeamSide } from '@/src/types/teamSide';
 
 export interface Game {
   id: string;
@@ -14,8 +15,8 @@ export interface Game {
   gameId: string;
   tournamentId: string;
   score?: Score;
-  onScoreSaved: (result: { tournamentUpdated: boolean; winner: string | null }) => void;
-  winnerSide?: string;
+  onScoreSaved: (result: { tournamentUpdated: boolean; winner: TeamSide | null }) => void;
+  winnerSide?: TeamSide;
   pool?: Pool;
   finished: boolean;
   scheduledTime: string;

@@ -3,6 +3,7 @@ import { Score } from '@/src/types/score';
 import { updateGameDetails } from '@/src/api/tournamentApi';
 import { initializeScoresFromScore, convertToScoreObject } from '@/src/utils/scoreUtils';
 import { confirmAlert } from 'react-confirm-alert';
+import { TeamSide } from '@/src/types/teamSide';
 
 interface UseSaveLogicParams {
   isSaving: boolean;
@@ -10,7 +11,7 @@ interface UseSaveLogicParams {
   scores: string[][];
   visibleSets: number;
   isForfeit: boolean;
-  forfeitedBy: 'TEAM_A' | 'TEAM_B' | null;
+  forfeitedBy: TeamSide | null;
   gameId: string;
   tournamentId: string;
   localCourt: string;
@@ -23,14 +24,14 @@ interface UseSaveLogicParams {
   setInitialScores: (scores: string[][]) => void;
   setEditing: (editing: boolean) => void;
   setIsForfeit: (isForfeit: boolean) => void;
-  setForfeitedBy: (forfeitedBy: 'TEAM_A' | 'TEAM_B' | null) => void;
+  setForfeitedBy: (forfeitedBy: TeamSide | null) => void;
   setLocalCourt: (court: string) => void;
   setLocalScheduledTime: (time: string) => void;
   court: string | undefined;
   scheduledTime: string | undefined;
   isFirstRound: boolean;
   matchIndex: number | undefined;
-  setLocalWinnerSide: (winner: number | undefined) => void;
+  setLocalWinnerSide: (winner: TeamSide | undefined) => void;
   setLocalFinished: (finished: boolean) => void;
   matchFormat: any;
 }
@@ -121,11 +122,11 @@ export function useSaveLogic(params: UseSaveLogicParams) {
       notifyCallbacks(result);
 
       if (result?.winner) {
-        let winnerSideValue: number | undefined;
+        let winnerSideValue: TeamSide | undefined;
         if (result.winner === 'TEAM_A') {
-          winnerSideValue = 0;
+          winnerSideValue = 'TEAM_A';
         } else if (result.winner === 'TEAM_B') {
-          winnerSideValue = 1;
+          winnerSideValue = 'TEAM_B';
         } else {
           winnerSideValue = undefined;
         }
