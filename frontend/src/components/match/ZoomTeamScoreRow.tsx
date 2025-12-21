@@ -7,30 +7,62 @@ import { Plus, Loader2 } from 'lucide-react';
 import { formatGamePoint } from '@/src/utils/zoomMatchUtils';
 import { getTeamTheme } from '@/src/utils/teamTheme';
 
-function SetScoresDisplay({ setScores }: { setScores: (number | null)[] }) {
+function SetScoresDisplay({ setScores, shareMode = false, isWinner = false }: { setScores: (number | null)[]; shareMode?: boolean; isWinner?: boolean }) {
+  const nonNullScores = setScores.filter(score => score !== null);
+  const justifyEnd = nonNullScores.length < 3;
+
   return (
-    <div className="flex gap-[2px] sm:gap-2">
+    <div className={cn("flex gap-[2px] sm:gap-2", justifyEnd && "justify-end")}>
       {setScores.map((score, i) => (
-        <div
-          key={`set-${i}`}
-          className={cn(
-            'w-6 h-8 sm:w-9 sm:h-10 flex items-center justify-center rounded text-base sm:text-xl font-bold tabular-nums',
-            score !== null ? 'text-foreground bg-muted/50' : 'opacity-0'
-          )}
-        >
-          {score ?? '-'}
-        </div>
+        score !== null && (
+          <div
+            key={`set-${i}`}
+            className={cn(
+              'w-6 h-8 sm:w-9 sm:h-10 flex items-center justify-center rounded text-base sm:text-xl font-bold tabular-nums',
+              shareMode
+                ? (isWinner ? 'text-gold bg-white/15' : 'text-white/80 bg-white/15')
+                : 'text-foreground bg-muted/50'
+            )}
+          >
+            {score}
+          </div>
+        )
       ))}
     </div>
   );
 }
 
-function CurrentPointDisplay({ isTieBreakActive, displayPoint, isTeamA }: {
+function CurrentPointDisplay({ isTieBreakActive, displayPoint, isTeamA, shareMode = false, isWinner = false }: {
   isTieBreakActive: boolean;
   displayPoint: string | number;
   isTeamA: boolean;
+  shareMode?: boolean;
+  isWinner?: boolean;
 }) {
   const theme = getTeamTheme(isTeamA);
+
+  if (shareMode) {
+    // Pour le mode partage, utiliser des couleurs adaptées au fond bleu
+    const bgColor = isTeamA ? 'bg-blue-400/30' : 'bg-rose-400/30';
+    const textColor = isWinner ? 'text-gold' : (isTeamA ? 'text-blue-200' : 'text-rose-200');
+    const borderColor = isTeamA ? 'border-blue-400/50' : 'border-rose-400/50';
+
+    return (
+      <div
+        className={cn(
+          'w-9 h-9 sm:w-14 sm:h-12 flex items-center justify-center rounded-lg font-bold text-base sm:text-2xl tabular-nums shadow-inner transition-colors border',
+          bgColor,
+          textColor,
+          borderColor
+        )}
+      >
+        <span className={cn(isTieBreakActive ? 'text-sm sm:text-2xl' : '')}>
+          {displayPoint}
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
@@ -101,6 +133,7 @@ interface ZoomTeamScoreRowProps {
   winnerSide?: number;
   isFinished?: boolean;
   hideBackground?: boolean;
+  shareMode?: boolean;
 }
 
 export default function ZoomTeamScoreRow({
@@ -116,6 +149,7 @@ export default function ZoomTeamScoreRow({
   winnerSide,
   isFinished = false,
   hideBackground = false,
+  shareMode = false,
 }: ZoomTeamScoreRowProps) {
   const isTeamA = teamSide === 'TEAM_A';
   const isWinner = winnerSide === teamIndex;
@@ -127,12 +161,9 @@ export default function ZoomTeamScoreRow({
   return (
     <div
       className={cn(
-        'relative flex items-center px-2 py-3 sm:p-4 rounded-xl transition-all duration-300',
-        hideBackground
-          ? 'bg-transparent border-transparent shadow-none'
-          : isWinner
-          ? 'winner-highlight'
-          : 'bg-card border border-transparent shadow-sm'
+        'relative flex items-center rounded-xl transition-all duration-300',
+        shareMode ? 'px-1 py-0' : 'px-2 py-3 sm:p-4',
+        isWinner && !shareMode ? 'winner-highlight' : hideBackground ? 'bg-transparent border-transparent shadow-none' : 'bg-card border border-transparent shadow-sm'
       )}
     >
       {/* Team name */}
@@ -144,18 +175,21 @@ export default function ZoomTeamScoreRow({
           fontSize="text-sm sm:text-lg"
           showChampion={false}
           themeColor={themeColor}
+          textColor={shareMode && isWinner ? "gold" : shareMode ? "white" : undefined}
         />
       </div>
 
       {/* Scores section */}
-      <div className="flex items-center gap-1.5 sm:gap-4">
-        <SetScoresDisplay setScores={setScores} />
+      <div className={cn("flex items-center", shareMode ? "gap-1" : "gap-1.5 sm:gap-4")}>
+        <SetScoresDisplay setScores={setScores} shareMode={shareMode} isWinner={isWinner} />
 
         {!isFinished && (
           <CurrentPointDisplay
             isTieBreakActive={isTieBreakActive}
             displayPoint={displayPoint}
             isTeamA={isTeamA}
+            shareMode={shareMode}
+            isWinner={isWinner}
           />
         )}
 

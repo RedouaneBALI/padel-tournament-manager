@@ -33,8 +33,8 @@ export default function GameDetailView({
   title,
 }: GameDetailViewProps) {
   const contextTournament = useContext(TournamentContext);
-  const displayTitle = title || contextTournament?.name;
-  const displayClub = contextTournament?.club;
+  const displayTitle = title || contextTournament?.name || undefined;
+  const displayClub = contextTournament?.club || undefined;
 
   const [game, setGame] = useState<Game | null>(null);
   const [loading, setLoading] = useState(true);
@@ -110,12 +110,15 @@ export default function GameDetailView({
       // Create a temporary container off-DOM
       tempContainer = document.createElement('div');
       tempContainer.style.position = 'fixed';
-      tempContainer.style.top = '0';
-      tempContainer.style.left = '0';
-      tempContainer.style.width = '400px';
+      tempContainer.style.top = '-9999px';
+      tempContainer.style.left = '-9999px';
       tempContainer.style.zIndex = '-9999';
       tempContainer.style.opacity = '0';
       tempContainer.style.pointerEvents = 'none';
+      tempContainer.style.padding = '0';
+      tempContainer.style.margin = '0';
+      tempContainer.style.border = 'none';
+      tempContainer.style.overflow = 'visible';
 
       // Add to DOM before rendering
       document.body.appendChild(tempContainer);
@@ -127,16 +130,32 @@ export default function GameDetailView({
         <MatchShareCard game={game} tournamentName={displayTitle} club={displayClub} />
       );
 
-      // Wait for render to complete
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for render to complete and force layout recalculation
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Trigger a reflow to ensure layout is calculated
+      tempContainer.offsetHeight;
 
       // Capture the element
-      const shareElement = tempContainer.querySelector('.match-share-card');
+      const shareElement = tempContainer.querySelector('.match-share-card') as HTMLElement;
       if (!shareElement) throw new Error('Élément non trouvé');
 
-      const blob = await toBlob(shareElement as HTMLElement, {
+      // Force another reflow
+      shareElement.offsetHeight;
+
+      // Use scrollHeight for actual content, scrollWidth for actual width
+      const elementWidth = shareElement.scrollWidth;
+      const elementHeight = shareElement.scrollHeight;
+
+      // Get the primary color for background
+      const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#3b82f6';
+
+      const blob = await toBlob(shareElement, {
         cacheBust: true,
-        backgroundColor: '#ffffff',
+        backgroundColor: primaryColor,
+        width: elementWidth,
+        height: elementHeight,
+        pixelRatio: 1,
       });
 
       // Cleanup

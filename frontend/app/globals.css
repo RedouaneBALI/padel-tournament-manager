@@ -99,6 +99,8 @@
   .text-brand-linkedin { color: var(--color-brand-linkedin); }
   .text-brand-instagram { color: var(--color-brand-instagram); }
 
+  .text-gold { color: #fbbf24; }
+
   .stage-min-height { min-height: var(--stage-min-height); }
   .img-contain { object-fit: contain; }
   .floating-submit { bottom: calc(env(safe-area-inset-bottom) + var(--bottom-nav-height, 64px) + 12px); }

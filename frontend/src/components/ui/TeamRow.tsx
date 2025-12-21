@@ -13,6 +13,7 @@ interface Props {
   showChampion?: boolean;
   fontSize?: string;
   themeColor?: 'blue' | 'rose' | 'gray'; // Ajout pour le styling
+  textColor?: string; // Couleur du texte personnalisable
 }
 
 export default function TeamRow({
@@ -21,10 +22,12 @@ export default function TeamRow({
   teamIndex,
   showChampion,
   fontSize,
-  themeColor
+  themeColor,
+  textColor
 }: Props) {
   const isWinner = winnerSide !== undefined && winnerSide === teamIndex;
   const isLoser = winnerSide !== undefined && winnerSide !== teamIndex;
+
 
   return (
     <div className="flex items-center gap-3 w-full min-w-0">
@@ -43,8 +46,8 @@ export default function TeamRow({
           <div className={cn(
               "flex flex-col truncate leading-tight",
               fontSize ? fontSize : 'text-sm',
-              isWinner ? 'font-bold text-foreground' : 'font-medium',
-              isLoser ? 'text-muted-foreground' : 'text-foreground'
+              isWinner ? 'font-bold' : 'font-medium',
+              textColor ? `text-${textColor}` : (isLoser ? 'text-muted-foreground' : 'text-foreground')
             )}>
             {team?.player1Name && (
               <span className="truncate">{team.player1Name}</span>
@@ -56,7 +59,10 @@ export default function TeamRow({
           </div>
 
           {team?.displaySeed && (
-            <span className="ml-2 px-1 py-0.5 rounded-lg text-xs font-medium whitespace-nowrap bg-border/50 text-foreground">
+            <span className={cn(
+              "ml-2 px-1 py-0.5 rounded-lg text-xs font-medium whitespace-nowrap",
+              textColor ? `text-${textColor} bg-white/20` : "bg-border/50 text-foreground"
+            )}>
               {team.displaySeed}
             </span>
           )}
