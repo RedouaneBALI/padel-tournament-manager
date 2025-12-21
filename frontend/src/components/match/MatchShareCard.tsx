@@ -30,8 +30,8 @@ export default function MatchShareCard({
   return (
     <div className="match-share-card">
       <div
+        className="bg-game-background"
         style={{
-          background: 'linear-gradient(180deg, #243a6e 0%, #1b2d5e 30%, #1b2d5e 70%, #152347 100%)',
           borderRadius: '0',
           overflow: 'hidden',
           width: '100%',
@@ -80,7 +80,7 @@ export default function MatchShareCard({
           className="w-full text-center text-sm font-medium tracking-wider mt-5"
           style={{ color: 'rgba(255, 255, 255, 0.6)', padding: '16px 0 8px', lineHeight: '1.4' }}
         >
-          <div className="text-gold">www.padelrounds.com</div>
+          <div className="text-gold">padelrounds.com</div>
         </div>
       </div>
     </div>

@@ -101,6 +101,17 @@
 
   .text-gold { color: #fbbf24; }
 
+  .bg-primary-gradient {
+    background: linear-gradient(180deg, #243a6e 0%, var(--color-primary) 30%, var(--color-primary) 70%, #152347 100%);
+  }
+
+  .bg-game-background {
+    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('/game-background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
   .stage-min-height { min-height: var(--stage-min-height); }
   .img-contain { object-fit: contain; }
   .floating-submit { bottom: calc(env(safe-area-inset-bottom) + var(--bottom-nav-height, 64px) + 12px); }
