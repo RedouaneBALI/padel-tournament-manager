@@ -100,6 +100,7 @@ interface ZoomTeamScoreRowProps {
   onPointChange: (teamSide: TeamSide) => void;
   winnerSide?: number;
   isFinished?: boolean;
+  hideBackground?: boolean;
 }
 
 export default function ZoomTeamScoreRow({
@@ -114,6 +115,7 @@ export default function ZoomTeamScoreRow({
   onPointChange,
   winnerSide,
   isFinished = false,
+  hideBackground = false,
 }: ZoomTeamScoreRowProps) {
   const isTeamA = teamSide === 'TEAM_A';
   const isWinner = winnerSide === teamIndex;
@@ -126,7 +128,9 @@ export default function ZoomTeamScoreRow({
     <div
       className={cn(
         'relative flex items-center px-2 py-3 sm:p-4 rounded-xl transition-all duration-300',
-        isWinner
+        hideBackground
+          ? 'bg-transparent border-transparent shadow-none'
+          : isWinner
           ? 'winner-highlight'
           : 'bg-card border border-transparent shadow-sm'
       )}

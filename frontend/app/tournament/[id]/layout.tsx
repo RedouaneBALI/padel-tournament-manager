@@ -18,7 +18,7 @@ import BottomNav from '@/src/components/ui/BottomNav';
 import { ExportProvider } from '@/src/contexts/ExportContext';
 import type { IconType } from 'react-icons';
 import PageHeader from '@/src/components/ui/PageHeader';
-import { TournamentNameContext } from '@/src/contexts/TournamentNameContext';
+import { TournamentContext } from '@/src/contexts/TournamentContext';
 
 export default function TournamentLayout({
   children,
@@ -106,7 +106,7 @@ export default function TournamentLayout({
 
   return (
     <ExportProvider>
-      <TournamentNameContext.Provider value={tournament.name}>
+      <TournamentContext.Provider value={{ name: tournament.name, club: tournament.club }}>
         <div className="w-full max-w-screen-2xl px-2 sm:px-4 mx-auto">
           <header className="pt-4 pb-2">
             <div className="flex items-center gap-2">
@@ -127,7 +127,7 @@ export default function TournamentLayout({
 
           <ToastContainer />
         </div>
-      </TournamentNameContext.Provider>
+      </TournamentContext.Provider>
     </ExportProvider>
   );
 }

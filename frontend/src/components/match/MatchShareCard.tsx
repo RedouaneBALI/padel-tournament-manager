@@ -4,53 +4,53 @@ import type { MatchFormat } from '@/src/types/matchFormat';
 import { processDisplayData } from '@/src/utils/zoomMatchUtils';
 import ZoomTeamScoreRow from '@/src/components/match/ZoomTeamScoreRow';
 import { formatStageLabel } from '@/src/types/stage';
-import { TournamentNameContext } from '@/src/contexts/TournamentNameContext';
+import { TournamentContext } from '@/src/contexts/TournamentContext';
 
-type MatchShareCardProps = {
+export type MatchShareCardProps = {
   game: Game;
   tournamentName?: string;
+  club?: string | null;
   matchFormat?: MatchFormat | null;
 };
 
-/**
- * Shareable card for match details, optimized for Instagram.
- */
 export default function MatchShareCard({
   game,
   tournamentName,
+  club,
   matchFormat,
 }: MatchShareCardProps) {
-  // Use context as fallback only when tournamentName is not provided
-  // (context won't work in temp DOM, so rely on prop for export functionality)
-  const contextTournamentName = useContext(TournamentNameContext);
-  const displayName = tournamentName || contextTournamentName;
-
+  const contextTournament = useContext(TournamentContext);
+  const displayName = tournamentName || contextTournament?.name;
+  const displayClub = club || contextTournament?.club;
   const teams: (any | null)[] = [game.teamA ?? null, game.teamB ?? null];
-  const {
-    setScoresA,
-    setScoresB,
-    tieBreakPointA,
-    tieBreakPointB
-  } = processDisplayData(game, matchFormat);
+  const { setScoresA, setScoresB, tieBreakPointA, tieBreakPointB } = processDisplayData(game, matchFormat);
   const winnerSideA = game.winnerSide === 'TEAM_A' ? 0 : game.winnerSide === 'TEAM_B' ? 1 : undefined;
   const winnerSideB = winnerSideA;
+
   return (
-    <div className="match-share-card modal-content w-full max-w-sm rounded-xl shadow-lg overflow-hidden border border-gray-200 flex flex-col">
-      {/* Header: Tournament Name & Round */}
-      <div className="modal-header px-4 py-3 text-center" style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-on-primary)' }}>
+    <div
+      className="match-share-card flex flex-col items-stretch w-full max-w-md mx-auto"
+      style={{ minWidth: 340, maxWidth: 420, background: 'transparent', borderRadius: 0, overflow: 'visible' }}
+    >
+      {/* Header bleu compact avec round en badge blanc, coins arrondis */}
+      <div
+        className="flex flex-col items-center justify-center px-6 pt-5 pb-2"
+        style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)', borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
+      >
         {displayName && (
-          <h1 className="text-lg font-bold truncate">{displayName}</h1>
+          <div className="text-base font-bold truncate w-full text-center" style={{ letterSpacing: 0.2 }}>{displayName}</div>
         )}
         {game.round?.stage && (
-          <div className="text-xs font-semibold mt-1">
-            {formatStageLabel(game.round.stage)}
+          <div className="flex justify-center mt-2 mb-1">
+            <span className="px-4 py-1 rounded-full text-sm font-semibold" style={{ background: '#fff', color: 'var(--color-primary)' }}>
+              {formatStageLabel(game.round.stage)}
+            </span>
           </div>
         )}
       </div>
 
-      {/* Scoreboard - Compact */}
-      <div className="px-3 py-4 flex-1 flex flex-col justify-center gap-3 bg-white">
-        {/* Équipe A */}
+      {/* Scoreboard compact, transparent background */}
+      <div className="flex flex-col gap-2 px-5 pb-3">
         <ZoomTeamScoreRow
           team={teams[0]}
           teamIndex={0}
@@ -63,9 +63,8 @@ export default function MatchShareCard({
           onPointChange={() => {}}
           winnerSide={winnerSideA}
           isFinished={game.finished}
+          hideBackground={true}
         />
-
-        {/* Équipe B */}
         <ZoomTeamScoreRow
           team={teams[1]}
           teamIndex={1}
@@ -78,12 +77,17 @@ export default function MatchShareCard({
           onPointChange={() => {}}
           winnerSide={winnerSideB}
           isFinished={game.finished}
+          hideBackground={true}
         />
       </div>
 
-      {/* Footer */}
-      <div className="modal-footer px-4 py-3 text-center text-xs font-semibold tracking-wider" style={{ backgroundColor: 'var(--color-brand-instagram)', color: 'white' }}>
-        www.padelrounds.com
+      {/* Footer sombre compact, coins arrondis */}
+      <div
+        className="w-full text-center py-2 text-xs font-semibold tracking-wider"
+        style={{ background: 'var(--color-primary)', color: 'var(--color-on-primary)', borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}
+      >
+        {displayClub && <div className="text-xs text-white/70 mb-1">{displayClub}</div>}
+        <div>www.padelrounds.com</div>
       </div>
     </div>
   );

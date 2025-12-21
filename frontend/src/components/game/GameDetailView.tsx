@@ -9,7 +9,7 @@ import VoteModule from '@/src/components/match/VoteModule';
 import { toast } from 'react-toastify';
 import { formatStageLabel } from '@/src/types/stage';
 import { toBlob } from 'html-to-image';
-import { TournamentNameContext } from '@/src/contexts/TournamentNameContext';
+import { TournamentContext } from '@/src/contexts/TournamentContext';
 
 interface GameDetailViewProps {
   gameId: string;
@@ -32,8 +32,9 @@ export default function GameDetailView({
   editable = false,
   title,
 }: GameDetailViewProps) {
-  const contextTournamentName = useContext(TournamentNameContext);
-  const displayTitle = title || contextTournamentName;
+  const contextTournament = useContext(TournamentContext);
+  const displayTitle = title || contextTournament?.name;
+  const displayClub = contextTournament?.club;
 
   const [game, setGame] = useState<Game | null>(null);
   const [loading, setLoading] = useState(true);
@@ -123,7 +124,7 @@ export default function GameDetailView({
       const { createRoot } = await import('react-dom/client');
       const root = createRoot(tempContainer);
       root.render(
-        <MatchShareCard game={game} tournamentName={displayTitle} />
+        <MatchShareCard game={game} tournamentName={displayTitle} club={displayClub} />
       );
 
       // Wait for render to complete
@@ -251,7 +252,7 @@ export default function GameDetailView({
       )}
       {/* Composant de partage */}
       <div className="hidden">
-        <MatchShareCard game={game} tournamentName={displayTitle} />
+        <MatchShareCard game={game} tournamentName={displayTitle} club={displayClub} />
       </div>
       {/* Bouton de partage */}
       <div className="mt-4 flex justify-center">
