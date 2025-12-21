@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useContext } from 'react';
 import { PlayerPair } from '@/src/types/playerPair';
 import { Score } from '@/src/types/score';
 import TeamScoreRow from '@/src/components/ui/TeamScoreRow';
@@ -13,6 +13,12 @@ import { useScoreSyncing } from '@/src/hooks/useScoreSyncing';
 import { useSaveLogic } from '@/src/hooks/useSaveLogic';
 import MatchHeader from '@/src/components/ui/MatchHeader';
 import MatchFooter from '@/src/components/ui/MatchFooter';
+import { TournamentContext } from '@/src/contexts/TournamentContext';
+import { Share } from 'lucide-react';
+import { toast } from 'react-toastify';
+import MatchShareCard from '@/src/components/match/MatchShareCard';
+import { Game } from '@/src/types/game';
+import { shareMatchImage } from '@/src/utils/imageExport';
 
 interface Props {
   teamA: PlayerPair | null;
@@ -62,6 +68,7 @@ export default function MatchResultCard({
   updateGameFn,
 }: Props) {
   const group = normalizeGroup(pool?.name);
+  const contextTournament = useContext(TournamentContext);
 
   const [localCourt, setLocalCourt] = useState(court || 'Court central');
   const [localScheduledTime, setLocalScheduledTime] = useState(scheduledTime || '00:00');
@@ -194,6 +201,28 @@ export default function MatchResultCard({
   // Compute footer class
   const footerClass = pool?.name ? groupBadgeClasses(group) : editing ? 'bg-card text-foreground' : 'bg-background text-foreground';
 
+  const handleExport = async () => {
+    // Construct a partial Game object for MatchShareCard
+    const game: Partial<Game> = {
+      id: gameId,
+      tournamentId,
+      teamA,
+      teamB,
+      score,
+      winnerSide: localWinnerSide,
+      court: localCourt,
+      scheduledTime: localScheduledTime,
+      pool,
+      setsToWin,
+      finished: localFinished,
+      matchIndex,
+      totalMatches,
+      round: stage ? { stage } : undefined,
+    };
+
+    await shareMatchImage(game as Game, contextTournament?.name, contextTournament?.club);
+  };
+
   return (
     <div
       role="presentation"
@@ -233,6 +262,8 @@ export default function MatchResultCard({
         onCancel={onCancel}
         onSave={handleSave}
         onEdit={onEdit}
+        showExport={!editable && localFinished}
+        onExport={handleExport}
       />
 
       {/* Inline TeamScoreRow component */}

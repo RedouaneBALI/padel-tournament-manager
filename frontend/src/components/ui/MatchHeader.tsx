@@ -2,7 +2,7 @@ import React from 'react';
 import { normalizeGroup, groupBadgeClasses } from '@/src/utils/groupBadge';
 import LiveMatchIndicator from '@/src/components/ui/LiveMatchIndicator';
 import SaveAndCancelButtons from '@/src/components/ui/SaveAndCancelButtons';
-import { Edit3 } from 'lucide-react';
+import { Edit3, Share } from 'lucide-react';
 
 interface MatchHeaderProps {
   badgeLabel: string;
@@ -14,6 +14,8 @@ interface MatchHeaderProps {
   onCancel: () => void;
   onSave: () => void;
   onEdit: () => void;
+  showExport?: boolean;
+  onExport?: () => void;
 }
 
 export default function MatchHeader({
@@ -26,6 +28,8 @@ export default function MatchHeader({
   onCancel,
   onSave,
   onEdit,
+  showExport,
+  onExport,
 }: MatchHeaderProps) {
   const group = normalizeGroup(pool?.name);
 
@@ -61,10 +65,23 @@ export default function MatchHeader({
           {badgeLabel}
         </div>
       )}
-      {editable && (
+      {(editable || showExport) && (
         <div className="z-10 ml-auto flex items-center gap-2">
           {isInProgress && <LiveMatchIndicator showLabel={false} />}
-          {editControls}
+          {editable ? editControls : (
+            showExport && onExport && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onExport();
+                }}
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-7 w-7 p-0 hover:bg-primary/10 hover:text-primary"
+                title="Exporter l'image du match"
+              >
+                <Share className="h-4 w-4" />
+              </button>
+            )
+          )}
         </div>
       )}
     </div>

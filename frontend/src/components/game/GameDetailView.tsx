@@ -8,9 +8,9 @@ import MatchShareCard from '@/src/components/match/MatchShareCard';
 import VoteModule from '@/src/components/match/VoteModule';
 import { toast } from 'react-toastify';
 import { formatStageLabel } from '@/src/types/stage';
-import { toBlob } from 'html-to-image';
 import { TournamentContext } from '@/src/contexts/TournamentContext';
 import { Share } from 'lucide-react';
+import { shareMatchImage } from '@/src/utils/imageExport';
 
 interface GameDetailViewProps {
   gameId: string;
@@ -105,108 +105,11 @@ export default function GameDetailView({
   const handleShare = async () => {
     if (!game) return;
 
-    let tempContainer: HTMLDivElement | null = null;
+    const fileName = `match-${title || 'tournament'}-${game.round?.stage ? formatStageLabel(game.round.stage) : 'round'}.png`;
+    const customTitle = `Match ${title || ''} - ${game.round?.stage ? formatStageLabel(game.round.stage) : ''}`;
+    const customText = `Découvrez le score du match sur PadelRounds !`;
 
-    try {
-      // Create a temporary container off-DOM
-      tempContainer = document.createElement('div');
-      tempContainer.style.position = 'fixed';
-      tempContainer.style.top = '-9999px';
-      tempContainer.style.left = '-9999px';
-      tempContainer.style.zIndex = '-9999';
-      tempContainer.style.opacity = '0';
-      tempContainer.style.pointerEvents = 'none';
-      tempContainer.style.padding = '0';
-      tempContainer.style.margin = '0';
-      tempContainer.style.border = 'none';
-      tempContainer.style.overflow = 'visible';
-
-      // Add to DOM before rendering
-      document.body.appendChild(tempContainer);
-
-      // Render the component into this container
-      const { createRoot } = await import('react-dom/client');
-      const root = createRoot(tempContainer);
-      root.render(
-        <MatchShareCard game={game} tournamentName={displayTitle} club={displayClub} />
-      );
-
-      // Wait for render to complete and force layout recalculation
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // Trigger a reflow to ensure layout is calculated
-      tempContainer.offsetHeight;
-
-      // Capture the element
-      const shareElement = tempContainer.querySelector('.match-share-card') as HTMLElement;
-      if (!shareElement) throw new Error('Élément non trouvé');
-
-      // Force another reflow
-      shareElement.offsetHeight;
-
-      // Use scrollHeight for actual content, scrollWidth for actual width
-      const elementWidth = shareElement.scrollWidth;
-      const elementHeight = shareElement.scrollHeight;
-
-      // Get the primary color for background
-      const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#3b82f6';
-
-      const blob = await toBlob(shareElement, {
-        cacheBust: true,
-        backgroundColor: primaryColor,
-        width: elementWidth,
-        height: elementHeight,
-        pixelRatio: 2,
-      });
-
-      // Cleanup
-      root.unmount();
-      if (tempContainer.parentNode) {
-        document.body.removeChild(tempContainer);
-      }
-
-      if (!blob) throw new Error('Échec de la génération de l\'image');
-
-      const fileName = `match-${title || 'tournament'}-${game.round?.stage ? formatStageLabel(game.round.stage) : 'round'}.png`;
-      const file = new File([blob], fileName, { type: 'image/png' });
-
-      const shareData = {
-        title: `Match ${title || ''} - ${game.round?.stage ? formatStageLabel(game.round.stage) : ''}`,
-        text: `Découvrez le score du match sur PadelRounds !`,
-        files: [file],
-      };
-
-      if (navigator.canShare && navigator.canShare(shareData)) {
-        try {
-          await navigator.share(shareData);
-          return;
-        } catch (err) {
-          if ((err as Error).name !== 'AbortError') console.warn('Erreur partage:', err);
-        }
-      }
-
-      // Fallback: download the image
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-    } catch (error) {
-      // Cleanup in case of error
-      if (tempContainer?.parentNode) {
-        try {
-          document.body.removeChild(tempContainer);
-        } catch (e) {
-          console.warn('Erreur cleanup:', e);
-        }
-      }
-      console.error('Erreur lors de la création de l\'image:', error);
-      toast.error('Impossible de générer l\'image pour le moment.');
-    }
+    await shareMatchImage(game, displayTitle, displayClub, fileName, customTitle, customText);
   };
 
   if (loading) {
