@@ -218,7 +218,7 @@ export default function MatchResultCard({
       round: stage ? ({ stage: stage as any } as any) : undefined,
     };
 
-    await shareMatchImage(game as Game, contextTournament?.name ?? undefined, contextTournament?.club ?? undefined);
+    await shareMatchImage(game as Game, contextTournament?.name ?? undefined, contextTournament?.club ?? undefined, undefined, undefined, undefined, contextTournament?.level);
   };
 
   return (

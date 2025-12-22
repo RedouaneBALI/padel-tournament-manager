@@ -68,7 +68,7 @@ export async function shareMatchImage(
   customFileName?: string,
   customTitle?: string,
   customText?: string,
-  level?: string
+  level?: string | null
 ) {
   let tempContainer: HTMLDivElement | null = null;
 
@@ -113,12 +113,8 @@ export async function shareMatchImage(
     const elementWidth = shareElement.scrollWidth;
     const elementHeight = shareElement.scrollHeight;
 
-    // Get the primary color for background
-    const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#3b82f6';
-
     const blob = await toBlob(shareElement, {
       cacheBust: true,
-      backgroundColor: primaryColor,
       width: elementWidth,
       height: elementHeight,
       pixelRatio: 2,
