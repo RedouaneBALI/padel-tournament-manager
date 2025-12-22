@@ -273,4 +273,16 @@ public final class TestFixturesApp {
     result.add(roundRequest);
     return result;
   }
+
+  public static io.github.redouanebali.model.User createTestUser(String email) {
+    return new io.github.redouanebali.model.User(email, "Test User " + email, "en");
+  }
+
+  public static Tournament createTestTournament(String name) {
+    Tournament tournament = new Tournament();
+    tournament.setName(name);
+    tournament.setOwnerId("owner@test.com");
+    return tournament;
+  }
+  
 }
