@@ -19,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class FavoriteService {
 
+  private static final String USER_NOT_FOUND_MESSAGE = "User not found";
+
   private final UserFavoriteTournamentRepository userFavoriteTournamentRepository;
   private final UserFavoriteGameRepository       userFavoriteGameRepository;
   private final UserRepository                   userRepository;
@@ -31,7 +33,7 @@ public class FavoriteService {
       return;
     }
 
-    User       user       = userRepository.findByEmail(userEmail).orElseThrow(() -> new IllegalArgumentException("User not found"));
+    User       user       = userRepository.findByEmail(userEmail).orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND_MESSAGE));
     Tournament tournament = tournamentRepository.getReferenceById(tournamentId);
 
     UserFavoriteTournament favorite = new UserFavoriteTournament();
@@ -46,7 +48,7 @@ public class FavoriteService {
   }
 
   public List<UserFavoriteTournament> getFavoriteTournaments(String userEmail) {
-    User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new IllegalArgumentException("User not found"));
+    User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND_MESSAGE));
     return userFavoriteTournamentRepository.findByUserOrderByAddedAtDesc(user);
   }
 
@@ -60,7 +62,7 @@ public class FavoriteService {
       return;
     }
 
-    User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new IllegalArgumentException("User not found"));
+    User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND_MESSAGE));
     Game game = gameRepository.getReferenceById(gameId);
 
     UserFavoriteGame favorite = new UserFavoriteGame();
@@ -75,7 +77,7 @@ public class FavoriteService {
   }
 
   public List<UserFavoriteGame> getFavoriteGames(String userEmail) {
-    User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new IllegalArgumentException("User not found"));
+    User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND_MESSAGE));
     return userFavoriteGameRepository.findByUserOrderByAddedAtDesc(user);
   }
 
@@ -84,4 +86,3 @@ public class FavoriteService {
   }
 
 }
-
