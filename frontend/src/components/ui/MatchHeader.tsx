@@ -3,6 +3,7 @@ import { normalizeGroup, groupBadgeClasses } from '@/src/utils/groupBadge';
 import LiveMatchIndicator from '@/src/components/ui/LiveMatchIndicator';
 import SaveAndCancelButtons from '@/src/components/ui/SaveAndCancelButtons';
 import { Edit3, Share } from 'lucide-react';
+import { FaStar, FaRegStar } from 'react-icons/fa';
 
 interface MatchHeaderProps {
   badgeLabel: string;
@@ -16,6 +17,8 @@ interface MatchHeaderProps {
   onEdit: () => void;
   showExport?: boolean;
   onExport?: () => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }
 
 export default function MatchHeader({
@@ -30,6 +33,8 @@ export default function MatchHeader({
   onEdit,
   showExport,
   onExport,
+  isFavorite,
+  onToggleFavorite,
 }: MatchHeaderProps) {
   const group = normalizeGroup(pool?.name);
 
@@ -55,19 +60,36 @@ export default function MatchHeader({
 
   return (
     <div className="flex justify-between items-start px-2 pt-2">
-      {(badgeLabel !== '') && (
-        <div
-          className={[
-            'inline-block text-xs font-medium rounded mt-1 mx-1 px-3 py-0.5',
-            pool?.name ? groupBadgeClasses(group) : 'bg-border text-foreground'
-          ].join(' ')}
-        >
-          {badgeLabel}
-        </div>
-      )}
+      <div className="flex items-center gap-2">
+        {(badgeLabel !== '') && (
+          <div
+            className={[
+              'inline-block text-xs font-medium rounded mt-1 mx-1 px-3 py-0.5',
+              pool?.name ? groupBadgeClasses(group) : 'bg-border text-foreground'
+            ].join(' ')}
+          >
+            {badgeLabel}
+          </div>
+        )}
+        {onToggleFavorite && !editable && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite();
+            }}
+            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-7 w-7 p-0 hover:bg-primary/10 hover:text-primary"
+            title={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+          >
+            {isFavorite ? (
+              <FaStar className="h-4 w-4 text-yellow-500" />
+            ) : (
+              <FaRegStar className="h-4 w-4" />
+            )}
+          </button>
+        )}
+      </div>
       {(editable || showExport) && (
         <div className="z-10 ml-auto flex items-center gap-2">
-          {isInProgress && <LiveMatchIndicator showLabel={false} />}
           {editable ? editControls : (
             showExport && onExport && (
               <button

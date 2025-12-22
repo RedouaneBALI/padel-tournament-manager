@@ -1,13 +1,26 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import PageHeader from '@/src/components/ui/PageHeader';
 import { useFavorites } from '@/src/hooks/useFavorites';
-import { FaStar, FaRegStar } from 'react-icons/fa';
+import FavoriteTournamentCard from '@/src/components/tournament/FavoriteTournamentCard';
+import BottomNav, { BottomNavItem } from '@/src/components/ui/BottomNav';
+import { usePathname } from 'next/navigation';
+import { Home } from 'lucide-react';
+import { FiMoreHorizontal } from 'react-icons/fi';
+
+type TabType = 'tournaments' | 'games';
 
 export default function FavoritesPage() {
   const { favoriteTournaments, favoriteGames, loading, error } = useFavorites();
+  const [activeTab, setActiveTab] = useState<TabType>('tournaments');
+  const pathname = usePathname();
+
+  const items: BottomNavItem[] = [
+    { href: '/', label: 'Accueil', Icon: Home, isActive: (p) => p === '/' },
+    { href: '#more', label: 'Plus', Icon: FiMoreHorizontal },
+  ];
 
   if (loading) {
     return (
@@ -36,68 +49,86 @@ export default function FavoritesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader title="Mes favoris" />
+      <PageHeader
+        title="Mes favoris"
+      />
 
-      <div className="p-4 space-y-6">
-        {/* Tournois favoris */}
-        <div>
-          <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
-            <FaStar className="text-yellow-400" />
-            Tournois favoris
-          </h2>
-          {favoriteTournaments.length === 0 ? (
-            <p className="text-muted-foreground">Aucun tournoi favori.</p>
-          ) : (
-            <div className="space-y-2">
-              {favoriteTournaments.map((tournament) => (
-                <Link
-                  key={tournament.id}
-                  href={`/tournament/${tournament.id}`}
-                  className="block p-3 bg-card rounded-lg border hover:bg-accent transition-colors"
-                >
-                  <h3 className="font-medium">{tournament.name}</h3>
-                  <p className="text-sm text-muted-foreground">{tournament.city}, {tournament.club}</p>
-                </Link>
-              ))}
-            </div>
-          )}
+      <div className="p-4">
+        {/* Onglets */}
+        <div className="mb-4 border-b border-border">
+          <nav className="-mb-px flex justify-center gap-2" aria-label="Sous-onglets favoris">
+            <button
+              onClick={() => setActiveTab('tournaments')}
+              className={`whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium ${
+                activeTab === 'tournaments'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-primary'
+              }`}
+            >
+              Tournois favoris
+            </button>
+            <button
+              onClick={() => setActiveTab('games')}
+              className={`whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium ${
+                activeTab === 'games'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-primary'
+              }`}
+            >
+              Matchs favoris
+            </button>
+          </nav>
         </div>
 
-        {/* Matchs favoris */}
-        <div>
-          <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
-            <FaRegStar className="text-yellow-400" />
-            Matchs favoris
-          </h2>
-          {favoriteGames.length === 0 ? (
-            <p className="text-muted-foreground">Aucun match favori.</p>
-          ) : (
-            <div className="space-y-2">
-              {favoriteGames.map((game) => (
-                <Link
-                  key={game.id}
-                  href={`/tournament/${game.tournamentId}/games/${game.gameId}`}
-                  className="block p-3 bg-card rounded-lg border hover:bg-accent transition-colors"
-                >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="font-medium">
-                        {game.teamA?.map(p => p.name).join(' & ')} vs {game.teamB?.map(p => p.name).join(' & ')}
-                      </p>
-                      <p className="text-sm text-muted-foreground">Court {game.court} - {game.scheduledTime}</p>
-                    </div>
-                    {game.finished && (
-                      <div className="text-sm font-medium">
-                        {game.score ? `${game.score.teamAScore} - ${game.score.teamBScore}` : 'Terminé'}
+        {/* Contenu des onglets */}
+        {activeTab === 'tournaments' && (
+          <div>
+            {favoriteTournaments.length === 0 ? (
+              <p className="text-muted-foreground">Aucun tournoi favori.</p>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {favoriteTournaments.map((tournament) => (
+                  <FavoriteTournamentCard key={tournament.id} tournament={tournament} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'games' && (
+          <div>
+            {favoriteGames.length === 0 ? (
+              <p className="text-muted-foreground">Aucun match favori.</p>
+            ) : (
+              <div className="space-y-2">
+                {favoriteGames.map((game) => (
+                  <Link
+                    key={game.id}
+                    href={`/tournament/${game.tournamentId}/games/${game.gameId}`}
+                    className="block p-3 bg-card rounded-lg border hover:bg-accent transition-colors"
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="font-medium">
+                          {game.teamA?.map(p => p.name).join(' & ')} vs {game.teamB?.map(p => p.name).join(' & ')}
+                        </p>
+                        <p className="text-sm text-muted-foreground">Court {game.court} - {game.scheduledTime}</p>
                       </div>
-                    )}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
+                      {game.finished && (
+                        <div className="text-sm font-medium">
+                          {game.score ? `${game.score.teamAScore} - ${game.score.teamBScore}` : 'Terminé'}
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      <BottomNav items={items} pathname={pathname} />
     </div>
   );
 }

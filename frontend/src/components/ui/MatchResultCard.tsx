@@ -21,6 +21,9 @@ import { Game } from '@/src/types/game';
 import { MatchFormat } from '@/src/types/matchFormat';
 import { shareMatchImage } from '@/src/utils/imageExport';
 import { TeamSide } from '@/src/types/teamSide';
+import { useFavorites } from '@/src/hooks/useFavorites';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 interface Props {
   teamA: PlayerPair | null;
@@ -221,6 +224,20 @@ export default function MatchResultCard({
     await shareMatchImage(game as Game, contextTournament?.name ?? undefined, contextTournament?.club ?? undefined, undefined, undefined, undefined, contextTournament?.level);
   };
 
+  const { favoriteGames, toggleFavoriteGame } = useFavorites();
+  const { status } = useSession();
+  const router = useRouter();
+
+  const isFavorite = favoriteGames.some(g => g.id == gameId);
+
+  const handleToggleFavorite = () => {
+    if (status !== 'authenticated') {
+      router.push('/connexion');
+    } else {
+      toggleFavoriteGame(parseInt(gameId), isFavorite);
+    }
+  };
+
   return (
     <div
       role="presentation"
@@ -238,13 +255,6 @@ export default function MatchResultCard({
         ${isInProgress ? 'ring-2 ring-red-500/20' : ''}
         `}
     >
-      {/* Indicateur match en cours - en mode non-éditable */}
-      {isInProgress && !editable && (
-        <div className="absolute top-2 right-2 z-30">
-          <LiveMatchIndicator showLabel={true} />
-        </div>
-      )}
-
       {isSaving && (
         <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px] z-20 flex items-center justify-center" aria-hidden>
           <CenteredLoader />
@@ -262,6 +272,8 @@ export default function MatchResultCard({
         onEdit={onEdit}
         showExport={!editable && localFinished}
         onExport={handleExport}
+        isFavorite={isFavorite}
+        onToggleFavorite={handleToggleFavorite}
       />
 
       {/* Inline TeamScoreRow component */}
@@ -301,6 +313,13 @@ export default function MatchResultCard({
           onToggleForfeit={onToggleForfeitB}
         />
       </div>
+
+      {/* Indicateur match en cours - en mode non-éditable */}
+      {isInProgress && !editable && (
+        <div className="absolute top-2 right-2 z-30">
+          <LiveMatchIndicator showLabel={true} />
+        </div>
+      )}
 
       <MatchFooter
         editing={editing}

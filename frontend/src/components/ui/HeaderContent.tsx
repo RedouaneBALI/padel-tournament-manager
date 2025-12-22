@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useExport } from '@/src/contexts/ExportContext';
 import { useFavorites } from '@/src/hooks/useFavorites';
 import { FaStar, FaRegStar } from 'react-icons/fa';
@@ -13,6 +13,7 @@ import { useSession } from 'next-auth/react';
 export default function HeaderContent() {
   const { onExport, onShare, onEdit, tvButtonUrl, showTvButton, setAdminActions, tournamentName, setTournamentName } = useExport();
   const pathname = usePathname();
+  const router = useRouter();
   const hasAdminActions = !!(onExport || onShare || onEdit || showTvButton);
   const { favoriteTournaments, toggleFavoriteTournament } = useFavorites();
   const { status } = useSession();
@@ -26,7 +27,9 @@ export default function HeaderContent() {
   const isFavorite = tournamentId ? favoriteTournaments.some(t => t.id === tournamentId) : false;
 
   const handleToggleFavorite = () => {
-    if (tournamentId) {
+    if (status !== 'authenticated') {
+      router.push('/connexion');
+    } else if (tournamentId) {
       toggleFavoriteTournament(tournamentId, isFavorite);
     }
   };
