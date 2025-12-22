@@ -224,17 +224,17 @@ export default function MatchResultCard({
     await shareMatchImage(game as Game, contextTournament?.name ?? undefined, contextTournament?.club ?? undefined, undefined, undefined, undefined, contextTournament?.level);
   };
 
-  const { favoriteGames, toggleFavoriteGame } = useFavorites();
+  const favorites = editable ? null : useFavorites();
   const { status } = useSession();
   const router = useRouter();
 
-  const isFavorite = favoriteGames.some(g => g.id == gameId);
+  const isFavorite = favorites ? favorites.favoriteGames.some(g => g.id == gameId) : false;
 
   const handleToggleFavorite = () => {
     if (status !== 'authenticated') {
       router.push('/connexion');
-    } else {
-      toggleFavoriteGame(parseInt(gameId), isFavorite);
+    } else if (favorites) {
+      favorites.toggleFavoriteGame(parseInt(gameId), isFavorite);
     }
   };
 

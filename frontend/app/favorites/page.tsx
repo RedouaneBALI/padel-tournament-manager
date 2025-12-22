@@ -1,21 +1,30 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
+import React from 'react';
 import PageHeader from '@/src/components/ui/PageHeader';
 import { useFavorites } from '@/src/hooks/useFavorites';
-import FavoriteTournamentCard from '@/src/components/tournament/FavoriteTournamentCard';
 import BottomNav, { BottomNavItem } from '@/src/components/ui/BottomNav';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { Home } from 'lucide-react';
 import { FiMoreHorizontal } from 'react-icons/fi';
+import FavoriteTournamentsList from '@/src/components/favorites/FavoriteTournamentsList';
+import FavoriteGamesList from '@/src/components/favorites/FavoriteGamesList';
 
 type TabType = 'tournaments' | 'games';
 
 export default function FavoritesPage() {
-  const { favoriteTournaments, favoriteGames, loading, error } = useFavorites();
-  const [activeTab, setActiveTab] = useState<TabType>('tournaments');
+  const { favoriteTournaments, favoriteGames, loading, error } = useFavorites(true);
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const pathname = usePathname();
+
+  const activeTab = (searchParams.get('tab') as TabType) || 'tournaments';
+
+  const updateQuery = (key: string, value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set(key, value);
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   const items: BottomNavItem[] = [
     { href: '/', label: 'Accueil', Icon: Home, isActive: (p) => p === '/' },
@@ -25,8 +34,8 @@ export default function FavoritesPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <PageHeader title="Mes favoris" loading />
-        <div className="p-4">
+        <PageHeader loading />
+        <div>
           <div className="animate-pulse space-y-4">
             <div className="h-4 bg-muted rounded w-3/4"></div>
             <div className="h-4 bg-muted rounded w-1/2"></div>
@@ -39,8 +48,8 @@ export default function FavoritesPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-background">
-        <PageHeader title="Mes favoris" />
-        <div className="p-4">
+        <PageHeader />
+        <div>
           <p className="text-muted-foreground">Erreur lors du chargement des favoris.</p>
         </div>
       </div>
@@ -49,16 +58,14 @@ export default function FavoritesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader
-        title="Mes favoris"
-      />
+      <PageHeader />
 
-      <div className="p-4">
+      <div>
         {/* Onglets */}
         <div className="mb-4 border-b border-border">
           <nav className="-mb-px flex justify-center gap-2" aria-label="Sous-onglets favoris">
             <button
-              onClick={() => setActiveTab('tournaments')}
+              onClick={() => updateQuery('tab', 'tournaments')}
               className={`whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium ${
                 activeTab === 'tournaments'
                   ? 'border-primary text-primary'
@@ -68,7 +75,7 @@ export default function FavoritesPage() {
               Tournois favoris
             </button>
             <button
-              onClick={() => setActiveTab('games')}
+              onClick={() => updateQuery('tab', 'games')}
               className={`whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium ${
                 activeTab === 'games'
                   ? 'border-primary text-primary'
@@ -82,49 +89,11 @@ export default function FavoritesPage() {
 
         {/* Contenu des onglets */}
         {activeTab === 'tournaments' && (
-          <div>
-            {favoriteTournaments.length === 0 ? (
-              <p className="text-muted-foreground">Aucun tournoi favori.</p>
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {favoriteTournaments.map((tournament) => (
-                  <FavoriteTournamentCard key={tournament.id} tournament={tournament} />
-                ))}
-              </div>
-            )}
-          </div>
+          <FavoriteTournamentsList favoriteTournaments={favoriteTournaments} />
         )}
 
         {activeTab === 'games' && (
-          <div>
-            {favoriteGames.length === 0 ? (
-              <p className="text-muted-foreground">Aucun match favori.</p>
-            ) : (
-              <div className="space-y-2">
-                {favoriteGames.map((game) => (
-                  <Link
-                    key={game.id}
-                    href={`/tournament/${game.tournamentId}/games/${game.gameId}`}
-                    className="block p-3 bg-card rounded-lg border hover:bg-accent transition-colors"
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-medium">
-                          {game.teamA?.map(p => p.name).join(' & ')} vs {game.teamB?.map(p => p.name).join(' & ')}
-                        </p>
-                        <p className="text-sm text-muted-foreground">Court {game.court} - {game.scheduledTime}</p>
-                      </div>
-                      {game.finished && (
-                        <div className="text-sm font-medium">
-                          {game.score ? `${game.score.teamAScore} - ${game.score.teamBScore}` : 'Terminé'}
-                        </div>
-                      )}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
+          <FavoriteGamesList favoriteGames={favoriteGames} favoriteTournaments={favoriteTournaments} />
         )}
       </div>
 

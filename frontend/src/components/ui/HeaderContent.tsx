@@ -15,7 +15,6 @@ export default function HeaderContent() {
   const pathname = usePathname();
   const router = useRouter();
   const hasAdminActions = !!(onExport || onShare || onEdit || showTvButton);
-  const { favoriteTournaments, toggleFavoriteTournament } = useFavorites();
   const { status } = useSession();
 
   // Extract tournament ID from pathname
@@ -24,19 +23,25 @@ export default function HeaderContent() {
     return match ? parseInt(match[1]) : null;
   }, [pathname]);
 
-  const isFavorite = tournamentId ? favoriteTournaments.some(t => t.id === tournamentId) : false;
+  const isTournamentPage = pathname.startsWith('/tournament/') && !pathname.startsWith('/admin/tournament/');
+  const { favoriteTournaments, toggleFavoriteTournament } = useFavorites(isTournamentPage);
+
+  const isFavorite = tournamentId && favoriteTournaments ? favoriteTournaments.some(t => t.id === tournamentId) : false;
 
   const handleToggleFavorite = () => {
     if (status !== 'authenticated') {
       router.push('/connexion');
-    } else if (tournamentId) {
+    } else if (tournamentId && favoriteTournaments) {
       toggleFavoriteTournament(tournamentId, isFavorite);
     }
   };
 
   React.useEffect(() => {
     const isTournament = pathname && (pathname.startsWith('/tournament/') || pathname.startsWith('/admin/tournament/'));
-    if (!pathname || !isTournament) {
+    if (pathname === '/favorites') {
+      setAdminActions({ onExport: null, onShare: null, onEdit: null, tvButtonUrl: null, showTvButton: false, isAdmin: false });
+      setTournamentName("Mes favoris");
+    } else if (!pathname || !isTournament) {
       setAdminActions({ onExport: null, onShare: null, onEdit: null, tvButtonUrl: null, showTvButton: false, isAdmin: false });
       setTournamentName(null);
     }

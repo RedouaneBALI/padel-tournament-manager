@@ -4,6 +4,7 @@ import { signOut, useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import GoogleLoginButton from '@/src/components/ui/buttons/GoogleLoginButton';
+import Image from 'next/image';
 
 const errorMessages: Record<string, string> = {
   OAuthCallback: "Une erreur s'est produite lors de la connexion avec Google. Veuillez réessayer.",
@@ -38,9 +39,16 @@ export default function ConnexionPage() {
   }, [session, status, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="flex items-center justify-center bg-background py-8 mt-30">
       <div className="bg-card shadow-md rounded-lg px-10 py-8 text-center max-w-md w-full mx-4">
-        <p className="mb-8 text-muted text-base">Veuillez vous connecter</p>
+        <Image
+          src="/pr-logo.png"
+          alt="Padel Rounds"
+          width={128}
+          height={128}
+          className="mx-auto mb-4"
+        />
+        <p className="mb-8 text-muted text-base">Connectez-vous pour profiter de toutes les fonctionnalités de Padel Rounds !</p>
 
         {error && (
           <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">

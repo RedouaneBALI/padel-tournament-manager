@@ -4,7 +4,7 @@ import { getFavoriteTournaments, addFavoriteTournament, removeFavoriteTournament
 import type { Tournament } from '@/src/types/tournament';
 import type { Game } from '@/src/types/game';
 
-export const useFavorites = () => {
+export const useFavorites = (enabled: boolean = true) => {
   const [favoriteTournaments, setFavoriteTournaments] = useState<Tournament[]>([]);
   const [favoriteGames, setFavoriteGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(false);
@@ -68,8 +68,10 @@ export const useFavorites = () => {
   };
 
   useEffect(() => {
-    fetchFavorites();
-  }, [status]);
+    if (enabled) {
+      fetchFavorites();
+    }
+  }, [status, enabled]);
 
   return {
     favoriteTournaments,
