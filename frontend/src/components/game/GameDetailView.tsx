@@ -110,7 +110,7 @@ export default function GameDetailView({
     const customTitle = `Match ${title || ''} - ${game.round?.stage ? formatStageLabel(game.round.stage) : ''}`;
     const customText = `Découvrez le score du match sur PadelRounds !`;
 
-    await shareMatchImage(game, displayTitle, displayClub, fileName, customTitle, customText);
+    await shareMatchImage(game, displayTitle, displayClub, fileName, customTitle, customText, contextTournament?.level);
   };
 
   if (loading) {
@@ -167,7 +167,7 @@ export default function GameDetailView({
       )}
       {/* Composant de partage */}
       <div className="hidden">
-        <MatchShareCard game={game} tournamentName={displayTitle} club={displayClub} />
+        <MatchShareCard game={game} tournamentName={displayTitle} club={displayClub} level={contextTournament?.level} />
       </div>
       {/* Bouton de partage */}
       <div className="mt-4 flex justify-center">

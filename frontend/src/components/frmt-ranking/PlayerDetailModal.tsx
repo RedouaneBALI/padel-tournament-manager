@@ -60,14 +60,12 @@ export default function PlayerDetailModal({ player, onClose }: Props) {
       if (navigator.canShare && navigator.canShare(shareData)) {
         try {
           await navigator.share(shareData);
-          return;
         } catch (err) {
           if ((err as Error).name !== 'AbortError') console.warn('Erreur partage:', err);
         }
+      } else {
+        console.warn('Partage non pris en charge');
       }
-
-      // If sharing is not supported, show a message instead of downloading
-      console.error('Le partage n\'est pas pris en charge sur cet appareil.');
 
     } catch (error) {
       console.error('Erreur lors de la création de l\'image:', error);

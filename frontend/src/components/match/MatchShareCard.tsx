@@ -11,6 +11,7 @@ export type MatchShareCardProps = {
   tournamentName?: string;
   club?: string | null;
   matchFormat?: MatchFormat | null;
+  level?: string | null;
 };
 
 export default function MatchShareCard({
@@ -18,10 +19,13 @@ export default function MatchShareCard({
   tournamentName,
   club,
   matchFormat,
+  level,
 }: MatchShareCardProps) {
   const contextTournament = useContext(TournamentContext);
   const displayName = tournamentName || contextTournament?.name;
   const displayClub = club || contextTournament?.club;
+  const displayLevel = level || contextTournament?.level;
+
   const teams: (any | null)[] = [game.teamA ?? null, game.teamB ?? null];
   const { setScoresA, setScoresB, tieBreakPointA, tieBreakPointB } = processDisplayData(game, matchFormat ?? null);
   const winnerSide = game.winnerSide;
@@ -47,17 +51,19 @@ export default function MatchShareCard({
         {/* Header - plus de bordure, juste du contenu */}
         <div
           className="flex flex-col items-center justify-center px-4"
-          style={{ color: 'var(--color-on-primary)', paddingTop: '12px', paddingBottom: '16px' }}
+          style={{ color: '#ffffff', paddingTop: '12px', paddingBottom: '16px' }}
         >
           {displayName && (
             <div className="text-xl font-bold truncate w-full text-center" style={{ letterSpacing: 0.3 }}>{displayName}</div>
           )}
           {displayClub && (
-            <div className="text-sm font-medium truncate w-full text-center" style={{ marginTop: '4px' }}>{displayClub}</div>
+            <div className="text-sm font-medium w-full text-center" style={{ marginTop: '4px' }}>
+              {displayLevel ? `${displayLevel} - ${displayClub}` : displayClub}
+            </div>
           )}
           {game.round?.stage && (
             <div className="flex justify-center" style={{ marginTop: '12px' }}>
-              <span className="px-5 py-1.5 rounded-full text-sm font-semibold" style={{ background: '#fff', color: 'var(--color-primary)' }}>
+              <span className="px-5 py-1.5 rounded-full text-sm font-semibold" style={{ background: '#fff', color: '#1b2d5e' }}>
                 {formatStageLabel(game.round.stage)}
               </span>
             </div>

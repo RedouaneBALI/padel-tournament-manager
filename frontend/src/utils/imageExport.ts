@@ -59,6 +59,7 @@ export async function exportBracketAsImage(elementId: string, filename = 'bracke
  * @param customFileName - Nom personnalisé du fichier (optionnel)
  * @param customTitle - Titre personnalisé pour le partage (optionnel)
  * @param customText - Texte personnalisé pour le partage (optionnel)
+ * @param level - Niveau de détail ou de qualité (optionnel)
  */
 export async function shareMatchImage(
   game: Game,
@@ -66,7 +67,8 @@ export async function shareMatchImage(
   club?: string,
   customFileName?: string,
   customTitle?: string,
-  customText?: string
+  customText?: string,
+  level?: string
 ) {
   let tempContainer: HTMLDivElement | null = null;
 
@@ -91,7 +93,7 @@ export async function shareMatchImage(
     const { createRoot } = await import('react-dom/client');
     const root = createRoot(tempContainer);
     root.render(
-      React.createElement(MatchShareCard, { game, tournamentName, club })
+      React.createElement(MatchShareCard, { game, tournamentName, club, level })
     );
 
     // Wait for render to complete and force layout recalculation
