@@ -14,6 +14,7 @@ import PointsCalculatorButton from '@/src/components/ui/buttons/PointsCalculator
 import RankingButton from '@/src/components/ui/buttons/RankingButton';
 import MyAccountButton from '@/src/components/ui/buttons/MyAccountButton';
 import LatestTournamentsButton from '@/src/components/ui/buttons/LatestTournamentsButton';
+import FavoritesButton from '@/src/components/ui/buttons/FavoritesButton';
 
 export type BottomNavItem = {
   href: string;
@@ -138,6 +139,7 @@ export default function BottomNav({ items, pathname, className, fixed = true, on
                 <h3 className="text-sm font-semibold text-muted-foreground mt-4 mb-1">Général</h3>
                 <hr className="border-t border-border my-1" />
                 <div className="flex flex-col gap-2">
+                  <FavoritesButton onClick={onMoreClick ?? closeMore} />
                   <LatestTournamentsButton onClick={onMoreClick ?? closeMore} />
                   <PricingButton onClick={onMoreClick ?? closeMore} />
                   <ContactButton onClick={onMoreClick ?? closeMore} />

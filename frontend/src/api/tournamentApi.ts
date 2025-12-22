@@ -422,7 +422,63 @@ export async function fetchVoteSummary(gameId: string): Promise<VoteSummary> {
   return await response.json();
 }
 
-// Internal helper to avoid code duplication
+// Favorites API functions
+
+export const getFavoriteTournaments = async (): Promise<Tournament[]> => {
+  const response = await fetchWithAuth(api('/favorites/tournaments'));
+  if (!response.ok) {
+    throw new Error('Failed to fetch favorite tournaments');
+  }
+  return await response.json();
+};
+
+export const addFavoriteTournament = async (tournamentId: number): Promise<void> => {
+  const response = await fetchWithAuth(api(`/favorites/tournaments/${tournamentId}`), {
+    method: 'POST',
+  });
+  if (!response.ok) {
+    throw new Error('Failed to add tournament to favorites');
+  }
+};
+
+export const removeFavoriteTournament = async (tournamentId: number): Promise<void> => {
+  const response = await fetchWithAuth(api(`/favorites/tournaments/${tournamentId}`), {
+    method: 'DELETE',
+  });
+  if (!response.ok) {
+    throw new Error('Failed to remove tournament from favorites');
+  }
+};
+
+export const getFavoriteGames = async (): Promise<Game[]> => {
+  const response = await fetchWithAuth(api('/favorites/games'));
+  if (!response.ok) {
+    throw new Error('Failed to fetch favorite games');
+  }
+  return await response.json();
+};
+
+export const addFavoriteGame = async (gameId: number): Promise<void> => {
+  const response = await fetchWithAuth(api(`/favorites/games/${gameId}`), {
+    method: 'POST',
+  });
+  if (!response.ok) {
+    throw new Error('Failed to add game to favorites');
+  }
+};
+
+export const removeFavoriteGame = async (gameId: number): Promise<void> => {
+  const response = await fetchWithAuth(api(`/favorites/games/${gameId}`), {
+    method: 'DELETE',
+  });
+  if (!response.ok) {
+    throw new Error('Failed to remove game from favorites');
+  }
+};
+
+/**
+ * Internal helper to avoid code duplication
+ */
 async function patchGamePointEndpoint(endpoint: string, teamSide: string | undefined, errorMsg: string) {
   const url = teamSide !== undefined ? api(endpoint) + `?teamSide=${encodeURIComponent(teamSide)}` : api(endpoint);
   const response = await fetchWithAuth(url, {
