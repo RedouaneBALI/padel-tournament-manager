@@ -88,7 +88,7 @@ class FavoriteControllerTest {
     userRepository.save(TestFixturesApp.createTestUser("user@test.com"));
     Tournament tournament = tournamentRepository.save(TestFixturesApp.createTestTournament(tournamentName));
 
-    mockMvc.perform(post("/api/favorites/tournaments/{id}", tournament.getId())
+    mockMvc.perform(post("/favorites/tournaments/{id}", tournament.getId())
                         .contentType(MediaType.APPLICATION_JSON))
            .andExpect(status().isCreated());
   }
@@ -104,7 +104,7 @@ class FavoriteControllerTest {
     favoriteService.addFavoriteTournament("user@test.com", t1.getId());
     favoriteService.addFavoriteTournament("user@test.com", t2.getId());
 
-    mockMvc.perform(get("/api/favorites/tournaments")
+    mockMvc.perform(get("/favorites/tournaments")
                         .contentType(MediaType.APPLICATION_JSON))
            .andExpect(status().isOk())
            .andExpect(jsonPath("$", hasSize(2)));
@@ -122,7 +122,7 @@ class FavoriteControllerTest {
 
     favoriteService.addFavoriteTournament("user@test.com", tournament.getId());
 
-    mockMvc.perform(delete("/api/favorites/tournaments/{id}", tournament.getId())
+    mockMvc.perform(delete("/favorites/tournaments/{id}", tournament.getId())
                         .contentType(MediaType.APPLICATION_JSON))
            .andExpect(status().isNoContent());
   }
@@ -133,7 +133,7 @@ class FavoriteControllerTest {
     userRepository.save(TestFixturesApp.createTestUser("user@test.com"));
     Game game = createPersistedTestGame();
 
-    mockMvc.perform(post("/api/favorites/games/{id}", game.getId())
+    mockMvc.perform(post("/favorites/games/{id}", game.getId())
                         .contentType(MediaType.APPLICATION_JSON))
            .andExpect(status().isCreated());
   }
@@ -149,7 +149,7 @@ class FavoriteControllerTest {
     favoriteService.addFavoriteGame("user@test.com", g1.getId());
     favoriteService.addFavoriteGame("user@test.com", g2.getId());
 
-    mockMvc.perform(get("/api/favorites/games")
+    mockMvc.perform(get("/favorites/games")
                         .contentType(MediaType.APPLICATION_JSON))
            .andExpect(status().isOk())
            .andExpect(jsonPath("$", hasSize(2)));
@@ -163,7 +163,7 @@ class FavoriteControllerTest {
 
     favoriteService.addFavoriteGame("user@test.com", game.getId());
 
-    mockMvc.perform(delete("/api/favorites/games/{id}", game.getId())
+    mockMvc.perform(delete("/favorites/games/{id}", game.getId())
                         .contentType(MediaType.APPLICATION_JSON))
            .andExpect(status().isNoContent());
   }
@@ -173,7 +173,7 @@ class FavoriteControllerTest {
   void testGetEmptyFavoriteTournaments() throws Exception {
     userRepository.save(TestFixturesApp.createTestUser("user@test.com"));
 
-    mockMvc.perform(get("/api/favorites/tournaments")
+    mockMvc.perform(get("/favorites/tournaments")
                         .contentType(MediaType.APPLICATION_JSON))
            .andExpect(status().isOk())
            .andExpect(jsonPath("$", hasSize(0)));
@@ -184,7 +184,7 @@ class FavoriteControllerTest {
   void testGetEmptyFavoriteGames() throws Exception {
     userRepository.save(TestFixturesApp.createTestUser("user@test.com"));
 
-    mockMvc.perform(get("/api/favorites/games")
+    mockMvc.perform(get("/favorites/games")
                         .contentType(MediaType.APPLICATION_JSON))
            .andExpect(status().isOk())
            .andExpect(jsonPath("$", hasSize(0)));
