@@ -1,12 +1,10 @@
 package io.github.redouanebali.controller;
 
-import io.github.redouanebali.dto.GameTournamentIdMapping;
 import io.github.redouanebali.dto.response.GameSummaryDTO;
 import io.github.redouanebali.dto.response.TournamentSummaryDTO;
 import io.github.redouanebali.mapper.FavoriteMapper;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.UserFavoriteTournament;
-import io.github.redouanebali.repository.UserFavoriteGameRepository;
 import io.github.redouanebali.security.SecurityUtil;
 import io.github.redouanebali.service.FavoriteService;
 import java.util.List;
@@ -30,9 +28,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class FavoriteController {
 
-  private final FavoriteService            favoriteService;
-  private final FavoriteMapper             favoriteMapper;
-  private final UserFavoriteGameRepository userFavoriteGameRepository;
+  private final FavoriteService favoriteService;
+  private final FavoriteMapper  favoriteMapper;
 
   @GetMapping("/tournaments")
   public ResponseEntity<List<TournamentSummaryDTO>> getFavoriteTournaments() {
@@ -63,15 +60,8 @@ public class FavoriteController {
     String userEmail = SecurityUtil.currentUserId();
     var    favorites = favoriteService.getFavoriteGames(userEmail);
 
-    List<Long> gameIds = favorites.stream().map(ufg -> ufg.getGame().getId()).toList();
-
-    Map<Long, Long> gameToTournamentMap = new java.util.HashMap<>();
-    if (!gameIds.isEmpty()) {
-      List<GameTournamentIdMapping> mappings = userFavoriteGameRepository.findTournamentIdsByGameIds(gameIds);
-      for (GameTournamentIdMapping mapping : mappings) {
-        gameToTournamentMap.put(mapping.getGameId(), mapping.getTournamentId());
-      }
-    }
+    List<Long>      gameIds             = favorites.stream().map(ufg -> ufg.getGame().getId()).toList();
+    Map<Long, Long> gameToTournamentMap = favoriteService.getGameToTournamentMap(gameIds);
 
     List<GameSummaryDTO> dtos = favorites.stream()
                                          .map(ufg -> {

@@ -11,6 +11,8 @@ import io.github.redouanebali.repository.UserFavoriteGameRepository;
 import io.github.redouanebali.repository.UserFavoriteTournamentRepository;
 import io.github.redouanebali.repository.UserRepository;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +35,7 @@ public class FavoriteService {
       return;
     }
 
-    User       user       = userRepository.findByEmail(userEmail).orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND_MESSAGE));
+    User       user       = getUser(userEmail);
     Tournament tournament = tournamentRepository.getReferenceById(tournamentId);
 
     UserFavoriteTournament favorite = new UserFavoriteTournament();
@@ -48,7 +50,7 @@ public class FavoriteService {
   }
 
   public List<UserFavoriteTournament> getFavoriteTournaments(String userEmail) {
-    User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND_MESSAGE));
+    User user = getUser(userEmail);
     return userFavoriteTournamentRepository.findByUserOrderByAddedAtDesc(user);
   }
 
@@ -62,7 +64,7 @@ public class FavoriteService {
       return;
     }
 
-    User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND_MESSAGE));
+    User user = getUser(userEmail);
     Game game = gameRepository.getReferenceById(gameId);
 
     UserFavoriteGame favorite = new UserFavoriteGame();
@@ -82,6 +84,23 @@ public class FavoriteService {
 
   public boolean isGameFavorite(String userEmail, Long gameId) {
     return userFavoriteGameRepository.existsByUserEmailAndGameId(userEmail, gameId);
+  }
+
+  public Map<Long, Long> getGameToTournamentMap(List<Long> gameIds) {
+    if (gameIds.isEmpty()) {
+      return Map.of();
+    }
+    return userFavoriteGameRepository.findTournamentIdsByGameIds(gameIds)
+                                     .stream()
+                                     .filter(mapping -> mapping.getTournamentId() != null)
+                                     .collect(Collectors.toMap(
+                                         mapping -> mapping.getGameId(),
+                                         mapping -> mapping.getTournamentId()
+                                     ));
+  }
+
+  private User getUser(String email) {
+    return userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND_MESSAGE));
   }
 
 }

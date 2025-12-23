@@ -18,4 +18,5 @@ public class GameSummaryDTO {
   private LocalTime     scheduledTime;
   private String        court;
   private Long          tournamentId;
+
 }
