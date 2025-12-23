@@ -224,7 +224,7 @@ export default function MatchResultCard({
     await shareMatchImage(game as Game, contextTournament?.name ?? undefined, contextTournament?.club ?? undefined, undefined, undefined, undefined, contextTournament?.level);
   };
 
-  const favorites = editable ? null : useFavorites();
+  const favorites = useFavorites(!editable);
   const { status } = useSession();
   const router = useRouter();
 

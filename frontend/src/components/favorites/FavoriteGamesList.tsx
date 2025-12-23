@@ -45,7 +45,12 @@ const FavoriteGamesList: React.FC<FavoriteGamesListProps> = ({
         <div className="space-y-2">
           {favoriteGames.map((game) => {
             const override = overrides[String(game.id)];
-            const winner = override?.winner !== undefined ? override.winner : (game.finished ? game.winnerSide : null);
+            let winner: TeamSide | null = null;
+            if (override?.winner !== undefined) {
+              winner = override.winner;
+            } else if (game.finished) {
+              winner = game.winnerSide;
+            }
 
             return (
               <Link

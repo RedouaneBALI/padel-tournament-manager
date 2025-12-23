@@ -20,7 +20,7 @@ export default function HeaderContent() {
   // Extract tournament ID from pathname
   const tournamentId = React.useMemo(() => {
     const match = pathname?.match(/\/(?:admin\/)?tournament\/(\d+)/);
-    return match ? parseInt(match[1]) : null;
+    return match ? Number.parseInt(match[1]) : null;
   }, [pathname]);
 
   const isTournamentPage = pathname.startsWith('/tournament/') && !pathname.startsWith('/admin/tournament/');

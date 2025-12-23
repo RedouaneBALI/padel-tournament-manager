@@ -56,7 +56,7 @@ export const useFavorites = (enabled: boolean = true) => {
     try {
       if (isFavorite) {
         await removeFavoriteGame(gameId);
-        setFavoriteGames(prev => prev.filter(g => parseInt(g.id) !== gameId));
+        setFavoriteGames(prev => prev.filter(g => Number.parseInt(g.id) !== gameId));
       } else {
         await addFavoriteGame(gameId);
         // Refetch to get the full game data
