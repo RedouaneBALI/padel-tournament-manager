@@ -6,8 +6,8 @@ import { FaRegStar } from 'react-icons/fa';
 import { navBtn, textNav, icon20 } from '@/src/styles/navClasses';
 
 interface Props {
-  onClick?: () => void;
-  className?: string;
+  readonly onClick?: () => void;
+  readonly className?: string;
 }
 
 export default function FavoritesButton({ onClick, className = '' }: Props) {

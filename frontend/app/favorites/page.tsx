@@ -3,7 +3,7 @@
 import React from 'react';
 import PageHeader from '@/src/components/ui/PageHeader';
 import { useFavorites } from '@/src/hooks/useFavorites';
-import BottomNav, { BottomNavItem } from '@/src/components/ui/BottomNav';
+import BottomNav from '@/src/components/ui/BottomNav';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { Home } from 'lucide-react';
 import { FiMoreHorizontal } from 'react-icons/fi';

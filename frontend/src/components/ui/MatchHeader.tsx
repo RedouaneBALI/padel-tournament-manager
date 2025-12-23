@@ -1,6 +1,5 @@
 import React from 'react';
 import { normalizeGroup, groupBadgeClasses } from '@/src/utils/groupBadge';
-import LiveMatchIndicator from '@/src/components/ui/LiveMatchIndicator';
 import SaveAndCancelButtons from '@/src/components/ui/SaveAndCancelButtons';
 import { Edit3, Share } from 'lucide-react';
 import { FaStar, FaRegStar } from 'react-icons/fa';

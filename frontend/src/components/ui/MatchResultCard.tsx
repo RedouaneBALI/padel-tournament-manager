@@ -234,7 +234,7 @@ export default function MatchResultCard({
     if (status !== 'authenticated') {
       router.push('/connexion');
     } else if (favorites) {
-      favorites.toggleFavoriteGame(parseInt(gameId), isFavorite);
+      favorites.toggleFavoriteGame(Number.parseInt(gameId), isFavorite);
     }
   };
 
