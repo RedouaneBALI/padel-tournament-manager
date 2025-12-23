@@ -50,7 +50,7 @@ const FavoriteGamesList: React.FC<FavoriteGamesListProps> = ({
             return (
               <Link
                 key={game.id}
-                href={`/tournament/${game.tournamentId}/games/${game.gameId}`}
+                href={`/tournament/${game.tournamentId}/games/${game.id}`}
                 className="block"
               >
                 <MatchResultCard

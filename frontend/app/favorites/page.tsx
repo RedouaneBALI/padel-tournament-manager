@@ -18,18 +18,18 @@ export default function FavoritesPage() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const activeTab = (searchParams.get('tab') as TabType) || 'tournaments';
+  const activeTab = React.useMemo(() => (searchParams.get('tab') as TabType) || 'tournaments', [searchParams]);
 
-  const updateQuery = (key: string, value: string) => {
+  const updateQuery = React.useCallback((key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set(key, value);
     router.push(`${pathname}?${params.toString()}`);
-  };
+  }, [searchParams, pathname, router]);
 
-  const items: BottomNavItem[] = [
+  const items = React.useMemo(() => [
     { href: '/', label: 'Accueil', Icon: Home, isActive: (p) => p === '/' },
     { href: '#more', label: 'Plus', Icon: FiMoreHorizontal },
-  ];
+  ], []);
 
   if (loading) {
     return (

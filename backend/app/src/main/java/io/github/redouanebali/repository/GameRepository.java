@@ -33,4 +33,5 @@ public interface GameRepository extends JpaRepository<Game, Long> {
    * @return list of games
    */
   List<Game> findByCreatedBy(String createdBy);
+
 }

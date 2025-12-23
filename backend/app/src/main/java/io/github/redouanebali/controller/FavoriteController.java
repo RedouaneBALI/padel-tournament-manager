@@ -1,15 +1,16 @@
 package io.github.redouanebali.controller;
 
+import io.github.redouanebali.dto.GameTournamentIdMapping;
 import io.github.redouanebali.dto.response.GameSummaryDTO;
 import io.github.redouanebali.dto.response.TournamentSummaryDTO;
 import io.github.redouanebali.mapper.FavoriteMapper;
-import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Tournament;
-import io.github.redouanebali.model.UserFavoriteGame;
 import io.github.redouanebali.model.UserFavoriteTournament;
+import io.github.redouanebali.repository.UserFavoriteGameRepository;
 import io.github.redouanebali.security.SecurityUtil;
 import io.github.redouanebali.service.FavoriteService;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,8 +30,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class FavoriteController {
 
-  private final FavoriteService favoriteService;
-  private final FavoriteMapper  favoriteMapper;
+  private final FavoriteService            favoriteService;
+  private final FavoriteMapper             favoriteMapper;
+  private final UserFavoriteGameRepository userFavoriteGameRepository;
 
   @GetMapping("/tournaments")
   public ResponseEntity<List<TournamentSummaryDTO>> getFavoriteTournaments() {
@@ -60,10 +62,25 @@ public class FavoriteController {
   public ResponseEntity<List<GameSummaryDTO>> getFavoriteGames() {
     String userEmail = SecurityUtil.currentUserId();
     var    favorites = favoriteService.getFavoriteGames(userEmail);
-    List<Game> games = favorites.stream()
-                                .map(UserFavoriteGame::getGame)
-                                .toList();
-    return ResponseEntity.ok(favoriteMapper.toGameSummaryDTOList(games));
+
+    List<Long> gameIds = favorites.stream().map(ufg -> ufg.getGame().getId()).toList();
+
+    Map<Long, Long> gameToTournamentMap = new java.util.HashMap<>();
+    if (!gameIds.isEmpty()) {
+      List<GameTournamentIdMapping> mappings = userFavoriteGameRepository.findTournamentIdsByGameIds(gameIds);
+      for (GameTournamentIdMapping mapping : mappings) {
+        gameToTournamentMap.put(mapping.getGameId(), mapping.getTournamentId());
+      }
+    }
+
+    List<GameSummaryDTO> dtos = favorites.stream()
+                                         .map(ufg -> {
+                                           GameSummaryDTO dto = favoriteMapper.toGameSummaryDTO(ufg.getGame());
+                                           dto.setTournamentId(gameToTournamentMap.get(ufg.getGame().getId()));
+                                           return dto;
+                                         })
+                                         .toList();
+    return ResponseEntity.ok(dtos);
   }
 
   @PostMapping("/games/{gameId}")
@@ -81,4 +98,3 @@ public class FavoriteController {
   }
 
 }
-

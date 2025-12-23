@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { getFavoriteTournaments, addFavoriteTournament, removeFavoriteTournament, getFavoriteGames, addFavoriteGame, removeFavoriteGame } from '@/src/api/tournamentApi';
 import type { Tournament } from '@/src/types/tournament';
@@ -10,6 +10,7 @@ export const useFavorites = (enabled: boolean = true) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { status } = useSession();
+  const hasFetched = useRef(false);
 
   const fetchFavorites = async () => {
     if (status !== 'authenticated') return;
@@ -68,10 +69,11 @@ export const useFavorites = (enabled: boolean = true) => {
   };
 
   useEffect(() => {
-    if (enabled) {
+    if (enabled && status === 'authenticated' && !hasFetched.current) {
+      hasFetched.current = true;
       fetchFavorites();
     }
-  }, [status, enabled]);
+  }, [enabled, status]);
 
   return {
     favoriteTournaments,

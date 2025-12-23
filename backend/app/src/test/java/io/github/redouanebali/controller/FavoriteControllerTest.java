@@ -64,6 +64,27 @@ class FavoriteControllerTest {
     return gameRepository.save(game);
   }
 
+  private Game createPersistedTestGameWithPlayers() {
+    // Create players
+    io.github.redouanebali.model.Player player1A = new io.github.redouanebali.model.Player(null, "Player1A", 1, 0, 1990);
+    io.github.redouanebali.model.Player player1B = new io.github.redouanebali.model.Player(null, "Player2A", 1, 0, 1990);
+    io.github.redouanebali.model.Player player2A = new io.github.redouanebali.model.Player(null, "Player1B", 2, 0, 1990);
+    io.github.redouanebali.model.Player player2B = new io.github.redouanebali.model.Player(null, "Player2B", 2, 0, 1990);
+
+    // Create player pairs
+    io.github.redouanebali.model.PlayerPair teamA = new io.github.redouanebali.model.PlayerPair(player1A, player1B, 1);
+    io.github.redouanebali.model.PlayerPair teamB = new io.github.redouanebali.model.PlayerPair(player2A, player2B, 2);
+
+    // Create match format and game
+    io.github.redouanebali.model.MatchFormat format      = TestFixturesApp.createSimpleFormat(2);
+    io.github.redouanebali.model.MatchFormat savedFormat = matchFormatRepository.save(format);
+    Game                                     game        = new Game(savedFormat);
+    game.setTeamA(teamA);
+    game.setTeamB(teamB);
+
+    return gameRepository.save(game);
+  }
+
   @BeforeEach
   public void setUp() {
     secMock = Mockito.mockStatic(SecurityUtil.class);
@@ -190,5 +211,112 @@ class FavoriteControllerTest {
            .andExpect(jsonPath("$", hasSize(0)));
   }
 
-}
+  @Test
+  @DisplayName("Should include tournamentId in favorite games")
+  void testGetFavoriteGames_ShouldIncludeTournamentIdField() throws Exception {
+    userRepository.save(TestFixturesApp.createTestUser("user@test.com"));
 
+    Tournament                         tournament = tournamentRepository.save(TestFixturesApp.createTestTournament("Test Tournament"));
+    io.github.redouanebali.model.Round round      = new io.github.redouanebali.model.Round(io.github.redouanebali.model.Stage.GROUPS);
+    round.setMatchFormat(TestFixturesApp.createSimpleFormat(2));
+    tournament.getRounds().add(round);
+    tournament = tournamentRepository.save(tournament);
+
+    var savedRound = tournament.getRounds().getFirst();
+    savedRound.addGame(TestFixturesApp.buildPairWithSeed(1), TestFixturesApp.buildPairWithSeed(2));
+    tournament = tournamentRepository.save(tournament);
+
+    Game game = savedRound.getGames().getFirst();
+    favoriteService.addFavoriteGame("user@test.com", game.getId());
+
+    mockMvc.perform(get("/favorites/games")
+                        .contentType(MediaType.APPLICATION_JSON))
+           .andExpect(status().isOk())
+           .andExpect(jsonPath("$", hasSize(1)))
+           .andExpect(jsonPath("$[0].id").value(game.getId().intValue()))
+           .andExpect(jsonPath("$[0].tournamentId").value(tournament.getId().intValue()));
+  }
+
+  @Test
+  @DisplayName("Should have correct DTO structure with all fields")
+  void testGetFavoriteGames_DTOHasTournamentIdField() throws Exception {
+    userRepository.save(TestFixturesApp.createTestUser("user@test.com"));
+
+    Tournament                         tournament = tournamentRepository.save(TestFixturesApp.createTestTournament("Test Tournament"));
+    io.github.redouanebali.model.Round round      = new io.github.redouanebali.model.Round(io.github.redouanebali.model.Stage.GROUPS);
+    round.setMatchFormat(TestFixturesApp.createSimpleFormat(2));
+    tournament.getRounds().add(round);
+    tournament = tournamentRepository.save(tournament);
+
+    var savedRound = tournament.getRounds().getFirst();
+    // Create a game with players from a tournament setup
+    io.github.redouanebali.model.PlayerPair pair1 = TestFixturesApp.buildPairWithSeed(1);
+    io.github.redouanebali.model.PlayerPair pair2 = TestFixturesApp.buildPairWithSeed(2);
+    savedRound.addGame(pair1, pair2);
+    tournament = tournamentRepository.save(tournament);
+
+    Game game = savedRound.getGames().getFirst();
+    favoriteService.addFavoriteGame("user@test.com", game.getId());
+
+    mockMvc.perform(get("/favorites/games")
+                        .contentType(MediaType.APPLICATION_JSON))
+           .andExpect(status().isOk())
+           .andExpect(jsonPath("$", hasSize(1)))
+           .andExpect(jsonPath("$[0].id").isNumber())
+           .andExpect(jsonPath("$[0].finished").isBoolean())
+           .andExpect(jsonPath("$[0].teamA").exists())
+           .andExpect(jsonPath("$[0].teamA.id").isNumber())
+           .andExpect(jsonPath("$[0].teamA.seed").isNumber())
+           .andExpect(jsonPath("$[0].teamB").exists())
+           .andExpect(jsonPath("$[0].teamB.id").isNumber())
+           .andExpect(jsonPath("$[0].teamB.seed").isNumber())
+           .andExpect(jsonPath("$[0].tournamentId").isNumber())
+           .andExpect(jsonPath("$[0].tournamentId").value(tournament.getId().intValue()));
+  }
+
+  @Test
+  @DisplayName("Should load favorite games with proper player names and tournamentId")
+  void testGetFavoriteGames_LoadsCompleteData() throws Exception {
+    userRepository.save(TestFixturesApp.createTestUser("user@test.com"));
+
+    // Create tournament 1 with game
+    Tournament                         tournament1 = tournamentRepository.save(TestFixturesApp.createTestTournament("Tournament 1"));
+    io.github.redouanebali.model.Round round1      = new io.github.redouanebali.model.Round(io.github.redouanebali.model.Stage.GROUPS);
+    round1.setMatchFormat(TestFixturesApp.createSimpleFormat(2));
+    tournament1.getRounds().add(round1);
+    tournament1 = tournamentRepository.save(tournament1);
+
+    var savedRound1 = tournament1.getRounds().getFirst();
+    savedRound1.addGame(TestFixturesApp.buildPairWithSeed(1), TestFixturesApp.buildPairWithSeed(2));
+    tournament1 = tournamentRepository.save(tournament1);
+    Game game1 = savedRound1.getGames().getFirst();
+
+    // Create tournament 2 with game
+    Tournament                         tournament2 = tournamentRepository.save(TestFixturesApp.createTestTournament("Tournament 2"));
+    io.github.redouanebali.model.Round round2      = new io.github.redouanebali.model.Round(io.github.redouanebali.model.Stage.GROUPS);
+    round2.setMatchFormat(TestFixturesApp.createSimpleFormat(2));
+    tournament2.getRounds().add(round2);
+    tournament2 = tournamentRepository.save(tournament2);
+
+    var savedRound2 = tournament2.getRounds().getFirst();
+    savedRound2.addGame(TestFixturesApp.buildPairWithSeed(3), TestFixturesApp.buildPairWithSeed(4));
+    tournament2 = tournamentRepository.save(tournament2);
+    Game game2 = savedRound2.getGames().getFirst();
+
+    favoriteService.addFavoriteGame("user@test.com", game1.getId());
+    favoriteService.addFavoriteGame("user@test.com", game2.getId());
+
+    mockMvc.perform(get("/favorites/games")
+                        .contentType(MediaType.APPLICATION_JSON))
+           .andExpect(status().isOk())
+           .andExpect(jsonPath("$", hasSize(2)))
+           .andExpect(jsonPath("$[*].tournamentId").exists())
+           .andExpect(jsonPath("$[?(@.id == " + game1.getId() + ")].tournamentId").value(tournament1.getId().intValue()))
+           .andExpect(jsonPath("$[?(@.id == " + game2.getId() + ")].tournamentId").value(tournament2.getId().intValue()))
+           .andExpect(jsonPath("$[0].teamA.id").isNumber())
+           .andExpect(jsonPath("$[0].teamA.seed").exists())
+           .andExpect(jsonPath("$[0].teamB.id").isNumber())
+           .andExpect(jsonPath("$[0].teamB.seed").exists());
+  }
+
+}

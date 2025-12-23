@@ -17,4 +17,5 @@ public class GameSummaryDTO {
   @JsonFormat(pattern = "HH:mm")
   private LocalTime     scheduledTime;
   private String        court;
+  private Long          tournamentId;
 }

@@ -77,8 +77,7 @@ public class FavoriteService {
   }
 
   public List<UserFavoriteGame> getFavoriteGames(String userEmail) {
-    User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND_MESSAGE));
-    return userFavoriteGameRepository.findByUserOrderByAddedAtDesc(user);
+    return userFavoriteGameRepository.findByUserEmailOrderByAddedAtDesc(userEmail);
   }
 
   public boolean isGameFavorite(String userEmail, Long gameId) {
