@@ -8,6 +8,7 @@ import { useRealtimeGames } from '@/src/hooks/useRealtimeGames';
 import { exportGamesAsCSV } from '@/src/utils/gamesExport';
 import { useExport } from '@/src/contexts/ExportContext';
 import { TeamSide } from '@/src/types/teamSide';
+import { useFavorites } from '@/src/hooks/useFavorites';
 
 function compareIds(a: string, b: string): number {
   const na = Number(a);
@@ -47,6 +48,8 @@ export default function GamesList({
   // État de tri local (time | court)
   const [sortMode, setSortMode] = useState<'time' | 'court' | 'number'>('time');
   const [showOnlyInProgress, setShowOnlyInProgress] = useState(false);
+
+  const favorites = useFavorites(!editable);
 
   const handleGameClick = (gameId: string) => {
     const basePath = editable ? '/admin/tournament' : '/tournament';
@@ -229,6 +232,8 @@ export default function GamesList({
         // Récupérer l'index d'origine du match de façon déterministe via sortedIds
         const originalIndex = Math.max(0, sortedIds.indexOf(game.id));
 
+        const isFavorite = favorites ? favorites.favoriteGames.some(g => g.id == game.id) : false;
+
         return (
           <div key={game.id} className="w-full max-w-xl flex justify-center">
             <div
@@ -264,6 +269,8 @@ export default function GamesList({
                 totalMatches={totalMatches}
                 isFirstRound={isFirstRound}
                 matchFormat={matchFormat}
+                isFavorite={isFavorite}
+                onToggleFavorite={favorites?.toggleFavoriteGame}
               />
             </div>
           </div>

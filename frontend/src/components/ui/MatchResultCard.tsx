@@ -47,6 +47,8 @@ interface Props {
   isFirstRound?: boolean;
   matchFormat?: any;
   updateGameFn?: (gameId: string, scorePayload: Score, court: string, scheduledTime: string) => Promise<any>;
+  isFavorite?: boolean;
+  onToggleFavorite?: (gameId: number, isFavorite: boolean) => void;
 }
 
 export default function MatchResultCard({
@@ -71,6 +73,8 @@ export default function MatchResultCard({
   isFirstRound = false,
   matchFormat,
   updateGameFn,
+  isFavorite: isFavoriteProp,
+  onToggleFavorite: onToggleFavoriteProp,
 }: Props) {
   const group = normalizeGroup(pool?.name);
   const contextTournament = useContext(TournamentContext);
@@ -224,17 +228,20 @@ export default function MatchResultCard({
     await shareMatchImage(game as Game, contextTournament?.name ?? undefined, contextTournament?.club ?? undefined, undefined, undefined, undefined, contextTournament?.level);
   };
 
-  const favorites = useFavorites(!editable);
+  const favorites = isFavoriteProp !== undefined ? null : useFavorites(!editable);
   const { status } = useSession();
   const router = useRouter();
 
-  const isFavorite = favorites ? favorites.favoriteGames.some(g => g.id == gameId) : false;
+  const computedIsFavorite = favorites ? favorites.favoriteGames.some(g => g.id == gameId) : false;
+  const isFavorite = isFavoriteProp !== undefined ? isFavoriteProp : computedIsFavorite;
 
   const handleToggleFavorite = () => {
     if (status !== 'authenticated') {
       router.push('/connexion');
     } else if (favorites) {
       favorites.toggleFavoriteGame(Number.parseInt(gameId), isFavorite);
+    } else if (onToggleFavoriteProp) {
+      onToggleFavoriteProp(Number.parseInt(gameId), isFavorite);
     }
   };
 
