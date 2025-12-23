@@ -122,7 +122,7 @@ class FavoriteServiceTest {
   @Test
   @DisplayName("Should retrieve multiple favorite tournaments ordered by recency")
   void testGetFavoriteTournamentsOrdered() {
-    var user = userRepository.save(TestFixturesApp.createTestUser("user@test.com"));
+    userRepository.save(TestFixturesApp.createTestUser("user@test.com"));
 
     Tournament t1 = tournamentRepository.save(TestFixturesApp.createTestTournament("Tournament 1"));
     Tournament t2 = tournamentRepository.save(TestFixturesApp.createTestTournament("Tournament 2"));
@@ -165,8 +165,8 @@ class FavoriteServiceTest {
   })
   @DisplayName("Should not duplicate game in favorites")
   void testAddFavoriteGameIdempotent(String userEmail) {
-    var  user = userRepository.save(TestFixturesApp.createTestUser(userEmail));
-    Game game = createPersistedTestGame();
+    io.github.redouanebali.model.User user = userRepository.save(TestFixturesApp.createTestUser(userEmail));
+    Game                              game = createPersistedTestGame();
 
     favoriteService.addFavoriteGame(userEmail, game.getId());
     favoriteService.addFavoriteGame(userEmail, game.getId());
@@ -195,7 +195,7 @@ class FavoriteServiceTest {
   @Test
   @DisplayName("Should retrieve multiple favorite games ordered by recency")
   void testGetFavoriteGamesOrdered() {
-    var user = userRepository.save(TestFixturesApp.createTestUser("user@test.com"));
+    userRepository.save(TestFixturesApp.createTestUser("user@test.com"));
 
     Game g1 = createPersistedTestGame();
     Game g2 = createPersistedTestGame();
@@ -217,8 +217,8 @@ class FavoriteServiceTest {
   @Test
   @DisplayName("Should isolate favorites between different users")
   void testFavoritesIsolationBetweenUsers() {
-    var user1 = userRepository.save(TestFixturesApp.createTestUser("user1@test.com"));
-    var user2 = userRepository.save(TestFixturesApp.createTestUser("user2@test.com"));
+    userRepository.save(TestFixturesApp.createTestUser("user1@test.com"));
+    userRepository.save(TestFixturesApp.createTestUser("user2@test.com"));
 
     Tournament t1 = tournamentRepository.save(TestFixturesApp.createTestTournament("Tournament A"));
     Tournament t2 = tournamentRepository.save(TestFixturesApp.createTestTournament("Tournament B"));

@@ -64,27 +64,6 @@ class FavoriteControllerTest {
     return gameRepository.save(game);
   }
 
-  private Game createPersistedTestGameWithPlayers() {
-    // Create players
-    io.github.redouanebali.model.Player player1A = new io.github.redouanebali.model.Player(null, "Player1A", 1, 0, 1990);
-    io.github.redouanebali.model.Player player1B = new io.github.redouanebali.model.Player(null, "Player2A", 1, 0, 1990);
-    io.github.redouanebali.model.Player player2A = new io.github.redouanebali.model.Player(null, "Player1B", 2, 0, 1990);
-    io.github.redouanebali.model.Player player2B = new io.github.redouanebali.model.Player(null, "Player2B", 2, 0, 1990);
-
-    // Create player pairs
-    io.github.redouanebali.model.PlayerPair teamA = new io.github.redouanebali.model.PlayerPair(player1A, player1B, 1);
-    io.github.redouanebali.model.PlayerPair teamB = new io.github.redouanebali.model.PlayerPair(player2A, player2B, 2);
-
-    // Create match format and game
-    io.github.redouanebali.model.MatchFormat format      = TestFixturesApp.createSimpleFormat(2);
-    io.github.redouanebali.model.MatchFormat savedFormat = matchFormatRepository.save(format);
-    Game                                     game        = new Game(savedFormat);
-    game.setTeamA(teamA);
-    game.setTeamB(teamB);
-
-    return gameRepository.save(game);
-  }
-
   private Tournament createTournamentWithGame(String tournamentName, int seed1, int seed2) {
     Tournament                         tournament = tournamentRepository.save(TestFixturesApp.createTestTournament(tournamentName));
     io.github.redouanebali.model.Round round      = new io.github.redouanebali.model.Round(io.github.redouanebali.model.Stage.GROUPS);
