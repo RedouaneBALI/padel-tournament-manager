@@ -19,6 +19,7 @@ import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.repository.UserRepository;
 import io.github.redouanebali.service.DrawGenerationService;
 import io.github.redouanebali.service.TournamentService;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -91,6 +92,8 @@ public class DefaultDataInitializer implements CommandLineRunner {
     tournament.setClub("Oasis City Ball");
     tournament.setCity("Casablanca");
     tournament.setOwnerId(DEFAULT_USER_EMAIL);
+    tournament.setStartDate(LocalDate.now().minusDays(1));
+    tournament.setEndDate(LocalDate.now().plusDays(1));
 
     TournamentConfig config = TournamentConfig.builder()
                                               .format(TournamentFormat.KNOCKOUT)
