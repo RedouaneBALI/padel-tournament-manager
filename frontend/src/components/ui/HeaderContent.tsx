@@ -23,7 +23,7 @@ export default function HeaderContent() {
     return match ? Number.parseInt(match[1]) : null;
   }, [pathname]);
 
-  const isTournamentPage = pathname.startsWith('/tournament/') && !pathname.startsWith('/admin/tournament/');
+  const isTournamentPage = pathname ? pathname.startsWith('/tournament/') && !pathname.startsWith('/admin/tournament/') : false;
   const { favoriteTournaments, toggleFavoriteTournament } = useFavorites(isTournamentPage);
 
   const isFavorite = tournamentId && favoriteTournaments ? favoriteTournaments.some(t => t.id === tournamentId) : false;
@@ -37,11 +37,10 @@ export default function HeaderContent() {
   };
 
   React.useEffect(() => {
-    const isTournament = pathname && (pathname.startsWith('/tournament/') || pathname.startsWith('/admin/tournament/'));
     if (pathname === '/favorites') {
       setAdminActions({ onExport: null, onShare: null, onEdit: null, tvButtonUrl: null, showTvButton: false, isAdmin: false });
       setTournamentName("Mes favoris");
-    } else if (!pathname || !isTournament) {
+    } else if (!pathname || (!pathname.startsWith('/tournament/') && !pathname.startsWith('/admin/tournament/'))) {
       setAdminActions({ onExport: null, onShare: null, onEdit: null, tvButtonUrl: null, showTvButton: false, isAdmin: false });
       setTournamentName(null);
     }
@@ -59,17 +58,21 @@ export default function HeaderContent() {
         />
         <span className="sr-only">Accueil</span>
       </Link>
-      {tournamentName && (
+      {tournamentName && tournamentId && (
         hasAdminActions ? (
-          <span className="text-base font-semibold tracking-tight text-primary truncate overflow-hidden whitespace-nowrap block after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1b2d5e] after:to-white relative text-center">
+          <button
+            onClick={() => router.push(`/tournament/${tournamentId}/games`)}
+            className="text-base font-semibold tracking-tight text-primary truncate overflow-hidden whitespace-nowrap block after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1b2d5e] after:to-white relative text-center hover:opacity-80 transition-opacity cursor-pointer"
+          >
             {tournamentName}
-          </span>
+          </button>
         ) : (
-          <div className="absolute left-1/2 transform -translate-x-1/2">
-            <span className="text-base font-semibold tracking-tight text-primary truncate overflow-hidden whitespace-nowrap block after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1b2d5e] after:to-white relative">
-              {tournamentName}
-            </span>
-          </div>
+          <button
+            onClick={() => router.push(`/tournament/${tournamentId}/games`)}
+            className="absolute left-1/2 transform -translate-x-1/2 text-base font-semibold tracking-tight text-primary truncate overflow-hidden whitespace-nowrap block after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1b2d5e] after:to-white relative hover:opacity-80 transition-opacity cursor-pointer"
+          >
+            {tournamentName}
+          </button>
         )
       )}
       {!hasAdminActions && tournamentId && status === 'authenticated' && (

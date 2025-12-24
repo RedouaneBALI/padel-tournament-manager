@@ -24,19 +24,22 @@ export default function ConnexionPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
+  const [debugReturnUrl, setDebugReturnUrl] = useState<string>('');
 
   useEffect(() => {
     const errorParam = searchParams?.get('error');
     if (errorParam) {
       setError(errorMessages[errorParam] || errorMessages.Default);
     }
+
+    const storedUrl = typeof window !== 'undefined' ? localStorage.getItem('authReturnUrl') : null;
+    const finalUrl = storedUrl || '/admin/tournaments';
+    setDebugReturnUrl(finalUrl);
   }, [searchParams]);
 
-  useEffect(() => {
-    if (session && status === 'authenticated') {
-      router.push('/admin/tournaments');
-    }
-  }, [session, status, router]);
+  const getReturnUrl = (): string => {
+    return debugReturnUrl;
+  };
 
   return (
     <div className="flex items-center justify-center bg-background py-8 mt-30">
@@ -72,7 +75,7 @@ export default function ConnexionPage() {
           </div>
         ) : (
           <div className="flex justify-center">
-            <GoogleLoginButton callbackUrl="/admin/tournaments" />
+            <GoogleLoginButton callbackUrl={getReturnUrl()} />
           </div>
         )}
       </div>

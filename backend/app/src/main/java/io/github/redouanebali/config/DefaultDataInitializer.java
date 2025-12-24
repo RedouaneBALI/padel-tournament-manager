@@ -5,10 +5,12 @@ import io.github.redouanebali.dto.request.PlayerPairRequest;
 import io.github.redouanebali.dto.request.RoundRequest;
 import io.github.redouanebali.generation.TournamentBuilder;
 import io.github.redouanebali.model.Game;
+import io.github.redouanebali.model.Gender;
 import io.github.redouanebali.model.Player;
 import io.github.redouanebali.model.PlayerPair;
 import io.github.redouanebali.model.Round;
 import io.github.redouanebali.model.Tournament;
+import io.github.redouanebali.model.TournamentLevel;
 import io.github.redouanebali.model.User;
 import io.github.redouanebali.model.format.TournamentConfig;
 import io.github.redouanebali.model.format.TournamentFormat;
@@ -84,6 +86,10 @@ public class DefaultDataInitializer implements CommandLineRunner {
     Tournament tournament = new Tournament();
     tournament.getPlayerPairs().addAll(pairs);
     tournament.setName("Default Tournament");
+    tournament.setGender(Gender.MEN);
+    tournament.setLevel(TournamentLevel.P1500);
+    tournament.setClub("Oasis City Ball");
+    tournament.setCity("Casablanca");
     tournament.setOwnerId(DEFAULT_USER_EMAIL);
 
     TournamentConfig config = TournamentConfig.builder()

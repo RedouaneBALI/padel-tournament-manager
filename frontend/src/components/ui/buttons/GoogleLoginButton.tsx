@@ -19,9 +19,10 @@ export default function GoogleLoginButton({
       variant="secondary"
       onClick={() => {
         try {
-          onBeforeSignIn?.();
+          console.log('[GoogleLoginButton] localStorage.authReturnUrl:', localStorage.getItem('authReturnUrl'));
         } finally {
-          signIn('google', { redirect: true, callbackUrl: `/auth/check-profile?callbackUrl=${encodeURIComponent(callbackUrl)}` });
+          console.log('[GoogleLoginButton] Calling signIn with callbackUrl: /auth/check-profile');
+          signIn('google', { redirect: true, callbackUrl: '/auth/check-profile' });
         }
       }}
       className={className}

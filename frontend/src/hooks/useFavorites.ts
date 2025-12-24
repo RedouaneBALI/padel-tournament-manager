@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { getFavoriteTournaments, addFavoriteTournament, removeFavoriteTournament, getFavoriteGames, addFavoriteGame, removeFavoriteGame } from '@/src/api/tournamentApi';
 import type { Tournament } from '@/src/types/tournament';
 import type { Game } from '@/src/types/game';
+import { AppError } from '@/src/utils/AppError';
 
 export const useFavorites = (enabled: boolean = true) => {
   const [favoriteTournaments, setFavoriteTournaments] = useState<Tournament[]>([]);
@@ -11,6 +13,7 @@ export const useFavorites = (enabled: boolean = true) => {
   const [error, setError] = useState<string | null>(null);
   const { status } = useSession();
   const hasFetched = useRef(false);
+  const router = useRouter();
 
   const fetchFavorites = async () => {
     if (status !== 'authenticated') return;
@@ -34,36 +37,51 @@ export const useFavorites = (enabled: boolean = true) => {
   };
 
   const toggleFavoriteTournament = async (tournamentId: number, isFavorite: boolean) => {
-    if (status !== 'authenticated') return;
+    console.log('[useFavorites] toggleFavoriteTournament called with tournamentId:', tournamentId, 'isFavorite:', isFavorite);
     try {
       if (isFavorite) {
+        console.log('[useFavorites] Removing favorite tournament:', tournamentId);
         await removeFavoriteTournament(tournamentId);
         setFavoriteTournaments(prev => prev.filter(t => t.id !== tournamentId));
       } else {
+        console.log('[useFavorites] Adding favorite tournament:', tournamentId);
         await addFavoriteTournament(tournamentId);
-        // Note: Since we don't have the full tournament data, we might need to fetch or assume it's added
-        // For now, we'll refetch
         await fetchFavorites();
       }
-    } catch (err) {
-      console.error('Error toggling favorite tournament:', err);
+    } catch (err: any) {
+      console.log('[useFavorites] Error caught:', err);
+      console.log('[useFavorites] Error instanceof AppError:', err instanceof AppError);
+      console.log('[useFavorites] Error code:', err?.code);
+      console.log('[useFavorites] Error message:', err?.message);
+
+      if (err instanceof AppError && err.code === AppError.UNAUTHORIZED) {
+        const currentPath = window.location.pathname + window.location.search;
+        console.log('[useFavorites] 401 detected, storing returnUrl:', currentPath);
+        localStorage.setItem('authReturnUrl', currentPath);
+        console.log('[useFavorites] localStorage after set:', localStorage.getItem('authReturnUrl'));
+        router.push('/connexion');
+        return;
+      }
       setError('Failed to toggle favorite');
     }
   };
 
   const toggleFavoriteGame = async (gameId: number, isFavorite: boolean) => {
-    if (status !== 'authenticated') return;
     try {
       if (isFavorite) {
         await removeFavoriteGame(gameId);
         setFavoriteGames(prev => prev.filter(g => Number.parseInt(g.id) !== gameId));
       } else {
         await addFavoriteGame(gameId);
-        // Refetch to get the full game data
         await fetchFavorites();
       }
-    } catch (err) {
-      console.error('Error toggling favorite game:', err);
+    } catch (err: any) {
+      if (err instanceof AppError && err.code === AppError.UNAUTHORIZED) {
+        const currentPath = window.location.pathname + window.location.search;
+        localStorage.setItem('authReturnUrl', currentPath);
+        router.push('/connexion');
+        return;
+      }
       setError('Failed to toggle favorite');
     }
   };

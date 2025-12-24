@@ -4,7 +4,7 @@ import React from 'react';
 import BackButton from '@/src/components/ui/buttons/BackButton';
 
 interface PageHeaderProps {
-  title: React.ReactNode;
+  title?: React.ReactNode;
   showBackButton?: boolean;
   right?: React.ReactNode;
   loading?: boolean;
@@ -25,11 +25,13 @@ export default function PageHeader({
         {loading ? (
           <span className="inline-block h-6 w-40 rounded bg-muted animate-pulse" />
         ) : (
-          <span
-            className="text-base font-semibold tracking-tight text-primary relative truncate overflow-hidden whitespace-nowrap block after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1b2d5e] after:to-white"
-          >
-            {title}
-          </span>
+          title && (
+            <span
+              className="text-base font-semibold tracking-tight text-primary relative truncate overflow-hidden whitespace-nowrap block after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1b2d5e] after:to-white"
+            >
+              {title}
+            </span>
+          )
         )}
       </h1>
       {right}

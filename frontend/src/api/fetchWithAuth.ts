@@ -1,4 +1,4 @@
-import { getSession, signOut } from "next-auth/react";
+import { getSession } from "next-auth/react";
 
 function normalizeHeaders(init?: HeadersInit): Record<string, string> {
   const h: Record<string, string> = {};
@@ -33,9 +33,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
       headers["Authorization"] = `Bearer ${fresh}`;
       res = await fetch(url, { ...options, headers });
     }
-    if (res.status === 401) {
-      try { await signOut({ callbackUrl: "/connexion" }); } catch {}
-    }
+    // Removed automatic signOut - let components handle 401 errors
   }
 
   return res;

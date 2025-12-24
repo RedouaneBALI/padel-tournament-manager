@@ -50,7 +50,6 @@ export default function GamesList({
   const [showOnlyInProgress, setShowOnlyInProgress] = useState(false);
 
   const favorites = useFavorites(!editable);
-
   const handleGameClick = (gameId: string) => {
     const basePath = editable ? '/admin/tournament' : '/tournament';
     router.push(`${basePath}/${tournamentId}/games/${gameId}`);

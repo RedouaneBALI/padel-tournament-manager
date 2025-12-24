@@ -237,6 +237,8 @@ export default function MatchResultCard({
 
   const handleToggleFavorite = () => {
     if (status !== 'authenticated') {
+      const currentPath = window.location.pathname + window.location.search;
+      localStorage.setItem('authReturnUrl', currentPath);
       router.push('/connexion');
     } else if (favorites) {
       favorites.toggleFavoriteGame(Number.parseInt(gameId), isFavorite);

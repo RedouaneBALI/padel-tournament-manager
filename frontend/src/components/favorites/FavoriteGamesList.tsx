@@ -9,11 +9,13 @@ import { TeamSide } from '@/src/types/teamSide';
 interface FavoriteGamesListProps {
   favoriteGames: Game[];
   favoriteTournaments: Tournament[];
+  toggleFavoriteGame: (gameId: number, isFavorite: boolean) => void;
 }
 
 const FavoriteGamesList: React.FC<FavoriteGamesListProps> = ({
   favoriteGames,
   favoriteTournaments,
+  toggleFavoriteGame,
 }) => {
   const [overrides, setOverrides] = useState<Record<string, { score: any; winner: TeamSide | null }>>({});
 
@@ -49,7 +51,7 @@ const FavoriteGamesList: React.FC<FavoriteGamesListProps> = ({
             if (override?.winner !== undefined) {
               winner = override.winner;
             } else if (game.finished) {
-              winner = game.winnerSide;
+              winner = game.winnerSide ?? null;
             }
 
             return (
@@ -71,10 +73,12 @@ const FavoriteGamesList: React.FC<FavoriteGamesListProps> = ({
                   stage={''}
                   setsToWin={3}
                   finished={game.finished || winner !== null}
-                  matchIndex={0}
-                  totalMatches={1}
+                  matchIndex={undefined}
+                  totalMatches={undefined}
                   isFirstRound={false}
                   onInfoSaved={() => {}}
+                  isFavorite={true}
+                  onToggleFavorite={toggleFavoriteGame}
                 />
               </Link>
             );

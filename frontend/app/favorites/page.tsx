@@ -13,21 +13,25 @@ import FavoriteGamesList from '@/src/components/favorites/FavoriteGamesList';
 type TabType = 'tournaments' | 'games';
 
 export default function FavoritesPage() {
-  const { favoriteTournaments, favoriteGames, loading, error } = useFavorites(true);
+  const { favoriteTournaments, favoriteGames, loading, error, toggleFavoriteGame } = useFavorites(true);
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
-  const activeTab = React.useMemo(() => (searchParams.get('tab') as TabType) || 'tournaments', [searchParams]);
+  const activeTab = React.useMemo(() => {
+    if (!searchParams) return 'tournaments';
+    return (searchParams.get('tab') as TabType) || 'tournaments';
+  }, [searchParams]);
 
   const updateQuery = React.useCallback((key: string, value: string) => {
+    if (!searchParams || !pathname) return;
     const params = new URLSearchParams(searchParams.toString());
     params.set(key, value);
     router.push(`${pathname}?${params.toString()}`);
   }, [searchParams, pathname, router]);
 
   const items = React.useMemo(() => [
-    { href: '/', label: 'Accueil', Icon: Home, isActive: (p) => p === '/' },
+    { href: '/', label: 'Accueil', Icon: Home, isActive: (p: string) => p === '/' },
     { href: '#more', label: 'Plus', Icon: FiMoreHorizontal },
   ], []);
 
@@ -93,11 +97,11 @@ export default function FavoritesPage() {
         )}
 
         {activeTab === 'games' && (
-          <FavoriteGamesList favoriteGames={favoriteGames} favoriteTournaments={favoriteTournaments} />
+          <FavoriteGamesList favoriteGames={favoriteGames} favoriteTournaments={favoriteTournaments} toggleFavoriteGame={toggleFavoriteGame} />
         )}
       </div>
 
-      <BottomNav items={items} pathname={pathname} />
+      <BottomNav items={items} pathname={pathname ?? '/'} />
     </div>
   );
 }
