@@ -50,8 +50,8 @@ export default function OrganisateursInstagramPage() {
             <div className="flex items-center gap-4">
               <BackButton />
               <div>
-                <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">Ils parlent de nous</h1>
-                <p className="text-lg text-muted-foreground max-w-2xl">Nos derniers tournois</p>
+                <h1 className="text-2xl sm:text-2xl font-bold tracking-tight">Nos derniers tournois</h1>
+                <p className="text-lg text-muted-foreground max-w-2xl">Partenaires officiels</p>
               </div>
             </div>
           </div>
