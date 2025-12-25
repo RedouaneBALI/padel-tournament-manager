@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import KnockoutBracket from '@/src/components/round/KnockoutBracket';
 import { calculateMatchPositions } from '@/src/utils/bracket';
 import type { Tournament } from '@/src/types/tournament';
+import { Switch } from '@/src/components/ui/Switch';
 
 export default function FinalsStageView({
   tournament,
@@ -13,6 +15,8 @@ export default function FinalsStageView({
   isGroupStageFormat: boolean;
   isQualifStageFormat: boolean;
 }) {
+  const [hideBye, setHideBye] = useState(false);
+
   const finalsRounds = (() => {
     const r = tournament.rounds ?? [];
     if (isGroupStageFormat) return r.filter((round) => round.stage !== 'GROUPS');
@@ -21,6 +25,7 @@ export default function FinalsStageView({
   })();
 
   const hasFinals = finalsRounds.length > 0;
+  const hasBye = finalsRounds.some(round => round.games.some(game => game.teamA?.type === 'BYE' || game.teamB?.type === 'BYE'));
   const maxPosition = (() => {
     if (!hasFinals) return 0;
     const matchPositions = calculateMatchPositions(finalsRounds);
@@ -33,13 +38,19 @@ export default function FinalsStageView({
 
   return (
     <div className="w-full">
+      {hasBye && (
+        <div className="mb-4 flex items-center gap-2">
+          <Switch id="hide-bye" checked={hideBye} onCheckedChange={setHideBye} />
+          <label htmlFor="hide-bye" className="text-sm">Masquer les matchs BYE</label>
+        </div>
+      )}
       <div
         id="finals-bracket-container"
         className="relative overflow-auto bg-background stage-min-height pb-4 md:pb-8"
         style={maxPosition ? { ['--stage-min-height' as any]: `${maxPosition}px` } as React.CSSProperties : undefined}
       >
         <div className="w-max mx-0 md:mx-auto">
-          <KnockoutBracket rounds={finalsRounds} tournamentId={tournamentId} isQualif={false} />
+          <KnockoutBracket rounds={finalsRounds} tournamentId={tournamentId} isQualif={false} hideBye={hideBye} />
         </div>
       </div>
     </div>

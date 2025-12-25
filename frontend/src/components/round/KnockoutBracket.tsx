@@ -9,6 +9,7 @@ interface KnockoutBracketProps {
   rounds: Round[];
   tournamentId: string;
   isQualif: boolean;
+  hideBye?: boolean;
 }
 
 function calculateChildCoords(childIdx: number, rounds: Round[], r: number, ROUND_WIDTH: number, matchPositions: number[][], nodeRefs: React.MutableRefObject<Map<string, HTMLElement>>, containerRect: DOMRect): { cx: number; cy: number } | null {
@@ -52,7 +53,7 @@ function calculateChildCoords(childIdx: number, rounds: Round[], r: number, ROUN
   return { cx, cy };
 }
 
-function computeConnections(rounds: Round[], ROUND_WIDTH: number, matchPositions: number[][], nodeRefs: React.MutableRefObject<Map<string, HTMLElement>>, containerRect: DOMRect): Array<{ cx1:number, cy1:number, cx2:number, cy2:number, px:number, py:number }> {
+function computeConnections(rounds: Round[], ROUND_WIDTH: number, matchPositions: number[][], nodeRefs: React.MutableRefObject<Map<string, HTMLElement>>, containerRect: DOMRect, hideBye: boolean): Array<{ cx1:number, cy1:number, cx2:number, cy2:number, px:number, py:number }> {
   const conns: Array<{ cx1:number, cy1:number, cx2:number, cy2:number, px:number, py:number }> = [];
 
   for (let r = 0; r < rounds.length - 1; r++) {
@@ -60,6 +61,9 @@ function computeConnections(rounds: Round[], ROUND_WIDTH: number, matchPositions
     const next = rounds[r + 1];
 
     next.games.forEach((parentGame, parentIndex) => {
+      // Skip if parent is BYE and hideBye is true
+      if (hideBye && (parentGame.teamA?.type === 'BYE' || parentGame.teamB?.type === 'BYE')) return;
+
       // children indices in previous round
       const childIdxA = parentIndex * 2;
       const childIdxB = parentIndex * 2 + 1;
@@ -117,7 +121,7 @@ function computeConnections(rounds: Round[], ROUND_WIDTH: number, matchPositions
   return conns;
 }
 
-export default function KnockoutBracket({ rounds, tournamentId, isQualif }: KnockoutBracketProps) {
+export default function KnockoutBracket({ rounds, tournamentId, isQualif, hideBye }: KnockoutBracketProps) {
   const ROUND_WIDTH = 320;
   const CONNECTOR_STROKE = 1.5; // px used for SVG stroke width
   const matchPositions = useMemo(() => calculateMatchPositions(rounds), [rounds]);
@@ -138,7 +142,7 @@ export default function KnockoutBracket({ rounds, tournamentId, isQualif }: Knoc
       if (!container) return;
       const containerRect = container.getBoundingClientRect();
 
-      const conns = computeConnections(rounds, ROUND_WIDTH, matchPositions, nodeRefs, containerRect);
+      const conns = computeConnections(rounds, ROUND_WIDTH, matchPositions, nodeRefs, containerRect, hideBye);
 
       // Only update state when connections actually changed to avoid infinite loops
       try {
@@ -161,7 +165,7 @@ export default function KnockoutBracket({ rounds, tournamentId, isQualif }: Knoc
       window.removeEventListener('resize', compute);
       observer.disconnect();
     };
-  }, [rounds, matchPositions]);
+  }, [rounds, matchPositions, hideBye]);
 
   return (
     <div
@@ -201,33 +205,40 @@ export default function KnockoutBracket({ rounds, tournamentId, isQualif }: Knoc
             {round.stage}
           </div>
 
-          {round.games.map((game, gameIndex) => (
-            <div
-              key={game.id}
-              ref={(el) => {
-                if (el) nodeRefs.current.set(String(game.id), el);
-                else nodeRefs.current.delete(String(game.id));
-              }}
-              className="absolute"
-              style={{
-                top: `${matchPositions[roundIndex][gameIndex] + 35}px`,
-                left: '10px',
-                right: '10px',
-              }}
-            >
-              <MatchResultCardLight
-                teamA={game.teamA}
-                teamB={game.teamB}
-                score={game.score}
-                winnerSide={game.finished ? game.winnerSide : undefined}
-                finished={game.finished}
-                stage={round.stage}
-                scheduledTime={game.scheduledTime}
-              />
-            </div>
-          ))}
+          {round.games.map((game, gameIndex) => {
+            const isBye = game.teamA?.type === 'BYE' || game.teamB?.type === 'BYE';
+            return (
+              <div
+                key={game.id}
+                ref={(el) => {
+                  if (el) nodeRefs.current.set(String(game.id), el);
+                  else nodeRefs.current.delete(String(game.id));
+                }}
+                className="absolute"
+                style={{
+                  top: `${matchPositions[roundIndex][gameIndex] + 35}px`,
+                  left: '10px',
+                  right: '10px',
+                }}
+              >
+                {(!hideBye || !isBye) && (
+                  <MatchResultCardLight
+                    teamA={game.teamA}
+                    teamB={game.teamB}
+                    score={game.score}
+                    winnerSide={game.finished ? game.winnerSide : undefined}
+                    finished={game.finished}
+                    stage={round.stage}
+                    scheduledTime={game.scheduledTime}
+                  />
+                )}
+              </div>
+            );
+          })}
 
           {isQualif && roundIndex === rounds.length - 1 && round.games.map((game, gameIndex) => {
+            const isBye = game.teamA?.type === 'BYE' || game.teamB?.type === 'BYE';
+            if (hideBye && isBye) return null;
             // Get the ref to the MatchResultCardLight DOM node
             const matchNode = nodeRefs.current.get(String(game.id));
             let matchHeight = 0;
