@@ -49,6 +49,7 @@ interface Props {
   isFavorite?: boolean;
   onToggleFavorite?: (gameId: number, isFavorite: boolean, game: Game) => void;
   game: Game;
+  customBadgeLabel?: string;
 }
 
 export default function MatchResultCard({
