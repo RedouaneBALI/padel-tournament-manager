@@ -49,6 +49,7 @@ interface Props {
   updateGameFn?: (gameId: string, scorePayload: Score, court: string, scheduledTime: string) => Promise<any>;
   isFavorite?: boolean;
   onToggleFavorite?: (gameId: number, isFavorite: boolean) => void;
+  customBadgeLabel?: string;
 }
 
 export default function MatchResultCard({
@@ -75,6 +76,7 @@ export default function MatchResultCard({
   updateGameFn,
   isFavorite: isFavoriteProp,
   onToggleFavorite: onToggleFavoriteProp,
+  customBadgeLabel,
 }: Props) {
   const group = normalizeGroup(pool?.name);
   const contextTournament = useContext(TournamentContext);
@@ -165,7 +167,7 @@ export default function MatchResultCard({
   const isInProgress = computeIsInProgress(localFinished, score, scores);
 
   // Calculer le contenu du badge (garder la logique en dehors du JSX pour satisfaire TypeScript)
-  const badgeLabel = computeBadgeLabel(pool, matchIndex, totalMatches);
+  const badgeLabel = customBadgeLabel ?? computeBadgeLabel(pool, matchIndex, totalMatches);
 
   // Compute winner sides to avoid nested ternaries
   const teamAWinnerSide = localWinnerSide;

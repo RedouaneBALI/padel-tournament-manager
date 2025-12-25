@@ -54,6 +54,8 @@ const FavoriteGamesList: React.FC<FavoriteGamesListProps> = ({
               winner = game.winnerSide ?? null;
             }
 
+            const tournament = favoriteTournaments.find(t => t.id === game.tournament?.id);
+
             return (
               <Link
                 key={game.id}
@@ -79,6 +81,7 @@ const FavoriteGamesList: React.FC<FavoriteGamesListProps> = ({
                   onInfoSaved={() => {}}
                   isFavorite={true}
                   onToggleFavorite={toggleFavoriteGame}
+                  customBadgeLabel={tournament?.name}
                 />
               </Link>
             );
