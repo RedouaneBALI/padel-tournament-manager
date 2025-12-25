@@ -88,19 +88,6 @@ public class FavoriteService {
     return userFavoriteGameRepository.existsByUserEmailAndGameId(userEmail, gameId);
   }
 
-  public Map<Long, Long> getGameToTournamentMap(List<Long> gameIds) {
-    if (gameIds.isEmpty()) {
-      return Map.of();
-    }
-    return userFavoriteGameRepository.findTournamentIdsByGameIds(gameIds)
-                                     .stream()
-                                     .filter(mapping -> mapping.getTournamentId() != null)
-                                     .collect(Collectors.toMap(
-                                         mapping -> mapping.getGameId(),
-                                         mapping -> mapping.getTournamentId()
-                                     ));
-  }
-
   public Map<Long, TournamentSummaryDTO> getGameToTournamentDTOMap(List<Long> gameIds) {
     if (gameIds.isEmpty()) {
       return Map.of();
