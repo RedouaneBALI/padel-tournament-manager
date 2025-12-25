@@ -67,10 +67,10 @@ public class DefaultDataInitializer implements CommandLineRunner {
   }
 
   private void createDefaultTournament() {
-    userRepository.findByEmail(DEFAULT_USER_EMAIL).orElseGet(() -> {
+    if (userRepository.findByEmail(DEFAULT_USER_EMAIL).isEmpty()) {
       User newUser = new User(DEFAULT_USER_EMAIL, "Bali Redouane", "en");
-      return userRepository.save(newUser);
-    });
+      userRepository.save(newUser);
+    }
 
     // Parse players
     List<Player>     players = parsePlayers();
