@@ -2,7 +2,7 @@
 
 import { signOut, useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import GoogleLoginButton from '@/src/components/ui/buttons/GoogleLoginButton';
 import Image from 'next/image';
 
@@ -21,7 +21,6 @@ const errorMessages: Record<string, string> = {
 
 export default function ConnexionPage() {
   const { data: session, status } = useSession();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [debugReturnUrl, setDebugReturnUrl] = useState<string>('');

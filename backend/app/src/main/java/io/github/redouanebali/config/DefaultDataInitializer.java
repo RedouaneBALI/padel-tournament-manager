@@ -14,10 +14,8 @@ import io.github.redouanebali.model.TournamentLevel;
 import io.github.redouanebali.model.User;
 import io.github.redouanebali.model.format.TournamentConfig;
 import io.github.redouanebali.model.format.TournamentFormat;
-import io.github.redouanebali.repository.PlayerPairRepository;
 import io.github.redouanebali.repository.TournamentRepository;
 import io.github.redouanebali.repository.UserRepository;
-import io.github.redouanebali.service.DrawGenerationService;
 import io.github.redouanebali.service.TournamentService;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -39,16 +37,14 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class DefaultDataInitializer implements CommandLineRunner {
 
-  private static final String                DEFAULT_USER_EMAIL = "bali.redouane@gmail.com";
+  private static final String               DEFAULT_USER_EMAIL = "bali.redouane@gmail.com";
   private static final String
-                                             PLAYER_LIST        =
+                                            PLAYER_LIST        =
       "SEDKI MESSAOURI ABDELALI,TAGHY ZAKARIA,107 SEFRAOUI OTHMANE,ZARHLOULE SALIM,365 ALAMI YASSINE,RHIATI KAMAL,238 MRINI ADIL,BOUSSMANE MUSTAPHA,216 BENJELLOUN MHAMED,DAMIEL MALDONADO,198 TAHA MEHDI,BOUAOUDA ANASS,142 BERRADA GHALI,BOUZOUBAA MOHAMED,133 EL KENDOUCI EL MEHDI,EL KENDOUCI DRISS,396 BERRAHOU HAMZA,MUESSER YANIS,666 ALAOUI HAMZA,LAVAUD ERIC,245 SAGARD FABIEN,TOUHAMI YASSINE,194 FREJ WIFAQ,LAKHDAR GHAZAL ANAS,138 EL GORFTI ISMAEL,DAHMANI ADIL,143 SERGHINI REDA,EL GHADRAOUI HICHAM,235 BOUHMADI MEHDI,RIZO AVILA BRAULIO,206 JAKHOUKH ANOUAR,CHADLI AMINE,280 ALLA YAHYA,SKALLI MEHDI,247 BENNANI ZIATNI MOHAMED,BENNANI ZIATNI OTHMANE,260 SEDKI RAYANE,SBAI JASSIME,121 KHTIRA MEHDI,ALAOUI MOULAY,151 RHAOUTI YAHYA MOHAMED,ARROUB MEHDI,623 SAOURI HAMZA,BENZAKOUR ADIL,211 BERRADA HICHAM,SLAOUI HAMZA,387 TAHOUR ALI,AMMARI YAHIA,548 BENNIS MOHAMED,KHOUCHOU BADR,551 EL GALLAF OUSSAMA,EL FRIYAKH ZAKARYAE,119 FERTAT REDA,PASTOR LANDABURU PABLO,12 TAZI DRISS,HASSOUNI ABDESLAM,95 MENJRA MAHMOUD,EL KHARROUBI MONCEF,62 MEKOUAR SAAD,SAISSI MEHDI,35 HICHAM IDRISS,MECHICHE ALAMI MAMOUN,25 JACQUETY PIERRE LOUIS,LEROUX TANGUY";
-  private final        UserRepository        userRepository;
-  private final        TournamentRepository  tournamentRepository;
-  private final        PlayerPairRepository  playerPairRepository;
-  private final        Environment           environment;
-  private final        TournamentService     tournamentService;
-  private final        DrawGenerationService drawGenerationService;
+  private final        UserRepository       userRepository;
+  private final        TournamentRepository tournamentRepository;
+  private final        Environment          environment;
+  private final        TournamentService    tournamentService;
 
   @Override
   public void run(String... args) throws Exception {
@@ -71,8 +67,7 @@ public class DefaultDataInitializer implements CommandLineRunner {
   }
 
   private void createDefaultTournament() {
-    // Create user if not exists
-    User user = userRepository.findByEmail(DEFAULT_USER_EMAIL).orElseGet(() -> {
+    userRepository.findByEmail(DEFAULT_USER_EMAIL).orElseGet(() -> {
       User newUser = new User(DEFAULT_USER_EMAIL, "Bali Redouane", "en");
       return userRepository.save(newUser);
     });
