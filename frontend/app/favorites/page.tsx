@@ -9,13 +9,24 @@ import { Home } from 'lucide-react';
 import { FiMoreHorizontal } from 'react-icons/fi';
 import FavoriteTournamentsList from '@/src/components/favorites/FavoriteTournamentsList';
 import FavoriteGamesList from '@/src/components/favorites/FavoriteGamesList';
+import { useSession } from 'next-auth/react';
 
 type TabType = 'tournaments' | 'games';
 
 export default function FavoritesPage() {
+  const { status } = useSession();
+  const router = useRouter();
+
+  React.useEffect(() => {
+    if (status === 'unauthenticated') {
+      const currentPath = window.location.pathname + window.location.search;
+      localStorage.setItem('authReturnUrl', currentPath);
+      router.push('/connexion');
+    }
+  }, [status, router]);
+
   const { favoriteTournaments, favoriteGames, loading, error, toggleFavoriteGame } = useFavorites(true);
   const searchParams = useSearchParams();
-  const router = useRouter();
   const pathname = usePathname();
 
   const activeTab = React.useMemo(() => {
@@ -61,7 +72,7 @@ export default function FavoritesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background mb-15">
       <PageHeader />
 
       <div>

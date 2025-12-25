@@ -9,7 +9,7 @@ import { TeamSide } from '@/src/types/teamSide';
 interface FavoriteGamesListProps {
   favoriteGames: Game[];
   favoriteTournaments: Tournament[];
-  toggleFavoriteGame: (gameId: number, isFavorite: boolean) => void;
+  toggleFavoriteGame: (gameId: number, isFavorite: boolean, game: Game) => void;
 }
 
 const FavoriteGamesList: React.FC<FavoriteGamesListProps> = ({
@@ -82,6 +82,7 @@ const FavoriteGamesList: React.FC<FavoriteGamesListProps> = ({
                   isFavorite={true}
                   onToggleFavorite={toggleFavoriteGame}
                   customBadgeLabel={tournament?.name}
+                  game={game}
                 />
               </Link>
             );

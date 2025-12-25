@@ -66,14 +66,18 @@ export const useFavorites = (enabled: boolean = true) => {
     }
   };
 
-  const toggleFavoriteGame = async (gameId: number, isFavorite: boolean) => {
+  const toggleFavoriteGame = async (gameId: number, isFavorite: boolean, game?: Game) => {
     try {
       if (isFavorite) {
         await removeFavoriteGame(gameId);
         setFavoriteGames(prev => prev.filter(g => Number.parseInt(g.id) !== gameId));
       } else {
         await addFavoriteGame(gameId);
-        await fetchFavorites();
+        if (game) {
+          setFavoriteGames(prev => [...prev, game]);
+        } else {
+          await fetchFavorites();
+        }
       }
     } catch (err: any) {
       if (err instanceof AppError && err.code === AppError.UNAUTHORIZED) {

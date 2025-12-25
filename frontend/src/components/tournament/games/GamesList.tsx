@@ -50,6 +50,8 @@ export default function GamesList({
   const [showOnlyInProgress, setShowOnlyInProgress] = useState(false);
 
   const favorites = useFavorites(!editable);
+  const favoriteGameIds = useMemo(() => new Set(favorites?.favoriteGames.map(g => g.id) || []), [favorites?.favoriteGames]);
+
   const handleGameClick = (gameId: string) => {
     const basePath = editable ? '/admin/tournament' : '/tournament';
     router.push(`${basePath}/${tournamentId}/games/${gameId}`);
@@ -231,7 +233,7 @@ export default function GamesList({
         // Récupérer l'index d'origine du match de façon déterministe via sortedIds
         const originalIndex = Math.max(0, sortedIds.indexOf(game.id));
 
-        const isFavorite = favorites ? favorites.favoriteGames.some(g => g.id == game.id) : false;
+        const isFavorite = favoriteGameIds.has(game.id);
 
         return (
           <div key={game.id} className="w-full max-w-xl flex justify-center">
@@ -270,6 +272,7 @@ export default function GamesList({
                 matchFormat={matchFormat}
                 isFavorite={isFavorite}
                 onToggleFavorite={favorites?.toggleFavoriteGame}
+                game={game}
               />
             </div>
           </div>

@@ -21,7 +21,6 @@ import { Game } from '@/src/types/game';
 import { MatchFormat } from '@/src/types/matchFormat';
 import { shareMatchImage } from '@/src/utils/imageExport';
 import { TeamSide } from '@/src/types/teamSide';
-import { useFavorites } from '@/src/hooks/useFavorites';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
@@ -48,8 +47,8 @@ interface Props {
   matchFormat?: any;
   updateGameFn?: (gameId: string, scorePayload: Score, court: string, scheduledTime: string) => Promise<any>;
   isFavorite?: boolean;
-  onToggleFavorite?: (gameId: number, isFavorite: boolean) => void;
-  customBadgeLabel?: string;
+  onToggleFavorite?: (gameId: number, isFavorite: boolean, game: Game) => void;
+  game: Game;
 }
 
 export default function MatchResultCard({
@@ -76,6 +75,7 @@ export default function MatchResultCard({
   updateGameFn,
   isFavorite: isFavoriteProp,
   onToggleFavorite: onToggleFavoriteProp,
+  game,
   customBadgeLabel,
 }: Props) {
   const group = normalizeGroup(pool?.name);
@@ -230,22 +230,18 @@ export default function MatchResultCard({
     await shareMatchImage(game as Game, contextTournament?.name ?? undefined, contextTournament?.club ?? undefined, undefined, undefined, undefined, contextTournament?.level);
   };
 
-  const favorites = useFavorites(!editable);
   const { status } = useSession();
   const router = useRouter();
 
-  const computedIsFavorite = favorites ? favorites.favoriteGames.some(g => g.id == gameId) : false;
-  const isFavorite = isFavoriteProp !== undefined ? isFavoriteProp : computedIsFavorite;
+  const isFavorite = isFavoriteProp !== undefined ? isFavoriteProp : false;
 
   const handleToggleFavorite = () => {
     if (status !== 'authenticated') {
       const currentPath = window.location.pathname + window.location.search;
       localStorage.setItem('authReturnUrl', currentPath);
       router.push('/connexion');
-    } else if (favorites) {
-      favorites.toggleFavoriteGame(Number.parseInt(gameId), isFavorite);
     } else if (onToggleFavoriteProp) {
-      onToggleFavoriteProp(Number.parseInt(gameId), isFavorite);
+      onToggleFavoriteProp(Number.parseInt(gameId), isFavorite, game);
     }
   };
 
