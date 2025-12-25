@@ -132,7 +132,10 @@ function computeConnections(rounds: Round[], ROUND_WIDTH: number, matchPositions
 export default function KnockoutBracket({ rounds, tournamentId, isQualif, hideBye }: KnockoutBracketProps) {
   const ROUND_WIDTH = 320;
   const CONNECTOR_STROKE = 1.5; // px used for SVG stroke width
-  const matchPositions = useMemo(() => calculateMatchPositions(rounds), [rounds]);
+
+  // Update: pass hideBye to the calculation
+  const matchPositions = useMemo(() => calculateMatchPositions(rounds, hideBye), [rounds, hideBye]);
+
   const maxPosition = Math.max(...matchPositions.flat()) + 150;
 
   // refs
@@ -150,7 +153,7 @@ export default function KnockoutBracket({ rounds, tournamentId, isQualif, hideBy
       if (!container) return;
       const containerRect = container.getBoundingClientRect();
 
-      const conns = computeConnections(rounds, ROUND_WIDTH, matchPositions, nodeRefs, containerRect, hideBye);
+      const conns = computeConnections(rounds, ROUND_WIDTH, matchPositions, nodeRefs, containerRect, !!hideBye);
 
       // Only update state when connections actually changed to avoid infinite loops
       try {
@@ -233,6 +236,8 @@ export default function KnockoutBracket({ rounds, tournamentId, isQualif, hideBy
 
           {round.games.map((game, gameIndex) => {
             const isBye = game.teamA?.type === 'BYE' || game.teamB?.type === 'BYE';
+            // Important: we still rely on matchPositions even if hidden logic is complex
+            // matchPositions now accounts for compacting.
             return (
               <div
                 key={game.id}
@@ -265,7 +270,7 @@ export default function KnockoutBracket({ rounds, tournamentId, isQualif, hideBy
           {isQualif && roundIndex === rounds.length - 1 && round.games.map((game, gameIndex) => {
             const isBye = game.teamA?.type === 'BYE' || game.teamB?.type === 'BYE';
             if (hideBye && isBye) return null;
-            // Get the ref to the MatchResultCardLight DOM node
+
             const matchNode = nodeRefs.current.get(String(game.id));
             let matchHeight = 0;
             if (matchNode) {

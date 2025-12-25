@@ -26,9 +26,11 @@ export default function FinalsStageView({
 
   const hasFinals = finalsRounds.length > 0;
   const hasBye = finalsRounds.some(round => round.games.some(game => game.teamA?.type === 'BYE' || game.teamB?.type === 'BYE'));
+
+  // Modifié pour prendre en compte hideBye
   const maxPosition = (() => {
     if (!hasFinals) return 0;
-    const matchPositions = calculateMatchPositions(finalsRounds);
+    const matchPositions = calculateMatchPositions(finalsRounds, hideBye);
     if (matchPositions.length === 0) return 0;
     return Math.max(...matchPositions.flat()) + 150;
   })();
