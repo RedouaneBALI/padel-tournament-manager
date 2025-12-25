@@ -62,8 +62,8 @@ export default function OrganisateursInstagramPage() {
                 <div className="p-5 bg-gradient-to-br from-card to-card/80 border-b border-border/50">
                   <div className="flex items-center justify-between mb-1">
                     <h2 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">{title}</h2>
-                    <Link href={`/tournament/${tournamentId}/bracket`} className="text-primary hover:text-primary-hover transition-colors">
-                      <ExternalLink className="h-5 w-5" />
+                    <Link href={`/tournament/${tournamentId}/bracket`} className="text-primary hover:text-primary-hover transition-colors flex items-center gap-1">
+                      Voir le tableau <ExternalLink className="h-4 w-4" />
                     </Link>
                   </div>
                   <p className="text-sm text-muted-foreground">{club}</p>
