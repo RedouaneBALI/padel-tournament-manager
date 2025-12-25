@@ -11,6 +11,7 @@ import type { InitializeDrawRequest } from '@/src/types/api/InitializeDrawReques
 import type { Game } from '@/src/types/game';
 import type { User } from '@/src/types/user';
 import type { VoteSummary, VotePayload } from '@/src/types/vote';
+import { AppError } from '@/src/utils/AppError';
 
 // Utiliser directement l'URL du backend depuis les variables d'environnement
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
@@ -49,10 +50,10 @@ export async function fetchTournamentAdmin(tournamentId: string): Promise<Tourna
   });
 
   if (res.status === 401) {
-    throw new Error('UNAUTHORIZED');
+    throw new AppError(AppError.UNAUTHORIZED);
   }
   if (res.status === 403) {
-    throw new Error('FORBIDDEN');
+    throw new AppError(AppError.FORBIDDEN);
   }
   if (!res.ok) {
     const text = await res.text().catch(() => '');
@@ -68,10 +69,10 @@ export async function fetchMyTournaments(scope: 'mine' | 'all' = 'mine'): Promis
   const res = await fetchWithAuth(api(`/admin/tournaments${qs}`), { method: 'GET' });
 
   if (res.status === 401) {
-    throw new Error('UNAUTHORIZED');
+    throw new AppError(AppError.UNAUTHORIZED);
   }
   if (res.status === 403) {
-    throw new Error('FORBIDDEN');
+    throw new AppError(AppError.FORBIDDEN);
   }
   if (!res.ok) {
     const text = await res.text().catch(() => '');
@@ -169,8 +170,8 @@ export async function deleteTournament(tournamentId: string | number): Promise<v
     method: 'DELETE',
   });
 
-  if (res.status === 401) throw new Error('UNAUTHORIZED');
-  if (res.status === 403) throw new Error('FORBIDDEN');
+  if (res.status === 401) throw new AppError(AppError.UNAUTHORIZED);
+  if (res.status === 403) throw new AppError(AppError.FORBIDDEN);
 
   if (!res.ok) {
     const text = await res.text().catch(() => '');
@@ -282,8 +283,8 @@ export async function updatePlayerPair(
     body: JSON.stringify(payload),
   });
 
-  if (res.status === 401) throw new Error('UNAUTHORIZED');
-  if (res.status === 403) throw new Error('FORBIDDEN');
+  if (res.status === 401) throw new AppError(AppError.UNAUTHORIZED);
+  if (res.status === 403) throw new AppError(AppError.FORBIDDEN);
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw new Error(`HTTP_${res.status} ${text}`);
@@ -351,10 +352,10 @@ export async function fetchUserProfile(): Promise<User> {
   });
 
   if (response.status === 401) {
-    throw new Error('UNAUTHORIZED');
+    throw new AppError(AppError.UNAUTHORIZED);
   }
   if (response.status === 403) {
-    throw new Error('FORBIDDEN');
+    throw new AppError(AppError.FORBIDDEN);
   }
   if (!response.ok) {
     const text = await response.text().catch(() => '');
@@ -422,7 +423,83 @@ export async function fetchVoteSummary(gameId: string): Promise<VoteSummary> {
   return await response.json();
 }
 
-// Internal helper to avoid code duplication
+// Favorites API functions
+
+export const getFavoriteTournaments = async (): Promise<Tournament[]> => {
+  const response = await fetchWithAuth(api('/favorites/tournaments'));
+  if (!response.ok) {
+    throw new Error('Failed to fetch favorite tournaments');
+  }
+  return await response.json();
+};
+
+export const addFavoriteTournament = async (tournamentId: number): Promise<void> => {
+  const response = await fetchWithAuth(api(`/favorites/tournaments/${tournamentId}`), {
+    method: 'POST',
+  });
+  if (response.status === 401) {
+    throw new AppError(AppError.UNAUTHORIZED);
+  }
+  if (!response.ok) {
+    throw new Error('Failed to add tournament to favorites');
+  }
+};
+
+export const removeFavoriteTournament = async (tournamentId: number): Promise<void> => {
+  const response = await fetchWithAuth(api(`/favorites/tournaments/${tournamentId}`), {
+    method: 'DELETE',
+  });
+  if (response.status === 401) {
+    throw new AppError(AppError.UNAUTHORIZED);
+  }
+  if (!response.ok) {
+    throw new Error('Failed to remove tournament from favorites');
+  }
+};
+
+export const getFavoriteGames = async (): Promise<Game[]> => {
+  const response = await fetchWithAuth(api('/favorites/games'));
+  if (!response.ok) {
+    throw new Error('Failed to fetch favorite games');
+  }
+  return await response.json();
+};
+
+export const addFavoriteGame = async (gameId: number): Promise<void> => {
+  const response = await fetchWithAuth(api(`/favorites/games/${gameId}`), {
+    method: 'POST',
+  });
+  if (response.status === 401) {
+    throw new AppError(AppError.UNAUTHORIZED);
+  }
+  if (!response.ok) {
+    throw new Error('Failed to add game to favorites');
+  }
+};
+
+export const removeFavoriteGame = async (gameId: number): Promise<void> => {
+  const response = await fetchWithAuth(api(`/favorites/games/${gameId}`), {
+    method: 'DELETE',
+  });
+  if (response.status === 401) {
+    throw new AppError(AppError.UNAUTHORIZED);
+  }
+  if (!response.ok) {
+    throw new Error('Failed to remove game from favorites');
+  }
+};
+
+export const getFavorites = async (): Promise<{ tournaments: Tournament[]; games: Game[] }> => {
+  const response = await fetchWithAuth(api('/favorites'));
+  if (!response.ok) {
+    throw new Error('Failed to fetch favorites');
+  }
+  return await response.json();
+};
+
+/**
+ * Internal helper to avoid code duplication
+ */
 async function patchGamePointEndpoint(endpoint: string, teamSide: string | undefined, errorMsg: string) {
   const url = teamSide !== undefined ? api(endpoint) + `?teamSide=${encodeURIComponent(teamSide)}` : api(endpoint);
   const response = await fetchWithAuth(url, {

@@ -15,7 +15,7 @@ export default function MonComptePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname() ?? '';
-  const callbackUrl = (searchParams?.get('callbackUrl')) || '/admin/tournaments';
+  const returnUrl = (searchParams?.get('returnUrl')) || '/admin/tournaments';
 
   const bottomItems = getDefaultBottomItems();
 
@@ -59,7 +59,7 @@ export default function MonComptePage() {
     try {
       const updatedUser = await updateUserProfile(formData);
       setUser(updatedUser);
-      router.push(callbackUrl);
+      router.push(returnUrl);
     } catch (error) {
       console.error('Error updating profile:', error);
     } finally {

@@ -26,3 +26,4 @@ export interface Tournament {
   featured: boolean;
   tvUrl?: string | null;
 }
+

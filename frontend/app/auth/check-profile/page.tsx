@@ -1,42 +1,51 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { fetchUserProfile } from '@/src/api/tournamentApi';
 
 export default function CheckProfilePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackUrl = (searchParams?.get('callbackUrl')) || '/admin/tournaments';
 
   useEffect(() => {
-    if (status === 'loading') return;
 
-    if (!session) {
-      router.push('/connexion');
+    if (status === 'loading') {
       return;
     }
+
+    // Get returnUrl from localStorage
+    const callbackUrl = typeof window !== 'undefined' ? localStorage.getItem('authReturnUrl') : null;
+    const finalUrl = callbackUrl || '/admin/tournaments';
+
+
+    if (!session) {
+      router.push(`/connexion?returnUrl=${encodeURIComponent(finalUrl)}`);
+      return;
+    }
+
 
     const checkProfile = async () => {
       try {
         const user = await fetchUserProfile();
-        // Si le profil est nouveau (profileType null), rediriger vers mon-compte
+
         if (!user.profileType) {
-          router.push('/mon-compte');
+          router.push(`/mon-compte?returnUrl=${encodeURIComponent(finalUrl)}`);
         } else {
-          router.push(callbackUrl);
+          // Clean up localStorage and redirect
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('authReturnUrl');
+          }
+          router.push(finalUrl);
         }
       } catch (error: any) {
-        console.log('Profile check error:', error.message);
-        // En cas d'erreur, rediriger vers mon-compte
-        router.push('/mon-compte');
+        router.push(`/mon-compte?returnUrl=${encodeURIComponent(finalUrl)}`);
       }
     };
 
     checkProfile();
-  }, [session, status, router, callbackUrl]);
+  }, [session, status, router]);
 
   return (
     <div className="flex items-center justify-center min-h-screen">
@@ -47,3 +56,4 @@ export default function CheckProfilePage() {
     </div>
   );
 }
+

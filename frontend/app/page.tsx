@@ -29,7 +29,6 @@ export default function Home() {
     setLoadingFeatured(true);
     fetchActiveTournaments()
       .then((list) => {
-        console.log('Fetched list from API:', list);
         if (mounted) setFeatured(list);
       })
       .catch(() => {})

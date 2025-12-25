@@ -21,6 +21,8 @@ import { Game } from '@/src/types/game';
 import { MatchFormat } from '@/src/types/matchFormat';
 import { shareMatchImage } from '@/src/utils/imageExport';
 import { TeamSide } from '@/src/types/teamSide';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 interface Props {
   teamA: PlayerPair | null;
@@ -44,6 +46,10 @@ interface Props {
   isFirstRound?: boolean;
   matchFormat?: any;
   updateGameFn?: (gameId: string, scorePayload: Score, court: string, scheduledTime: string) => Promise<any>;
+  isFavorite?: boolean;
+  onToggleFavorite?: (gameId: number, isFavorite: boolean, game: Game) => void;
+  game: Game;
+  customBadgeLabel?: string;
 }
 
 export default function MatchResultCard({
@@ -68,6 +74,10 @@ export default function MatchResultCard({
   isFirstRound = false,
   matchFormat,
   updateGameFn,
+  isFavorite: isFavoriteProp,
+  onToggleFavorite: onToggleFavoriteProp,
+  game,
+  customBadgeLabel,
 }: Props) {
   const group = normalizeGroup(pool?.name);
   const contextTournament = useContext(TournamentContext);
@@ -158,7 +168,7 @@ export default function MatchResultCard({
   const isInProgress = computeIsInProgress(localFinished, score, scores);
 
   // Calculer le contenu du badge (garder la logique en dehors du JSX pour satisfaire TypeScript)
-  const badgeLabel = computeBadgeLabel(pool, matchIndex, totalMatches);
+  const badgeLabel = customBadgeLabel ?? computeBadgeLabel(pool, matchIndex, totalMatches);
 
   // Compute winner sides to avoid nested ternaries
   const teamAWinnerSide = localWinnerSide;
@@ -221,6 +231,21 @@ export default function MatchResultCard({
     await shareMatchImage(game as Game, contextTournament?.name ?? undefined, contextTournament?.club ?? undefined, undefined, undefined, undefined, contextTournament?.level);
   };
 
+  const { status } = useSession();
+  const router = useRouter();
+
+  const isFavorite = isFavoriteProp !== undefined ? isFavoriteProp : false;
+
+  const handleToggleFavorite = () => {
+    if (status !== 'authenticated') {
+      const currentPath = window.location.pathname + window.location.search;
+      localStorage.setItem('authReturnUrl', currentPath);
+      router.push('/connexion');
+    } else if (onToggleFavoriteProp) {
+      onToggleFavoriteProp(Number.parseInt(gameId), isFavorite, game);
+    }
+  };
+
   return (
     <div
       role="presentation"
@@ -238,13 +263,6 @@ export default function MatchResultCard({
         ${isInProgress ? 'ring-2 ring-red-500/20' : ''}
         `}
     >
-      {/* Indicateur match en cours - en mode non-éditable */}
-      {isInProgress && !editable && (
-        <div className="absolute top-2 right-2 z-30">
-          <LiveMatchIndicator showLabel={true} />
-        </div>
-      )}
-
       {isSaving && (
         <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px] z-20 flex items-center justify-center" aria-hidden>
           <CenteredLoader />
@@ -262,6 +280,8 @@ export default function MatchResultCard({
         onEdit={onEdit}
         showExport={!editable && localFinished}
         onExport={handleExport}
+        isFavorite={isFavorite}
+        onToggleFavorite={handleToggleFavorite}
       />
 
       {/* Inline TeamScoreRow component */}
@@ -301,6 +321,13 @@ export default function MatchResultCard({
           onToggleForfeit={onToggleForfeitB}
         />
       </div>
+
+      {/* Indicateur match en cours - en mode non-éditable */}
+      {isInProgress && !editable && (
+        <div className="absolute top-2 right-2 z-30">
+          <LiveMatchIndicator showLabel={true} />
+        </div>
+      )}
 
       <MatchFooter
         editing={editing}
