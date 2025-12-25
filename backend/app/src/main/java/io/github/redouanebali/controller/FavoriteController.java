@@ -60,13 +60,13 @@ public class FavoriteController {
     String userEmail = SecurityUtil.currentUserId();
     var    favorites = favoriteService.getFavoriteGames(userEmail);
 
-    List<Long>      gameIds             = favorites.stream().map(ufg -> ufg.getGame().getId()).toList();
-    Map<Long, Long> gameToTournamentMap = favoriteService.getGameToTournamentMap(gameIds);
+    List<Long>                      gameIds             = favorites.stream().map(ufg -> ufg.getGame().getId()).toList();
+    Map<Long, TournamentSummaryDTO> gameToTournamentMap = favoriteService.getGameToTournamentDTOMap(gameIds);
 
     List<GameSummaryDTO> dtos = favorites.stream()
                                          .map(ufg -> {
                                            GameSummaryDTO dto = favoriteMapper.toGameSummaryDTO(ufg.getGame());
-                                           dto.setTournamentId(gameToTournamentMap.get(ufg.getGame().getId()));
+                                           dto.setTournament(gameToTournamentMap.get(ufg.getGame().getId()));
                                            return dto;
                                          })
                                          .toList();

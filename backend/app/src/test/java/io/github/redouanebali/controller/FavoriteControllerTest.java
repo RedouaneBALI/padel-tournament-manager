@@ -208,8 +208,8 @@ class FavoriteControllerTest {
       "Tournament A,3,4",
       "Tournament B,5,6"
   })
-  @DisplayName("Should include tournamentId and validate DTO structure in favorite games")
-  void testGetFavoriteGames_IncludesTournamentIdWithValidStructure(String tournamentName, int seed1, int seed2) throws Exception {
+  @DisplayName("Should include tournament and validate DTO structure in favorite games")
+  void testGetFavoriteGames_IncludesTournamentWithValidStructure(String tournamentName, int seed1, int seed2) throws Exception {
     userRepository.save(TestFixturesApp.createTestUser("user@test.com"));
     Tournament tournament = createTournamentWithGame(tournamentName, seed1, seed2);
     Game       game       = tournament.getRounds().getFirst().getGames().getFirst();
@@ -221,7 +221,8 @@ class FavoriteControllerTest {
            .andExpect(status().isOk())
            .andExpect(jsonPath("$", hasSize(1)))
            .andExpect(jsonPath("$[0].id").value(game.getId().intValue()))
-           .andExpect(jsonPath("$[0].tournamentId").value(tournament.getId().intValue()))
+           .andExpect(jsonPath("$[0].tournament.id").value(tournament.getId().intValue()))
+           .andExpect(jsonPath("$[0].tournament.name").value(tournamentName))
            .andExpect(jsonPath("$[0].finished").isBoolean())
            .andExpect(jsonPath("$[0].teamA").exists())
            .andExpect(jsonPath("$[0].teamA.id").isNumber())
@@ -248,9 +249,9 @@ class FavoriteControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
            .andExpect(status().isOk())
            .andExpect(jsonPath("$", hasSize(2)))
-           .andExpect(jsonPath("$[*].tournamentId").exists())
-           .andExpect(jsonPath("$[?(@.id == " + game1.getId() + ")].tournamentId").value(tournament1.getId().intValue()))
-           .andExpect(jsonPath("$[?(@.id == " + game2.getId() + ")].tournamentId").value(tournament2.getId().intValue()))
+           .andExpect(jsonPath("$[*].tournament").exists())
+           .andExpect(jsonPath("$[?(@.id == " + game1.getId() + ")].tournament.id").value(tournament1.getId().intValue()))
+           .andExpect(jsonPath("$[?(@.id == " + game2.getId() + ")].tournament.id").value(tournament2.getId().intValue()))
            .andExpect(jsonPath("$[0].teamA.id").isNumber())
            .andExpect(jsonPath("$[0].teamA.seed").exists())
            .andExpect(jsonPath("$[0].teamB.id").isNumber())

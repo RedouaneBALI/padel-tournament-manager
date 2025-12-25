@@ -57,7 +57,7 @@ const FavoriteGamesList: React.FC<FavoriteGamesListProps> = ({
             return (
               <Link
                 key={game.id}
-                href={`/tournament/${game.tournamentId}/games/${game.id}`}
+                href={`/tournament/${game.tournament?.id ?? game.tournamentId}/games/${game.id}`}
                 className="block"
               >
                 <MatchResultCard
@@ -65,7 +65,7 @@ const FavoriteGamesList: React.FC<FavoriteGamesListProps> = ({
                   teamB={game.teamB}
                   score={override?.score ?? game.score}
                   gameId={String(game.id)}
-                  tournamentId={game.tournamentId}
+                  tournamentId={String(game.tournament?.id ?? game.tournamentId)}
                   editable={false}
                   court={game.court}
                   scheduledTime={game.scheduledTime}

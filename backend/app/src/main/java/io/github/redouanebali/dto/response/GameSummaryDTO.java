@@ -8,15 +8,15 @@ import lombok.Data;
 @Data
 public class GameSummaryDTO {
 
-  private Long          id;
-  private PlayerPairDTO teamA;
-  private PlayerPairDTO teamB;
-  private boolean       finished;
-  private ScoreDTO      score;
-  private TeamSide      winnerSide;
+  private Long                 id;
+  private PlayerPairDTO        teamA;
+  private PlayerPairDTO        teamB;
+  private boolean              finished;
+  private ScoreDTO             score;
+  private TeamSide             winnerSide;
   @JsonFormat(pattern = "HH:mm")
-  private LocalTime     scheduledTime;
-  private String        court;
-  private Long          tournamentId;
+  private LocalTime            scheduledTime;
+  private String               court;
+  private TournamentSummaryDTO tournament;
 
 }

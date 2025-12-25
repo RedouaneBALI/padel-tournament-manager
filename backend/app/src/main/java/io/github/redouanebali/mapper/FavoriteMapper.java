@@ -29,7 +29,7 @@ public interface FavoriteMapper {
   @Mapping(target = "winnerSide", source = "winnerSide")
   @Mapping(target = "scheduledTime", source = "scheduledTime")
   @Mapping(target = "court", source = "court")
-  @Mapping(target = "tournamentId", ignore = true)
+  @Mapping(target = "tournament", ignore = true)
   GameSummaryDTO toGameSummaryDTO(Game game);
 
   default List<GameSummaryDTO> toGameSummaryDTOList(List<Game> games) {

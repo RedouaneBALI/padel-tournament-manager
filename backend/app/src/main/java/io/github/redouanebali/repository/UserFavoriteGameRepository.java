@@ -1,6 +1,7 @@
 package io.github.redouanebali.repository;
 
 import io.github.redouanebali.dto.GameTournamentIdMapping;
+import io.github.redouanebali.dto.GameTournamentMapping;
 import io.github.redouanebali.model.User;
 import io.github.redouanebali.model.UserFavoriteGame;
 import java.util.List;
@@ -33,5 +34,9 @@ public interface UserFavoriteGameRepository extends JpaRepository<UserFavoriteGa
   @Query(value = "SELECT g.id as gameId, t.id as tournamentId FROM game g LEFT JOIN round r ON g.round_id = r.id LEFT JOIN tournament t ON r.tournament_id = t.id WHERE g.id IN :gameIds",
          nativeQuery = true)
   List<GameTournamentIdMapping> findTournamentIdsByGameIds(@Param("gameIds") List<Long> gameIds);
+
+  @Query(value = "SELECT g.id as gameId, t.id as tournamentId, t.name as tournamentName, t.city as tournamentCity, t.club as tournamentClub, t.level as tournamentLevel, t.gender as tournamentGender, t.start_date as tournamentStartDate, t.end_date as tournamentEndDate, t.organizer_name as tournamentOrganizerName, t.is_featured as tournamentFeatured FROM game g LEFT JOIN round r ON g.round_id = r.id LEFT JOIN tournament t ON r.tournament_id = t.id WHERE g.id IN :gameIds",
+         nativeQuery = true)
+  List<GameTournamentMapping> findGameTournamentMappings(@Param("gameIds") List<Long> gameIds);
 
 }

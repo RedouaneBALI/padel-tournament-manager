@@ -1,5 +1,7 @@
 package io.github.redouanebali.service;
 
+import io.github.redouanebali.dto.GameTournamentMapping;
+import io.github.redouanebali.dto.response.TournamentSummaryDTO;
 import io.github.redouanebali.model.Game;
 import io.github.redouanebali.model.Tournament;
 import io.github.redouanebali.model.User;
@@ -97,6 +99,34 @@ public class FavoriteService {
                                          mapping -> mapping.getGameId(),
                                          mapping -> mapping.getTournamentId()
                                      ));
+  }
+
+  public Map<Long, TournamentSummaryDTO> getGameToTournamentDTOMap(List<Long> gameIds) {
+    if (gameIds.isEmpty()) {
+      return Map.of();
+    }
+    return userFavoriteGameRepository.findGameTournamentMappings(gameIds)
+                                     .stream()
+                                     .filter(mapping -> mapping.getTournamentId() != null)
+                                     .collect(Collectors.toMap(
+                                         GameTournamentMapping::getGameId,
+                                         this::mapToTournamentSummaryDTO
+                                     ));
+  }
+
+  private TournamentSummaryDTO mapToTournamentSummaryDTO(GameTournamentMapping mapping) {
+    TournamentSummaryDTO dto = new TournamentSummaryDTO();
+    dto.setId(mapping.getTournamentId());
+    dto.setName(mapping.getTournamentName());
+    dto.setCity(mapping.getTournamentCity());
+    dto.setClub(mapping.getTournamentClub());
+    dto.setLevel(mapping.getTournamentLevel());
+    dto.setGender(mapping.getTournamentGender());
+    dto.setStartDate(mapping.getTournamentStartDate());
+    dto.setEndDate(mapping.getTournamentEndDate());
+    dto.setOrganizerName(mapping.getTournamentOrganizerName());
+    dto.setFeatured(mapping.isTournamentFeatured());
+    return dto;
   }
 
   private User getUser(String email) {
