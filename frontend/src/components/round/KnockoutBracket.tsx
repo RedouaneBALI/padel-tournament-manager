@@ -108,12 +108,20 @@ function computeConnections(rounds: Round[], ROUND_WIDTH: number, matchPositions
       // children
       const childCoords: Array<{cx:number, cy:number}> = [];
       [childIdxA, childIdxB].forEach((childIdx) => {
-        const coords = calculateChildCoords(childIdx, rounds, r, ROUND_WIDTH, matchPositions, nodeRefs, containerRect);
-        if (coords) childCoords.push(coords);
+        const childGame = rounds[r].games[childIdx];
+        // Skip BYE children if hideBye is true
+        if (childGame && (!hideBye || !(childGame.teamA?.type === 'BYE' || childGame.teamB?.type === 'BYE'))) {
+          const coords = calculateChildCoords(childIdx, rounds, r, ROUND_WIDTH, matchPositions, nodeRefs, containerRect);
+          if (coords) childCoords.push(coords);
+        }
       });
 
+      // Create connection if we have 2 children, or if we have 1 child and hideBye is true (the other is a BYE)
       if (childCoords.length === 2) {
         conns.push({ cx1: childCoords[0].cx, cy1: childCoords[0].cy, cx2: childCoords[1].cx, cy2: childCoords[1].cy, px, py });
+      } else if (childCoords.length === 1 && hideBye) {
+        // Single child when hideBye - still connect it to the parent
+        conns.push({ cx1: childCoords[0].cx, cy1: childCoords[0].cy, cx2: childCoords[0].cx, cy2: childCoords[0].cy, px, py });
       }
     });
   }
@@ -179,24 +187,42 @@ export default function KnockoutBracket({ rounds, tournamentId, isQualif, hideBy
       {/* SVG overlay for orthogonal connections */}
       <svg className="absolute inset-0 pointer-events-none" width={rounds.length * ROUND_WIDTH + (isQualif ? 50 : 0)} height={maxPosition}>
         {connections.map((c, i) => {
-          const midX = Math.round((Math.max(c.cx1, c.cx2) + c.px) / 2);
-          const minY = Math.min(c.cy1, c.cy2);
-          const maxY = Math.max(c.cy1, c.cy2);
-          // Use parent's computed connector Y so the final horizontal aligns with the parent's internal divider
-          const midY = c.py; // keep float to avoid 1px rounding shifts
+          // Check if this is a single child connection (cx1 === cx2 and cy1 === cy2)
+          const isSingleChild = c.cx1 === c.cx2 && c.cy1 === c.cy2;
+
+          if (isSingleChild) {
+            // Single child: draw direct line from child to parent with orthogonal angles
+            const midX = (c.cx1 + c.px) / 2;
+            return (
+              <g key={i} stroke="rgba(148,163,184,0.45)" strokeWidth={CONNECTOR_STROKE} fill="none" strokeLinecap="round">
+                {/* horizontal from child to midpoint */}
+                <line x1={c.cx1} y1={c.cy1} x2={midX} y2={c.cy1} />
+                {/* vertical from child height to parent height */}
+                <line x1={midX} y1={c.cy1} x2={midX} y2={c.py} />
+                {/* horizontal from midpoint to parent */}
+                <line x1={midX} y1={c.py} x2={c.px} y2={c.py} />
+              </g>
+            );
+          } else {
+            // Two children: normal bracket connection
+            const midX = Math.round((Math.max(c.cx1, c.cx2) + c.px) / 2);
+            const minY = Math.min(c.cy1, c.cy2);
+            const maxY = Math.max(c.cy1, c.cy2);
+            const midY = c.py;
 
             return (
-            <g key={i} stroke="rgba(148,163,184,0.45)" strokeWidth={CONNECTOR_STROKE} fill="none" strokeLinecap="round">
+              <g key={i} stroke="rgba(148,163,184,0.45)" strokeWidth={CONNECTOR_STROKE} fill="none" strokeLinecap="round">
                 {/* horizontals from children to midX */}
                 <line x1={c.cx1} y1={c.cy1} x2={midX} y2={c.cy1} />
                 <line x1={c.cx2} y1={c.cy2} x2={midX} y2={c.cy2} />
                 {/* vertical between children at midX */}
                 <line x1={midX} y1={minY} x2={midX} y2={maxY} />
                 {/* horizontal from midY to parent left */}
-               <line x1={midX} y1={midY} x2={c.px} y2={midY} />
+                <line x1={midX} y1={midY} x2={c.px} y2={midY} />
               </g>
             );
-          })}
+          }
+        })}
       </svg>
 
       {rounds.map((round, roundIndex) => (
