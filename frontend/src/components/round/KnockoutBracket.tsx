@@ -12,6 +12,34 @@ interface KnockoutBracketProps {
   hideBye?: boolean;
 }
 
+function getCenterY(el: HTMLElement, containerRect: DOMRect): number {
+  try {
+    const divide = el.querySelector('.divide-y, .divide-gray-200, .divide-border');
+    if (divide && divide.children && divide.children.length >= 1) {
+      const firstRow = divide.children[0] as HTMLElement;
+      const firstRect = firstRow.getBoundingClientRect();
+      const style = window.getComputedStyle(firstRow);
+      const borderBottom = parseFloat(style.borderBottomWidth || '0') || 0;
+      const borderTop = parseFloat(style.borderTopWidth || '0') || 0;
+      let dividerCenter: number;
+      if (borderBottom > 0) {
+        dividerCenter = firstRect.bottom - borderBottom / 2;
+      } else if (borderTop > 0) {
+        dividerCenter = firstRect.top + borderTop / 2;
+      } else {
+        dividerCenter = firstRect.top + firstRect.height / 2;
+      }
+      return dividerCenter - containerRect.top;
+    } else {
+      const rect = el.getBoundingClientRect();
+      return rect.top - containerRect.top + rect.height / 2;
+    }
+  } catch (e) {
+    const rect = el.getBoundingClientRect();
+    return rect.top - containerRect.top + rect.height / 2;
+  }
+}
+
 function calculateChildCoords(childIdx: number, rounds: Round[], r: number, ROUND_WIDTH: number, matchPositions: number[][], nodeRefs: React.MutableRefObject<Map<string, HTMLElement>>, containerRect: DOMRect): { cx: number; cy: number } | null {
   const childGame = rounds[r].games[childIdx];
   if (!childGame) return null;
@@ -24,31 +52,7 @@ function calculateChildCoords(childIdx: number, rounds: Round[], r: number, ROUN
   if (childEl) {
     const cRect = childEl.getBoundingClientRect();
     cx = cRect.right - containerRect.left;
-    // Try to align on the divider between the two TeamScoreRow children if present
-    try {
-      const divide = childEl.querySelector('.divide-y, .divide-gray-200, .divide-border');
-      if (divide && divide.children && divide.children.length >= 1) {
-        const firstRow = divide.children[0] as HTMLElement;
-        const firstRect = firstRow.getBoundingClientRect();
-        const style = window.getComputedStyle(firstRow);
-        const borderBottom = parseFloat(style.borderBottomWidth || '0') || 0;
-        const borderTop = parseFloat(style.borderTopWidth || '0') || 0;
-        let dividerCenter: number;
-        if (borderBottom > 0) {
-          dividerCenter = firstRect.bottom - borderBottom / 2;
-        } else if (borderTop > 0) {
-          dividerCenter = firstRect.top + borderTop / 2;
-        } else {
-          dividerCenter = firstRect.top + firstRect.height / 2;
-        }
-        // Align directly on the divider center (no extra offset)
-        cy = dividerCenter - containerRect.top;
-      } else {
-        cy = cRect.top - containerRect.top + cRect.height / 2;
-      }
-    } catch (e) {
-      cy = cRect.top - containerRect.top + cRect.height / 2;
-    }
+    cy = getCenterY(childEl, containerRect);
   }
   return { cx, cy };
 }
@@ -77,32 +81,7 @@ function computeConnections(rounds: Round[], ROUND_WIDTH: number, matchPositions
       if (parentEl) {
         const pRect = parentEl.getBoundingClientRect();
         px = pRect.left - containerRect.left; // left edge
-        // Try to align parent connector on the internal divider between TeamScoreRow
-        try {
-          const divideP = parentEl.querySelector('.divide-y, .divide-gray-200, .divide-border');
-          if (divideP && divideP.children && divideP.children.length >= 1) {
-            // prefer using a first row's bottom border center if available
-            const firstRowP = divideP.children[0] as HTMLElement;
-            const firstRectP = firstRowP.getBoundingClientRect();
-            const styleP = window.getComputedStyle(firstRowP);
-            const borderBottomP = parseFloat(styleP.borderBottomWidth || '0') || 0;
-            const borderTopP = parseFloat(styleP.borderTopWidth || '0') || 0;
-            let dividerCenterP: number;
-            if (borderBottomP > 0) {
-              dividerCenterP = firstRectP.bottom - borderBottomP / 2;
-            } else if (borderTopP > 0) {
-              dividerCenterP = firstRectP.top + borderTopP / 2;
-            } else {
-              dividerCenterP = firstRectP.top + firstRectP.height / 2;
-            }
-            // Align directly on the divider center (no extra offset) to avoid over/under correction
-            py = dividerCenterP - containerRect.top;
-          } else {
-            py = pRect.top - containerRect.top + pRect.height / 2;
-          }
-        } catch (e) {
-          py = pRect.top - containerRect.top + pRect.height / 2;
-        }
+        py = getCenterY(parentEl, containerRect);
       }
 
       // children
@@ -214,7 +193,7 @@ export default function KnockoutBracket({ rounds, tournamentId, isQualif, hideBy
             const midY = c.py;
 
             return (
-              <g key={i} stroke="rgba(148,163,184,0.45)" strokeWidth={CONNECTOR_STROKE} fill="none" strokeLinecap="round">
+              <g key={`${c.cx1}-${c.cy1}-${c.cx2}-${c.cy2}-${c.px}-${c.py}`} stroke="rgba(148,163,184,0.45)" strokeWidth={CONNECTOR_STROKE} fill="none" strokeLinecap="round">
                 {/* horizontals from children to midX */}
                 <line x1={c.cx1} y1={c.cy1} x2={midX} y2={c.cy1} />
                 <line x1={c.cx2} y1={c.cy2} x2={midX} y2={c.cy2} />
