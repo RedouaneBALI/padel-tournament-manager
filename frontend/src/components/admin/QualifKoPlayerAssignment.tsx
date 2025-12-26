@@ -44,15 +44,14 @@ export default function QualifKoPlayerAssignment({ tournament, playerPairs }: Pr
 
   // Check if there are any BYE pairs in the main draw
   const hasMainDrawByePairs = React.useMemo(() => {
-    const mainDrawPairs = playerPairs.slice(qualifSlotsSize, qualifSlotsSize + mainSlotsSize);
-    return mainDrawPairs.some((p) => p?.type === 'BYE');
-  }, [playerPairs, qualifSlotsSize, mainSlotsSize]);
+    return mainSlots.some((p) => p?.type === 'BYE');
+  }, [mainSlots]);
 
   // Apply BYE positions for main draw
   const applyByes = async () => {
     setApplyingByes(true);
     try {
-      const mainDrawPairs = playerPairs.slice(qualifSlotsSize, qualifSlotsSize + mainSlotsSize);
+      const mainDrawPairs = mainSlots.filter(Boolean) as PlayerPair[];
       const result = await applyByePositions(mainDrawPairs, mainSlotsSize);
       if (result) {
         // Dispatch event to update main slots
