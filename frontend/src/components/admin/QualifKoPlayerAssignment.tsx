@@ -41,18 +41,40 @@ export default function QualifKoPlayerAssignment({ tournament, playerPairs }: Pr
   } = useDualPlayerAssignment(tournament, playerPairs, qualifSlotsSize, mainSlotsSize);
 
   const [applyingByes, setApplyingByes] = useState(false);
+  const [applyingQualifByes, setApplyingQualifByes] = useState(false);
+
+  // Check if there are any BYE pairs in the qualif draw
+  const hasQualifByePairs = React.useMemo(() => {
+    return qualifSlots.some((p) => p?.type === 'BYE');
+  }, [qualifSlots]);
 
   // Check if there are any BYE pairs in the main draw
   const hasMainDrawByePairs = React.useMemo(() => {
-    const mainDrawPairs = playerPairs.slice(qualifSlotsSize, qualifSlotsSize + mainSlotsSize);
-    return mainDrawPairs.some((p) => p?.type === 'BYE');
-  }, [playerPairs, qualifSlotsSize, mainSlotsSize]);
+    return mainSlots.some((p) => p?.type === 'BYE');
+  }, [mainSlots]);
+
+  // Apply BYE positions for qualif draw
+  const applyQualifByes = async () => {
+    setApplyingQualifByes(true);
+    try {
+      const qualifDrawPairs = qualifSlots.filter(Boolean) as PlayerPair[];
+      const result = await applyByePositions(qualifDrawPairs, qualifSlotsSize);
+      if (result) {
+        // Dispatch event to update qualif slots
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('qualifko:apply-qualif-byes', { detail: { qualifSlots: result } }));
+        }
+      }
+    } finally {
+      setApplyingQualifByes(false);
+    }
+  };
 
   // Apply BYE positions for main draw
   const applyByes = async () => {
     setApplyingByes(true);
     try {
-      const mainDrawPairs = playerPairs.slice(qualifSlotsSize, qualifSlotsSize + mainSlotsSize);
+      const mainDrawPairs = mainSlots.filter(Boolean) as PlayerPair[];
       const result = await applyByePositions(mainDrawPairs, mainSlotsSize);
       if (result) {
         // Dispatch event to update main slots
@@ -86,6 +108,18 @@ export default function QualifKoPlayerAssignment({ tournament, playerPairs }: Pr
           <div className="h-px flex-1 bg-border my-2" />
         </div>
         <div className="rounded-md border border-border bg-card divide-y">
+          {hasQualifByePairs && (
+            <div className="p-3 flex justify-center">
+              <button
+                type="button"
+                disabled={applyingQualifByes}
+                onClick={applyQualifByes}
+                className={`px-3 py-1 rounded text-sm ${applyingQualifByes ? 'bg-border text-muted-foreground cursor-not-allowed' : 'bg-primary text-on-primary hover:bg-primary-hover'}`}
+              >
+                {applyingQualifByes ? 'Positionnement...' : 'Positionner les BYE'}
+              </button>
+            </div>
+          )}
           {Array.from({ length: qualifMatchesCount }).map((_, matchIndex) => {
             const slotIndexA = matchIndex * 2;
             const slotIndexB = slotIndexA + 1;

@@ -18,15 +18,16 @@ export async function applyByePositions(
   slotsSize: number
 ): Promise<Array<PlayerPair | null> | null> {
   try {
-    // Determine number of BYEs from the provided playerPairs (type === 'BYE')
+    // 1. Determine number of BYEs to place
     const byePairs = (playerPairs || []).filter((p) => p?.type === 'BYE');
     const byesCount = byePairs.length;
+
     if (byesCount === 0) {
       window.alert('Aucun BYE trouvé parmi les paires.');
       return null;
     }
 
-    // Fetch positions mapping
+    // 2. Fetch positions mapping
     const resp = await fetch('/bye-positions.json');
     if (!resp.ok) {
       window.alert('Impossible de charger la configuration des BYE.');
@@ -34,50 +35,45 @@ export async function applyByePositions(
     }
     const mapping = await resp.json();
 
-    const drawKey = String(slotsSize);
-    const drawObj = mapping[drawKey];
-    if (!drawObj) {
+    // 3. Get the prioritized list for this draw size
+    // Expecting mapping to be Record<string, number[]>
+    const fullPositions = mapping[String(slotsSize)];
+
+    if (!Array.isArray(fullPositions) || fullPositions.length === 0) {
       window.alert(`Pas de configuration BYE pour un tableau de taille ${slotsSize}`);
       return null;
     }
 
-    // Find the largest number of BYEs <= byesCount that has positions
-    const byeKeys = Object.keys(drawObj).map(Number).sort((a, b) => b - a); // descending
-    const selectedByeCount = byeKeys.find((k) => k <= byesCount);
-    if (!selectedByeCount) {
-      window.alert('Aucun nombre de BYE compatible trouvé.');
-      return null;
-    }
+    // 4. Select the exact positions needed
+    // We simply take the first N positions, where N is the number of BYEs.
+    // This works for any number of BYEs (even odd numbers like 3 or 5),
+    // adhering to the priority order defined in the JSON.
+    const targetPositions = fullPositions.slice(0, byesCount);
 
-    const positions = drawObj[String(selectedByeCount)];
-    if (!Array.isArray(positions) || positions.length === 0) {
-      window.alert('Positions BYE non définies pour ce nombre de BYE.');
-      return null;
-    }
-
-    // positions are expected as zero-based indices
+    // 5. Initialize result array
     const result: Array<PlayerPair | null> = new Array(slotsSize).fill(null);
-
-    // use existing bye pair objects
     const byeQueue = [...byePairs];
-    const selectedByes = byeQueue.splice(0, positions.length); // take first selectedByeCount
 
-    for (let i = 0; i < positions.length; i++) {
-      const idx = Number(positions[i]);
-      const bye = selectedByes[i];
-      if (idx >= 0 && idx < slotsSize) {
-        result[idx] = bye;
+    // 6. Place BYEs at their target positions
+    targetPositions.forEach((posIndex) => {
+      const idx = Number(posIndex);
+      // Safety check to ensure index is within bounds and we have BYEs left
+      if (idx >= 0 && idx < slotsSize && byeQueue.length > 0) {
+        // We take one BYE from the queue and place it
+        result[idx] = byeQueue.shift() as PlayerPair;
       }
-    }
+    });
 
-    // fill remaining slots with extra BYE first, then non-BYE pairs
-    const remainingByes = byeQueue;
+    // 7. Fill remaining slots
+    // "fillers" contains any BYEs that might not have had a defined position (unlikely)
+    // plus all normal teams.
     const nonByePairs = (playerPairs || []).filter((p) => p?.type !== 'BYE');
-    const fillers = [...remainingByes, ...nonByePairs];
-    let fi = 0;
+    const fillers = [...byeQueue, ...nonByePairs];
+
+    let fillerIndex = 0;
     for (let i = 0; i < slotsSize; i++) {
       if (result[i] == null) {
-        result[i] = fillers[fi++] || null;
+        result[i] = fillers[fillerIndex++] || null;
       }
     }
 
