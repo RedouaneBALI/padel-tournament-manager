@@ -181,6 +181,40 @@ export function useDualPlayerAssignment(
     };
   }, [mainSlotsSize, qualifSlots, tournament]);
 
+    // Listen to external requests to replace qualif slots (e.g. apply BYE positions to qualif draw)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      try {
+        const ce = e as CustomEvent;
+        const detail = ce.detail;
+        if (!detail || !Array.isArray(detail.qualifSlots)) return;
+        const incoming = detail.qualifSlots as Array<PlayerPair | null>;
+        if (incoming.length !== qualifSlotsSize) return;
+        setQualifSlots(incoming);
+
+        // Dispatch updated event
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('qualifko:pairs-reordered', {
+            detail: {
+              tournamentId: (tournament as any)?.id,
+              qualifSlots: incoming,
+              mainSlots,
+            },
+          }));
+        }
+      } catch (err) {
+        // ignore
+      }
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('qualifko:apply-qualif-byes', handler as EventListener);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('qualifko:apply-qualif-byes', handler as EventListener);
+      }
+    };
+  }, [qualifSlotsSize, mainSlots, tournament]);
 
   // Move item from one list to another
   const moveBetweenLists = useCallback((fromList: 'qualif' | 'main', fromIndex: number, toList: 'qualif' | 'main', toIndex: number) => {
