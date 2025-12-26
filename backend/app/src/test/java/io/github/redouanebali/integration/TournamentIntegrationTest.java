@@ -32,7 +32,8 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-@SpringBootTest(classes = PadelTournamentManagerApplication.class)
+@SpringBootTest(classes = PadelTournamentManagerApplication.class,
+                properties = {"spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.http.client.HttpClientAutoConfiguration"})
 @ActiveProfiles("h2")
 @Transactional
 class TournamentIntegrationTest {

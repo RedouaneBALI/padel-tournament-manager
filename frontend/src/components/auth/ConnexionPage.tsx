@@ -4,10 +4,11 @@ import { signOut, useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import GoogleLoginButton from '@/src/components/ui/buttons/GoogleLoginButton';
+import FacebookLoginButton from '@/src/components/ui/buttons/FacebookLoginButton';
 import Image from 'next/image';
 
 const errorMessages: Record<string, string> = {
-  OAuthCallback: "Une erreur s'est produite lors de la connexion avec Google. Veuillez réessayer.",
+  OAuthCallback: "Une erreur s'est produite lors de la connexion. Veuillez réessayer.",
   OAuthSignin: "Erreur lors de l'initialisation de la connexion.",
   OAuthCreateAccount: "Impossible de créer un compte. Veuillez réessayer.",
   EmailCreateAccount: "Impossible de créer un compte avec cet email.",
@@ -73,8 +74,9 @@ export default function ConnexionPage() {
             </button>
           </div>
         ) : (
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center space-y-4">
             <GoogleLoginButton callbackUrl={getReturnUrl()} />
+            <FacebookLoginButton callbackUrl={getReturnUrl()} />
           </div>
         )}
       </div>

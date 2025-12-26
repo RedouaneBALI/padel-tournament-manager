@@ -1,83 +1,6 @@
 import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-
-export function getAuthOptions(): NextAuthOptions {
-  const secret = process.env.NEXTAUTH_SECRET;
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-
-  return {
-    secret,
-      session: {
-        strategy: 'jwt',
-        maxAge: 365 * 24 * 60 * 60,   // 1 an
-        updateAge: 24 * 60 * 60,      // on rafraîchit la session au moins 1x/jour
-      },
-    providers: [
-      GoogleProvider({
-        clientId: clientId ?? "",
-        clientSecret: clientSecret ?? "",
-        authorization: {
-          params: {
-            scope: "openid email profile",
-            prompt: "consent",
-            access_type: "offline",
-            response_type: "code",
-          },
-        },
-      })
-    ],
-    pages: {
-      signIn: '/connexion',
-      error: '/connexion', // Redirect errors to sign-in page
-    },
-    callbacks: {
-      async jwt({ token, account }) {
-        // 1er login : Google renvoie id_token (JWT) -> on le range dans le token NextAuth
-        if (account) {
-          (token as any).idToken = (account as any).id_token;
-          (token as any).accessToken = account.access_token;
-          (token as any).refreshToken = (account as any).refresh_token;
-          (token as any).accessTokenExpires = (account as any).expires_at
-            ? (account as any).expires_at * 1000
-            : Date.now() + 3600 * 1000; // fallback 1 hour
-          // debug minimal:
-          console.log("[JWT CB] has id_token:", !!(account as any).id_token);
-          return token;
-        }
-
-        // Return previous token if the access token has not expired yet
-        if ((token as any).accessToken && (token as any).accessTokenExpires && Date.now() < (token as any).accessTokenExpires - 60_000) {
-          return token;
-        }
-
-        // Access token has expired, try to update it
-        return await refreshAccessToken(token);
-      },
-      async session({ session, token }) {
-        // On expose idToken dans la session côté client
-        (session as any).idToken = (token as any).idToken;
-        (session as any).accessToken = (token as any).accessToken;
-        (session as any).accessTokenExpires = (token as any).accessTokenExpires;
-        (session as any).error = (token as any).error;
-
-        // Passer l'email - le contexte/layout déterminera les permissions spécifiques
-        if (session.user?.email) {
-          (session.user as any).email = session.user.email;
-        }
-
-        return session;
-      },
-      async redirect({ url, baseUrl }) {
-        // Permet les redirections vers le même domaine ou vers des URLs relatives
-        if (url.startsWith("/")) return `${baseUrl}${url}`;
-        // Permet les redirections vers le domaine de base
-        else if (new URL(url).origin === baseUrl) return url;
-        return baseUrl;
-      },
-    },
-  };
-}
+import FacebookProvider from "next-auth/providers/facebook";
 
 async function refreshAccessToken(token: any) {
   try {
@@ -112,10 +35,98 @@ async function refreshAccessToken(token: any) {
     };
   } catch (error) {
     console.error("Error refreshing access token", error);
-
     return {
       ...token,
       error: "RefreshAccessTokenError",
     };
   }
+}
+
+export function getAuthOptions(): NextAuthOptions {
+  const secret = process.env.NEXTAUTH_SECRET;
+
+  return {
+    secret,
+    debug: true, // IMPORTANT: Cela affichera l'erreur exacte dans votre terminal VS Code
+    session: {
+      strategy: 'jwt',
+      maxAge: 365 * 24 * 60 * 60,
+      updateAge: 24 * 60 * 60,
+    },
+    providers: [
+      GoogleProvider({
+        clientId: process.env.GOOGLE_CLIENT_ID ?? "",
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+        authorization: {
+          params: {
+            scope: "openid email profile",
+            prompt: "consent",
+            access_type: "offline",
+            response_type: "code",
+          },
+        },
+      }),
+      FacebookProvider({
+        clientId: process.env.FACEBOOK_CLIENT_ID ?? "",
+        clientSecret: process.env.FACEBOOK_CLIENT_SECRET ?? "",
+        // On supprime le mapping manuel 'profile' qui cause souvent l'erreur.
+        // NextAuth gère très bien l'image par défaut.
+        authorization: {
+          params: {
+            scope: "email,public_profile", // On explicite les scopes
+          },
+        },
+      }),
+    ],
+    pages: {
+      signIn: '/connexion',
+      error: '/connexion',
+    },
+    callbacks: {
+      async jwt({ token, account, user }) {
+        // Initial sign in
+        if (account && user) {
+          return {
+            ...token,
+            accessToken: account.access_token,
+            accessTokenExpires: account.expires_at ? account.expires_at * 1000 : Date.now() + 3600 * 1000,
+            refreshToken: account.refresh_token,
+            provider: account.provider,
+            idToken: (account as any).id_token,
+          };
+        }
+
+        // Return previous token if the access token has not expired yet
+        if ((token as any).accessTokenExpires && Date.now() < (token as any).accessTokenExpires - 60_000) {
+          return token;
+        }
+
+        // Facebook tokens generally don't rotate securely via API like Google, return as is
+        if ((token as any).provider === 'facebook') {
+          return token;
+        }
+
+        return await refreshAccessToken(token);
+      },
+      async session({ session, token }) {
+        (session as any).accessToken = (token as any).accessToken;
+        (session as any).idToken = (token as any).idToken;
+        (session as any).error = (token as any).error;
+
+        // Assure que l'image et l'email remontent bien
+        if (session.user) {
+            session.user.image = token.picture as string | null | undefined;
+            session.user.email = token.email as string | null | undefined;
+            session.user.name = token.name as string | null | undefined;
+        }
+
+        return session;
+      },
+      async redirect({ url, baseUrl }) {
+        if (url.startsWith("/")) return `${baseUrl}${url}`;
+        else if (new URL(url).origin === baseUrl) return url;
+        return baseUrl;
+      },
+    },
+  };
 }
