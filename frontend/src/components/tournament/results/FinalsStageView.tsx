@@ -2,7 +2,7 @@ import { useState } from 'react';
 import KnockoutBracket from '@/src/components/round/KnockoutBracket';
 import { calculateMatchPositions } from '@/src/utils/bracket';
 import type { Tournament } from '@/src/types/tournament';
-import { Switch } from '@/src/components/ui/Switch';
+import HideByeSwitch from '@/src/components/ui/HideByeSwitch';
 
 export default function FinalsStageView({
   tournament,
@@ -40,12 +40,7 @@ export default function FinalsStageView({
 
   return (
     <div className="w-full">
-      {hasBye && (
-        <div className="mb-4 flex items-center gap-2">
-          <Switch id="hide-bye" checked={hideBye} onCheckedChange={setHideBye} />
-          <label htmlFor="hide-bye" className="text-sm">Masquer les matchs BYE</label>
-        </div>
-      )}
+      <HideByeSwitch hasBye={hasBye} hideBye={hideBye} setHideBye={setHideBye} />
       <div
         id="finals-bracket-container"
         className="relative overflow-auto bg-background stage-min-height pb-4 md:pb-8"
