@@ -23,6 +23,14 @@ import org.springframework.web.client.RestClient;
 @Slf4j
 public class MultiProviderJwtDecoder implements JwtDecoder {
 
+  private static final String EMAIL_CLAIM     = "email";
+  private static final String SUB_CLAIM       = "sub";
+  private static final String NAME_CLAIM      = "name";
+  private static final String ISS_CLAIM       = "iss";
+  private static final String IAT_CLAIM       = "iat";
+  private static final String EXP_CLAIM       = "exp";
+  private static final String FACEBOOK_ISSUER = "facebook";
+
   private final JwtDecoder   googleDecoder;
   private final RestClient   restClient;
   private final ObjectMapper objectMapper;
@@ -68,7 +76,7 @@ public class MultiProviderJwtDecoder implements JwtDecoder {
     } catch (Exception e) {
       // Si ça échoue ici, c'est critique, on ne veut pas continuer avec un client par défaut
       log.error("FATAL: Impossible de créer le client HTTP unsafe pour Zscaler", e);
-      throw new RuntimeException(e);
+      throw new IllegalStateException("Failed to create unsafe HTTP client", e);
     }
   }
 
@@ -101,20 +109,20 @@ public class MultiProviderJwtDecoder implements JwtDecoder {
 
       // Gestion des erreurs renvoyées par Facebook dans le JSON (cas rare où le statut est 200 mais body contient error)
       if (json.has("error")) {
-        throw new RuntimeException("Facebook API Error: " + json.get("error").toPrettyString());
+        throw new JwtException("Facebook API Error: " + json.get("error").toPrettyString());
       }
 
       String id    = json.get("id").asText();
-      String email = json.has("email") ? json.get("email").asText() : id + "@facebook.com";
+      String email = json.has(EMAIL_CLAIM) ? json.get(EMAIL_CLAIM).asText() : id + "@facebook.com";
       String name  = json.has("name") ? json.get("name").asText() : "Facebook User";
 
       Map<String, Object> claims = Map.of(
-          "sub", id,
-          "email", email,
-          "name", name,
-          "iss", "facebook",
-          "iat", Instant.now().getEpochSecond(),
-          "exp", Instant.now().plusSeconds(3600).getEpochSecond()
+          SUB_CLAIM, id,
+          EMAIL_CLAIM, email,
+          NAME_CLAIM, name,
+          ISS_CLAIM, FACEBOOK_ISSUER,
+          IAT_CLAIM, Instant.now().getEpochSecond(),
+          EXP_CLAIM, Instant.now().plusSeconds(3600).getEpochSecond()
       );
 
       return new Jwt(token, Instant.now(), Instant.now().plusSeconds(3600), Map.of("alg", "none"), claims);
