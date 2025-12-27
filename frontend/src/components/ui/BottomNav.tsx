@@ -15,6 +15,7 @@ import RankingButton from '@/src/components/ui/buttons/RankingButton';
 import MyAccountButton from '@/src/components/ui/buttons/MyAccountButton';
 import LatestTournamentsButton from '@/src/components/ui/buttons/LatestTournamentsButton';
 import FavoritesButton from '@/src/components/ui/buttons/FavoritesButton';
+import { navBtn, icon20, textNav } from '@/src/styles/navClasses';
 
 export type BottomNavItem = {
   href: string;
@@ -162,7 +163,16 @@ export default function BottomNav({ items, pathname, className, fixed = true, on
                         </LogoutButton>
                       </div>
                     ) : (
-                      <GoogleLoginButton onBeforeSignIn={onMoreClick ?? closeMore} />
+                      <Link
+                        href="/connexion"
+                        onClick={onMoreClick ?? closeMore}
+                        className={navBtn}
+                      >
+                        <span className={icon20}>
+                          <FiLogIn size={20} className="text-foreground" aria-hidden />
+                        </span>
+                        <span className={textNav}>Se connecter</span>
+                      </Link>
                     )}
                   </div>
                 </div>

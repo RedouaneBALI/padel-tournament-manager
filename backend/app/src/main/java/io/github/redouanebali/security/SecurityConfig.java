@@ -11,7 +11,6 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -48,9 +47,7 @@ public class SecurityConfig {
 
   @Bean
   public JwtDecoder jwtDecoder() {
-    return NimbusJwtDecoder
-        .withJwkSetUri("https://www.googleapis.com/oauth2/v3/certs")
-        .build();
+    return new MultiProviderJwtDecoder();
   }
 
   @Bean

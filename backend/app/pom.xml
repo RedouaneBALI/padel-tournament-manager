@@ -123,6 +123,15 @@
       <artifactId>spring-boot-starter-websocket</artifactId>
       <groupId>org.springframework.boot</groupId>
     </dependency>
+    <!-- Apache HttpClient 5 for custom SSL handling -->
+    <dependency>
+      <artifactId>httpclient5</artifactId>
+      <groupId>org.apache.httpcomponents.client5</groupId>
+    </dependency>
+    <dependency>
+      <artifactId>httpcore5</artifactId>
+      <groupId>org.apache.httpcomponents.core5</groupId>
+    </dependency>
   </dependencies>
   <modelVersion>4.0.0</modelVersion>
   <name>app</name>
