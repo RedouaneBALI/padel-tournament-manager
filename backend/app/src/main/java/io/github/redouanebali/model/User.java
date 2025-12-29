@@ -8,6 +8,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -22,6 +24,8 @@ public class User {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private              Long        id;
   @Column(unique = true, nullable = false)
+  @NotNull
+  @Email
   private              String      email;
   private              String      name;
   private              String      locale;

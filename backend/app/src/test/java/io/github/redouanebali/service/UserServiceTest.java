@@ -60,18 +60,85 @@ public class UserServiceTest {
   }
 
   @Test
-  void testUpdateProfileCreatesIfNotExists() {
+  void testUpdateProfileThrowsExceptionWhenUserNotFound() {
+    String email = "nonexistent@example.com";
+    when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+    org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      userService.updateProfile(email, "New Name", "fr", User.ProfileType.ORGANIZER, "Paris", "France");
+    });
+  }
+
+  @Test
+  void testUpdateOrCreateProfileCreatesIfNotExists() {
     String email = "new@example.com";
     when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
     when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
-    User updated = userService.updateProfile(email, "New Name", "fr", User.ProfileType.PLAYER, "Paris", "France");
+    User updated = userService.updateOrCreateProfile(email, "New Name", "fr", User.ProfileType.PLAYER, "Paris", "France");
     assertThat(updated.getEmail()).isEqualTo(email);
     assertThat(updated.getName()).isEqualTo("New Name");
     assertThat(updated.getLocale()).isEqualTo("fr");
     assertThat(updated.getProfileType()).isEqualTo(User.ProfileType.PLAYER);
     assertThat(updated.getCity()).isEqualTo("Paris");
     assertThat(updated.getCountry()).isEqualTo("France");
+  }
+
+  @Test
+  void testUpdateOrCreateProfileUpdatesIfExists() {
+    String email = "existing@example.com";
+    User   user  = new User(email, "Old Name", "en");
+    user.setProfileType(User.ProfileType.SPECTATOR);
+    when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+    when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+    User updated = userService.updateOrCreateProfile(email, "Updated Name", "fr", User.ProfileType.ORGANIZER, "Lyon", "France");
+    assertThat(updated.getEmail()).isEqualTo(email);
+    assertThat(updated.getName()).isEqualTo("Updated Name");
+    assertThat(updated.getLocale()).isEqualTo("fr");
+    assertThat(updated.getProfileType()).isEqualTo(User.ProfileType.ORGANIZER);
+    assertThat(updated.getCity()).isEqualTo("Lyon");
+    assertThat(updated.getCountry()).isEqualTo("France");
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+      "test@example.com, John Doe, en, PLAYER, Paris, France",
+      "new@example.com, Jane Smith, fr, ORGANIZER, London, UK",
+      "admin@example.com, Admin User, es, SPECTATOR, Madrid, Spain"
+  })
+  void testUpdateOrCreateProfileWithVariousInputs(String email,
+                                                  String name,
+                                                  String locale,
+                                                  User.ProfileType profileType,
+                                                  String city,
+                                                  String country) {
+    when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+    when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+    User result = userService.updateOrCreateProfile(email, name, locale, profileType, city, country);
+    assertThat(result.getEmail()).isEqualTo(email);
+    assertThat(result.getName()).isEqualTo(name);
+    assertThat(result.getLocale()).isEqualTo(locale);
+    assertThat(result.getProfileType()).isEqualTo(profileType);
+    assertThat(result.getCity()).isEqualTo(city);
+    assertThat(result.getCountry()).isEqualTo(country);
+  }
+
+  @Test
+  void testUpdateOrCreateProfileWithMinimalInfo() {
+    String email = "minimal@example.com";
+    String name  = "Minimal User";
+    when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+    when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+    User result = userService.updateOrCreateProfile(email, name, null, User.ProfileType.SPECTATOR, null, null);
+    assertThat(result.getEmail()).isEqualTo(email);
+    assertThat(result.getName()).isEqualTo(name);
+    assertThat(result.getProfileType()).isEqualTo(User.ProfileType.SPECTATOR);
+    assertThat(result.getLocale()).isNull();
+    assertThat(result.getCity()).isNull();
+    assertThat(result.getCountry()).isNull();
   }
 
   @Test

@@ -25,7 +25,11 @@ public class UserController {
 
   @GetMapping("/profile")
   public ResponseEntity<User> getProfile() {
-    User user = SecurityUtil.getCurrentUser();
+    String email = SecurityUtil.currentUserId();
+    if (email == null) {
+      return ResponseEntity.status(401).build();
+    }
+    User user = userService.getUserIfExists(email);
     if (user == null) {
       return ResponseEntity.notFound().build();
     }
@@ -34,8 +38,13 @@ public class UserController {
 
   @PutMapping("/profile")
   public ResponseEntity<User> updateProfile(@RequestBody @Valid UpdateProfileRequest request) {
-    String email   = SecurityUtil.currentUserId();
-    User   updated = userService.updateProfile(email, request.name(), request.locale(), request.profileType(), request.city(), request.country());
+    String email = SecurityUtil.currentUserId();
+    if (email == null) {
+      return ResponseEntity.status(401).build();
+    }
+    User
+        updated =
+        userService.updateOrCreateProfile(email, request.name(), request.locale(), request.profileType(), request.city(), request.country());
     return ResponseEntity.ok(updated);
   }
 
