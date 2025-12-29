@@ -59,6 +59,9 @@ export default function HeaderContent() {
     prevPathnameRef.current = pathname;
   }, [pathname]);
 
+  const tournamentGamesUrl = tournamentId ? `/tournament/${tournamentId}/games` : '';
+  const adminSwitchUrl = tournamentId && pathname ? `/admin/tournament/${tournamentId}${pathname.replace(`/tournament/${tournamentId}`, '')}` : '';
+
   return (
     <div className={`relative flex items-center w-full ${hasAdminActions ? 'grid grid-cols-[auto_1fr_auto] gap-2' : ''}`}>
       <Link href="/" className="flex items-center gap-2" aria-label="Accueil" title="Accueil">
@@ -75,14 +78,14 @@ export default function HeaderContent() {
       {tournamentName && tournamentId && (
         hasAdminActions ? (
           <button
-            onClick={() => router.push(`/tournament/${tournamentId}/games`)}
+            onClick={() => router.push(tournamentGamesUrl)}
             className="text-base font-semibold tracking-tight text-primary truncate overflow-hidden whitespace-nowrap block after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1b2d5e] after:to-white relative text-center hover:opacity-80 transition-opacity cursor-pointer"
           >
             {tournamentName}
           </button>
         ) : (
           <button
-            onClick={() => router.push(`/tournament/${tournamentId}/games`)}
+            onClick={() => router.push(tournamentGamesUrl)}
             className="absolute left-1/2 transform -translate-x-1/2 text-base font-semibold tracking-tight text-primary truncate overflow-hidden whitespace-nowrap flex items-center gap-1 hover:text-primary transition-colors hover:opacity-80 transition-opacity cursor-pointer"
           >
             {tournamentName}
@@ -92,7 +95,7 @@ export default function HeaderContent() {
       )}
       {!hasAdminActions && tournamentId && canSwitchToAdmin && pathname && (
         <button
-          onClick={() => router.push(`/admin/tournament/${tournamentId}${pathname.replace(`/tournament/${tournamentId}`, '')}`)}
+          onClick={() => router.push(adminSwitchUrl)}
           className="absolute top-1/2 right-12 -translate-y-1/2 p-1 rounded hover:bg-muted transition-colors cursor-pointer"
           title="Passer en mode admin"
           aria-label="Passer en mode admin"
