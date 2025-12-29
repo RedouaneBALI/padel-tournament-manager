@@ -46,11 +46,16 @@ export default function MonComptePage() {
         });
         setError(null);
       } catch (error: any) {
-        console.error('Error loading profile:', error);
         // If profile doesn't exist yet, it's okay - user will create it
-        if (error.message?.includes('404') || error.message?.includes('NOT_FOUND')) {
+        if (error.message === 'NOT_FOUND') {
+          // Pre-fill with session name for new users
+          setFormData({
+            name: session.user?.name || '',
+            profileType: ProfileType.SPECTATOR,
+          });
           setError(null);
         } else {
+          console.error('Error loading profile:', error);
           setError('Erreur lors du chargement du profil. Veuillez réessayer.');
         }
       } finally {

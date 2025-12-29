@@ -6,12 +6,12 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useExport } from '@/src/contexts/ExportContext';
 import { useFavorites } from '@/src/hooks/useFavorites';
-import { FaStar, FaRegStar, FaChevronRight } from 'react-icons/fa';
+import { FaStar, FaRegStar, FaChevronRight, FaUserShield } from 'react-icons/fa';
 import HeaderAdminActions from '@/src/components/ui/HeaderAdminActions';
 import { useSession } from 'next-auth/react';
 
 export default function HeaderContent() {
-  const { onExport, onShare, onEdit, tvButtonUrl, showTvButton, setAdminActions, tournamentName, setTournamentName } = useExport();
+  const { onExport, onShare, onEdit, tvButtonUrl, showTvButton, setAdminActions, tournamentName, setTournamentName, canSwitchToAdmin } = useExport();
   const pathname = usePathname();
   const router = useRouter();
   const hasAdminActions = !!(onExport || onShare || onEdit || showTvButton);
@@ -38,10 +38,10 @@ export default function HeaderContent() {
 
   React.useEffect(() => {
     if (pathname === '/favorites') {
-      setAdminActions({ onExport: null, onShare: null, onEdit: null, tvButtonUrl: null, showTvButton: false, isAdmin: false });
+      setAdminActions({ onExport: null, onShare: null, onEdit: null, tvButtonUrl: null, showTvButton: false, isAdmin: false, canSwitchToAdmin: false });
       setTournamentName("Mes favoris");
     } else if (!pathname || (!pathname.startsWith('/tournament/') && !pathname.startsWith('/admin/tournament/'))) {
-      setAdminActions({ onExport: null, onShare: null, onEdit: null, tvButtonUrl: null, showTvButton: false, isAdmin: false });
+      setAdminActions({ onExport: null, onShare: null, onEdit: null, tvButtonUrl: null, showTvButton: false, isAdmin: false, canSwitchToAdmin: false });
       setTournamentName(null);
     }
   }, [pathname, setAdminActions, setTournamentName]);
@@ -89,6 +89,16 @@ export default function HeaderContent() {
             {showChevron && <FaChevronRight className="h-4 w-4" />}
           </button>
         )
+      )}
+      {!hasAdminActions && tournamentId && canSwitchToAdmin && pathname && (
+        <button
+          onClick={() => router.push(`/admin/tournament/${tournamentId}${pathname.replace(`/tournament/${tournamentId}`, '')}`)}
+          className="absolute top-1/2 right-12 -translate-y-1/2 p-1 rounded hover:bg-muted transition-colors cursor-pointer"
+          title="Passer en mode admin"
+          aria-label="Passer en mode admin"
+        >
+          <FaUserShield className="h-5 w-5 text-muted-foreground hover:text-primary" />
+        </button>
       )}
       {!hasAdminActions && tournamentId && status === 'authenticated' && (
         <button

@@ -345,6 +345,7 @@ export async function undoGamePoint(tournamentId: string | number, gameId: strin
 
 /**
  * Fetches the current user's profile.
+ * Returns 404 if profile doesn't exist yet (new user) - caller should handle this case.
  */
 export async function fetchUserProfile(): Promise<User> {
   const response = await fetchWithAuth(api('/user/profile'), {
@@ -357,9 +358,12 @@ export async function fetchUserProfile(): Promise<User> {
   if (response.status === 403) {
     throw new AppError(AppError.FORBIDDEN);
   }
+  if (response.status === 404) {
+    // Profile doesn't exist yet - this is normal for new users
+    throw new Error('NOT_FOUND');
+  }
   if (!response.ok) {
     const text = await response.text().catch(() => '');
-    toast.error('Erreur lors du chargement du profil.');
     throw new Error(`Erreur lors du chargement du profil (${response.status}) ${text}`);
   }
 

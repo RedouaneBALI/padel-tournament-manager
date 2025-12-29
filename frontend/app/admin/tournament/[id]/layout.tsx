@@ -148,7 +148,7 @@ function AdminTournamentLayoutContent({
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    setAdminActions({ isAdmin });
+    setAdminActions({ isAdmin, canSwitchToAdmin: false });
   }, [isAdmin]);
 
   useEffect(() => {
