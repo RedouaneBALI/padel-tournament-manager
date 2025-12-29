@@ -32,6 +32,7 @@ backend/*.iml
 Thumbs.db
 .env
 *.bak
+tsconfig.tsbuildinfo
 
 # IntelliJ
 .idea/

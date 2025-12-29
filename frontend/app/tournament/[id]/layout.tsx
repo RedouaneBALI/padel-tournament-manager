@@ -3,6 +3,7 @@
 
 import React, { useEffect, useState, useCallback, useMemo, ReactNode } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import type { Tournament } from '@/src/types/tournament';
@@ -30,7 +31,8 @@ export default function TournamentLayout({
   const router = useRouter();
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
-  const { setTournamentName } = useExport();
+  const { setTournamentName, setAdminActions } = useExport();
+  const { data: session } = useSession();
 
   // Navigation items for bottom navigation
   const moreItems = useMemo(() => {
@@ -88,6 +90,20 @@ export default function TournamentLayout({
       });
     return () => setTournamentName(null); // Cleanup on unmount
   }, [id, router, setTournamentName]);
+
+  // Check if user can switch to admin mode
+  useEffect(() => {
+    if (tournament && session?.user?.email) {
+      const userEmail = session.user.email;
+      const isOwner = tournament.ownerId === userEmail;
+      const isEditor = (tournament.editorIds || []).includes(userEmail);
+      const canSwitchToAdmin = isOwner || isEditor;
+
+      setAdminActions({ canSwitchToAdmin });
+    } else {
+      setAdminActions({ canSwitchToAdmin: false });
+    }
+  }, [tournament, session?.user?.email, setAdminActions]);
 
   const handleMoreClick = useCallback(() => {
     setIsMoreOpen(prev => !prev);

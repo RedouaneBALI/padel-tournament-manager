@@ -9,6 +9,7 @@ interface AdminHeaderContextType {
   tvButtonUrl: string | null;
   showTvButton: boolean;
   isAdmin: boolean;
+  canSwitchToAdmin: boolean;
   tournamentName: string | null;
   setAdminActions: (actions: Partial<AdminHeaderContextType>) => void;
   setTournamentName: (name: string | null) => void;
@@ -24,6 +25,7 @@ export function ExportProvider({ children }: { children: React.ReactNode }) {
     tvButtonUrl: null,
     showTvButton: false,
     isAdmin: false,
+    canSwitchToAdmin: false,
     tournamentName: null,
   });
 
