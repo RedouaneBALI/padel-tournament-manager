@@ -47,12 +47,24 @@ public class UserService {
 
   @Transactional
   public User updateProfile(String email, String name, String locale, User.ProfileType profileType, String city, String country) {
+    User user = userRepository.findByEmail(email)
+                              .orElseThrow(() -> new IllegalArgumentException("User not found: " + email));
+    user.setName(name);
+    user.setLocale(locale);
+    user.setProfileType(profileType);
+    user.setCity(city);
+    user.setCountry(country);
+    return userRepository.save(user);
+  }
+
+  @Transactional
+  public User updateOrCreateProfile(String email, String name, String locale, User.ProfileType profileType, String city, String country) {
     User user = userRepository.findByEmail(email).orElseGet(() -> {
       User newUser = new User(email, name, locale);
       newUser.setProfileType(profileType);
       newUser.setCity(city);
       newUser.setCountry(country);
-      return userRepository.save(newUser);
+      return newUser;
     });
     user.setName(name);
     user.setLocale(locale);

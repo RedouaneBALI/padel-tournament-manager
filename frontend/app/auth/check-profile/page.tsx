@@ -40,6 +40,7 @@ export default function CheckProfilePage() {
           router.push(finalUrl);
         }
       } catch (error: any) {
+        // Profile doesn't exist (NOT_FOUND) or any other error - redirect to profile page
         router.push(`/mon-compte?returnUrl=${encodeURIComponent(finalUrl)}`);
       }
     };
