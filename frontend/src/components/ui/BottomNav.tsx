@@ -82,7 +82,10 @@ export default function BottomNav({ items, pathname, className, fixed = true, on
                 className={`relative flex flex-col items-center justify-center py-2 text-xs ${
                   active ? 'text-primary' : 'text-muted-foreground'
                 } hover:text-primary`}
-                onClick={onMoreClick ?? (() => setMoreOpen(true))}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  (onMoreClick ?? (() => setMoreOpen(true)))();
+                }}
               >
                 <Icon className="h-5 w-5" />
                 <span className="leading-none mt-2">{label}</span>
@@ -109,7 +112,10 @@ export default function BottomNav({ items, pathname, className, fixed = true, on
       {(isMoreOpen ?? moreOpen) && (
         <>
           <div className="fixed inset-0 bg-black/50 z-[60]" role="presentation" onClick={onMoreClick ?? closeMore} />
-          <div className="fixed inset-x-0 bottom-0 z-[70] bg-background rounded-t-2xl border-t border-border shadow-2xl max-h-[90vh]">
+          <div
+            className="fixed inset-x-0 bottom-0 z-[70] bg-background rounded-t-2xl border-t border-border shadow-2xl max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="max-w-screen-sm mx-auto p-4 pt-3 relative">
               {/* Croix flottante dans le coin supérieur droit */}
               <button
@@ -133,18 +139,18 @@ export default function BottomNav({ items, pathname, className, fixed = true, on
                 <h3 className="text-sm font-semibold text-muted-foreground mt-4 mb-1">FRMT 🇲🇦</h3>
                 <hr className="border-t border-border my-1" />
                 <div className="flex flex-col gap-2">
-                  <PointsCalculatorButton onClick={onMoreClick ?? closeMore} />
-                  <RankingButton onClick={onMoreClick ?? closeMore} />
+                  <PointsCalculatorButton />
+                  <RankingButton />
                 </div>
 
                 <h3 className="text-sm font-semibold text-muted-foreground mt-4 mb-1">Général</h3>
                 <hr className="border-t border-border my-1" />
                 <div className="flex flex-col gap-2">
-                  <FavoritesButton onClick={onMoreClick ?? closeMore} />
-                  <LatestTournamentsButton onClick={onMoreClick ?? closeMore} />
-                  <PricingButton onClick={onMoreClick ?? closeMore} />
-                  <ContactButton onClick={onMoreClick ?? closeMore} />
-                  {status === 'authenticated' && <MyAccountButton onClick={onMoreClick ?? closeMore} />}
+                  <FavoritesButton />
+                  <LatestTournamentsButton />
+                  <PricingButton />
+                  <ContactButton />
+                  {status === 'authenticated' && <MyAccountButton />}
                   <div role="none">
                     {status === 'authenticated' ? (
                       <div
@@ -165,7 +171,6 @@ export default function BottomNav({ items, pathname, className, fixed = true, on
                     ) : (
                       <Link
                         href="/connexion"
-                        onClick={onMoreClick ?? closeMore}
                         className={navBtn}
                       >
                         <span className={icon20}>

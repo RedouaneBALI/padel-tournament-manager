@@ -234,7 +234,14 @@ export default function MatchResultCard({
   const { status } = useSession();
   const router = useRouter();
 
-  const isFavorite = isFavoriteProp !== undefined ? isFavoriteProp : false;
+  // Optimistic favorite state for instant UI feedback
+  const [optimisticFavorite, setOptimisticFavorite] = useState<boolean | null>(null);
+  const isFavorite = optimisticFavorite !== null ? optimisticFavorite : (isFavoriteProp !== undefined ? isFavoriteProp : false);
+
+  // Reset optimistic state when prop changes (after API response)
+  React.useEffect(() => {
+    setOptimisticFavorite(null);
+  }, [isFavoriteProp]);
 
   const handleToggleFavorite = () => {
     if (status !== 'authenticated') {
@@ -242,6 +249,8 @@ export default function MatchResultCard({
       localStorage.setItem('authReturnUrl', currentPath);
       router.push('/connexion');
     } else if (onToggleFavoriteProp) {
+      // Optimistically update UI immediately
+      setOptimisticFavorite(!isFavorite);
       onToggleFavoriteProp(Number.parseInt(gameId), isFavorite, game);
     }
   };
