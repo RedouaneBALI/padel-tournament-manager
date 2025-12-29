@@ -22,6 +22,7 @@ export default function MonComptePage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     profileType: ProfileType.SPECTATOR,
@@ -40,11 +41,18 @@ export default function MonComptePage() {
         const profile = await fetchUserProfile();
         setUser(profile);
         setFormData({
-          name: profile.name || '', // Utiliser le nom du profil existant, même s'il est vide
+          name: profile.name || '',
           profileType: profile.profileType || ProfileType.SPECTATOR,
         });
+        setError(null);
       } catch (error: any) {
         console.error('Error loading profile:', error);
+        // If profile doesn't exist yet, it's okay - user will create it
+        if (error.message?.includes('404') || error.message?.includes('NOT_FOUND')) {
+          setError(null);
+        } else {
+          setError('Erreur lors du chargement du profil. Veuillez réessayer.');
+        }
       } finally {
         setLoading(false);
       }
@@ -56,12 +64,15 @@ export default function MonComptePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    setError(null);
+
     try {
       const updatedUser = await updateUserProfile(formData);
       setUser(updatedUser);
       router.push(returnUrl);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating profile:', error);
+      setError('Erreur lors de la sauvegarde du profil. Veuillez réessayer.');
     } finally {
       setSaving(false);
     }
@@ -84,6 +95,13 @@ export default function MonComptePage() {
       <div className="flex flex-col bg-card min-h-0 h-full">
         <div className="max-w-lg w-full mx-auto p-6 rounded-lg shadow-md">
           <h1 className="text-2xl font-bold mb-6 text-center text-card-foreground">Complétez votre profil</h1>
+
+          {error && (
+            <div className="mb-4 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+              <p className="text-destructive text-sm">{error}</p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-foreground">

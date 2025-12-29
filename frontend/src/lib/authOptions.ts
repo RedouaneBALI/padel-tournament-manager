@@ -83,6 +83,36 @@ export function getAuthOptions(): NextAuthOptions {
       error: '/connexion',
     },
     callbacks: {
+      async signIn({ user, account }) {
+        // Create user in backend on first sign-in if not exists
+        if (account && user.email) {
+          try {
+            const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+            const response = await fetch(`${baseUrl}/auth/signin`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${(account as any).id_token || account.access_token}`,
+              },
+              body: JSON.stringify({
+                email: user.email,
+                name: user.name || null,
+                image: user.image || null,
+                provider: account.provider,
+              }),
+            });
+
+            if (!response.ok && response.status !== 409) {
+              console.error('Failed to create/update user in backend:', await response.text());
+              // Continue anyway to avoid blocking sign-in
+            }
+          } catch (error) {
+            console.error('Error during backend user creation:', error);
+            // Continue anyway to avoid blocking sign-in
+          }
+        }
+        return true;
+      },
       async jwt({ token, account, user }) {
         // Initial sign in
         if (account && user) {
