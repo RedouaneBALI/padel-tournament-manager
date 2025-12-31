@@ -41,6 +41,10 @@ export default function FinalsStageView({
   // Adjust container height based on scale to prevent unnecessary scrolling
   const adjustedHeight = maxPosition ? maxPosition * scale : 0;
 
+  // Calculate bracket width (ROUND_WIDTH from KnockoutBracket = 320)
+  const ROUND_WIDTH = 320;
+  const bracketWidth = finalsRounds.length * ROUND_WIDTH;
+  const adjustedWidth = bracketWidth * scale;
 
   if (!hasFinals)
     return <p className="text-muted-foreground">La phase finale n'a pas encore été générée.</p>;
@@ -56,7 +60,7 @@ export default function FinalsStageView({
         <div
           style={{
             height: adjustedHeight ? `${adjustedHeight}px` : undefined,
-            width: 'fit-content',
+            width: adjustedWidth ? `${adjustedWidth}px` : undefined,
             margin: '0 auto'
           }}
         >

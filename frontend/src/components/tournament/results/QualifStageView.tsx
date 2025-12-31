@@ -32,6 +32,10 @@ export default function QualifStageView({
   // Adjust container height based on scale to prevent unnecessary scrolling
   const adjustedHeight = maxPosition ? maxPosition * scale : 0;
 
+  // Calculate bracket width (ROUND_WIDTH from KnockoutBracket = 320, +50 for qualif labels)
+  const ROUND_WIDTH = 320;
+  const bracketWidth = qualifRounds.length * ROUND_WIDTH + 50; // +50 for isQualif
+  const adjustedWidth = bracketWidth * scale;
 
   if (!hasQualifs)
     return <p className="text-muted-foreground">Les qualifications n'ont pas encore été générées.</p>;
@@ -47,7 +51,7 @@ export default function QualifStageView({
         <div
           style={{
             height: adjustedHeight ? `${adjustedHeight}px` : undefined,
-            width: 'fit-content',
+            width: adjustedWidth ? `${adjustedWidth}px` : undefined,
             margin: '0 auto'
           }}
         >
