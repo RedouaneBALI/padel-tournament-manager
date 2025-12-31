@@ -30,6 +30,9 @@ export default function HeaderContent() {
 
   const handleToggleFavorite = () => {
     if (status !== 'authenticated') {
+      if (typeof window !== 'undefined' && pathname) {
+        localStorage.setItem('authReturnUrl', pathname);
+      }
       router.push('/connexion');
     } else if (tournamentId && favoriteTournaments) {
       toggleFavoriteTournament(tournamentId, isFavorite);

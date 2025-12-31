@@ -18,6 +18,9 @@ export default function FacebookLoginButton({
     <Button
       variant="secondary"
       onClick={() => {
+        if (onBeforeSignIn) {
+          onBeforeSignIn();
+        }
         signIn('facebook', { redirect: true, callbackUrl: '/auth/check-profile' });
       }}
       className={className}

@@ -28,6 +28,12 @@ export const metadata: Metadata = {
     template: '%s · Padel Rounds',
   },
   description: 'Crée, organise et gère des tournois de padel : liste des joueurs, tableaux knockout, suivi des scores en direct.',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
   keywords: [
     'tournoi padel',
     'gestion tournoi padel',

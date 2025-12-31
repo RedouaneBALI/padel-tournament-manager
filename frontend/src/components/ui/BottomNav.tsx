@@ -132,8 +132,24 @@ export default function BottomNav({ items, pathname, className, fixed = true, on
                 <h3 className="text-sm font-semibold text-muted-foreground mt-4 mb-1 first:mt-0">Administration</h3>
                 <hr className="border-t border-border my-1" />
                 <div className="flex flex-col gap-2">
-                  <CreateTournamentButton href={hrefCreateTournament} onClick={onMoreClick ?? closeMore} />
-                  <MyTournamentsButton href={hrefMy} onClick={onMoreClick ?? closeMore} />
+                  <CreateTournamentButton
+                    href={hrefCreateTournament}
+                    onClick={() => {
+                      if (status !== 'authenticated' && typeof window !== 'undefined') {
+                        localStorage.setItem('authReturnUrl', pathname);
+                      }
+                      (onMoreClick ?? closeMore)();
+                    }}
+                  />
+                  <MyTournamentsButton
+                    href={hrefMy}
+                    onClick={() => {
+                      if (status !== 'authenticated' && typeof window !== 'undefined') {
+                        localStorage.setItem('authReturnUrl', pathname);
+                      }
+                      (onMoreClick ?? closeMore)();
+                    }}
+                  />
                 </div>
 
                 <h3 className="text-sm font-semibold text-muted-foreground mt-4 mb-1">FRMT 🇲🇦</h3>
@@ -172,6 +188,11 @@ export default function BottomNav({ items, pathname, className, fixed = true, on
                       <Link
                         href="/connexion"
                         className={navBtn}
+                        onClick={() => {
+                          if (typeof window !== 'undefined') {
+                            localStorage.setItem('authReturnUrl', pathname);
+                          }
+                        }}
                       >
                         <span className={icon20}>
                           <FiLogIn size={20} className="text-foreground" aria-hidden />
