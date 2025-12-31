@@ -14,17 +14,26 @@ export default function GoogleLoginButton({
   className = '',
   onBeforeSignIn,
 }: Props) {
+  const handleSignIn = () => {
+    if (onBeforeSignIn) {
+      onBeforeSignIn();
+    }
+
+    // Store the callback URL for later use
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('authReturnUrl', callbackUrl);
+    }
+
+    signIn('google', {
+      redirect: true,
+      callbackUrl: '/auth/check-profile'
+    });
+  };
+
   return (
     <Button
       variant="secondary"
-      onClick={() => {
-        try {
-          console.log('[GoogleLoginButton] localStorage.authReturnUrl:', localStorage.getItem('authReturnUrl'));
-        } finally {
-          console.log('[GoogleLoginButton] Calling signIn with callbackUrl: /auth/check-profile');
-          signIn('google', { redirect: true, callbackUrl: '/auth/check-profile' });
-        }
-      }}
+      onClick={handleSignIn}
       className={className}
       aria-label="Se connecter avec Google"
     >

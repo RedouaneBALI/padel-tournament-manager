@@ -69,11 +69,9 @@ export function getAuthOptions(): NextAuthOptions {
       FacebookProvider({
         clientId: process.env.FACEBOOK_CLIENT_ID ?? "",
         clientSecret: process.env.FACEBOOK_CLIENT_SECRET ?? "",
-        // On supprime le mapping manuel 'profile' qui cause souvent l'erreur.
-        // NextAuth gère très bien l'image par défaut.
         authorization: {
           params: {
-            scope: "email,public_profile", // On explicite les scopes
+            scope: "email,public_profile",
           },
         },
       }),
@@ -153,6 +151,10 @@ export function getAuthOptions(): NextAuthOptions {
         return session;
       },
       async redirect({ url, baseUrl }) {
+        // Handle auth callback redirects
+        if (url.startsWith("/auth/check-profile")) {
+          return `${baseUrl}/auth/check-profile`;
+        }
         if (url.startsWith("/")) return `${baseUrl}${url}`;
         else if (new URL(url).origin === baseUrl) return url;
         return baseUrl;

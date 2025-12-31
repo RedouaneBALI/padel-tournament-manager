@@ -24,7 +24,6 @@ export default function ConnexionPage() {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
-  const [debugReturnUrl, setDebugReturnUrl] = useState<string>('');
 
   useEffect(() => {
     const errorParam = searchParams?.get('error');
@@ -32,13 +31,18 @@ export default function ConnexionPage() {
       setError(errorMessages[errorParam] || errorMessages.Default);
     }
 
-    const storedUrl = typeof window !== 'undefined' ? localStorage.getItem('authReturnUrl') : null;
-    const finalUrl = storedUrl || '/admin/tournaments';
-    setDebugReturnUrl(finalUrl);
+    // Store returnUrl from query param if present
+    const returnUrl = searchParams?.get('returnUrl');
+    if (returnUrl && typeof window !== 'undefined') {
+      localStorage.setItem('authReturnUrl', returnUrl);
+    }
   }, [searchParams]);
 
   const getReturnUrl = (): string => {
-    return debugReturnUrl;
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('authReturnUrl') || '/admin/tournaments';
+    }
+    return '/admin/tournaments';
   };
 
   return (
