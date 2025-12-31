@@ -1,6 +1,6 @@
 // app/layout.tsx
 
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import 'react-confirm-alert/src/react-confirm-alert.css';
@@ -21,6 +21,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   title: {
@@ -28,12 +35,6 @@ export const metadata: Metadata = {
     template: '%s · Padel Rounds',
   },
   description: 'Crée, organise et gère des tournois de padel : liste des joueurs, tableaux knockout, suivi des scores en direct.',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 5,
-    userScalable: true,
-  },
   keywords: [
     'tournoi padel',
     'gestion tournoi padel',

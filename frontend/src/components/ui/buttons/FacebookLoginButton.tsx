@@ -14,15 +14,26 @@ export default function FacebookLoginButton({
   className = '',
   onBeforeSignIn,
 }: Props) {
+  const handleSignIn = () => {
+    if (onBeforeSignIn) {
+      onBeforeSignIn();
+    }
+
+    // Store the callback URL for later use
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('authReturnUrl', callbackUrl);
+    }
+
+    signIn('facebook', {
+      redirect: true,
+      callbackUrl: '/auth/check-profile'
+    });
+  };
+
   return (
     <Button
       variant="secondary"
-      onClick={() => {
-        if (onBeforeSignIn) {
-          onBeforeSignIn();
-        }
-        signIn('facebook', { redirect: true, callbackUrl: '/auth/check-profile' });
-      }}
+      onClick={handleSignIn}
       className={className}
       aria-label="Se connecter avec Facebook"
     >

@@ -7,7 +7,8 @@ export default async function middleware(req: NextRequest) {
 
   // Public routes that don't require auth
   const isPublicRoute = url.pathname.startsWith('/connexion') ||
-                        url.pathname.startsWith('/api/auth');
+                        url.pathname.startsWith('/api/auth') ||
+                        url.pathname.startsWith('/auth/check-profile');
 
   if (!token && !isPublicRoute) {
     // If not authenticated and trying to access protected route, redirect to login
