@@ -18,7 +18,7 @@ export default function FinalsStageView({
 }) {
   const [hideBye, setHideBye] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const scale = useBracketZoom(containerRef);
+  const { scale, onScaleChange } = useBracketZoom(containerRef);
 
   const finalsRounds = (() => {
     const r = tournament.rounds ?? [];
@@ -68,7 +68,7 @@ export default function FinalsStageView({
               width: 'max-content'
             }}
           >
-            <KnockoutBracket rounds={finalsRounds} tournamentId={tournamentId} isQualif={false} hideBye={hideBye} />
+            <KnockoutBracket rounds={finalsRounds} tournamentId={tournamentId} isQualif={false} hideBye={hideBye} onScaleChange={onScaleChange} />
           </div>
         </div>
       </div>

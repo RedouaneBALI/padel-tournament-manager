@@ -10,54 +10,49 @@ interface KnockoutBracketProps {
   tournamentId: string;
   isQualif: boolean;
   hideBye?: boolean;
+  onScaleChange?: (callback: () => void) => () => void;
 }
 
-function getCenterY(el: HTMLElement, containerRect: DOMRect): number {
+function getCenterY(el: HTMLElement | undefined, fallbackY: number): number {
+  if (!el) return fallbackY;
+
   try {
     const divide = el.querySelector('.divide-y, .divide-gray-200, .divide-border');
     if (divide && divide.children && divide.children.length >= 1) {
       const firstRow = divide.children[0] as HTMLElement;
-      const firstRect = firstRow.getBoundingClientRect();
       const style = window.getComputedStyle(firstRow);
       const borderBottom = parseFloat(style.borderBottomWidth || '0') || 0;
-      const borderTop = parseFloat(style.borderTopWidth || '0') || 0;
-      let dividerCenter: number;
+
       if (borderBottom > 0) {
-        dividerCenter = firstRect.bottom - borderBottom / 2;
-      } else if (borderTop > 0) {
-        dividerCenter = firstRect.top + borderTop / 2;
-      } else {
-        dividerCenter = firstRect.top + firstRect.height / 2;
+        // Use offsetTop relative to parent instead of getBoundingClientRect
+        return firstRow.offsetTop + firstRow.offsetHeight;
       }
-      return dividerCenter - containerRect.top;
-    } else {
-      const rect = el.getBoundingClientRect();
-      return rect.top - containerRect.top + rect.height / 2;
     }
+    // Use offsetTop and offsetHeight for position relative to parent
+    return el.offsetTop + el.offsetHeight / 2;
   } catch (e) {
-    const rect = el.getBoundingClientRect();
-    return rect.top - containerRect.top + rect.height / 2;
+    return fallbackY;
   }
 }
 
-function calculateChildCoords(childIdx: number, rounds: Round[], r: number, ROUND_WIDTH: number, matchPositions: number[][], nodeRefs: React.MutableRefObject<Map<string, HTMLElement>>, containerRect: DOMRect): { cx: number; cy: number } | null {
+function calculateChildCoords(childIdx: number, rounds: Round[], r: number, ROUND_WIDTH: number, matchPositions: number[][], nodeRefs: React.MutableRefObject<Map<string, HTMLElement>>): { cx: number; cy: number } | null {
   const childGame = rounds[r].games[childIdx];
   if (!childGame) return null;
   const childId = String(childGame.id);
   const childEl = nodeRefs.current.get(childId);
 
-  let cx = r * ROUND_WIDTH + ROUND_WIDTH - 10; // default right inside column
-  let cy = (matchPositions[r]?.[childIdx] ?? 0) + 35 + 60;
+  // Use position-based calculation instead of getBoundingClientRect
+  const baseTop = matchPositions[r]?.[childIdx] ?? 0;
+  const cx = r * ROUND_WIDTH + ROUND_WIDTH - 10;
 
-  if (childEl) {
-    const cRect = childEl.getBoundingClientRect();
-    cx = cRect.right - containerRect.left;
-    cy = getCenterY(childEl, containerRect);
-  }
+  // Calculate Y from match position + offset for center
+  const fallbackCy = baseTop + 35 + 60; // 35px offset + ~60px for card half height
+  const cy = childEl ? baseTop + 35 + getCenterY(childEl, 60) : fallbackCy;
+
   return { cx, cy };
 }
 
-function computeConnections(rounds: Round[], ROUND_WIDTH: number, matchPositions: number[][], nodeRefs: React.MutableRefObject<Map<string, HTMLElement>>, containerRect: DOMRect, hideBye: boolean): Array<{ cx1:number, cy1:number, cx2:number, cy2:number, px:number, py:number }> {
+function computeConnections(rounds: Round[], ROUND_WIDTH: number, matchPositions: number[][], nodeRefs: React.MutableRefObject<Map<string, HTMLElement>>, hideBye: boolean): Array<{ cx1:number, cy1:number, cx2:number, cy2:number, px:number, py:number }> {
   const conns: Array<{ cx1:number, cy1:number, cx2:number, cy2:number, px:number, py:number }> = [];
 
   for (let r = 0; r < rounds.length - 1; r++) {
@@ -73,16 +68,13 @@ function computeConnections(rounds: Round[], ROUND_WIDTH: number, matchPositions
       const childIdxB = parentIndex * 2 + 1;
 
       const parentId = String(parentGame.id);
-
       const parentEl = nodeRefs.current.get(parentId);
-      // parent coords (relative to container) - left edge and center Y
-      let px = (r + 1) * ROUND_WIDTH + 10; // fallback left inside column
-      let py = (matchPositions[r + 1]?.[parentIndex] ?? 0) + 35 + 60; // fallback center Y
-      if (parentEl) {
-        const pRect = parentEl.getBoundingClientRect();
-        px = pRect.left - containerRect.left; // left edge
-        py = getCenterY(parentEl, containerRect);
-      }
+
+      // Calculate parent position using match positions
+      const baseParentTop = matchPositions[r + 1]?.[parentIndex] ?? 0;
+      const px = (r + 1) * ROUND_WIDTH + 10; // left edge of parent column
+      const fallbackPy = baseParentTop + 35 + 60;
+      const py = parentEl ? baseParentTop + 35 + getCenterY(parentEl, 60) : fallbackPy;
 
       // children
       const childCoords: Array<{cx:number, cy:number}> = [];
@@ -90,7 +82,7 @@ function computeConnections(rounds: Round[], ROUND_WIDTH: number, matchPositions
         const childGame = rounds[r].games[childIdx];
         // Skip BYE children if hideBye is true
         if (childGame && (!hideBye || !(childGame.teamA?.type === 'BYE' || childGame.teamB?.type === 'BYE'))) {
-          const coords = calculateChildCoords(childIdx, rounds, r, ROUND_WIDTH, matchPositions, nodeRefs, containerRect);
+          const coords = calculateChildCoords(childIdx, rounds, r, ROUND_WIDTH, matchPositions, nodeRefs);
           if (coords) childCoords.push(coords);
         }
       });
@@ -108,7 +100,7 @@ function computeConnections(rounds: Round[], ROUND_WIDTH: number, matchPositions
   return conns;
 }
 
-export default function KnockoutBracket({ rounds, tournamentId, isQualif, hideBye }: KnockoutBracketProps) {
+export default function KnockoutBracket({ rounds, tournamentId, isQualif, hideBye, onScaleChange }: KnockoutBracketProps) {
   const ROUND_WIDTH = 320;
   const CONNECTOR_STROKE = 1.5; // px used for SVG stroke width
 
@@ -130,9 +122,8 @@ export default function KnockoutBracket({ rounds, tournamentId, isQualif, hideBy
     function compute() {
       const container = containerRef.current;
       if (!container) return;
-      const containerRect = container.getBoundingClientRect();
 
-      const conns = computeConnections(rounds, ROUND_WIDTH, matchPositions, nodeRefs, containerRect, !!hideBye);
+      const conns = computeConnections(rounds, ROUND_WIDTH, matchPositions, nodeRefs, !!hideBye);
 
       // Only update state when connections actually changed to avoid infinite loops
       try {
@@ -151,11 +142,19 @@ export default function KnockoutBracket({ rounds, tournamentId, isQualif, hideBy
     window.addEventListener('resize', compute);
     const observer = new MutationObserver(compute);
     if (containerRef.current) observer.observe(containerRef.current, { childList: true, subtree: true });
+
+    // Listen to scale changes to recalculate connections
+    let unsubscribe: (() => void) | undefined;
+    if (onScaleChange) {
+      unsubscribe = onScaleChange(compute);
+    }
+
     return () => {
       window.removeEventListener('resize', compute);
       observer.disconnect();
+      if (unsubscribe) unsubscribe();
     };
-  }, [rounds, matchPositions, hideBye]);
+  }, [rounds, matchPositions, hideBye, onScaleChange]);
 
   return (
     <div

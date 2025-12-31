@@ -14,7 +14,7 @@ export default function QualifStageView({
 }) {
   const [hideBye, setHideBye] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const scale = useBracketZoom(containerRef);
+  const { scale, onScaleChange } = useBracketZoom(containerRef);
 
   const qualifRounds = (tournament.rounds ?? []).filter(
     (round) => ['Q1', 'Q2', 'Q3'].includes(round.stage)
@@ -59,7 +59,7 @@ export default function QualifStageView({
               width: 'max-content'
             }}
           >
-            <KnockoutBracket rounds={qualifRounds} tournamentId={tournamentId} isQualif={true} hideBye={hideBye} />
+            <KnockoutBracket rounds={qualifRounds} tournamentId={tournamentId} isQualif={true} hideBye={hideBye} onScaleChange={onScaleChange} />
           </div>
         </div>
       </div>
