@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import KnockoutBracket from '@/src/components/round/KnockoutBracket';
 import { calculateMatchPositions } from '@/src/utils/bracket';
 import type { Tournament } from '@/src/types/tournament';
 import HideByeSwitch from '@/src/components/ui/HideByeSwitch';
+import { useBracketZoom } from '@/src/hooks/useBracketZoom';
 
 export default function FinalsStageView({
   tournament,
@@ -16,6 +17,8 @@ export default function FinalsStageView({
   isQualifStageFormat: boolean;
 }) {
   const [hideBye, setHideBye] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const scale = useBracketZoom(containerRef);
 
   const finalsRounds = (() => {
     const r = tournament.rounds ?? [];
@@ -35,6 +38,10 @@ export default function FinalsStageView({
     return Math.max(...matchPositions.flat()) + 150;
   })();
 
+  // Adjust container height based on scale to prevent unnecessary scrolling
+  const adjustedHeight = maxPosition ? maxPosition * scale : 0;
+
+
   if (!hasFinals)
     return <p className="text-muted-foreground">La phase finale n'a pas encore été générée.</p>;
 
@@ -42,12 +49,27 @@ export default function FinalsStageView({
     <div className="w-full">
       <HideByeSwitch hasBye={hasBye} hideBye={hideBye} setHideBye={setHideBye} />
       <div
+        ref={containerRef}
         id="finals-bracket-container"
-        className="relative overflow-auto bg-background stage-min-height pb-4 md:pb-8"
-        style={maxPosition ? { ['--stage-min-height' as any]: `${maxPosition}px` } as React.CSSProperties : undefined}
+        className="relative overflow-auto bg-background pb-4 md:pb-8"
       >
-        <div className="w-max mx-0 md:mx-auto">
-          <KnockoutBracket rounds={finalsRounds} tournamentId={tournamentId} isQualif={false} hideBye={hideBye} />
+        <div
+          style={{
+            height: adjustedHeight ? `${adjustedHeight}px` : undefined,
+            width: 'fit-content',
+            margin: '0 auto'
+          }}
+        >
+          <div
+            style={{
+              transform: `scale(${scale})`,
+              transformOrigin: 'top left',
+              transition: 'transform 0.1s ease-out',
+              width: 'max-content'
+            }}
+          >
+            <KnockoutBracket rounds={finalsRounds} tournamentId={tournamentId} isQualif={false} hideBye={hideBye} />
+          </div>
         </div>
       </div>
     </div>
