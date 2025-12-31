@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import KnockoutBracket from '@/src/components/round/KnockoutBracket';
 import { calculateMatchPositions } from '@/src/utils/bracket';
 import type { Tournament } from '@/src/types/tournament';
 import HideByeSwitch from '@/src/components/ui/HideByeSwitch';
+import { useBracketZoom } from '@/src/hooks/useBracketZoom';
 
 export default function QualifStageView({
   tournament,
@@ -12,6 +13,8 @@ export default function QualifStageView({
   tournamentId: string;
 }) {
   const [hideBye, setHideBye] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const scale = useBracketZoom(containerRef);
 
   const qualifRounds = (tournament.rounds ?? []).filter(
     (round) => ['Q1', 'Q2', 'Q3'].includes(round.stage)
@@ -26,6 +29,10 @@ export default function QualifStageView({
     return Math.max(...matchPositions.flat()) + 150;
   })();
 
+  // Adjust container height based on scale to prevent unnecessary scrolling
+  const adjustedHeight = maxPosition ? maxPosition * scale : 0;
+
+
   if (!hasQualifs)
     return <p className="text-muted-foreground">Les qualifications n'ont pas encore été générées.</p>;
 
@@ -33,16 +40,27 @@ export default function QualifStageView({
     <div className="w-full">
       <HideByeSwitch hasBye={hasBye} hideBye={hideBye} setHideBye={setHideBye} />
       <div
+        ref={containerRef}
         id="qualif-bracket-container"
-        className="relative overflow-auto bg-background stage-min-height pb-4 md:pb-8"
-        style={
-          maxPosition
-            ? ({ ['--stage-min-height' as any]: `${maxPosition}px` } as React.CSSProperties)
-            : undefined
-        }
+        className="relative overflow-auto bg-background pb-4 md:pb-8"
       >
-        <div className="w-max mx-0 md:mx-auto">
-          <KnockoutBracket rounds={qualifRounds} tournamentId={tournamentId} isQualif={true} hideBye={hideBye} />
+        <div
+          style={{
+            height: adjustedHeight ? `${adjustedHeight}px` : undefined,
+            width: 'fit-content',
+            margin: '0 auto'
+          }}
+        >
+          <div
+            style={{
+              transform: `scale(${scale})`,
+              transformOrigin: 'top left',
+              transition: 'transform 0.1s ease-out',
+              width: 'max-content'
+            }}
+          >
+            <KnockoutBracket rounds={qualifRounds} tournamentId={tournamentId} isQualif={true} hideBye={hideBye} />
+          </div>
         </div>
       </div>
     </div>

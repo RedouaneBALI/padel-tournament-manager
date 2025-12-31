@@ -24,6 +24,7 @@ const geistMono = Geist_Mono({
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  minimumScale: 0.5,
   maximumScale: 5,
   userScalable: true,
 };
@@ -119,6 +120,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="fr" dir="ltr">
       <head>
         <GoogleAnalytics />
+        {/* Force viewport avec minimumScale pour permettre le dézoom */}
+        <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=0.5, maximum-scale=5, user-scalable=yes" />
         {/* iOS: titre utilisé pour l'écran d'accueil */}
         <meta name="apple-mobile-web-app-title" content="PadelRounds" />
         {/* permettant le mode standalone sur iOS */}
