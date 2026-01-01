@@ -18,7 +18,6 @@ export default function FinalsStageView({
 }) {
   const [hideBye, setHideBye] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { scale, onScaleChange } = useBracketZoom(containerRef);
 
   const finalsRounds = (() => {
     const r = tournament.rounds ?? [];
@@ -38,13 +37,18 @@ export default function FinalsStageView({
     return Math.max(...matchPositions.flat()) + 150;
   })();
 
-  // Adjust container height based on scale to prevent unnecessary scrolling
-  const adjustedHeight = maxPosition ? maxPosition * scale : 0;
-
   // Calculate bracket width (ROUND_WIDTH from KnockoutBracket = 320)
   const ROUND_WIDTH = 320;
   const bracketWidth = finalsRounds.length * ROUND_WIDTH;
+  const bracketHeight = maxPosition;
+
+  const { scale, onScaleChange } = useBracketZoom(containerRef, { bracketWidth, bracketHeight });
+
+  // Adjust container height based on scale to prevent unnecessary scrolling
+  const adjustedHeight = maxPosition ? maxPosition * scale : 0;
+
   const adjustedWidth = bracketWidth * scale;
+
 
   if (!hasFinals)
     return <p className="text-muted-foreground">La phase finale n'a pas encore été générée.</p>;

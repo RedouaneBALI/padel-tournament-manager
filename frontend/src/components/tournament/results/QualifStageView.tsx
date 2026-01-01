@@ -14,7 +14,6 @@ export default function QualifStageView({
 }) {
   const [hideBye, setHideBye] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { scale, onScaleChange } = useBracketZoom(containerRef);
 
   const qualifRounds = (tournament.rounds ?? []).filter(
     (round) => ['Q1', 'Q2', 'Q3'].includes(round.stage)
@@ -29,12 +28,16 @@ export default function QualifStageView({
     return Math.max(...matchPositions.flat()) + 150;
   })();
 
-  // Adjust container height based on scale to prevent unnecessary scrolling
-  const adjustedHeight = maxPosition ? maxPosition * scale : 0;
-
   // Calculate bracket width (ROUND_WIDTH from KnockoutBracket = 320, +50 for qualif labels)
   const ROUND_WIDTH = 320;
   const bracketWidth = qualifRounds.length * ROUND_WIDTH + 50; // +50 for isQualif
+  const bracketHeight = maxPosition;
+
+  const { scale, onScaleChange } = useBracketZoom(containerRef, { bracketWidth, bracketHeight });
+
+  // Adjust container height based on scale to prevent unnecessary scrolling
+  const adjustedHeight = maxPosition ? maxPosition * scale : 0;
+
   const adjustedWidth = bracketWidth * scale;
 
   if (!hasQualifs)
