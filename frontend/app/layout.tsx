@@ -1,6 +1,6 @@
 // app/layout.tsx
 
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import 'react-confirm-alert/src/react-confirm-alert.css';
@@ -21,6 +21,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  minimumScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
@@ -113,8 +120,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="fr" dir="ltr">
       <head>
         <GoogleAnalytics />
-        {/* Force viewport avec minimumScale pour permettre le dézoom */}
-        <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=0.5, maximum-scale=5, user-scalable=yes" />
         {/* iOS: titre utilisé pour l'écran d'accueil */}
         <meta name="apple-mobile-web-app-title" content="PadelRounds" />
         {/* permettant le mode standalone sur iOS */}
