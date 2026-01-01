@@ -33,27 +33,29 @@ export function useBracketZoom(
       }
 
       const containerRect = container.getBoundingClientRect();
+      const containerWidth = containerRect.width;
 
       // Use viewport height minus offset for header/tabs (approximation)
       // This is more reliable than containerHeight which can be unlimited with overflow-auto
       const availableHeight = window.innerHeight - containerRect.top - 80; // 80px for bottom nav/padding
 
-      // Check if bracket overflows vertically
-      // We don't check width overflow - horizontal scroll is acceptable
+      // Check if bracket overflows vertically or horizontally
       const overflowsHeight = bracketHeight > availableHeight;
+      const overflowsWidth = bracketWidth > containerWidth;
 
-      // If bracket fits vertically, don't allow zoom out
-      if (!overflowsHeight) {
+      // If bracket fits entirely (no overflow), don't allow zoom out
+      if (!overflowsHeight && !overflowsWidth) {
         setMinScale(1);
         return;
       }
 
-      // Calculate scale needed to fit height only
-      // Horizontal scroll is acceptable, we only care about fitting vertically
+      // Calculate scale needed to fit both dimensions
       const scaleForHeight = availableHeight / bracketHeight;
+      const scaleForWidth = containerWidth / bracketWidth;
 
-      // Use scale for height, with a floor of 0.1
-      const finalMinScale = Math.max(0.1, scaleForHeight);
+      // Take the smaller scale to ensure everything fits, with a floor of 0.1
+      const calculatedMinScale = Math.min(scaleForHeight, scaleForWidth);
+      const finalMinScale = Math.max(0.1, calculatedMinScale);
 
       setMinScale(finalMinScale);
     };
