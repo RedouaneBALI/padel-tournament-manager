@@ -37,7 +37,7 @@ export default function PlayerDetailModal({ player, onClose }: Props) {
     try {
       const blob = await toBlob(cardRef.current, {
         cacheBust: true,
-        backgroundColor: '#1b2d5e',
+        backgroundColor: 'transparent',
         filter: (node) => {
           if (node instanceof HTMLElement) {
             return !node.classList.contains('ignore-capture');
@@ -87,7 +87,13 @@ export default function PlayerDetailModal({ player, onClose }: Props) {
       {/* Carte Principale */}
       <div
         ref={cardRef}
-        className="relative w-full max-w-sm bg-primary rounded-2xl shadow-lg overflow-hidden border border-white/10"
+        className="relative w-full max-w-sm rounded-2xl shadow-lg overflow-hidden border border-white/10"
+        style={{
+          backgroundImage: 'url("/modale-background.png")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
         onClick={(e) => e.stopPropagation()}
         role="presentation"
       >
