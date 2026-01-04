@@ -171,7 +171,7 @@ export default function PlayerDetailModal({ player, onClose, totalPlayers }: Pro
 
         {/* Classement - Élément Principal */}
         <div className="px-6 pb-4">
-          <div className="bg-accent/90 rounded-2xl p-6 text-center shadow-lg relative">
+          <div className="bg-accent/90 rounded-2xl pb-4 pt-8 text-center shadow-lg relative">
             {(() => {
               const topPercentage = getTopPercentage(player.ranking, totalPlayers);
               return topPercentage ? (
