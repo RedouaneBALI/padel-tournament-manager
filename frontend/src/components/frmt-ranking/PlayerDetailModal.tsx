@@ -189,7 +189,7 @@ export default function PlayerDetailModal({ player, onClose, totalPlayers }: Pro
               <span>Classement National FRMT</span>
               <span className="text-2xl">🇲🇦</span>
             </div>
-            <div className="text-xs text-accent-foreground/50 mt-2">
+            <div className="text-s text-accent-foreground/50 drop-shadow-lg mt-2">
               <div className="flex items-center justify-center gap-1">
                 {(() => {
                   const dateStr = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' }).format(new Date());

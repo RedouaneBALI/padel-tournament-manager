@@ -54,7 +54,7 @@ export default function DataPageLayout({
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden">
+      <div className="flex-1 overflow-y-auto overflow-x-auto">
         {children}
       </div>
 
@@ -72,7 +72,7 @@ export default function DataPageLayout({
             </span>
             <span>•</span>
             <span>
-              Mis à jour le {scrapedAt ? new Date(scrapedAt).toLocaleString('fr-FR') : 'Non disponible'}
+              Dernier update : {scrapedAt ? new Date(scrapedAt).toLocaleString('fr-FR') : 'Non disponible'}
             </span>
           </div>
         </div>
