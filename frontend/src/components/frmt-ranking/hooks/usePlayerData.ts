@@ -112,7 +112,6 @@ export function usePlayerData(
       try {
         const res = await fetch(`/${jsonUrl}`)
         const content = await res.json()
-        console.log(" players data : " + content.data.length);
         setAllPlayersData(content.data || [])
         setScrapedAt(content.scraped_at || null)
       } catch (error) {
