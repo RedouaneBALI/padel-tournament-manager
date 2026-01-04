@@ -26,9 +26,50 @@ export interface PlayerFilters {
 interface Props {
   player: Player;
   onClose: () => void;
+  totalPlayers: number;
 }
 
-export default function PlayerDetailModal({ player, onClose }: Props) {
+/**
+ * Calculate the top percentage for a player's ranking
+ * Only returns a value if the player is in the top 50%
+ */
+const getTopPercentage = (ranking: number, totalPlayers: number): number | null => {
+  if (totalPlayers === 0) return null;
+  const percentage = Math.ceil((ranking / totalPlayers) * 100);
+  return percentage <= 50 ? percentage : null;
+};
+
+/**
+ * Get badge style classes based on the top percentage
+ * Returns gradient colors that communicate ranking level intuitively
+ */
+const getBadgeStyle = (percentage: number): string => {
+  if (percentage <= 1) {
+    // Top 1% - Gold (prestige maximum)
+    return 'bg-gradient-to-br from-yellow-300 to-yellow-500 text-yellow-950 shadow-lg shadow-yellow-400/40 border border-yellow-400/50';
+  } else if (percentage <= 5) {
+    // Top 2-5% - Silver (excellence)
+    return 'bg-gradient-to-br from-slate-300 to-slate-400 text-slate-900 shadow-lg shadow-slate-400/40 border border-slate-400/50';
+  } else if (percentage <= 10) {
+    // Top 6-10% - Bronze/Orange (très bon)
+    return 'bg-gradient-to-br from-orange-400 to-orange-600 text-orange-950 shadow-lg shadow-orange-500/40 border border-orange-500/50';
+  } else if (percentage <= 20) {
+    // Top 11-20% - Green (bon niveau)
+    return 'bg-gradient-to-br from-emerald-400 to-emerald-600 text-emerald-950 shadow-lg shadow-emerald-500/40 border border-emerald-500/50';
+  } else if (percentage <= 30) {
+    // Top 21-30% - Cyan/Turquoise (correct)
+    return 'bg-gradient-to-br from-cyan-400 to-cyan-600 text-cyan-950 shadow-lg shadow-cyan-500/40 border border-cyan-500/50';
+  } else if (percentage <= 40) {
+    // Top 31-40% - Blue (moyen-supérieur)
+    return 'bg-gradient-to-br from-blue-400 to-blue-600 text-blue-950 shadow-lg shadow-blue-500/40 border border-blue-500/50';
+  } else if (percentage <= 50) {
+    // Top 41-50% - Purple (moyen)
+    return 'bg-gradient-to-br from-purple-400 to-purple-600 text-purple-950 shadow-lg shadow-purple-500/40 border border-purple-500/50';
+  }
+  return 'bg-accent-foreground/10 text-accent-foreground/60';
+};
+
+export default function PlayerDetailModal({ player, onClose, totalPlayers }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
 
   const handleShare = async () => {
@@ -121,21 +162,32 @@ export default function PlayerDetailModal({ player, onClose }: Props) {
 
         {/* Header: Nom & Nationalité */}
         <div className="px-6 pt-14 pb-4 text-center">
-          <h2 className="text-2xl font-bold text-white tracking-tight">{player.name}</h2>
-          <div className="mt-2 flex items-center justify-center gap-2">
-            <span className="text-2xl">{getFlagEmoji(player.nationality)}</span>
-            <span className="text-sm font-medium text-white/90">{player.nationality}</span>
-          </div>
+            <h2 className="text-2xl font-bold text-white tracking-tight drop-shadow-lg">{player.name}</h2>
+            <div className="mt-2 flex items-center justify-center gap-2 drop-shadow-lg">
+              <span className="text-2xl">{getFlagEmoji(player.nationality)}</span>
+              <span className="text-sm font-medium text-white/90">{player.nationality}</span>
+            </div>
         </div>
 
         {/* Classement - Élément Principal */}
         <div className="px-6 pb-4">
-          <div className="bg-accent rounded-2xl p-6 text-center shadow-lg">
+          <div className="bg-accent/90 rounded-2xl p-6 text-center shadow-lg relative">
+            {(() => {
+              const topPercentage = getTopPercentage(player.ranking, totalPlayers);
+              return topPercentage ? (
+                <div className={`absolute top-2 right-2 px-1.5 py-1 rounded-lg ${getBadgeStyle(topPercentage)}`}>
+                  <div className="text-xs font-bold uppercase tracking-wider">
+                    Top {topPercentage}%
+                  </div>
+                </div>
+              ) : null;
+            })()}
             <div className="text-6xl font-black text-accent-foreground tracking-tight">
               #{player.ranking}
             </div>
-            <div className="text-sm font-semibold text-accent-foreground/70 uppercase tracking-widest mt-2">
-              Classement National 🇲🇦
+            <div className="text-sm font-semibold text-accent-foreground/70 uppercase tracking-widest mt-2 flex items-center justify-center gap-2">
+              <span>Classement National FRMT</span>
+              <span className="text-2xl">🇲🇦</span>
             </div>
             <div className="text-xs text-accent-foreground/50 mt-2">
               <div className="flex items-center justify-center gap-1">
@@ -184,7 +236,7 @@ export default function PlayerDetailModal({ player, onClose }: Props) {
         {/* Stats - Points et Diff */}
         <div className="px-6 pb-4">
           <div className="flex gap-3">
-            <div className="flex-1 bg-white/5 backdrop-blur-md rounded-xl p-3 text-center border border-white/5">
+            <div className="flex-1 bg-white/10 rounded-xl p-3 text-center border border-white/5">
               <div className="text-xl font-semibold text-white/80">{player.points.toLocaleString()}</div>
               <div className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mt-1">Points</div>
             </div>

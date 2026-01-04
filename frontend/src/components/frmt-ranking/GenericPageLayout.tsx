@@ -24,15 +24,19 @@ type UseDataHookResult<TData, TFilters, TSortKey extends keyof TData | string = 
 
 type UseDataHook<TData, TFilters, TSortKey extends keyof TData | string = string> = (
   jsonUrl: string,
-  pageSize: number
+  pageSize: number,
+  initialFilters?: TFilters
 ) => UseDataHookResult<TData, TFilters, TSortKey>;
 
 type Props<TData, TFilters, TSortKey extends keyof TData | string = string> = {
   useDataHook: UseDataHook<TData, TFilters, TSortKey>;
   jsonUrl: string;
   searchPlaceholder: string;
+  initialFilters?: TFilters;
+  onFiltersChange?: (filters: TFilters) => void;
   renderTable: (props: {
     data: TData[];
+    allData: TData[];
     sortKey: TSortKey | null;
     sortOrder: 'asc' | 'desc';
     onSort: (key: TSortKey) => void;
@@ -49,13 +53,15 @@ export default function GenericPageLayout<TData, TFilters, TSortKey extends keyo
   useDataHook,
   jsonUrl,
   searchPlaceholder,
+  initialFilters,
+  onFiltersChange,
   renderTable,
   renderFilterContent,
   renderFooterContent,
 }: Props<TData, TFilters, TSortKey>) {
   const [isFilterPanelOpen, setFilterPanelOpen] = useState(false);
 
-  const hookResult = useDataHook(jsonUrl, 100);
+  const hookResult = useDataHook(jsonUrl, 100, initialFilters);
   const {
     data,
     allData,
@@ -71,15 +77,16 @@ export default function GenericPageLayout<TData, TFilters, TSortKey extends keyo
     handleSort,
     activeFilters,
     setActiveFilters,
-    initialFilters
+    initialFilters: hookInitialFilters
   } = hookResult;
 
   const handleApplyFilters = (newFilters: TFilters) => {
     setActiveFilters(newFilters);
     setCurrentPage(1);
+    onFiltersChange?.(newFilters);
   };
 
-  const hasActiveFilters = JSON.stringify(activeFilters) !== JSON.stringify(initialFilters);
+  const hasActiveFilters = JSON.stringify(activeFilters) !== JSON.stringify(hookInitialFilters);
 
   return (
     <>
@@ -96,7 +103,7 @@ export default function GenericPageLayout<TData, TFilters, TSortKey extends keyo
         hasActiveFilters={hasActiveFilters}
         renderFooterContent={renderFooterContent}
       >
-        {renderTable({ data, sortKey, sortOrder, onSort: handleSort })}
+        {renderTable({ data, allData, sortKey, sortOrder, onSort: handleSort })}
       </DataPageLayout>
 
       {renderFilterContent && (
@@ -105,7 +112,7 @@ export default function GenericPageLayout<TData, TFilters, TSortKey extends keyo
           onClose={() => setFilterPanelOpen(false)}
           activeFilters={activeFilters}
           onApply={handleApplyFilters}
-          initialFilters={initialFilters}
+          initialFilters={hookInitialFilters}
         >
           {(draftFilters, setDraftFilters) =>
             renderFilterContent({ allData, draftFilters, setDraftFilters })

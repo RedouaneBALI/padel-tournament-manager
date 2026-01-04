@@ -82,21 +82,13 @@ function processPlayers(allPlayersData: Player[], search: string, activeFilters:
   return sortPlayers(filteredData, sortKey, sortOrder);
 }
 
-export function usePlayerData(jsonUrl: string, pageSize = 100) {
+export function usePlayerData(
+  jsonUrl: string,
+  pageSize = 100,
+  initialFilters?: PlayerFilters
+) {
   const [allPlayersData, setAllPlayersData] = useState<Player[]>([])
   const [scrapedAt, setScrapedAt] = useState<string | null>(null)
-
-  const [search, setSearch] = useState('')
-  const [activeFilters, setActiveFilters] = useState<PlayerFilters>({
-    nationalities: [],
-    clubs: [],
-    rankingRange: { min: null, max: null },
-    pointsRange: { min: null, max: null },
-    ageRange: { min: null, max: null },
-  })
-  const [currentPage, setCurrentPage] = useState(1)
-  const [sortKey, setSortKey] = useState<PlayerSortableColumn | null>('ranking')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
   const initialFiltersState: PlayerFilters = {
     nationalities: [],
@@ -105,6 +97,15 @@ export function usePlayerData(jsonUrl: string, pageSize = 100) {
     rankingRange: { min: null, max: null },
     pointsRange: { min: null, max: null },
   };
+
+  const [search, setSearch] = useState('')
+  const [activeFilters, setActiveFilters] = useState<PlayerFilters>(
+    initialFilters || initialFiltersState
+  )
+  const [currentPage, setCurrentPage] = useState(1)
+  const [sortKey, setSortKey] = useState<PlayerSortableColumn | null>('ranking')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+
 
   useEffect(() => {
     async function fetchData() {
