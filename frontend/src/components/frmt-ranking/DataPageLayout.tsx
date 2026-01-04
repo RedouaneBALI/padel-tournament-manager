@@ -37,9 +37,9 @@ export default function DataPageLayout({
   hasActiveFilters
 }: DataPageLayoutProps) {
   return (
-    <div className="flex flex-col h-full bg-background overflow-hidden pb-[4.25rem] pt-3">
+    <div className="flex flex-col h-full bg-background overflow-hidden pb-[4.25rem] pt-4">
       {/* Fixed Header */}
-      <div className="flex-none bg-background border-b border-border px-4 py-3 shadow-sm">
+      <div className="flex-none bg-background px-4 my-2">
         <div className="flex gap-4 items-center">
           <div className="w-full">
             <SearchInput
@@ -60,20 +60,25 @@ export default function DataPageLayout({
 
       {/* Fixed Footer */}
       <div className="flex-none bg-background border-t border-border">
-        <div className="flex flex-col items-center gap-0.5">
+        <div className="flex flex-col items-center">
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={onPageChange}
           />
-          <div className="text-sm text-gray-600 text-center">
-            <strong>{totalResults}</strong> résultat{totalResults > 1 ? 's' : ''} trouvé{totalResults > 1 ? 's' : ''}
+          <div className="flex items-center justify-center gap-3 pt-1 text-xs text-gray-600">
+            <span>
+              <strong>{totalResults}</strong> résultat{totalResults > 1 ? 's' : ''} trouvé{totalResults > 1 ? 's' : ''}
+            </span>
+            <span>•</span>
+            <span>
+              Mis à jour le {scrapedAt ? new Date(scrapedAt).toLocaleString('fr-FR') : 'Non disponible'}
+            </span>
           </div>
         </div>
 
-        <footer className="text-center text-xs text-gray-500 mt-0.5">
+        <footer className="text-center text-xs text-gray-500">
           {renderFooterContent}
-          Last update : {scrapedAt ? new Date(scrapedAt).toLocaleString('fr-FR') : 'Non disponible'}
         </footer>
       </div>
     </div>
