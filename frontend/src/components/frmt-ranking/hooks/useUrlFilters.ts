@@ -2,37 +2,49 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { PlayerFilters } from '../PlayerDetailModal';
 
+type ArrayFilterKey = 'nat' | 'clubs';
+type RangeFilterKey = 'rankMin' | 'rankMax' | 'ptsMin' | 'ptsMax' | 'ageMin' | 'ageMax';
+
+const ARRAY_FILTERS: Record<ArrayFilterKey, keyof PlayerFilters> = {
+  nat: 'nationalities',
+  clubs: 'clubs',
+};
+
+const RANGE_FILTERS: Record<RangeFilterKey, { range: keyof PlayerFilters; field: 'min' | 'max' }> = {
+  rankMin: { range: 'rankingRange', field: 'min' },
+  rankMax: { range: 'rankingRange', field: 'max' },
+  ptsMin: { range: 'pointsRange', field: 'min' },
+  ptsMax: { range: 'pointsRange', field: 'max' },
+  ageMin: { range: 'ageRange', field: 'min' },
+  ageMax: { range: 'ageRange', field: 'max' },
+};
+
+function parseIntSafe(value: string | null): number | null {
+  if (!value) return null;
+  const parsed = Number.parseInt(value, 10);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
 function serializeFilters(filters: PlayerFilters): URLSearchParams {
   const params = new URLSearchParams();
 
-  if (filters.nationalities.length > 0) {
-    params.set('nat', filters.nationalities.join(','));
-  }
+  (Object.entries(ARRAY_FILTERS) as [ArrayFilterKey, keyof PlayerFilters][]).forEach(
+    ([key, filterKey]) => {
+      const values = filters[filterKey] as string[];
+      if (values.length > 0) {
+        params.set(key, values.join(','));
+      }
+    }
+  );
 
-  if (filters.clubs.length > 0) {
-    params.set('clubs', filters.clubs.join(','));
-  }
-
-  if (filters.rankingRange.min !== null) {
-    params.set('rankMin', filters.rankingRange.min.toString());
-  }
-  if (filters.rankingRange.max !== null) {
-    params.set('rankMax', filters.rankingRange.max.toString());
-  }
-
-  if (filters.pointsRange.min !== null) {
-    params.set('ptsMin', filters.pointsRange.min.toString());
-  }
-  if (filters.pointsRange.max !== null) {
-    params.set('ptsMax', filters.pointsRange.max.toString());
-  }
-
-  if (filters.ageRange.min !== null) {
-    params.set('ageMin', filters.ageRange.min.toString());
-  }
-  if (filters.ageRange.max !== null) {
-    params.set('ageMax', filters.ageRange.max.toString());
-  }
+  (Object.entries(RANGE_FILTERS) as [RangeFilterKey, { range: keyof PlayerFilters; field: 'min' | 'max' }][]).forEach(
+    ([key, { range, field }]) => {
+      const value = (filters[range] as Record<string, number | null>)[field];
+      if (value !== null) {
+        params.set(key, value.toString());
+      }
+    }
+  );
 
   return params;
 }
@@ -46,51 +58,23 @@ function deserializeFilters(searchParams: URLSearchParams): PlayerFilters {
     ageRange: { min: null, max: null },
   };
 
-  const nat = searchParams.get('nat');
-  if (nat) {
-    filters.nationalities = nat.split(',').filter(Boolean);
-  }
+  (Object.entries(ARRAY_FILTERS) as [ArrayFilterKey, keyof PlayerFilters][]).forEach(
+    ([key, filterKey]) => {
+      const value = searchParams.get(key);
+      if (value) {
+        (filters[filterKey] as string[]) = value.split(',').filter(Boolean);
+      }
+    }
+  );
 
-  const clubs = searchParams.get('clubs');
-  if (clubs) {
-    filters.clubs = clubs.split(',').filter(Boolean);
-  }
-
-  const rankMin = searchParams.get('rankMin');
-  if (rankMin) {
-    const parsed = parseInt(rankMin, 10);
-    if (!isNaN(parsed)) filters.rankingRange.min = parsed;
-  }
-
-  const rankMax = searchParams.get('rankMax');
-  if (rankMax) {
-    const parsed = parseInt(rankMax, 10);
-    if (!isNaN(parsed)) filters.rankingRange.max = parsed;
-  }
-
-  const ptsMin = searchParams.get('ptsMin');
-  if (ptsMin) {
-    const parsed = parseInt(ptsMin, 10);
-    if (!isNaN(parsed)) filters.pointsRange.min = parsed;
-  }
-
-  const ptsMax = searchParams.get('ptsMax');
-  if (ptsMax) {
-    const parsed = parseInt(ptsMax, 10);
-    if (!isNaN(parsed)) filters.pointsRange.max = parsed;
-  }
-
-  const ageMin = searchParams.get('ageMin');
-  if (ageMin) {
-    const parsed = parseInt(ageMin, 10);
-    if (!isNaN(parsed)) filters.ageRange.min = parsed;
-  }
-
-  const ageMax = searchParams.get('ageMax');
-  if (ageMax) {
-    const parsed = parseInt(ageMax, 10);
-    if (!isNaN(parsed)) filters.ageRange.max = parsed;
-  }
+  (Object.entries(RANGE_FILTERS) as [RangeFilterKey, { range: keyof PlayerFilters; field: 'min' | 'max' }][]).forEach(
+    ([key, { range, field }]) => {
+      const parsed = parseIntSafe(searchParams.get(key));
+      if (parsed !== null) {
+        ((filters[range] as Record<string, number | null>)[field]) = parsed;
+      }
+    }
+  );
 
   return filters;
 }
