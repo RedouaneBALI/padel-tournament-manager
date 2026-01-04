@@ -36,6 +36,7 @@ type Props<TData, TFilters, TSortKey extends keyof TData | string = string> = {
   onFiltersChange?: (filters: TFilters) => void;
   renderTable: (props: {
     data: TData[];
+    allData: TData[];
     sortKey: TSortKey | null;
     sortOrder: 'asc' | 'desc';
     onSort: (key: TSortKey) => void;
@@ -102,7 +103,7 @@ export default function GenericPageLayout<TData, TFilters, TSortKey extends keyo
         hasActiveFilters={hasActiveFilters}
         renderFooterContent={renderFooterContent}
       >
-        {renderTable({ data, sortKey, sortOrder, onSort: handleSort })}
+        {renderTable({ data, allData, sortKey, sortOrder, onSort: handleSort })}
       </DataPageLayout>
 
       {renderFilterContent && (
@@ -111,7 +112,7 @@ export default function GenericPageLayout<TData, TFilters, TSortKey extends keyo
           onClose={() => setFilterPanelOpen(false)}
           activeFilters={activeFilters}
           onApply={handleApplyFilters}
-          initialFilters={initialFilters}
+          initialFilters={hookInitialFilters}
         >
           {(draftFilters, setDraftFilters) =>
             renderFilterContent({ allData, draftFilters, setDraftFilters })

@@ -36,6 +36,8 @@ export default function FilterPanel<T>({
 
   const handleResetClick = () => {
     setDraftFilters(initialFilters);
+    onApply(initialFilters);
+    onClose();
   };
 
   const panelClasses = isOpen ? 'translate-y-0' : 'translate-y-full'

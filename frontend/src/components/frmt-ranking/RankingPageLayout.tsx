@@ -35,9 +35,10 @@ function RankingPageContent({ jsonUrl }: Props) {
       searchPlaceholder="Rechercher un joueur..."
       initialFilters={filters}
       onFiltersChange={setFilters}
-      renderTable={({ data, sortKey, sortOrder, onSort }) => (
+      renderTable={({ data, allData, sortKey, sortOrder, onSort }) => (
         <PlayerTable
           players={data}
+          totalPlayers={allData.length}
           sortKey={sortKey}
           sortOrder={sortOrder}
           onSort={onSort}

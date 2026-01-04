@@ -11,6 +11,7 @@ import PlayerDetailModal from './PlayerDetailModal'
 
 type Props = {
   players: Player[]
+  totalPlayers: number
   onSort: (key: keyof Player) => void
   sortKey: keyof Player | null
   sortOrder: 'asc' | 'desc'
@@ -107,7 +108,7 @@ const playerColumns: ColumnDefinition<Player>[] = [
 ]
 
 
-export default function PlayerTable({ players, onSort, sortKey, sortOrder }: Props) {
+export default function PlayerTable({ players, totalPlayers, onSort, sortKey, sortOrder }: Props) {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const router = useRouter()
 
@@ -130,6 +131,7 @@ export default function PlayerTable({ players, onSort, sortKey, sortOrder }: Pro
         <PlayerDetailModal
           player={selectedPlayer}
           onClose={() => setSelectedPlayer(null)}
+          totalPlayers={totalPlayers}
         />
       )}
     </>
