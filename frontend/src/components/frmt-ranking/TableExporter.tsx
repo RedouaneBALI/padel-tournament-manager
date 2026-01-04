@@ -22,11 +22,6 @@ export default function TableExporter({ players, onExportComplete }: TableExport
       return;
     }
 
-    console.log('[TableExporter] tableRef dimensions:', {
-      width: tableRef.current.offsetWidth,
-      height: tableRef.current.offsetHeight,
-    });
-
     try {
       const blob = await toBlob(tableRef.current, {
         cacheBust: true,

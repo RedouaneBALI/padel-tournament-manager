@@ -1,4 +1,5 @@
-import { SlidersHorizontal, Share } from 'lucide-react'
+import { SlidersHorizontal, Share, Loader2 } from 'lucide-react'
+import { useState } from 'react'
 
 type SearchInputProps = {
   search: string
@@ -17,6 +18,15 @@ export default function SearchInput({
   hasActiveFilters,
   onExportClick,
 }: SearchInputProps) {
+  const [isExporting, setIsExporting] = useState(false)
+
+  const handleExportClick = () => {
+    setIsExporting(true)
+    onExportClick?.()
+    // Reset state after 3 seconds (should be done by then)
+    setTimeout(() => setIsExporting(false), 3000)
+  }
+
   return (
     <div className="flex gap-2 items-center">
       <div className="relative flex-1">
@@ -45,11 +55,20 @@ export default function SearchInput({
       </div>
       {onExportClick && (
         <button
-          onClick={onExportClick}
-          className="h-10 px-4 flex items-center justify-center rounded-md text-black hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-offset-2 transition-opacity"
+          onClick={handleExportClick}
+          disabled={isExporting}
+          className={`h-10 px-4 flex items-center justify-center rounded-md focus:outline-none transition-all duration-150 ${
+            isExporting
+              ? 'text-[#1b2d5e] cursor-wait'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 active:bg-gray-200'
+          }`}
           aria-label="Exporter"
         >
-          <Share size={16} />
+          {isExporting ? (
+            <Loader2 size={18} className="animate-spin" />
+          ) : (
+            <Share size={18} />
+          )}
         </button>
       )}
     </div>

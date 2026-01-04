@@ -75,7 +75,7 @@ export default function DataPageLayout({
             </span>
             <span>•</span>
             <span>
-              Dernier update : {scrapedAt ? new Date(scrapedAt).toLocaleString('fr-FR') : 'Non disponible'}
+              Dernier update : {scrapedAt ? new Date(scrapedAt).toLocaleString('fr-FR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'Non disponible'}
             </span>
           </div>
         </div>
