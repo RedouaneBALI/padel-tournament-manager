@@ -162,16 +162,16 @@ export default function PlayerDetailModal({ player, onClose, totalPlayers }: Pro
 
         {/* Header: Nom & Nationalité */}
         <div className="px-6 pt-14 pb-4 text-center">
-          <h2 className="text-2xl font-bold text-white tracking-tight">{player.name}</h2>
-          <div className="mt-2 flex items-center justify-center gap-2">
-            <span className="text-2xl">{getFlagEmoji(player.nationality)}</span>
-            <span className="text-sm font-medium text-white/90">{player.nationality}</span>
-          </div>
+            <h2 className="text-2xl font-bold text-white tracking-tight drop-shadow-lg">{player.name}</h2>
+            <div className="mt-2 flex items-center justify-center gap-2 drop-shadow-lg">
+              <span className="text-2xl">{getFlagEmoji(player.nationality)}</span>
+              <span className="text-sm font-medium text-white/90">{player.nationality}</span>
+            </div>
         </div>
 
         {/* Classement - Élément Principal */}
         <div className="px-6 pb-4">
-          <div className="bg-accent rounded-2xl p-6 text-center shadow-lg relative">
+          <div className="bg-accent/90 rounded-2xl p-6 text-center shadow-lg relative">
             {(() => {
               const topPercentage = getTopPercentage(player.ranking, totalPlayers);
               return topPercentage ? (
@@ -236,7 +236,7 @@ export default function PlayerDetailModal({ player, onClose, totalPlayers }: Pro
         {/* Stats - Points et Diff */}
         <div className="px-6 pb-4">
           <div className="flex gap-3">
-            <div className="flex-1 bg-white/5 backdrop-blur-md rounded-xl p-3 text-center border border-white/5">
+            <div className="flex-1 bg-white/10 rounded-xl p-3 text-center border border-white/5">
               <div className="text-xl font-semibold text-white/80">{player.points.toLocaleString()}</div>
               <div className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mt-1">Points</div>
             </div>
