@@ -116,7 +116,7 @@ export default function PlayerDetailModal({ player, onClose, totalPlayers }: Pro
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center px-4 py-2 bg-black/70 backdrop-blur-sm"
       onClick={onClose}
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
@@ -128,7 +128,7 @@ export default function PlayerDetailModal({ player, onClose, totalPlayers }: Pro
       {/* Carte Principale */}
       <div
         ref={cardRef}
-        className="relative w-full max-w-sm rounded-2xl shadow-lg overflow-hidden border border-white/10"
+        className="relative w-full max-w-sm h-full max-h-[calc(100vh-5rem)] rounded-2xl shadow-lg overflow-y-auto border border-white/10"
         style={{
           backgroundImage: 'url("/modale-background.png")',
           backgroundSize: 'cover',
