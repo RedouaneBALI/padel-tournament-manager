@@ -85,8 +85,8 @@ export function useUrlFilters(initialFilters: PlayerFilters) {
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Initialize filters from URL
-  const urlFilters = deserializeFilters(searchParams);
-  const hasUrlParams = searchParams.toString().length > 0;
+  const urlFilters = deserializeFilters(new URLSearchParams(searchParams ?? ''));
+  const hasUrlParams = (searchParams?.toString() ?? '').length > 0;
 
   const [filters, setFilters] = useState<PlayerFilters>(
     hasUrlParams ? urlFilters : initialFilters
