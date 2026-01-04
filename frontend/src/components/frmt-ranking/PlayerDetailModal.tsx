@@ -128,7 +128,7 @@ export default function PlayerDetailModal({ player, onClose, totalPlayers }: Pro
       {/* Carte Principale */}
       <div
         ref={cardRef}
-        className="relative w-full max-w-sm h-full max-h-[calc(100vh-5rem)] rounded-2xl shadow-lg overflow-y-auto border border-white/10"
+        className="relative w-full max-w-sm max-h-[calc(100vh-1rem)] rounded-2xl shadow-lg overflow-y-auto border border-white/10"
         style={{
           backgroundImage: 'url("/modale-background.png")',
           backgroundSize: 'cover',
