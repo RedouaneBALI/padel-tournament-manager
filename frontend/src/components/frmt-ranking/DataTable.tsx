@@ -11,8 +11,8 @@ export interface ColumnDefinition<T> {
   cellClassName?: string
   headerStyle?: React.CSSProperties
   cellStyle?: React.CSSProperties
-  mobileWidth?: string // Nouvelle prop pour la largeur mobile
-  desktopWidth?: string // Nouvelle prop pour la largeur bureau
+  mobileWidth?: string
+  desktopWidth?: string
 }
 
 interface DataTableProps<T> {
@@ -48,11 +48,11 @@ export default function DataTable<T>({
   }
 
   return (
-    <div className="overflow-x-auto pb-14">
+    <div className="overflow-x-auto w-full">
       <table className="text-left border-collapse" style={{ width: isDesktop ? '100%' : 'max-content', tableLayout: isDesktop ? 'auto' : 'fixed', minWidth: '100%' }}>
-        <thead className="sticky top-0 bg-primary text-white z-10">
+        <thead className="sticky top-0 bg-primary text-white z-10 shadow-md">
           <tr className="bg-primary text-white font-bold text-lg">
-            {columns.map((col) => (
+            {columns.map((col, index) => (
               <th
                 key={col.key}
                 className={`p-3 cursor-pointer text-center ${col.headerClassName || ''}`}
@@ -83,7 +83,7 @@ export default function DataTable<T>({
               `}
               onClick={onRowClick ? () => onRowClick(item) : undefined}
             >
-              {columns.map((col) => (
+              {columns.map((col, index) => (
                 <td
                   key={`${getUniqueKey(item)}-${col.key}`}
                   className={`p-3 ${col.cellClassName || ''}`}
