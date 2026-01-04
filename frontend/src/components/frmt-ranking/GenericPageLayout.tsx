@@ -47,6 +47,7 @@ type Props<TData, TFilters, TSortKey extends keyof TData | string = string> = {
       setDraftFilters: React.Dispatch<React.SetStateAction<TFilters>>;
   }) => React.ReactNode;
   renderFooterContent?: React.ReactNode;
+  onExportClick?: () => void;
 };
 
 export default function GenericPageLayout<TData, TFilters, TSortKey extends keyof TData | string = string>({
@@ -58,6 +59,7 @@ export default function GenericPageLayout<TData, TFilters, TSortKey extends keyo
   renderTable,
   renderFilterContent,
   renderFooterContent,
+  onExportClick,
 }: Props<TData, TFilters, TSortKey>) {
   const [isFilterPanelOpen, setFilterPanelOpen] = useState(false);
 
@@ -102,6 +104,7 @@ export default function GenericPageLayout<TData, TFilters, TSortKey extends keyo
         onFilterClick={renderFilterContent ? () => setFilterPanelOpen(true) : undefined}
         hasActiveFilters={hasActiveFilters}
         renderFooterContent={renderFooterContent}
+        onExportClick={onExportClick}
       >
         {renderTable({ data, allData, sortKey, sortOrder, onSort: handleSort })}
       </DataPageLayout>

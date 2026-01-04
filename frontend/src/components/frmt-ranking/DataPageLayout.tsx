@@ -20,6 +20,7 @@ type DataPageLayoutProps = {
   renderFooterContent?: React.ReactNode;
   onFilterClick?: () => void
   hasActiveFilters?: boolean
+  onExportClick?: () => void
 };
 
 export default function DataPageLayout({
@@ -34,7 +35,8 @@ export default function DataPageLayout({
   children,
   renderFooterContent,
   onFilterClick,
-  hasActiveFilters
+  hasActiveFilters,
+  onExportClick
 }: DataPageLayoutProps) {
   return (
     <div className="flex flex-col h-full bg-background overflow-hidden pb-[4.25rem] pt-4">
@@ -48,6 +50,7 @@ export default function DataPageLayout({
               onSearchChange={onSearchChange}
               onFilterClick={onFilterClick}
               hasActiveFilters={hasActiveFilters}
+              onExportClick={onExportClick}
             />
           </div>
         </div>
