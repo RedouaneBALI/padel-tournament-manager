@@ -168,11 +168,6 @@ export default function TVModeView({
                 </div>
               )}
             </div>
-
-            {/* Icône champion si gagnant */}
-            {winnerSide === 'TEAM_A' && game.finished && (
-              <div className="ml-6 text-6xl">🏆</div>
-            )}
           </div>
 
           {/* Team B */}
@@ -207,11 +202,6 @@ export default function TVModeView({
                 </div>
               )}
             </div>
-
-            {/* Icône champion si gagnant */}
-            {winnerSide === 'TEAM_B' && game.finished && (
-              <div className="ml-6 text-6xl">🏆</div>
-            )}
           </div>
         </div>
 

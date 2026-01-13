@@ -28,6 +28,7 @@ export default function HeaderContent() {
 
   const isFavorite = tournamentId && favoriteTournaments ? favoriteTournaments.some(t => t.id === tournamentId) : false;
 
+
   const handleToggleFavorite = () => {
     if (status !== 'authenticated') {
       if (typeof window !== 'undefined' && pathname) {

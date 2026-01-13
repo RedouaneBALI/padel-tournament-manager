@@ -32,8 +32,12 @@ export default function HeaderAdminActions({
     return null;
   }
 
-  // Show download button only on Games (/games or /games/*) and Bracket (/bracket*) pages
-  const showDownloadButton = /\/games($|\/)/.test(pathname) || /\/bracket/.test(pathname);
+  // Show download button only on Games (/games) and Bracket (/bracket*) pages, but not on game detail pages (/games/XX)
+  const showDownloadButton = /\/games$/.test(pathname) || /\/bracket/.test(pathname);
+
+  // Hide edit button on game detail pages (/games/XX)
+  const isGameDetailPage = /\/games\/\d+/.test(pathname);
+  const showEditButton = !isGameDetailPage;
 
   return (
     <AdminHeaderButtons
@@ -41,7 +45,7 @@ export default function HeaderAdminActions({
       showDownloadButton={showDownloadButton}
       onExport={onExport}
       onShare={onShare}
-      onEdit={onEdit}
+      onEdit={showEditButton ? onEdit : null}
       tvButtonUrl={tvButtonUrl}
     />
   );

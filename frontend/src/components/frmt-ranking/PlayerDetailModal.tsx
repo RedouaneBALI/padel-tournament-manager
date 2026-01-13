@@ -93,8 +93,6 @@ export default function PlayerDetailModal({ player, onClose, totalPlayers }: Pro
       const file = new File([blob], fileName, { type: 'image/png' });
 
       const shareData = {
-        title: `Profil de ${player.name}`,
-        text: `Découvre les stats de ${player.name} (Rang #${player.ranking}) sur PadelRounds !`,
         files: [file],
       };
 
@@ -102,10 +100,39 @@ export default function PlayerDetailModal({ player, onClose, totalPlayers }: Pro
         try {
           await navigator.share(shareData);
         } catch (err) {
-          if ((err as Error).name !== 'AbortError') console.warn('Erreur partage:', err);
+          if ((err as Error).name !== 'AbortError') {
+            console.warn('Erreur partage:', err);
+          }
         }
       } else {
-        console.warn('Partage non pris en charge');
+        // Fallback: try clipboard API
+        if (navigator.clipboard && ClipboardItem) {
+          try {
+            await navigator.clipboard.write([
+              new ClipboardItem({
+                'image/png': blob,
+              }),
+            ]);
+            alert('Image copiée dans le presse-papiers !');
+          } catch (clipErr) {
+            console.error('Clipboard API failed:', clipErr);
+            // Last fallback: download
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            link.click();
+            URL.revokeObjectURL(url);
+          }
+        } else {
+          // Download fallback
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = fileName;
+          link.click();
+          URL.revokeObjectURL(url);
+        }
       }
 
     } catch (error) {

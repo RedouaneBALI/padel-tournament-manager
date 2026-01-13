@@ -9,7 +9,7 @@ import { getServerSession } from "next-auth";
 import { getAuthOptions } from "@/src/lib/authOptions";
 import GoogleAnalytics from '@/src/components/GoogleAnalytics';
 import { ExportProvider } from '@/src/contexts/ExportContext';
-import HeaderContent from '@/src/components/ui/HeaderContent';
+import ConditionalHeader from '@/src/components/ui/ConditionalHeader';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -133,15 +133,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <SessionProviderWrapper>
           <ExportProvider>
-            <header className="sticky top-0 z-[80] bg-background/80 border-b border-border">
-              <style>{`summary::-webkit-details-marker, summary::marker{display:none;}`}</style>
-              <div className="max-w-5xl mx-auto px-2">
-                <nav className="h-14 flex items-center justify-between w-full">
-                  <HeaderContent />
-                </nav>
-              </div>
-            </header>
-            <div style={{ marginTop: '15px' }}>{children}</div>
+            <ConditionalHeader>
+              {children}
+            </ConditionalHeader>
           </ExportProvider>
         </SessionProviderWrapper>
       </body>

@@ -228,6 +228,10 @@ export default function TournamentGamesTab({ tournamentId, editable }: Tournamen
         onExport: () => exportGamesAsCSV(currentRound.games, currentRound.stage)
       });
     }
+    // Cleanup: reset onExport when component unmounts
+    return () => {
+      setAdminActions({ onExport: null });
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentRound?.id, currentRound?.stage, currentRound?.games?.length]);
 

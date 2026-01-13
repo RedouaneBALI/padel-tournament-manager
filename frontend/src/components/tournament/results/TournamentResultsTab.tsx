@@ -101,6 +101,11 @@ export default function TournamentResultsTab({ tournamentId }: TournamentResults
     } else if (activeView === VIEW_CLASSEMENT) {
       // No export for group stage view, but don't reset - let parent layout manage
     }
+
+    // Cleanup: reset onExport when component unmounts
+    return () => {
+      setAdminActions({ onExport: null });
+    };
   }, [activeView, isLoading, tournament?.id]);
 
   if (isLoading) return <CenteredLoader />;
